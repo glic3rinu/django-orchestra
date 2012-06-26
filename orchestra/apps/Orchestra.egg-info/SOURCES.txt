@@ -1,0 +1,13 @@
+setup.py
+orchestra/apps/Orchestra.egg-info/PKG-INFO
+orchestra/apps/Orchestra.egg-info/SOURCES.txt
+orchestra/apps/Orchestra.egg-info/dependency_links.txt
+orchestra/apps/Orchestra.egg-info/not-zip-safe
+orchestra/apps/Orchestra.egg-info/top_level.txt
+orchestra/apps/databases/__init__.py
+orchestra/apps/databases/admin.py
+orchestra/apps/databases/models.py
+orchestra/apps/databases/settings.py
+orchestra/apps/databases/tests.py
+orchestra/apps/databases/views.py
+orchestra/projects/skeleton/manage.py

@@ -3,7 +3,7 @@ from django.conf import settings
 ugettext = lambda s: s
 
 # Provide Contract support
-CONTACTS_CONTRACTED_MODELS = = getattr(settings, 'CONTACTS_CONTRACTED_MODELS', (
+CONTACTS_CONTRACTED_MODELS = getattr(settings, 'CONTACTS_CONTRACTED_MODELS', (
             'django.contrib.auth.models.User',
             'dns.models.Name', 'dns.models.Zone',
             'system_users.models.SystemGroup', 
@@ -12,5 +12,4 @@ CONTACTS_CONTRACTED_MODELS = = getattr(settings, 'CONTACTS_CONTRACTED_MODELS', (
             'lists.models.List',
             'vps.models.VPS',
             'jobs.models.Job',
-            'databases.models.Database', 'databases.models.DBUser',
-)
+            'databases.models.Database', 'databases.models.DBUser',))

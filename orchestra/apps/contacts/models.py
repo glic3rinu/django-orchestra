@@ -70,7 +70,7 @@ class Contact(BaseContact):
     type = models.CharField(max_length=1, choices=settings.CONTACTS_TYPE_CHOICES, default=settings.CONTACTS_DEFAULT_TYPE)
     fax = models.PositiveIntegerField(blank=True, null=True)
     comments = models.TextField(max_length=255, blank=True)
-    language = models.CharField(max_length=2, choices=settings.LANGUAGE_CHOICES, default=settings.CONTACTS_DEFAULT_LANGUAGE)
+    language = models.CharField(max_length=2, choices=settings.CONTACTS_LANGUAGE_CHOICES, default=settings.CONTACTS_DEFAULT_LANGUAGE)
     is_staff = models.BooleanField(default=False, help_text=_("member of the staff"))
     register_date = models.DateTimeField(auto_now_add=True)
     # cancel_date = models.DateTimeField(null=True, blank=True)

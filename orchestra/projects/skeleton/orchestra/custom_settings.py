@@ -31,7 +31,7 @@ LANGUAGE_CHOICES = (('ca', 'Catalan'),
 # Web
 DEFAULT_VIRTUAL_HOST_CUSTOM_DIRECTIVES = '\
 Alias /webalizer /home/httpd/webalizer/{{ self.unique_ident }}\n\
-ScriptAlias /cgi-bin/ /home/pangea/{{ self.fcgid.user }}/cgi-bin/')
+ScriptAlias /cgi-bin/ /home/pangea/{{ self.fcgid.user }}/cgi-bin/'
 VIRTUALHOST_IP_CHOICES = (('70.200.179.80', 'web.ucp.org'),)
 VIRTUALHOST_IP_DEFAULT = '70.200.179.80'
 

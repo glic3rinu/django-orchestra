@@ -1,0 +1,5 @@
+{% if bill.total > 0 %}
+Per pagar aquesta factura transfereix l'import bill.total al compte {{ interpreted_details.acount.numero }}
+{% else %}
+L'import d'aquesta factura será transferit al teu compte {{ interpreted_details.acount.numero }}
+{% endif %}

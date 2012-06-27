@@ -1,0 +1,56 @@
+{% load gapless %}{% gapless %} 
+
+5180{{codigo_presentador|tralling_zeros:12}}{{fecha_confeccion}}{{6|spaces}}{{nombre_del_cliente_presentador|fit_and_tralling_spaces:40}}{{20|spaces}}{{entidad_receptora}}{{oficina_receptora}}{{12|spaces}}{{40|spaces}}{{14|spaces}}
+
+{% for ordenante, transacciones in transacciones_agrupadas.items %}
+
+5380{{ordenante.codigo_ordenante|tralling_zeros:12}}{{fecha_confeccion}}{{fecha_de_cargo}}{{ordenante.nombre_del_cliente_ordenante|fit_and_tralling_spaces:40}}{{ordenante.ccc_de_abono}}{{8|spaces}}{{procedimiento}}{{10|spaces}}{{40|spaces}}{{14|spaces}}
+
+{% for transaccion in transacciones %}
+
+5680{{transaccion.interpreted_data.codigo_ordenante|tralling_zeros:12}}{{transaccion.interpreted_data.codigo_de_referencia|leading_zeros:12}}{{transaccion.interpreted_data.nombre_del_titular_de_la_domiciliacion|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.ccc_de_adeudo}}{{transaccion.total|rm_dot|leading_zeros:10}}{{transaccion.interpreted_data.codigo_para_devoluciones|leading_zeros:6}}{{transaccion.interpreted_data.codigo_de_referencia_interna|leading_zeros:10}}{{transaccion.interpreted_data.conceptos|first|fit_and_tralling_spaces:40}}{{8|spaces}}
+
+{% for concepto in transaccion.interpreted_data.conceptos|last %}
+
+{% if transaccion.interpreted_data.conceptos|last|length > 0 %}
+
+5681{{transaction.codigo_ordenante|tralling_zeros:12}}{{transaction.codigo_de_referencia}}{{transaccion.interpreted_data.conceptos.0.0|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.0.1|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.0.2|fit_and_tralling_spaces:40}}{{14|spaces}}
+
+{% if transaccion.interpreted_data.conceptos|last|length > 1 %}
+
+5682{{transaction.codigo_ordenante|tralling_zeros:12}}{{transaction.codigo_de_referencia}}{{transaccion.interpreted_data.conceptos.1.0|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.1.1|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.1.2|fit_and_tralling_spaces:40}}{{14|spaces}}
+
+{% if transaccion.interpreted_data.conceptos|last|length > 2 %}
+
+5683{{transaction.codigo_ordenante|tralling_zeros:12}}{{transaction.codigo_de_referencia}}{{transaccion.interpreted_data.conceptos.2.0|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.2.1|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.2.2|fit_and_tralling_spaces:40}}{{14|spaces}}
+
+{% if transaccion.interpreted_data.conceptos|last|length > 3 %}
+
+5684{{transaction.codigo_ordenante|tralling_zeros:12}}{{transaction.codigo_de_referencia}}{{transaccion.interpreted_data.conceptos.3.0|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.3.1|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.3.2|fit_and_tralling_spaces:40}}{{14|spaces}}
+
+{% if transaccion.interpreted_data.conceptos|last|length > 4 %}
+
+5685{{transaction.codigo_ordenante|tralling_zeros:12}}{{transaction.codigo_de_referencia}}{{transaccion.interpreted_data.conceptos.4.0|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.4.1|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.4.2|fit_and_tralling_spaces:40}}{{14|spaces}}
+
+{% if transaccion.interpreted_data.conceptos|last|length > 5 %}
+
+5686{{transaction.codigo_ordenante|tralling_zeros:12}}{{transaction.codigo_de_referencia}}{{transaccion.interpreted_data.conceptos.5.0|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.5.1|fit_and_tralling_spaces:40}}{{transaccion.interpreted_data.conceptos.5.2|fit_and_tralling_spaces:40}}{{14|spaces}}
+
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+
+
+{% endfor %}
+{% endfor %}
+
+5880{{ordenante.codigo_ordenante|tralling_zeros:12}}{{12|spaces}}{{40|spaces}}{{20|spaces}}{{ordenante.total|rm_dot|leading_zeros:10}}{{6|spaces}}{{ordenante.numero_de_domiciliaciones|leading_zeros:10}}{{ordenante.numero_de_registros|leading_zeros:10}}{{20|spaces}}{{18|spaces}}
+
+{% endfor %}
+
+5980{{codigo_presentador|tralling_zeros:12}}{{12|spaces}}{{40|spaces}}{{numero_de_ordenantes|leading_zeros:4}}{{16|spaces}}{{total|rm_dot|leading_zeros:10}}{{6|spaces}}{{numero_de_domiciliaciones|leading_zeros:10}}{{numero_de_registros|leading_zeros:10}}{{20|spaces}}{{18|spaces}}
+
+{% endgapless %}

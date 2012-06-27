@@ -15,7 +15,7 @@ The goal of this project is provide the tools for easily build a fully featured 
 Overview
 --------
 
- * Entirely based on reusable applications, feel free to reuse what you need
+ * Based on reusable applications, feel free to reuse what you need
  * Web interface based on django.contrib.admin, enhaced with admin_tools and fluent_dashboard
 
 

@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url admin:index %}">{% trans 'Home' %}</a> &rsaquo; 
+        <a href="{% url admin:app_list app_label %}">{{app_label|capfirst|escape}}</a> &rsaquo; 
+        <a href="{{changelist_url}}">{{opts.verbose_name_plural|capfirst}}</a> &rsaquo; 
+        {% blocktrans with opts.verbose_name_plural|escape as name %}{{title}}{% endblocktrans %}
+    </div>
+{% endblock %}
+
+
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/changelists.css" /> 
+	<div id="content-main">
+		<p>{% blocktrans %}The price of selected orders may depends on this that you don't selected before, do you want to bill this orders too?{% endblocktrans %}</p>
+            <form action="" method="post">{% csrf_token %}
+            {{ form.as_p }}
+            <div>
+            {% for obj in queryset %}
+            <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}" />
+            {% endfor %}
+            <input type="hidden" name="action" value="bill_orders" />
+            <input type="hidden" name="post" value="select_dependencies" />
+            <input type="submit" value="{% trans "Submit" %}" />
+            </div>
+            </form>
+	</div>
+{% endblock %}
+
+
+
+

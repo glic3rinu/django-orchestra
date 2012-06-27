@@ -1,0 +1,21 @@
+{% extends "admin/delete_selected_confirmation.html" %}
+{% load i18n %}
+{% block content %}
+  <p>{% blocktrans %}Are you sure about billing the following orders? {% endblocktrans %}</p>
+  <ul>
+    {% for order in orders_to_bill %}
+        <li>{{ order }}</li>
+    {% endfor %}
+  </ul>
+    <form action="" method="post">{% csrf_token %}
+    <div>
+    {{ form.as_p }}
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="bill_orders" />
+    <input type="hidden" name="post" value="confirm_bill" />
+    <input type="submit" value="{% trans "Yes, I'm" %}" />
+    </div>
+    </form>
+{% endblock %}

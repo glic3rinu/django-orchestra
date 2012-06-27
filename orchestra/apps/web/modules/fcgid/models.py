@@ -22,7 +22,7 @@ class FcgidDirective(models.Model):
 class Fcgid(models.Model):
     virtualhost = models.OneToOneField('web.VirtualHost', related_name='fcgid')
     user = models.ForeignKey('system_users.SystemUser')
-    group = models.ForeignKey('system_users.SystemGroup', default=settings.DEFAULT_FCGID_GROUP_PK)
+    group = models.ForeignKey('system_users.SystemGroup', default=settings.WEB_DEFAULT_FCGID_GROUP_PK)
     
     def __unicode__(self):
         return str(self.user)

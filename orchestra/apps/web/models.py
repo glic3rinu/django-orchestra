@@ -9,10 +9,10 @@ import settings
 
 class VirtualHost(models.Model):
     """ Apache-like virtualhost """ 
-    ip = models.GenericIPAddressField(choices=settings.VIRTUALHOST_IP_CHOICES,
-        default=settings.VIRTUALHOST_IP_DEFAULT)
-    port = models.PositiveIntegerField(choices=settings.VIRTUALHOST_PORT_CHOICES,
-        default=settings.VIRTUALHOST_PORT_DEFAULT)
+    ip = models.GenericIPAddressField(choices=settings.WEB_VIRTUALHOST_IP_CHOICES,
+        default=settings.WEB_VIRTUALHOST_IP_DEFAULT)
+    port = models.PositiveIntegerField(choices=settings.WEB_VIRTUALHOST_PORT_CHOICES,
+        default=settings.WEB_VIRTUALHOST_PORT_DEFAULT)
     domains = models.ManyToManyField('dns.Name')
     DocumentRoot = models.CharField(max_length=128, blank=True)
     unique_ident = models.CharField(max_length=128, unique=True, blank=True)

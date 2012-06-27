@@ -9,7 +9,7 @@ class VirtualHostForm(forms.ModelForm):
         super(VirtualHostForm, self).__init__(*args, **kwargs)
         if 'initial' in kwargs:
             # Add form
-            self.fields['custom_directives'].initial = settings.DEFAULT_VIRTUAL_HOST_CUSTOM_DIRECTIVES
+            self.fields['custom_directives'].initial = settings.WEB_DEFAULT_VIRTUAL_HOST_CUSTOM_DIRECTIVES
 
 
 class VirtualHostAdmin(admin.ModelAdmin):

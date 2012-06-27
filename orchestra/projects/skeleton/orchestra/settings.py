@@ -134,6 +134,8 @@ INSTALLED_APPS = (
     'common',
     'contacts',
     'dns',
+    'mail',
+    'lists',
     'databases',
 )
 

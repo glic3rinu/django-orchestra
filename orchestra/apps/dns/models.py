@@ -108,7 +108,7 @@ class Name(models.Model):
     @classmethod
     def split(cls, domain):
         ext = cls.get_extension(domain)
-        name = re.sub("\.%s$" % ext.replace('.', '\.'), '', domain) 
+        name = re.sub("\.%s$" % ext.replace('.', '\.'), '', domain)
         return name, ext
 
 

@@ -1,9 +1,11 @@
+from actions import create_virtualdomain, delete_virtualdomain
 from common.admin import AddOrChangeInlineFormMixin
 from common.utils.admin import insert_inline, insert_list_filter, insert_list_display, insert_action
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from dns.models import Name
 from models import VirtualDomain, VirtualUser, VirtualAliase 
@@ -22,8 +24,7 @@ class VirtualDomainInlineForm(forms.ModelForm):
             self.fields['mail_domain'].initial = True
 
     def save(self, commit=True):
-        """ Delete virtualDomain if mail_domain is unmarked """
-        
+        """ Deletes virtualDomain if mail_domain is unmarked """
         if self.instance.pk and commit:
             if not self.cleaned_data['mail_domain']:
                 VirtualDomain.objects.get(pk=self.instance.pk).delete()
@@ -62,8 +63,6 @@ class VirtualAliaseAdmin(admin.ModelAdmin):
     form = VirtualAliaseForm
 
 
-# Avoid multiple registration
-#if not VirtualUser in admin.site._registry:
 admin.site.register(VirtualDomain, VirtualDomainAdmin)
 admin.site.register(VirtualUser, VirtualUserAdmin)
 admin.site.register(VirtualAliase, VirtualAliaseAdmin)
@@ -85,7 +84,7 @@ class VirtualUserTabularInline(admin.StackedInline, AddOrChangeInlineFormMixin):
     add_form = AddVirtualUserInlineForm
     change_form = ChangeVirtualUserInlineForm
     filter_fields_by_contact = ('domain__domain',)
-    
+
 insert_inline(User, VirtualUserTabularInline)    
 insert_inline(Name, VirtualDomainInline)
 
@@ -105,7 +104,7 @@ class VirtualUserFilter(SimpleListFilter):
             return queryset.filter(virtualuser__isnull=False)
         if self.value() == 'No':
             return queryset.filter(virtualuser__isnull=True)
-            
+
 insert_list_filter(User, VirtualUserFilter)
 
 
@@ -127,7 +126,6 @@ virtual_domain.boolean = True
 insert_list_display(Name, virtual_domain)
 
 
-from actions import create_virtualdomain, delete_virtualdomain
 insert_action(Name, create_virtualdomain)
 insert_action(Name, delete_virtualdomain)
 
@@ -149,4 +147,3 @@ class VirtualDomainFilter(SimpleListFilter):
             return queryset.filter(virtualdomain__isnull=True)
 
 insert_list_filter(Name, VirtualDomainFilter)
-

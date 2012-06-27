@@ -141,7 +141,6 @@ class ContactAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, extra_context=None):
         """ Add custom links on object-tools-items block """
-
         links = []
         models = register.models
         for link in self.change_shorcut_links:
@@ -153,7 +152,6 @@ class ContactAdmin(admin.ModelAdmin):
 
     def contract_service_view(self, request, contact_id, extra_context=None):
         """List all available services with links to a add_form based on contact_id"""
-
         contact = Contact.objects.get(pk=contact_id)
         model = self.model
         opts = model._meta
@@ -221,11 +219,10 @@ class ContactAdmin(admin.ModelAdmin):
         return super(ContactAdmin, self).add_view(request, form_url=form_url,
                     extra_context=extra_context)
 
+
 admin.site.register(BaseContact)
 admin.site.register(Contact, ContactAdmin)
 admin.site.register(Contract, ContractAdmin)
 
+
 from django.conf import settings as django_settings
-
-
-

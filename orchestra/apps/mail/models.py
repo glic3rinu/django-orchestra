@@ -19,8 +19,8 @@ class VirtualDomain(models.Model):
 
 
 class VirtualUser(models.Model):
-    """ Mail users """               
-    user = models.OneToOneField(User, primary_key=True, unique=True) 
+    """ Mail users """
+    user = models.OneToOneField(User, primary_key=True, unique=True)
     emailname = models.CharField(max_length=23)
     domain = models.ForeignKey(VirtualDomain)
     home = models.CharField(max_length=255, unique=True, blank=True)
@@ -51,7 +51,7 @@ class VirtualAliase(models.Model):
         unique_together = ("emailname", "domain")
 
     def __unicode__(self):
-        return str(self.emailname) + '@' + str(self.domain)  
+        return str(self.emailname) + '@' + str(self.domain)
 
     @property
     def source(self):

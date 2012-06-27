@@ -1,17 +1,19 @@
-from django.contrib import admin
-from models import Zone, Record, NameServer, Name
-#from common.admin import ServiceAdmin, ServiceAdminTabularInline
-#from reversion.admin import VersionAdmin
-from django import forms
-from django.utils.translation import ugettext as _
-from django.core.urlresolvers import reverse
-import settings
-from django.utils.functional import curry
 from common.forms import get_initial_form, get_initial_formset
 from contacts.models import Contract, Contact
+from django import forms
+from django.contrib import admin
+from django.core.urlresolvers import reverse
 from django.db.models import Q
-        
-#TODO: recover Nameserver form rev 798
+from django.dispatch import receiver
+from common.signals import service_created, service_updated
+from django.utils.functional import curry
+from django.utils.translation import ugettext as _
+from models import Zone, Record, NameServer, Name
+import settings
+
+
+#TODO: recover Nameserver form svn rev 798
+
 
 class RecordInline(admin.TabularInline):
     model = Record
@@ -26,30 +28,15 @@ class RecordInline(admin.TabularInline):
             formset.__init__ = curry(formset.__init__, initial=initial)
         return formset
 
-#class SubdomainInline(ServiceAdminTabularInline):
-#    model = Subdomain
-#    fk_name = 'domain'
-#    extra = 1 
-#    form = get_initial_form(Domain)
-#    formset = get_initial_formset(form)
-#
-#    def get_formset(self, request, obj=None, **kwargs):
-#        formset = super(SubdomainInline, self).get_formset(request, obj, **kwargs)
-#        if not obj:
-#            initial = settings.DEFAULT_SUBDOMAINS
-#            formset.__init__ = curry(formset.__init__, initial=initial)
-#        return formset
-
 
 def domain_link(self):
     return '<a href="http://%s">http://%s</a>' % (self, self)
-
 domain_link.short_description = _("Domain link")
 domain_link.allow_tags = True
 
+
 class ZoneAdmin(admin.ModelAdmin):
     list_display = ['origin', domain_link, ]
-
     fieldsets = ((None,     {'fields': (('origin',), 
                                         ('primary_ns', 'hostmaster_email'),
                                         )}),
@@ -60,7 +47,8 @@ class ZoneAdmin(admin.ModelAdmin):
                                         ('slave_expiration',),
                                         ('min_caching_time'),)}),)
     inlines = [RecordInline,]
-    
+
+
 #TODO: create a factory class for initial tabular inline forms. keep it DRY
 class NameServerInline(admin.TabularInline):
     model = NameServer
@@ -78,12 +66,11 @@ class NameServerInline(admin.TabularInline):
 
 def domain_link(self):
     return '<a href="http://%s">http://%s</a>' % (self, self)
-
 domain_link.short_description = _("Domain link")
 domain_link.allow_tags = True
 
-def zone_link(self):
 
+def zone_link(self):
     zone = self.get_zone() 
     if zone is None:
         path = reverse('admin:dns_zone_add')
@@ -93,14 +80,15 @@ def zone_link(self):
     else:
         path = reverse('admin:dns_zone_change', args=(zone.pk,))
         return '<a href="%s">%s</a>' % (path, zone.origin)
-
 zone_link.short_description = _("Zone link")
 zone_link.allow_tags = True
+
 
 def domain(self):
     return self
 domain.short_description = _("Domain")
 domain.admin_order_field = 'name'
+
 
 class NameAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -108,9 +96,9 @@ class NameAdminForm(forms.ModelForm):
         if 'initial' in kwargs:
             # Add form
             contact = Contact.objects.get(pk=kwargs['initial']['contact_id'])
-            self.fields['administrative_contact'].initial = contact.administrative_contact.pk
-            self.fields['technical_contact'].initial = contact.technical_contact.pk
-            self.fields['billing_contact'].initial = contact.billing_contact.pk                
+            self.fields['administrative_contact'].initial = contact.administrative.pk
+            self.fields['technical_contact'].initial = contact.technical.pk
+            self.fields['billing_contact'].initial = contact.billing.pk                
             self.contact = contact
             
         else:
@@ -126,10 +114,10 @@ class NameAdminForm(forms.ModelForm):
         self.fields['technical_contact'].queryset = self.fields['technical_contact'].queryset.filter(qset)
         self.fields['billing_contact'].queryset = self.fields['billing_contact'].queryset.filter(qset)
 
+
 class NameAdmin(admin.ModelAdmin):
     list_display = [domain, 'extension', zone_link, 'register_provider', ]
     list_filter = ['extension', 'register_provider']
-#    list_editable = ('mail',)
     inlines = [NameServerInline,]
     form = NameAdminForm
     fieldsets = ((None, {'fields': (('name', 'extension',), 
@@ -138,14 +126,10 @@ class NameAdmin(admin.ModelAdmin):
                                     ('technical_contact',),
                                     ('billing_contact',),)}),)
 
-#    filter_fields_by_contact = ('contact',)
 
 admin.site.register(Zone, ZoneAdmin)
 admin.site.register(Name, NameAdmin)
 
-
-from common.signals import service_created, service_updated
-from django.dispatch import receiver
 
 @receiver(service_created, sender=Zone, dispatch_uid="name.create_names")
 @receiver(service_updated, sender=Zone, dispatch_uid="name.update_names")

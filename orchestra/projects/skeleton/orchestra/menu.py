@@ -13,12 +13,11 @@ import settings
 
 service_childrens = []
 
-if 'dns' in settings.INSTALLED_APPS:
-    service_childrens.append(items.MenuItem('DNS', '/admin/dns/',
-        children=[
-            items.MenuItem('Names', reverse('admin:dns_name_changelist')),
-            items.MenuItem('Zones', reverse('admin:dns_zone_changelist')),
-        ]))
+dns_children=[]
+if 'dns.names' in settings.INSTALLED_APPS: dns_children.append(items.MenuItem('Names', reverse('admin:names_name_changelist')))
+if 'dns.zones' in settings.INSTALLED_APPS: dns_children.append(items.MenuItem('Zones', reverse('admin:zones_zone_changelist')))
+if dns_children:
+    service_childrens.append(items.MenuItem('DNS', '/admin/dns/', children=dns_children))
 
 if 'web' in settings.INSTALLED_APPS:
     service_childrens.append(items.MenuItem('Web', '/admin/web/',

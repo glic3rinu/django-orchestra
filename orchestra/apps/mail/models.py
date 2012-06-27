@@ -11,7 +11,7 @@ MAIL_DOMAIN_TYPES = (
 
 class VirtualDomain(models.Model):
     """ http://www.postfix.org/VIRTUAL_README.html#canonical """
-    domain = models.OneToOneField('dns.Name')
+    domain = models.OneToOneField('names.Name')
     type = models.CharField(max_length=20, choices=MAIL_DOMAIN_TYPES, default='hosted')
 
     def __unicode__(self):

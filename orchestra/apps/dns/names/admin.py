@@ -9,7 +9,7 @@ from common.signals import service_created, service_updated
 from django.utils.functional import curry
 from django.utils.translation import ugettext as _
 from models import NameServer, Name
-from zones.models import Zone
+from dns.zones.models import Zone
 import settings
 
 

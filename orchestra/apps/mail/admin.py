@@ -7,7 +7,7 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from dns.models import Name
+from dns.names.models import Name
 from models import VirtualDomain, VirtualUser, VirtualAliase 
 
 

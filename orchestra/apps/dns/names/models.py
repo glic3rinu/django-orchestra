@@ -1,8 +1,11 @@
+from common.signals import collect_related_objects_to_delete
 from django.db import models
+from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 import re
 import settings
-from zones.models import Zone
+from dns.zones.models import Zone
+
 
 class Name(models.Model):
     """ Track and manage the registration of domain names. 
@@ -12,9 +15,9 @@ class Name(models.Model):
     register_provider = models.CharField(max_length=255, blank=True,
         choices=settings.DNS_REGISTER_PROVIDER_CHOICES, default=settings.DNS_DEFAULT_REGISTER_PROVIDER)
     # TODO: this contact FK approach is bullshit (dependencies are bad :()
-    administrative_contact = models.ForeignKey('contacts.BaseContact', related_name='administrative_contact_name_set', null=True, blank=True)
-    technical_contact = models.ForeignKey('contacts.BaseContact', related_name='technical_contact_name_set', null=True, blank=True) 
-    billing_contact = models.ForeignKey('contacts.BaseContact', related_name='billing_contact_name_set', null=True, blank=True)
+    administrative_contact = models.ForeignKey('contacts.BaseContact', related_name='administrative_name_set', null=True, blank=True)
+    technical_contact = models.ForeignKey('contacts.BaseContact', related_name='technical_name_set', null=True, blank=True) 
+    billing_contact = models.ForeignKey('contacts.BaseContact', related_name='billing_name_set', null=True, blank=True)
 
     # TODO: create a virtual relation with zone in order to deprecate the signal approach of auto deletions.
 
@@ -83,6 +86,20 @@ class NameServer(models.Model):
     
     def __unicode__(self):
         return str(self.hostname)   
-        
 
+
+@receiver(collect_related_objects_to_delete, sender=Name, dispatch_uid="zone.collect_zones")
+def collect_zones(sender, **kwargs):
+    """ For a given Name colect their related Zones for future deletion """
+    name = kwargs['object']
+    zone = name.get_zone()
+    if zone:
+        if zone.origin == "%s.%s" % (name.name, name.extension):
+            if not Name in kwargs['related_collection'].keys():
+                kwargs['related_collection'][Name] = []
+            kwargs['related_collection'][Name].append(zone)
+        else:
+            if not Record in kwargs['related_collection'].keys():
+                kwargs['related_collection'][Record] = []
+            kwargs['related_collection'][Record].append(name.get_record())
 

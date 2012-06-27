@@ -133,9 +133,10 @@ INSTALLED_APPS = (
     
     'common',
     'contacts',
-    'dns',
+    'dns.zones',
+    'dns.names',
     'mail',
-    'lists',
+#    'lists',
     'databases',
 )
 
@@ -213,8 +214,8 @@ FLUENT_DASHBOARD_APP_GROUPS = (
 )
 
 FLUENT_DASHBOARD_APP_ICONS = {
-    'dns/zone': "zone.png",
-    'dns/name': "name.png",
+    'zones/zone': "zone.png",
+    'names/name': "name.png",
     'web/virtualhost': "virtualhost.png",
     'web/systemuser': "systemuser.png",
     'mail/virtualuser': "virtualuser.png",

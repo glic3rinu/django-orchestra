@@ -176,7 +176,7 @@ class BaseBill(models.Model):
     #tax = models.DecimalField(max_digits=12, decimal_places=2)
     comments = models.TextField(blank=True)
     html = models.TextField(blank=True) 
-    status = models.CharField(max_length=16, choices=settings.STATUS_CHOICES, default=settings.OPEN, blank=True)    
+    status = models.CharField(max_length=16, choices=settings.BILLING_STATUS_CHOICES, default=settings.OPEN, blank=True)    
 
     class Meta:
         abstract = True
@@ -195,7 +195,7 @@ class BaseBill(models.Model):
 
     @property
     def status_as_text(self):
-        for choice in settings.STATUS_CHOICES:
+        for choice in settings.BILLING_STATUS_CHOICES:
             if choice[0] == self.status:
                 return choice[1]
 
@@ -224,20 +224,20 @@ class BaseBill(models.Model):
         #Bill number is reset every Natural Year. 
         year = datetime.now().strftime("%Y")
         num = cls.objects.filter(Q(date__year=year) & ~Q(status=settings.OPEN)).count() + 1
-        number = (int(eval('settings.%s_ID_LENGTH' % cls.__name__.upper())) - len(str(num))) * "0" + str(num)
+        number = (int(eval('settings.BILLING_%s_ID_LENGTH' % cls.__name__.upper())) - len(str(num))) * "0" + str(num)
         
-        return '%(prefix)s%(year)s%(number)s' % {'prefix': eval('settings.%s_ID_PREFIX' % cls.__name__.upper()),
+        return '%(prefix)s%(year)s%(number)s' % {'prefix': eval('settings.BILLING_%s_ID_PREFIX' % cls.__name__.upper()),
             'year': year, 'number': number}   
               
     @classmethod
     def get_new_open_ident(cls):
         year = datetime.now().strftime("%Y")
-        size = int(eval('settings.%s_ID_LENGTH' % cls.__name__.upper()))
+        size = int(eval('settings.BILLING_%s_ID_LENGTH' % cls.__name__.upper()))
         try: num = int(cls.objects.filter(status=settings.OPEN, date__year=year).order_by('-ident')[0].ident[-size:])
         except IndexError: num = 0
         number = (int(size - len(str(num))) * "0" + str(num+1))
         
-        return 'OPEN%(prefix)s%(year)s%(number)s' % {'prefix': eval('settings.%s_ID_PREFIX' % cls.__name__.upper()),
+        return 'OPEN%(prefix)s%(year)s%(number)s' % {'prefix': eval('settings.BILLING_%s_ID_PREFIX' % cls.__name__.upper()),
             'year': year, 'number': number} 
 
     @classmethod
@@ -254,7 +254,7 @@ class BaseBill(models.Model):
             ident = cls.get_new_open_ident()                
             open_bill = cls(contact = contact,
                              date = now,
-                             due_date = now + timedelta(days=settings.DUE_DATE_DAYS),
+                             due_date = now + timedelta(days=settings.BILLING_DUE_DATE_DAYS),
                              ident = ident,
                              status = settings.OPEN)
         
@@ -286,7 +286,7 @@ class BaseBill(models.Model):
         #TODO: do not close invoices with 0 lines
         now = datetime.now()
         self.date = now
-        self.due_date = now + timedelta(days=settings.DUE_DATE_DAYS)
+        self.due_date = now + timedelta(days=settings.BILLING_DUE_DATE_DAYS)
         self.ident = self.__class__.get_new_ident()
         self.status = settings.CLOSED
         self.html = self._generate_html()
@@ -344,7 +344,7 @@ class BaseBill(models.Model):
                          'lines': lines }
 
         context = template.Context(context_dict)
-        html = template.loader.get_template(eval('settings.%s_TEMPLATE' % self.type.upper())).render(context)
+        html = template.loader.get_template(eval('settings.BILLING_%s_TEMPLATE' % self.type.upper())).render(context)
         html = html.replace('-pageskip-', '<pdf:nextpage />')
         
         return html 

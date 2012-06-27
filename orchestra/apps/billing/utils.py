@@ -78,7 +78,7 @@ def _create(bill_lines, contact, create_new_open=False):
         open_invoice.add(bill_lines.invoice_lines)
         
     if bill_lines.invoice_recharge_lines:
-        if settings.CREATE_AMENDMENT_FOR_RECHARGE or settings.GROUP_REFOUND_AND_RECHARGE in settings.INVOICES_AMENDMENT_BEHAVIOUR:
+        if settings.CREATE_AMENDMENT_FOR_RECHARGE or settings.GROUP_REFOUND_AND_RECHARGE in settings.BILLING_INVOICES_AMENDMENT_BEHAVIOUR:
             if not create_new_open:
                 open_amendment_invoice = AmendmentInvoice.get_open(contact=contact)
             elif not open_amendment_invoice: open_amendment_invoice = AmendmentInvoice.create(contact=contact)
@@ -90,18 +90,18 @@ def _create(bill_lines, contact, create_new_open=False):
             open_invoice.add(bill_lines.invoice_recharge_lines)
             
     if bill_lines.invoice_refound_lines:
-        if settings.PUT_REFOUND_ON_OPEN_BILL_IF_POSITIVE in settings.INVOICES_AMENDMENT_BEHAVIOUR: 
+        if settings.PUT_REFOUND_ON_OPEN_BILL_IF_POSITIVE in settings.BILLING_INVOICES_AMENDMENT_BEHAVIOUR: 
             if (open_invoice.total - bill_lines.invoice_refound_lines_price) > 0:
                 if not open_invoice and not create_new_open:
                     open_invoice = Invoice.get_open(contact=contact)
                 if not open_invoice: open_invoice = Invoice.create(contact=contact)
                 open_invoice.add(bill_lines.invoice_refound_lines)
-        elif settings.CREATE_AMENDMENT_FOR_REFOUND in settings.INVOICES_AMENDMENT_BEHAVIOUR:
+        elif settings.CREATE_AMENDMENT_FOR_REFOUND in settings.BILLING_INVOICES_AMENDMENT_BEHAVIOUR:
             open_amendment_invoice_2 = AmendmentInvoice.create(contact=contact)
             open_amendment_invoice_2.add(bill_lines.invoice_refound_lines)
-        elif settings.PUT_REFOUND_ON_OPEN_BILL in settings.INVOICES_AMENDMENT_BEHAVIOUR:
+        elif settings.PUT_REFOUND_ON_OPEN_BILL in settings.BILLING_INVOICES_AMENDMENT_BEHAVIOUR:
             open_invoice.add(bill_lines.invoice_refound_lines)
-        elif settings.GROUP_REFOUND_AND_RECHARGE in settings.INVOICES_AMENDMENT_BEHAVIOUR:
+        elif settings.GROUP_REFOUND_AND_RECHARGE in settings.BILLING_INVOICES_AMENDMENT_BEHAVIOUR:
             if not open_amendment_invoice and not create_new_open:
                 open_amendment_invoice = AmendmentInvoice.get_open(contact=contact)
             elif not open_amendment_invoice:
@@ -120,7 +120,7 @@ def _create(bill_lines, contact, create_new_open=False):
         if commit: open_amendment_invoice_2.save()
         bills.append(open_invoice)
 
-    if settings.FEE_PER_FEE_LINE:
+    if settings.BILLING_FEE_PER_FEE_LINE:
         for line in list(merge(merge(bill_lines.fee_lines, bill_lines.fee_refound_lines), bill_lines.fee_recharge_lines)):
             fee = Fee.create(lines=[line,], contact=contact)
             if commit: fee.save()

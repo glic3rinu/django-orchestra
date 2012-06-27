@@ -1,6 +1,5 @@
 import ast
 class q19(object):
-
     def __init__(self, payment_details):
         data = ast.literal_eval(payment_details.data)
         self.ccc = data['ccc']
@@ -30,13 +29,10 @@ class q19(object):
     def codigo_presentador(self):
         return 
 
-
-
   
 def get_q19_concept(bill):
     """ 8 lineas de 80 caracteres repartides en 16 campos de 40 caracteres
         distribuidos: [o, [[o, o, o], [o, o, o]]] """
-
 
     concepts = ""
     for line in bill.lines.all():
@@ -83,7 +79,6 @@ def get_q19_concept(bill):
 
     
 def get_transaction_data(buyer_data, seller_data, bill, id):
-
     data = {'codigo_presentador': "%s%s" % (bill.seller.national_id, seller_data.sufijo),
             'codigo_ordenante': "%s%s" % (bill.seller.national_id, seller_data.sufijo),
             'codigo_de_referencia': buyer_data.codigo_de_referencia,
@@ -109,7 +104,6 @@ def seller_ccc(transaction):
             return q19(account).ccc
             
     raise TypeError
-
     
 
 def buyer_ccc(transaction):

@@ -6,9 +6,8 @@ from django import template as Template
 from django.db.models import Q
 from django.dispatch import receiver
 from djangoplugins.fields import PluginField
-from payment import settings
 from plugins import PaymentMethod
-
+import settings
 
 #TODO: this should go on form choices in order to make it dinamic under disable/activation
 PAYMENT_METHODS = []
@@ -44,13 +43,9 @@ class PaymentDetails(models.Model):
         #TODO method.get_expression
         return eval("settings.%s_EXPRESSION" % self.filter.upper())
 
-
     @property
     def interpreted_data(self):
-        #exec "from payment.gateways.%s.interpreter import PaymentDetail as interpreter" % (self.method)
         return self.method.get_plugin().payment_details_interpreter(self)
-#        return interpreter(self)
-
 
     @classmethod
     def get_buyer_details(cls, bill, total):
@@ -60,7 +55,6 @@ class PaymentDetails(models.Model):
             if eval(detail.expression):
                 return detail
         raise KeyError
-        
 
     @classmethod
     def get_seller_details(cls, bill, method):
@@ -115,7 +109,6 @@ class Transaction(models.Model):
         
     @classmethod
     def create(cls, bill):
-
         transaction = Transaction(bill=bill)
         buyer_payment_detail = PaymentDetails.get_buyer_details(bill, bill.total)
         dependencies = Transaction.objects.filter(bill=bill).exclude(status=settings.CONFIRMED).exclude(status=settings.REJECTED).order_by('created')

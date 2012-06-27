@@ -1,5 +1,7 @@
 from django.conf import settings
-from payment import settings as payment_settings
+from payments import settings as payment_settings
+
+
 ugettext = lambda s: s
 
 

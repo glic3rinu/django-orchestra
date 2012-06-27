@@ -2,7 +2,7 @@ from common.utils.file import generate_pdf_stringio
 import cStringIO as StringIO
 from datetime import datetime
 from django import template, forms
-from payment.plugins import PaymentMethod
+from payments.plugins import PaymentMethod
 import settings
 
 

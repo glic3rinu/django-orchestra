@@ -11,9 +11,9 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
-from payment import settings
-from payment.models import PaymentDetails, Transaction
-from payment.plugins import PaymentMethod
+from payments import settings
+from models import PaymentDetails, Transaction
+from plugins import PaymentMethod
 
 
 class PaymentDetailsForm(forms.ModelForm):

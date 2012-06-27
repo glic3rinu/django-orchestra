@@ -5,8 +5,8 @@ from datetime import datetime
 from decimal import Decimal
 from django import template, forms
 from django.utils.translation import ugettext as _
-from payment import settings
-from payment.plugins import PaymentMethod
+from payments import settings
+from payments.plugins import PaymentMethod
 
 
 class CCC(object):

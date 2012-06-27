@@ -24,7 +24,7 @@ class RecordInline(admin.TabularInline):
     def get_formset(self, request, obj=None, **kwargs):
         formset = super(RecordInline, self).get_formset(request, obj, **kwargs)
         if not obj:
-            initial = settings.DEFAULT_DOMAIN_REGISTERS
+            initial = settings.DNS_DEFAULT_DOMAIN_REGISTERS
             formset.__init__ = curry(formset.__init__, initial=initial)
         return formset
 
@@ -59,7 +59,7 @@ class NameServerInline(admin.TabularInline):
     def get_formset(self, request, obj=None, **kwargs):
         formset = super(NameServerInline, self).get_formset(request, obj, **kwargs)
         if not obj:
-            initial = settings.DEFAULT_NAME_SERVERS
+            initial = settings.DNS_DEFAULT_NAME_SERVERS
             formset.__init__ = curry(formset.__init__, initial=initial)
         return formset    
 

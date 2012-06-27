@@ -1,0 +1,51 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url admin:index %}">{% trans 'Home' %}</a> &rsaquo; 
+        <a href="{% url admin:app_list app_label %}">{{app_label|capfirst|escape}}</a> &rsaquo; 
+        <a href="{{changelist_url}}">{{opts.verbose_name_plural|capfirst}}</a> &rsaquo; 
+        {% blocktrans with opts.verbose_name_plural|escape as name %}{{title}}{% endblocktrans %}
+    </div>
+{% endblock %}
+
+
+{% block content %}
+	<div id="content-main">
+		<p>{% blocktrans %}Choose a service from the list below for contract.{% endblocktrans %}</p>
+		<div class="module">
+			    <table id="change-history">
+			        <thead>
+			        <tr>
+			            <th scope="col">{% trans 'App' %}</th>
+			            <th scope="col">{% trans 'Model' %}</th>
+			        </tr>
+			        </thead>
+			        <tbody>
+			            {% regroup services by app as app_list %}
+    			        {% for app in app_list %}
+        			        <tr>
+                                 <th scope="row"><a href="/admin/{{ app.grouper }}">{{ app.grouper }}</a></th>
+                                 <td scope="row">
+                                 {% for item in app.list %}
+                                    <a href="../../../../{{item.app}}/{{ item.model }}{{ item.rel_url }}{{ contact_id }}">
+                                        {{ item.verbose_model }}{% if item != app.list|last %},{% endif%}
+                                 {% endfor %}
+                                 </td>     			                
+     			        
+        			        </tr>
+    			        {% endfor %}
+			        </tbody>
+			    </table>
+		</div>
+	</div>
+{% endblock %}
+
+
+
+
+
+
+

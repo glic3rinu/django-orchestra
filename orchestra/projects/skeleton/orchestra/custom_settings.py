@@ -21,4 +21,8 @@ DEFAULT_NAME_SERVERS = getattr(settings, 'DEFAULT_NAME_SERVERS', [{'hostname':'n
                                                                   {'hostname':'ns2.pangea.org', 'ip': ''},
                                                                   {'hostname':'ns3.pangea.org', 'ip': ''},])
 
-#
+# Contacts
+DEFAULT_LANGUAGE = getattr(settings, 'DEFAULT_LANGUAGE', 'ca')
+LANGUAGE_CHOICES = getattr(settings, 'LANGUAGE_CHOICES', (('ca', ugettext('Catalan')),
+                                                          ('es', ugettext('Spanish')),
+                                                          ('en', ugettext('English')),))

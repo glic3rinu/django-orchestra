@@ -11,7 +11,8 @@ class ContractedRegister(object):
     
     def __init__(self):
         for module in settings.CONTRACTED_MODELS:
-            model = _import(module)
+            try: model = _import(module)
+            except ImportError: continue 
             #model.__bases__ = (Service,)
             self.models.append(model)
             # FK
@@ -29,9 +30,11 @@ register = ContractedRegister()
 def contact(self):
     return self.contract.contact   
 
+
 @property
 def contract(self):
     return self.related_contract.get()
+
 
 #from common.register import register
 for model in register.models:
@@ -40,6 +43,7 @@ for model in register.models:
     generic.GenericRelation('contacts.Contract', related_name="%(app_label)s_%(class)s_related").contribute_to_class(model, 'related_contract')
     model.contact = contact
     model.contract = contract
+
 
 # Provides contact and contract relation to "service extentions"
 for related in register.model_extensions:
@@ -58,6 +62,7 @@ for related in register.model_extensions:
 
     if not hasattr(related.model, 'contract'):
         related.model.contract = contract
+
 
 # Generic relations: seems to work inverse of FKs
 #TODO: sure there is a way to combine with model_extensions (DRY)

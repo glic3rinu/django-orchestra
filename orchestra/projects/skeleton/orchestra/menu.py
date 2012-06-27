@@ -3,13 +3,12 @@ This file was generated with the custommenu management command, it contains
 the classes for the admin menu, you can customize this class as you want.
 
 To activate your custom menu add the following to your settings.py::
-    ADMIN_TOOLS_MENU = 'ucp.menu.CustomMenu'
+    ADMIN_TOOLS_MENU = 'orchestra.menu.CustomMenu'
 """
 
+from admin_tools.menu import items, Menu
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-
-from admin_tools.menu import items, Menu
 import settings
 
 service_childrens = []
@@ -20,7 +19,6 @@ if 'dns' in settings.INSTALLED_APPS:
             items.MenuItem('Names', reverse('admin:dns_name_changelist')),
             items.MenuItem('Zones', reverse('admin:dns_zone_changelist')),
         ]))
-
 
 if 'web' in settings.INSTALLED_APPS:
     service_childrens.append(items.MenuItem('Web', '/admin/web/',
@@ -63,14 +61,14 @@ if 'databases' in settings.INSTALLED_APPS:
             items.MenuItem('DB', reverse('admin:databases_db_changelist')),
         ]))  
 
-
 if service_childrens:
     service_menu = items.MenuItem('Services', children=service_childrens)
 else: service_menu = None
 
+
 class CustomMenu(Menu):
     """
-    Custom Menu for ucp admin site.
+    Custom Menu for orchestra admin site.
     """
     def __init__(self, **kwargs):
         Menu.__init__(self, **kwargs)

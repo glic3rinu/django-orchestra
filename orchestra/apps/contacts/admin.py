@@ -106,13 +106,13 @@ class ContactAdmin(admin.ModelAdmin):
                                         ('national_id', 'type'), ('language'),)}),
         ('Optional Fields', {'classes': ('collapse',),
                              'fields': (('address', 'city','zipcode','province','country'),
-                                        ('fax'),'comments','allow_ads',)}),)
+                                        ('fax'),'comments',)}),)
     inlines = [EmailInline, PhoneInline, BillingContactInline, TechnicalContactInline, AdministrativeContactInline]
     # TODO: howto use this with a property    
     # date_hierarchy = 'subscribe'
     list_display = ('name', 'surname', 'type', 'email', 'phone', fax, 'national_id', 'address', 'city', zipcode,'register_date', contract_filter)
     list_display_links = ('name', 'surname',)
-    list_filter = ('is_staff', 'allow_ads', 'type')
+    list_filter = ('is_staff', 'type')
     search_fields = ['name', 'surname', 'second_surname',]
     actions = ['bulk_service_contraction', 'send_bulk_mail', 'contract_service', unsubscribe]
     change_form_template = "admin/contacts/contact/change_form.html"

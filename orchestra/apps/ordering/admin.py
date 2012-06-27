@@ -14,7 +14,7 @@ import settings
 from views import billing_options_view
 
 
-contact_model = get_model(*settings.CONTACT_MODEL.split('.'))
+contact_model = get_model(*settings.ORDERING_CONTACT_MODEL.split('.'))
 
 
 class ContractPackAdmin(admin.ModelAdmin):
@@ -196,7 +196,7 @@ billed_until.short_description = _("Billed until")
 
 
 def contact_link(self):
-    app_label, model_name = settings.CONTACT_MODEL.split('.')
+    app_label, model_name = settings.ORDERING_CONTACT_MODEL.split('.')
     url = reverse('admin:%s_%s_change' % (app_label, model_name.lower()), args=[self.contact.pk])
     return '<a href="%(url)s"><b>%(contact)s</b></a>' % {'url': url, 'contact': self.contact}
 contact_link.short_description = _('Contact')
@@ -229,20 +229,20 @@ class OrderAdmin(DefaultFilterMixIn):
     @transaction.commit_on_success
     def bill_orders_default_behaviour(modeladmin, request, queryset):
         b_qset = queryset
-        if settings.DEFAULT_DEPENDENCIES_EFFECT != settings.IGNORE_DEPENDENCIES:
+        if settings.ORDERING_DEFAULT_DEPENDENCIES_EFFECT != settings.IGNORE_DEPENDENCIES:
             queryset_pks = list(queryset.values_list('pk', flat=True))
             dependencies = get_billing_dependencies(queryset, exclude=queryset_pks)
             if dependencies:
-                if settings.DEFAULT_DEPENDENCIES_EFFECT == settings.BILL_DEPENDENCIES: 
+                if settings.ORDERING_DEFAULT_DEPENDENCIES_EFFECT == settings.BILL_DEPENDENCIES: 
                     dep_pks = [order.pkp for order in dependencies]
                     b_qset = Order.objects.filter(pk__in=queryset_pks.extend(dep_pks))
                 dependencies = Order.objects.filter(pk__in=dep_pks)
         else: dependencies = []
         return confirm_bill_view(modeladmin, request, b_qset, 
                                  bill_point=datetime.now().strftime("%Y-%m-%d"), 
-                                 fixed_point=settings.DEFAULT_FIXED_POINT, 
-                                 force_next=settings.DEFAULT_FORCE_NEXT, 
-                                 create_new_open=settings.DEFAULT_CREATE_NEW_OPEN, 
+                                 fixed_point=settings.ORDERING_DEFAULT_FIXED_POINT, 
+                                 force_next=settings.ORDERING_DEFAULT_FORCE_NEXT, 
+                                 create_new_open=settings.ORDERING_DEFAULT_CREATE_NEW_OPEN, 
                                  dependencies=dependencies)
     
     def get_fake_bills(modeladmin, request, queryset): pass

@@ -17,33 +17,33 @@ import settings
 # Get all contenttypes whose models have 'CONTANT_FIELD attr'
 contenttypes = []
 for contenttype in ContentType.objects.all():
-    if hasattr(contenttype.model_class(), settings.CONTACT_FIELD):
+    if hasattr(contenttype.model_class(), settings.ORDERING_CONTACT_FIELD):
         contenttypes.append(contenttype.pk)
 
 
 class ServiceAccountingAdminForm(forms.ModelForm):
     expression = forms.CharField(label='Expression', widget=forms.widgets.TextInput(attrs={'size':'150'}))
     billing_point = forms.ChoiceField(widget=forms.RadioSelect, 
-        choices=settings.POINT_CHOICES, 
-        initial=settings.DEFAULT_BILLING_POINT)
+        choices=settings.ORDERING_POINT_CHOICES, 
+        initial=settings.ORDERING_DEFAULT_BILLING_POINT)
     pricing_point = forms.ChoiceField(widget=forms.RadioSelect, 
-        choices=settings.POINT_CHOICES, 
-        initial=settings.DEFAULT_PRICING_POINT)
+        choices=settings.ORDERING_POINT_CHOICES, 
+        initial=settings.ORDERING_DEFAULT_PRICING_POINT)
     payment = forms.ChoiceField(widget=forms.RadioSelect, 
-        choices=settings.PAYMENT_CHOICES, 
-        initial=settings.DEFAULT_PAYMENT)
+        choices=settings.ORDERING_PAYMENT_CHOICES, 
+        initial=settings.ORDERING_DEFAULT_PAYMENT)
     pricing_with = forms.ChoiceField(widget=forms.RadioSelect, 
-        choices=settings.PRICING_WITH_CHOICES, 
-        initial=settings.DEFAULT_PRICING_WITH)
+        choices=settings.ORDERING_PRICING_WITH_CHOICES, 
+        initial=settings.ORDERING_DEFAULT_PRICING_WITH)
     pricing_effect = forms.ChoiceField(widget=forms.RadioSelect, 
-        choices=settings.PRICING_EFFECT_CHOICES,
-        initial=settings.DEFAULT_PRICING_EFFECT)
+        choices=settings.ORDERING_PRICING_EFFECT_CHOICES,
+        initial=settings.ORDERING_DEFAULT_PRICING_EFFECT)
     weight_with = forms.ChoiceField(widget=forms.RadioSelect, 
-        choices=settings.WEIGHT_WITH_CHOICES, 
-        initial=settings.DEFAULT_WEIGHT_WITH)
+        choices=settings.ORDERING_WEIGHT_WITH_CHOICES, 
+        initial=settings.ORDERING_DEFAULT_WEIGHT_WITH)
     orders_with = forms.ChoiceField(widget=forms.RadioSelect, 
-        choices=settings.ORDERS_WITH_CHOICES,
-        initial=settings.DEFAULT_ORDERS_WITH)
+        choices=settings.ORDERING_ORDERS_WITH_CHOICES,
+        initial=settings.ORDERING_DEFAULT_ORDERS_WITH)
         
     class Meta:
         model = ServiceAccounting
@@ -55,9 +55,9 @@ class ServiceAccountingAdminForm(forms.ModelForm):
 
 class BillingOptions(forms.Form, FormAdminDjango):
     bill_point = forms.DateField(initial=datetime.now, widget=AdminDateWidget)
-    fixed_point = forms.BooleanField(initial=billing_settings.DEFAULT_FIXED_POINT, required=False)
-    force_next = forms.BooleanField(initial=billing_settings.DEFAULT_FORCE_NEXT, required=False)
-    create_new_open = forms.BooleanField(initial=billing_settings.DEFAULT_CREATE_NEW_OPEN, required=False)
+    fixed_point = forms.BooleanField(initial=billing_settings.ORDERING_DEFAULT_FIXED_POINT, required=False)
+    force_next = forms.BooleanField(initial=billing_settings.ORDERING_DEFAULT_FORCE_NEXT, required=False)
+    create_new_open = forms.BooleanField(initial=billing_settings.ORDERING_DEFAULT_CREATE_NEW_OPEN, required=False)
 
 
 class NonSelectedDepsForm(forms.Form):
@@ -72,7 +72,7 @@ def ListForm_Factory(qset, modeladmin, deps=None, req_post=None, initial=None):
             ('O', 'Only use for Pricing'),)
         
         effect = forms.ChoiceField(choices=EFFECT_CHOICES, 
-            initial=billing_settings.DEFAULT_EFFECT, required=True) 
+            initial=billing_settings.ORDERING_DEFAULT_EFFECT, required=True) 
         dependencies = forms.ModelMultipleChoiceField(
             widget=CheckboxSelectMultipleTable(modeladmin, dep_structure=deps), 
             queryset=qset, required=False)

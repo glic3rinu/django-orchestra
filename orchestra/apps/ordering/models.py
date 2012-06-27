@@ -37,7 +37,7 @@ class ContractedPackQuerySet(models.query.QuerySet):
 
 class ContractedPack(models.Model):
     pack = models.ForeignKey(Pack)
-    contact = models.ForeignKey(settings.CONTACT_MODEL)
+    contact = models.ForeignKey(settings.ORDERING_CONTACT_MODEL)
     register_date = models.DateTimeField(auto_now_add=True)
     cancel_date = models.DateTimeField(null=True)
     
@@ -54,11 +54,11 @@ class ContractedPack(models.Model):
 
 
 # Provide contact accessor if it is different from contact
-if 'contact' != settings.CONTACT_FIELD:
+if 'contact' != settings.ORDERING_CONTACT_FIELD:
     @property
     def contact(self):
         return self.contact
-    setattr(ContractedPack, settings.CONTACT_FIELD, contact)
+    setattr(ContractedPack, settings.ORDERING_CONTACT_FIELD, contact)
 
 
 class ServiceAccounting(models.Model):
@@ -75,35 +75,35 @@ class ServiceAccounting(models.Model):
     content_type = models.ForeignKey(ContentType)
     expression = models.CharField(max_length=255, help_text=_("format: O['field1']=='value' and (O['field2']=='value2' or O['field3' == True)"))
     # BILLING
-    billing_period = models.IntegerField(choices=settings.PERIOD_CHOICES, 
-        default=settings.DEFAULT_BILLING_PERIOD, help_text=_("Renew period for recurring invoicing"))
-    billing_point = models.IntegerField(default=settings.DEFAULT_BILLING_POINT, choices=settings.POINT_CHOICES,
+    billing_period = models.IntegerField(choices=settings.ORDERING_PERIOD_CHOICES, 
+        default=settings.ORDERING_DEFAULT_BILLING_PERIOD, help_text=_("Renew period for recurring invoicing"))
+    billing_point = models.IntegerField(default=settings.ORDERING_DEFAULT_BILLING_POINT, choices=settings.ORDERING_POINT_CHOICES,
         help_text=_(""" If VARIABLE: billing period points on order.register_date, 
                         If FIXED billing period points on a default month and day, """))
-    payment = models.CharField(max_length=1, choices=settings.PAYMENT_CHOICES, default=settings.DEFAULT_PAYMENT)
-    #discount = models.CharField(max_length=32, choices=settings.DISCOUNT_CHOICES, default=settings.DEFAULT_DISCOUNT)
-    on_prepay = MultiSelectField(max_length=32, choices=settings.ON_PREPAY_CHOICES, default=settings.DEFAULT_ON_PREPAY, blank=True, help_text=_('After billing'))
-    discount = MultiSelectField(max_length=32, choices=settings.DISCOUNT_CHOICES, default=settings.DEFAULT_DISCOUNT, blank=True, help_text=_('Before billing'))
+    payment = models.CharField(max_length=1, choices=settings.ORDERING_PAYMENT_CHOICES, default=settings.ORDERING_DEFAULT_PAYMENT)
+    #discount = models.CharField(max_length=32, choices=settings.ORDERING_DISCOUNT_CHOICES, default=settings.ORDERING_DEFAULT_DISCOUNT)
+    on_prepay = MultiSelectField(max_length=32, choices=settings.ORDERING_ON_PREPAY_CHOICES, default=settings.ORDERING_DEFAULT_ON_PREPAY, blank=True, help_text=_('After billing'))
+    discount = MultiSelectField(max_length=32, choices=settings.ORDERING_DISCOUNT_CHOICES, default=settings.ORDERING_DEFAULT_DISCOUNT, blank=True, help_text=_('Before billing'))
     # PRICING
-    pricing_period = models.IntegerField(choices=settings.PERIOD_CHOICES, 
-        default=settings.DEFAULT_PRICING_PERIOD, help_text=_("In what period do you want to lookup for calculating price?"))
-    pricing_point = models.IntegerField(choices=settings.POINT_CHOICES, 
-        default=settings.DEFAULT_PRICING_POINT, help_text=_("In what moment do you want to lookup for calculating price?"))
-    pricing_effect = models.IntegerField(choices=settings.PRICING_EFFECT_CHOICES, 
-        default=settings.DEFAULT_PRICING_EFFECT, help_text=_("In what position do you want to apply the pricing period?"))
-    pricing_with = models.CharField(max_length=1,default=settings.DEFAULT_PRICING_WITH, choices=settings.PRICING_WITH_CHOICES)        
-    orders_with = models.CharField(max_length=1, default=settings.DEFAULT_ORDERS_WITH, choices=settings.ORDERS_WITH_CHOICES)
-    weight_with = models.CharField(max_length=1, default=settings.DEFAULT_WEIGHT_WITH, choices=settings.WEIGHT_WITH_CHOICES)
-    metric = models.CharField(max_length=128, blank=True, help_text=_("format: O['field1'] - O['field2']. If null metric is the number of orders."))   
-    metric_get = models.CharField(max_length=16, blank=True, default=settings.DEFAULT_METRIC_GET, choices=settings.METRIC_GET_CHOICES)
+    pricing_period = models.IntegerField(choices=settings.ORDERING_PERIOD_CHOICES, 
+        default=settings.ORDERING_DEFAULT_PRICING_PERIOD, help_text=_("In what period do you want to lookup for calculating price?"))
+    pricing_point = models.IntegerField(choices=settings.ORDERING_POINT_CHOICES, 
+        default=settings.ORDERING_DEFAULT_PRICING_POINT, help_text=_("In what moment do you want to lookup for calculating price?"))
+    pricing_effect = models.IntegerField(choices=settings.ORDERING_PRICING_EFFECT_CHOICES, 
+        default=settings.ORDERING_DEFAULT_PRICING_EFFECT, help_text=_("In what position do you want to apply the pricing period?"))
+    pricing_with = models.CharField(max_length=1,default=settings.ORDERING_DEFAULT_PRICING_WITH, choices=settings.ORDERING_PRICING_WITH_CHOICES)
+    orders_with = models.CharField(max_length=1, default=settings.ORDERING_DEFAULT_ORDERS_WITH, choices=settings.ORDERING_ORDERS_WITH_CHOICES)
+    weight_with = models.CharField(max_length=1, default=settings.ORDERING_DEFAULT_WEIGHT_WITH, choices=settings.ORDERING_WEIGHT_WITH_CHOICES)
+    metric = models.CharField(max_length=128, blank=True, help_text=_("format: O['field1'] - O['field2']. If null metric is the number of orders."))
+    metric_get = models.CharField(max_length=16, blank=True, default=settings.ORDERING_DEFAULT_METRIC_GET, choices=settings.ORDERING_METRIC_GET_CHOICES)
     metric_discount = models.ForeignKey('self', null=True, blank=True, 
         help_text=_(""" make a discount, for example on traffic prepay, target needs to have pricing_period, 
                         bill period is required for both, only with single order """))   
-    rating = models.CharField(max_length=1, choices=settings.RATING_CHOICES, default=settings.DEFAULT_RATING)
+    rating = models.CharField(max_length=1, choices=settings.ORDERING_RATING_CHOICES, default=settings.ORDERING_DEFAULT_RATING)
 #    default_price = models.DecimalField(max_digits=12, decimal_places=2, 
 #        help_text:_('price used if no ratings, and for discounts estimation'))
-    tax = models.ForeignKey('ordering.Tax', default=settings.DEFAULT_TAX_PK, null=True)
-    is_fee = models.BooleanField("is membership fee?", default=settings.DEFAULT_IS_FEE, 
+    tax = models.ForeignKey('ordering.Tax', default=settings.ORDERING_DEFAULT_TAX_PK, null=True)
+    is_fee = models.BooleanField("is membership fee?", default=settings.ORDERING_DEFAULT_IS_FEE, 
         help_text="select this if this service is a membership fee" )
     active = models.BooleanField("is active?", default=True)
     
@@ -459,7 +459,7 @@ class OrderQuerySet(models.query.QuerySet):
         return self.filter(pk__in=pending_subset_pks)
         
     def metric_with_orders(self):
-        return self.filter(service__pricing_with=settings.ORDERS)    
+        return self.filter(service__pricing_with=settings.ORDERS)
     
     def metric_with_weight(self):
         return self.filter(service__pricing_with=settings.WEIGHT)
@@ -574,7 +574,7 @@ class OrderQuerySet(models.query.QuerySet):
 
 class Order(models.Model):
     #TODO: add support for negative prices (discounts) play with canceldate&billeduntil in order to ensure discount apply
-    contact = models.ForeignKey(settings.CONTACT_MODEL)
+    contact = models.ForeignKey(settings.ORDERING_CONTACT_MODEL)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField(null=True)
     service = models.ForeignKey(ServiceAccounting)
@@ -601,7 +601,7 @@ class Order(models.Model):
     def create(cls, obj, service, contact=None):
         ct = ContentType.objects.get_for_model(obj)
         if not contact:
-            contact = getattr(obj, settings.CONTACT_FIELD)
+            contact = getattr(obj, settings.ORDERING_CONTACT_FIELD)
         description = "%s: %s" % (service, obj)
         order = cls.objects.create(object_id=obj.pk, content_type=ct, contact=contact,
                                    service=service, description=description)
@@ -622,7 +622,7 @@ class Order(models.Model):
 
     @classmethod
     def update_orders(cls, instance):
-        try: contact = getattr(instance, settings.CONTACT_FIELD)
+        try: contact = getattr(instance, settings.ORDERING_CONTACT_FIELD)
         except: return 
 
         # Optimization

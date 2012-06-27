@@ -26,11 +26,11 @@ def get_relative_period(period):
     
 def renew_month(period):
     if period == settings.MONTHLY: return 1
-    if period == settings.ANUAL: return settings.ANUAL_RENEW_MONTH
-    if period == settings.SIX_MONTHS: return settings.SIX_MONTHS_RENEW_MONTH
-    if period == settings.FOUR_MONTHS: return settings.FOUR_MONTHS_RENEW_MONTH
-    if period == settings.THREE_MONTHS: return settings.THREE_MONTHS_RENEW_MONTH
-    if period == settings.TWO_MONTHS: return settings.TWO_MONTHS_RENEW_MONTH
+    if period == settings.ANUAL: return settings.ORDERING_ANUAL_RENEW_MONTH
+    if period == settings.SIX_MONTHS: return settings.ORDERING_SIX_MONTHS_RENEW_MONTH
+    if period == settings.FOUR_MONTHS: return settings.ORDERING_FOUR_MONTHS_RENEW_MONTH
+    if period == settings.THREE_MONTHS: return settings.ORDERING_THREE_MONTHS_RENEW_MONTH
+    if period == settings.TWO_MONTHS: return settings.ORDERING_TWO_MONTHS_RENEW_MONTH
 
 
 def DateTime_conv(date):

@@ -5,10 +5,10 @@ import settings
 class SystemUser(models.Model):
     """ /etc/passwd - Users for SuExec and ftp accounts. """ 
     user = models.OneToOneField(User, primary_key=True)
-    shell = models.CharField(max_length=23, default=settings.DEFAULT_SYSTEM_USER_SHELL)
+    shell = models.CharField(max_length=23, default=settings.SYSTEM_USER_DEFAULT_SHELL)
     uid = models.PositiveIntegerField(unique=True)
-    primary_group = models.ForeignKey('SystemGroup', default=settings.DEFAULT_SYSTEM_USER_PRIMARY_GROUP_PK)
-    homedir = models.CharField(max_length=255, default=settings.DEFAULT_SYSTEM_USER_BASE_HOMEDIR)
+    primary_group = models.ForeignKey('SystemGroup', default=settings.SYSTEM_USER_DEFAULT_PRIMARY_GROUP_PK)
+    homedir = models.CharField(max_length=255, default=settings.SYSTEM_USER_DEFAULT_BASE_HOMEDIR)
     only_ftp = models.BooleanField(default=False)
 
     def __unicode__(self):

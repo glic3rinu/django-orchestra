@@ -3,7 +3,7 @@ import settings
 
 class Database(models.Model):
     name = models.CharField(max_length=60)
-    type = models.CharField(max_length=16, choices=settings.DATABASE_TYPE_CHOICES, default=settings.DEFAULT_DATABASE_TYPE)
+    type = models.CharField(max_length=16, choices=settings.DATABASES_DATABASE_TYPE_CHOICES, default=settings.DATABASES_DEFAULT_DATABASE_TYPE)
     
     class Meta:
         unique_together = ('name', 'type')
@@ -16,21 +16,21 @@ class DBUser(models.Model):
     name = models.CharField(max_length=16)
     database = models.ManyToManyField(Database, through='databases.DB')
     password = models.CharField(max_length=41)
-    host = models.CharField(max_length=60, default=settings.DEFAULT_HOST)
+    host = models.CharField(max_length=60, default=settings.DATABASES_DEFAULT_HOST)
     # Data access	
-    select = models.BooleanField(default=settings.DEFAULT_SELECT)
-    delete = models.BooleanField(default=settings.DEFAULT_DELETE)
-    insert = models.BooleanField(default=settings.DEFAULT_INSERT)
-    update = models.BooleanField(default=settings.DEFAULT_UPDATE)
+    select = models.BooleanField(default=settings.DATABASES_DEFAULT_SELECT)
+    delete = models.BooleanField(default=settings.DATABASES_DEFAULT_DELETE)
+    insert = models.BooleanField(default=settings.DATABASES_DEFAULT_INSERT)
+    update = models.BooleanField(default=settings.DATABASES_DEFAULT_UPDATE)
     # Structure access	
-    create = models.BooleanField(default=settings.DEFAULT_CREATE)
-    drop = models.BooleanField(default=settings.DEFAULT_DROP)
-    alter = models.BooleanField(default=settings.DEFAULT_ALTER)
-    index = models.BooleanField(default=settings.DEFAULT_INDEX)
+    create = models.BooleanField(default=settings.DATABASES_DEFAULT_CREATE)
+    drop = models.BooleanField(default=settings.DATABASES_DEFAULT_DROP)
+    alter = models.BooleanField(default=settings.DATABASES_DEFAULT_ALTER)
+    index = models.BooleanField(default=settings.DATABASES_DEFAULT_INDEX)
     # Other	
-    grant = models.BooleanField(default=settings.DEFAULT_GRANT)
-    refer = models.BooleanField(default=settings.DEFAULT_REFER)
-    lock = models.BooleanField(default=settings.DEFAULT_LOCK)
+    grant = models.BooleanField(default=settings.DATABASES_DEFAULT_GRANT)
+    refer = models.BooleanField(default=settings.DATABASES_DEFAULT_REFER)
+    lock = models.BooleanField(default=settings.DATABASES_DEFAULT_LOCK)
 
     class Meta:
         unique_together = ('name', 'host')
@@ -42,21 +42,21 @@ class DBUser(models.Model):
 class DB(models.Model):
     database = models.ForeignKey(Database)
     user = models.ForeignKey(DBUser)
-    host = models.CharField(max_length=60, default=settings.DEFAULT_HOST)
+    host = models.CharField(max_length=60, default=settings.DATABASES_DEFAULT_HOST)
     # Data access	
-    select = models.BooleanField(default=settings.DEFAULT_SELECT)
-    delete = models.BooleanField(default=settings.DEFAULT_DELETE)
-    insert = models.BooleanField(default=settings.DEFAULT_INSERT)
-    update = models.BooleanField(default=settings.DEFAULT_UPDATE)
+    select = models.BooleanField(default=settings.DATABASES_DEFAULT_SELECT)
+    delete = models.BooleanField(default=settings.DATABASES_DEFAULT_DELETE)
+    insert = models.BooleanField(default=settings.DATABASES_DEFAULT_INSERT)
+    update = models.BooleanField(default=settings.DATABASES_DEFAULT_UPDATE)
     # Structure access	
-    create = models.BooleanField(default=settings.DEFAULT_CREATE)
-    drop = models.BooleanField(default=settings.DEFAULT_DROP)
-    alter = models.BooleanField(default=settings.DEFAULT_ALTER)
-    index = models.BooleanField(default=settings.DEFAULT_INDEX)
+    create = models.BooleanField(default=settings.DATABASES_DEFAULT_CREATE)
+    drop = models.BooleanField(default=settings.DATABASES_DEFAULT_DROP)
+    alter = models.BooleanField(default=settings.DATABASES_DEFAULT_ALTER)
+    index = models.BooleanField(default=settings.DATABASES_DEFAULT_INDEX)
     # Other	
-    grant = models.BooleanField(default=settings.DEFAULT_GRANT)
-    refer = models.BooleanField(default=settings.DEFAULT_REFER)
-    lock = models.BooleanField(default=settings.DEFAULT_LOCK)
+    grant = models.BooleanField(default=settings.DATABASES_DEFAULT_GRANT)
+    refer = models.BooleanField(default=settings.DATABASES_DEFAULT_REFER)
+    lock = models.BooleanField(default=settings.DATABASES_DEFAULT_LOCK)
 
     class Meta:
         unique_together = ('database', 'user', 'host')

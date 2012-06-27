@@ -1,0 +1,231 @@
+<html>
+<style>
+@page {
+    margin: 1cm;
+    margin-bottom: 0cm;
+    margin-top: 3cm;
+    size: a4 portrait;
+    background-image: url('img/letter_head.png');
+    @frame footer {
+        -pdf-frame-content: footerContent;
+        bottom: 0cm;
+        margin-left: 1cm;
+        margin-right: 1cm;
+        height: 2cm; 
+    }
+    @frame simple {
+        -pdf-frame-content: simple;
+        bottom: 2.0cm;
+        height: 2.5cm;
+        margin-left: 1cm;
+        margin-right: 1cm;
+    }
+}
+
+div#client-details{
+    font-size: 120%;
+}
+
+div#specification{
+    margin-top: 20px;
+}
+
+div#specification td{
+    vertical-align: middle;
+    padding-top: 5px;
+    padding-bottom: 3px;
+}
+
+
+table td {
+    vertical-align: top;
+    padding: 2px 0;
+    height: 16px;
+}
+
+table td.amount{
+    text-align: right;
+    padding-right: 2px;
+}
+
+table td.total{
+    padding-top: 5px;
+}
+
+table th {
+    text-align: left;
+    border-bottom: 1px solid #000;
+}
+
+tr.uneven {
+    background-color: #efefef;
+}
+
+div#footerContent {
+    color: #777777;
+}
+
+div#footerContent a {
+    color: #790000;
+    text-decoration: none;
+}
+
+.date {
+    font-size: 90%;
+    color: #777;
+}
+
+div#totals {
+    margin: 20px 0;
+}
+
+div#simple td {
+    margin-left: 10px;
+    background-color: #efefef;
+}
+
+div#simple tr {
+    border-right: 1px solid #333;
+}
+
+div#simple table{
+    text-align: center;
+    border-left: 1px solid #999;
+}
+
+</style>
+
+<body>
+    <h1>{{ bill_type }}</h1>
+    <div id="client-details">
+        <table>
+            <tr>
+                <td width="60%">
+                    <strong>{{ contact_bill_data.name }}</strong><br />
+                    {% if contact_bill_data.first_name and contact_bill_data.last_name %}
+                    attn. {{ contact_bill_data.first_name }} {{ contact_bill_data.last_name }}<br />
+                    {% endif %}
+                    {{ contact_bill_data.address }}<br />
+                    {{ contact_bill_data.zipcode }} {{ contact_bill_data.city }}<br />
+                    {{ contact_bill_data.country }}<br />
+                </td>
+                <td width="20%">
+                    <strong>Invoice number</strong><br />
+                    <strong>Date</strong><br />
+                    <strong>Due date</strong>
+                </td>
+                <td width="20%">
+                    : {{ bill.ident }}<br />
+                    : {{ bill.date|date:"d F, Y" }}<br />
+                    : {{ bill.due_date|date:"d F, Y" }}<br />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="specification">
+        <table width="100%">
+            <tr>
+                <th width="5%">ID</th>
+                <th width="65%">Description</th>
+                <th width="20%">Quantity</th>
+                <th width="10%">Amount</th>
+            </tr>
+            {% for line in lines %}
+            <tr class="{% cycle 'even' 'uneven' %}"{% if forloop.last %} style="border-bottom: 1px solid #000;"{% endif %}>
+                <td class="ID">{{ line.order_id }}</td>
+                <td style="padding-left: 2px;">{{ line.description }} <span class="date">({{ line.initial_date|date:"d-m-Y" }}{% if line.initial_date != line.final_date %} - {{ line.final_date|date:"d-m-Y" }}{% endif %})</span></td>
+                <td class="quantity">{{ line.amount }}</td>
+                <td class="amount total">&euro; {{ line.price }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="totals">
+        <table width="100%">
+            <tr>
+                {% for tax, base in bases.items %}
+                <td width="60%">&nbsp;</td>
+                <td width="20%">Subtotal{% if bases.items|length > 1 %} (for {{ tax }}% taxes){% endif %}</td>
+                <td width="20%" class="amount">&euro; {{ base }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for tax, value in taxes.items %}
+                <td width="60%">&nbsp;</td>
+                <td width="20%">Total {{ tax }}%</td>
+                <td width="20%" class="amount" style="border-bottom: 1px solid #333;">&euro; {{ value }}</td>
+                {% endfor %}                
+            </tr> 
+            <tr>
+                <td width="60%">&nbsp;</td>
+                <td width="20%" class="total"><strong>Total</strong></td>
+                <td width="20%" class="amount total">&euro; {{ total }}</td>
+            </tr>
+        </table>
+    </div>
+    <div id="simple">
+        <table>
+            <tr>
+                <td width="33%" style="padding-top: 5px;">IBAN</th>
+                <td width="34%" style="padding-top: 5px;">Invoice ID</th>
+                <td width="33%" style="padding-top: 5px;">Amount EURO</th>
+            </tr>
+            <tr>
+                <td><strong>NL28INGB0004954664</strong></td>
+                <td><strong>{{ bill.ident }}</strong></td>
+                <td><strong>{{ total }}</strong></td>
+            </tr>
+        </table>
+        <p style="text-align:center;">The invoice is to be paid before <strong>{{ invoice.exp_date|date:"F jS, Y" }}</strong> with the mention of the invoice id.</p>
+    </div>
+    <div id="footerContent">
+        <table>
+            <tr>
+                <td width="33%">
+                    {{ sender_bill_data.name }}<br />
+                    {{ sender_bill_data.address }}<br />
+                    {{ sender_bill_data.city }}<br />
+                    {{ sender_bill_data.country }}<br />
+                </td>
+                <td width="5%">
+                    Tel<br />
+                    Web<br />
+                    Email<br />
+                </td>
+                <td width="29%">
+                    {{ sender_bill_data.phone }}<br />
+                    <a href="http://wwwpangea.org">www.pangea.org</a><br />
+                    {{ sender_bill_data.email }}
+                </td>
+                <td width="8%">
+                    Bank ING<br />
+                    IBAN<br />
+                    BTW<br />
+                    KvK<br />
+                </td>
+                <td width="25%">
+                    4954664<br />
+                    NL28INGB0004954664<br />
+                    NL 8207.29.449.B01<br />
+                    27343027
+                </td>
+            </tr>
+        </table>
+    </div>
+    Payment info
+    {% load billing_admin %}
+    {{ bill|payment_app_comment }}
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

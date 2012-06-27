@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+{% load billing_admin %}
+
+{% block messages %}
+    {% if messages %}
+    <ul class="messagelists">{% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|safe_message }}</li>
+    {% endfor %}</ul>
+    {% endif %}
+{% endblock messages %}
+

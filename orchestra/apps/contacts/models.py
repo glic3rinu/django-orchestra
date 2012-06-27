@@ -65,7 +65,7 @@ class TechnicalContact(BaseContact):
 class Contact(BaseContact):
     """ 
         All related people or organizations: admins, customers, staff, 
-        members and the organization itself.
+        members and your organization itself.
     """
     type = models.CharField(max_length=1, choices=settings.CONTACTS_TYPE_CHOICES, default=settings.CONTACTS_DEFAULT_TYPE)
     fax = models.PositiveIntegerField(blank=True, null=True)

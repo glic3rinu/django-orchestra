@@ -131,6 +131,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
 
+    'contacts',
+    'dns',
     'databases',
 )
 

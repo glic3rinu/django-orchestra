@@ -1,4 +1,6 @@
 django-orchestra
 ================
 
-Web hosting control panel
+Orchestra is a framework for building web hosting control panels.
+
+Is entirely based on reusable applications.

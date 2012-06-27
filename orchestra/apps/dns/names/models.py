@@ -8,8 +8,8 @@ from dns.zones.models import Zone
 
 
 class Name(models.Model):
-    """ Track and manage the registration of domain names. 
-        This model is also useful for other models that needs domains: i.e. web.VirtualHost """
+    """ Tracks and manage the registration of domain names. 
+        Also useful for other models that needs domains: i.e. web.VirtualHost """
     name = models.CharField(max_length=255)
     extension = models.CharField(max_length=8, choices=settings.DNS_EXTENSIONS, default=settings.DNS_DEFAULT_EXTENSION)
     register_provider = models.CharField(max_length=255, blank=True,

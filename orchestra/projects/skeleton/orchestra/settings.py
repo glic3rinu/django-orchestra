@@ -230,3 +230,4 @@ FLUENT_DASHBOARD_APP_ICONS = {
 }
 
 
+from custom_settings import *

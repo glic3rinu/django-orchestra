@@ -34,3 +34,6 @@ Alias /webalizer /home/httpd/webalizer/{{ self.unique_ident }}\n\
 ScriptAlias /cgi-bin/ /home/pangea/{{ self.fcgid.user }}/cgi-bin/')
 VIRTUALHOST_IP_CHOICES = (('70.200.179.80', 'web.ucp.org'),)
 VIRTUALHOST_IP_DEFAULT = '70.200.179.80'
+
+# System_users
+DEFAULT_SYSTEM_USER_BASE_HOMEDIR = '/home/pangea'

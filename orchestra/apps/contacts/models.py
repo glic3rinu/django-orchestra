@@ -67,10 +67,10 @@ class Contact(BaseContact):
         All related people or organizations: admins, customers, staff, 
         members and the organization itself.
     """
-    type = models.CharField(max_length=1, choices=settings.TYPE_CHOICES, default=settings.DEFAULT_TYPE)
+    type = models.CharField(max_length=1, choices=settings.CONTACTS_TYPE_CHOICES, default=settings.CONTACTS_DEFAULT_TYPE)
     fax = models.PositiveIntegerField(blank=True, null=True)
     comments = models.TextField(max_length=255, blank=True)
-    language = models.CharField(max_length=2, choices=settings.LANGUAGE_CHOICES, default=settings.DEFAULT_LANGUAGE)
+    language = models.CharField(max_length=2, choices=settings.LANGUAGE_CHOICES, default=settings.CONTACTS_DEFAULT_LANGUAGE)
     is_staff = models.BooleanField(default=False, help_text=_("member of the staff"))
     register_date = models.DateTimeField(auto_now_add=True)
     # cancel_date = models.DateTimeField(null=True, blank=True)
@@ -101,7 +101,7 @@ class Contact(BaseContact):
     @classmethod
     def get_myself(cls):
         """ Return self organization/person """
-        return cls.objects.get(pk=settings.CONTACT_SELF_PK)
+        return cls.objects.get(pk=settings.CONTACTS_CONTACT_SELF_PK)
 
     @property
     def billing(self):
@@ -209,11 +209,11 @@ class Contract(models.Model):
 
     @property
     def content_object_is_deletable(self):
-        return False if str(self.content_type) in settings.DO_NOT_DELETE_ON_CANCEL else True
+        return False if str(self.content_type) in settings.CONTACTS_DO_NOT_DELETE_ON_CANCEL else True
         
     @classmethod
     def content_objects_are_deletable(cls, content_class):
-        return False if content_class.__name__.lower() in settings.DO_NOT_DELETE_ON_CANCEL else True
+        return False if content_class.__name__.lower() in settings.CONTACTS_DO_NOT_DELETE_ON_CANCEL else True
 
 
 contract_updated = Signal(providing_args=["instance"])

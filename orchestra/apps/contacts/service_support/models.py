@@ -10,7 +10,7 @@ class ContractedRegister(object):
     generic_extensions = []
     
     def __init__(self):
-        for module in settings.CONTRACTED_MODELS:
+        for module in settings.CONTACTS_CONTRACTED_MODELS:
             try: model = _import(module)
             except ImportError: continue 
             #model.__bases__ = (Service,)

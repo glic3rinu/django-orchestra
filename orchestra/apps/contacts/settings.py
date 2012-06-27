@@ -3,23 +3,22 @@ from django.utils.translation import ugettext_lazy as _
 
 ugettext = lambda s: s
 
-PERSON = getattr(settings, 'PERSON', 'P')
+PERSON = 'P'
+ORGANIZATION = 'O'
 
-ORGANIZATION = getattr(settings, 'ORGANIZATION', 'O')
+CONTACTS_TYPE_CHOICES = getattr(settings, 'CONTACTS_TYPE_CHOICES', ((PERSON, _('Person')),
+                                                                    (ORGANIZATION, _('Organization')),))
 
-TYPE_CHOICES = getattr(settings, 'TYPE_CHOICES', ((PERSON, _('Person')),
-                                                  (ORGANIZATION, _('Organization')),))
+CONTACTS_DEFAULT_TYPE = getattr(settings, 'CONTACTS_DEFAULT_TYPE', PERSON)
 
-DEFAULT_TYPE = getattr(settings, 'DEFAULT_TYPE', PERSON)
-
-LANGUAGE_CHOICES = getattr(settings, 'LANGUAGE_CHOICES', (('ca', ugettext('Catalan')),
+CONTACTS_LANGUAGE_CHOICES = getattr(settings, 'CONTACTS_LANGUAGE_CHOICES', (('ca', ugettext('Catalan')),
                                                           ('es', ugettext('Spanish')),
                                                           ('en', ugettext('English')),))
 
-DEFAULT_LANGUAGE = getattr(settings, 'DEFAULT_LANGUAGE', 'en')
+CONTACTS_DEFAULT_LANGUAGE = getattr(settings, 'CONTACTS_DEFAULT_LANGUAGE', 'en')
 
-CONTACT_SELF_PK = getattr(settings, 'CONTACT_SELF_PK', 1)
+CONTACTS_CONTACT_SELF_PK = getattr(settings, 'CONTACTS_CONTACT_SELF_PK', 1)
 
 # Tuple of lowercase models that you don't want to delente when cancel their contract
 # Note: the model should not be a dependency of other model, otherwise this doesn't work
-DO_NOT_DELETE_ON_CANCEL = getattr(settings, 'DO_NOT_DELETE_ON_CANCEL', ('contact'))
+CONTACTS_DO_NOT_DELETE_ON_CANCEL = getattr(settings, 'CONTACTS_DO_NOT_DELETE_ON_CANCEL', ('contact'))

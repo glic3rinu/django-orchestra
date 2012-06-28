@@ -131,13 +131,25 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     
+    # Mandatory
     'common',
+
+    # System
+    'extra_fields',
+
+    # Administration
     'contacts',
+
+    # Services
     'dns.zones',
     'dns.names',
 #    'mail',
 #    'lists',
     'databases',
+
+
+
+
 )
 
 # A sample logging configuration. The only tangible logging

@@ -5,15 +5,10 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.dispatch import receiver
-from common.signals import service_created, service_updated
 from django.utils.functional import curry
 from django.utils.translation import ugettext as _
 from models import NameServer, Name
-from dns.zones.models import Zone
 import settings
-
-
-#TODO: recover Nameserver form svn rev 798
 
 
 #TODO: create a factory class for initial tabular inline forms. keep it DRY
@@ -28,7 +23,7 @@ class NameServerInline(admin.TabularInline):
         if not obj:
             initial = settings.DNS_DEFAULT_NAME_SERVERS
             formset.__init__ = curry(formset.__init__, initial=initial)
-        return formset    
+        return formset
 
 
 def domain_link(self):
@@ -65,7 +60,7 @@ class NameAdminForm(forms.ModelForm):
             contact = Contact.objects.get(pk=kwargs['initial']['contact_id'])
             self.fields['administrative_contact'].initial = contact.administrative.pk
             self.fields['technical_contact'].initial = contact.technical.pk
-            self.fields['billing_contact'].initial = contact.billing.pk                
+            self.fields['billing_contact'].initial = contact.billing.pk
             self.contact = contact
             
         else:
@@ -98,17 +93,4 @@ class NameAdmin(admin.ModelAdmin):
 admin.site.register(Name, NameAdmin)
 
 
-@receiver(service_created, sender=Zone, dispatch_uid="name.create_names")
-@receiver(service_updated, sender=Zone, dispatch_uid="name.update_names")
-def create_names(sender, **kwargs):
-    # 1. Deletes on Zone doesn't affect names
-    # 2. Creates and Updates on Zone only produces creates on Name
-    zone = kwargs['instance']
-    request = kwargs['request']
-    for domain_name in zone.get_names():
-        name, extension = Name.split(domain_name)
-        try: Name.objects.get(name=name, extension=extension)
-        except Name.DoesNotExist:
-            new_name = Name(name=name, extension=extension, register_provider='')
-            new_name.save()
-            service_created.send(sender=Name, request=request, instance=new_name, origin=zone)
+

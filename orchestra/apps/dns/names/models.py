@@ -1,10 +1,10 @@
-from common.signals import collect_related_objects_to_delete
+from common.signals import collect_related_objects_to_delete, service_created, service_updated
+from django.conf import settings as django_settings
 from django.db import models
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 import re
 import settings
-from dns.zones.models import Zone
 
 
 class Name(models.Model):
@@ -88,18 +88,36 @@ class NameServer(models.Model):
         return str(self.hostname)   
 
 
-@receiver(collect_related_objects_to_delete, sender=Name, dispatch_uid="zone.collect_zones")
-def collect_zones(sender, **kwargs):
-    """ For a given Name colect their related Zones for future deletion """
-    name = kwargs['object']
-    zone = name.get_zone()
-    if zone:
-        if zone.origin == "%s.%s" % (name.name, name.extension):
-            if not Name in kwargs['related_collection'].keys():
-                kwargs['related_collection'][Name] = []
-            kwargs['related_collection'][Name].append(zone)
-        else:
-            if not Record in kwargs['related_collection'].keys():
-                kwargs['related_collection'][Record] = []
-            kwargs['related_collection'][Record].append(name.get_record())
+if 'dns.zones' in django_settings.INSTALLED_APPS:
+    from dns.zones.models import Zone
+
+    @receiver(service_created, sender=Zone, dispatch_uid="name.create_names")
+    @receiver(service_updated, sender=Zone, dispatch_uid="name.update_names")
+    def create_names(sender, **kwargs):
+        # 1. Deletes on Zone doesn't affect names
+        # 2. Creates and Updates on Zone only produces creates on Name
+        zone = kwargs['instance']
+        request = kwargs['request']
+        for domain_name in zone.get_names():
+            name, extension = Name.split(domain_name)
+            try: Name.objects.get(name=name, extension=extension)
+            except Name.DoesNotExist:
+                new_name = Name(name=name, extension=extension, register_provider='')
+                new_name.save()
+                service_created.send(sender=Name, request=request, instance=new_name, origin=zone)
+
+    @receiver(collect_related_objects_to_delete, sender=Name, dispatch_uid="zone.collect_zones")
+    def collect_zones(sender, **kwargs):
+        """ For a given Name colect their related Zones for future deletion """
+        name = kwargs['object']
+        zone = name.get_zone()
+        if zone:
+            if zone.origin == "%s.%s" % (name.name, name.extension):
+                if not Name in kwargs['related_collection'].keys():
+                    kwargs['related_collection'][Name] = []
+                kwargs['related_collection'][Name].append(zone)
+            else:
+                if not Record in kwargs['related_collection'].keys():
+                    kwargs['related_collection'][Record] = []
+                kwargs['related_collection'][Record].append(name.get_record())
 

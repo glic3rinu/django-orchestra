@@ -135,7 +135,7 @@ INSTALLED_APPS = (
     'contacts',
     'dns.zones',
     'dns.names',
-    'mail',
+#    'mail',
 #    'lists',
     'databases',
 )

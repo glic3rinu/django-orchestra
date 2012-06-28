@@ -1,0 +1,7 @@
+MySQL is throwing deadlock errors, what can I do?
+Answer: MySQL has default isolation level set to REPEATABLE-READ, if you don’t really need that, set it to READ-COMMITTED. You can do that by adding the following to your my.cnf:
+
+[mysqld]
+transaction-isolation = READ-COMMITTED
+
+For more information about InnoDB`s transaction model see MySQL - The InnoDB Transaction Model and Locking in the MySQL user manual.

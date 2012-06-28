@@ -4,7 +4,7 @@ ugettext = lambda s: s
 
 
 # Models that wants to keep contraced
-SCHEDULABLE_MODELS = (
+SCHEDULING_SCHEDULABLE_MODELS = getattr(settings, 'SCHEDULING_SCHEDULABLE_MODELS', (
     'django.contrib.auth.models.User',
     'dns.models.Name', 'dns.models.Zone',
     'system_users.models.SystemGroup', 
@@ -14,4 +14,4 @@ SCHEDULABLE_MODELS = (
     'vps.models.VPS',
     'jobs.models.Job',
     'databases.models.Database', 'databases.models.DBUser',
-)
+))

@@ -204,7 +204,7 @@ class ActiveFilter(SimpleListFilter):
             return queryset.exclude(pk__in=active_pks)
 
 
-for module in settings.SCHEDULABLE_MODELS:
+for module in settings.SCHEDULING_SCHEDULABLE_MODELS:
     try: model = _import(module)
     except ImportError: continue
     insert_list_display(model, cancel_date)

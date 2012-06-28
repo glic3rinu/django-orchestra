@@ -10,7 +10,7 @@ import settings
 class ExtraField(models.Model):
     #TODO regex to check that name doesn't contains spaces
     name = models.CharField(max_length=32, unique=True)
-    type = models.CharField(max_length=32, choices=settings.FIELD_TYPES, default=settings.DEFAUL_FIELD_TYPE)
+    type = models.CharField(max_length=32, choices=settings.EXTRA_FIELDS_FIELD_TYPES, default=settings.EXTRA_FIELDS_DEFAUL_FIELD_TYPE)
     content_type = models.ForeignKey(ContentType)
     required = models.BooleanField(default=False)
     label = models.CharField(max_length=64, blank=True)

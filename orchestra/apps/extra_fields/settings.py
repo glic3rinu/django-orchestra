@@ -2,7 +2,7 @@ from django.conf import settings
 
 ugettext = lambda s: s
 
-FIELD_TYPES = getattr(settings, 'FIELD_TYPES',(
+EXTRA_FIELDS_FIELD_TYPES = getattr(settings, 'EXTRA_FIELDS_FIELD_TYPES',(
     ('CharField', 'CharField'),
     ('BooleanField', 'BooleanField'),
     ('DateField', 'DateField'),
@@ -13,4 +13,4 @@ FIELD_TYPES = getattr(settings, 'FIELD_TYPES',(
     ('IPAddressField', 'IPAddressField'),
 ))
 
-DEFAUL_FIELD_TYPE = getattr(settings, 'DEFAUL_FIELD_TYPE', 'IntegerField')
+EXTRA_FIELDS_DEFAUL_FIELD_TYPE = getattr(settings, 'EXTRA_FIELDS_DEFAUL_FIELD_TYPE', 'IntegerField')

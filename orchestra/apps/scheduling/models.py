@@ -271,7 +271,7 @@ def active(self):
     return True
 
 
-for module in settings.SCHEDULABLE_MODELS:
+for module in settings.SCHEDULING_SCHEDULABLE_MODELS:
     try: model = _import(module)
     except ImportError: continue
     model.cancel_date = cancel_date

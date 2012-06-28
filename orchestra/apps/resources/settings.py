@@ -3,7 +3,7 @@ from django.conf import settings
 ugettext = lambda s: s
 
 
-RESOURCE_CHOICES = getattr(settings, 'RESOURCE_CHOICES', ( ('Disk', ugettext('Disk')),
+RESOURCES_RESOURCE_CHOICES = getattr(settings, 'RESOURCES_RESOURCE_CHOICES', ( ('Disk', ugettext('Disk')),
                                                            ('Traffic', ugettext('Traffic')),
                                                            ('CPU', ugettext('CPU')),
                                                            ('Memory', ugettext('Memory')),       
@@ -12,7 +12,7 @@ RESOURCE_CHOICES = getattr(settings, 'RESOURCE_CHOICES', ( ('Disk', ugettext('Di
                                                            ))
 
 
-ALGORITHM_CHOICES = getattr(settings, 'ALGORITHM_CHOICES', (('Last', ugettext('Last')),
+RESOURCES_ALGORITHM_CHOICES = getattr(settings, 'RESOURCES_ALGORITHM_CHOICES', (('Last', ugettext('Last')),
                                                            ('Avg', ugettext('Average')),
                                                            ('Sum', ugettext('Sum')),
                                                            ('Max', ugettext('Max')),
@@ -20,7 +20,7 @@ ALGORITHM_CHOICES = getattr(settings, 'ALGORITHM_CHOICES', (('Last', ugettext('L
                                                            ))
 
 
-ALGORITHM_DEFAULT = getattr(settings, 'ALGORITHM_DEFAULT', 'Last')
+RESOURCES_ALGORITHM_DEFAULT = getattr(settings, 'RESOURCES_ALGORITHM_DEFAULT', 'Last')
 
 
 DAILY = 'D'
@@ -28,14 +28,14 @@ MONTHLY = 'M'
 ANUAL = 'A'
 
 
-PERIOD_CHOICES = getattr(settings, 'PERIOD_CHOICES', (('', ugettext('No Period')),
+RESOURCES_PERIOD_CHOICES = getattr(settings, 'RESOURCES_PERIOD_CHOICES', (('', ugettext('No Period')),
                                                      (DAILY, ugettext('Daily')),
                                                      (MONTHLY, ugettext('Monthly')),
                                                      (ANUAL, ugettext('Anual')),
                                                      ))
 
 
-TEMPLATE_PATHS = getattr(settings, 'TEMPLATE_PATHS', ['/home/orchestra/panel/templates/scripts/',])
+RESOURCES_TEMPLATE_PATHS = getattr(settings, 'RESOURCES_TEMPLATE_PATHS', ['/home/orchestra/panel/templates/scripts/',])
 
 
 

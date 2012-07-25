@@ -5,7 +5,7 @@ import settings
 
 class PHP(models.Model):
     virtualhost = models.OneToOneField('web.VirtualHost', related_name='php')
-    version = models.IntegerField(choices=settings.WEB_PHPVERSION_CHOICES, default=settings.WEB_PHPVERSION_DEFAULT)
+    version = models.CharField(max_length=5, choices=settings.WEB_PHPVERSION_CHOICES, default=settings.WEB_PHPVERSION_DEFAULT)
 
     @property
     def directives(self):

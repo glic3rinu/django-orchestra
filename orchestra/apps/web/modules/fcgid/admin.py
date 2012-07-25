@@ -9,6 +9,13 @@ from web.models import VirtualHost
 import re
 
 
+class FcgidDirectiveAdmin(admin.ModelAdmin):
+    list_display = ('name', 'regex', 'description', 'restricted')
+    list_filter = ('restricted',)
+
+admin.site.register(FcgidDirective, FcgidDirectiveAdmin)
+
+
 #TODO: keep it dry, since this is the same as phpoptions
 class VirtualHostFcgidDirectiveInlineForm(forms.ModelForm):
     description = forms.CharField(label="Description", widget = ShowText(), initial='', required=False)
@@ -47,14 +54,11 @@ class FcgidInline(admin.TabularInline):
     formset = RequiredInlineFormSet
 
 
-class FcgidDirectiveAdmin(admin.ModelAdmin):
-    list_display = ('name', 'regex', 'description', 'restricted')
-    list_filter = ('restricted',)
-
-
-admin.site.register(FcgidDirective, FcgidDirectiveAdmin)
-
-
 insert_inline(VirtualHost, FcgidInline)
 insert_inline(VirtualHost, VirtualHostFcgidDirectiveInline)
+
+
+
+
+
 

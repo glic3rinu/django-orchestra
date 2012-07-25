@@ -150,7 +150,7 @@ INSTALLED_APPS = (
     'system_users',
     'web',
     'web.modules.fcgid', # depends on system_users application
-
+    'web.modules.php',
 
 )
 

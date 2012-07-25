@@ -1,5 +1,6 @@
 from common.forms import RequiredInlineFormSet
 from common.signals import collect_dependencies
+from common.utils.admin import insert_inline
 from common.widgets import ShowText
 from django import forms
 from django.contrib import admin

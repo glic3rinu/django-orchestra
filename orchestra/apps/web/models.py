@@ -54,7 +54,7 @@ def create_ident(sender, **kwargs):
             instance.save()
 
 
-if 'web.fcgid' in project_settings.INSTALLED_APPS:
+if 'web.modules.fcgid' in project_settings.INSTALLED_APPS:
     from web.modules.fcgid.models import Fcgid
     @receiver(collect_related_objects_to_delete, sender=Fcgid, dispatch_uid="web.collect_virtual_hosts")
     def collect_virtual_hosts(sender, **kwargs):

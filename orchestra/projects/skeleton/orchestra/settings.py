@@ -148,7 +148,7 @@ INSTALLED_APPS = (
 #    'lists',
     'databases',
     'web',
-
+#    'web.modules.fcgid', # depends on system_users application
 
 
 )

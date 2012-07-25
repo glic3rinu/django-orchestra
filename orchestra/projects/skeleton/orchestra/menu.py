@@ -20,15 +20,21 @@ if dns_children:
     service_childrens.append(items.MenuItem('DNS', '/admin/dns/', children=dns_children))
 
 if 'web' in settings.INSTALLED_APPS:
-    service_childrens.append(items.MenuItem('Web', '/admin/web/',
+    web_children=[items.MenuItem('Virtual hosts', reverse('admin:web_virtualhost_changelist'))]
+    modules = []
+    if 'web.modules.php' in settings.INSTALLED_APPS: 
+        modules.append(items.MenuItem('PHP', reverse('admin:php_phpdirective_changelist')))
+    if 'web.modules.fcgid' in settings.INSTALLED_APPS: 
+        modules.append(items.MenuItem('Fcgid', reverse('admin:fcgid_fcgiddirective_changelist')))
+    if modules:
+        web_children.append(items.MenuItem('Modules', children = modules))
+    service_childrens.append(items.MenuItem('Web', '/admin/web/', children=web_children))
+
+if 'system_users' in settings.INSTALLED_APPS:
+    service_childrens.append(items.MenuItem('System Users', '/admin/system_users/',
         children=[
-            items.MenuItem('Virtual hosts', reverse('admin:web_virtualhost_changelist')),
             items.MenuItem('System users', reverse('admin:system_users_systemuser_changelist')),
             items.MenuItem('System groups', reverse('admin:system_users_systemgroup_changelist')),
-            items.MenuItem('Modules', children = [
-                items.MenuItem('PHP', reverse('admin:php_phpdirective_changelist')),
-                items.MenuItem('Fcgid', reverse('admin:fcgid_fcgiddirective_changelist')),
-                ]),
         ]))
 
 if 'mail' in settings.INSTALLED_APPS:

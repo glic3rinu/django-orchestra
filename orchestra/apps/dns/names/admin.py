@@ -1,6 +1,7 @@
 from common.forms import get_initial_form, get_initial_formset
 from contacts.models import Contract, Contact
 from django import forms
+from django.conf import settings as django_settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -33,14 +34,16 @@ domain_link.allow_tags = True
 
 
 def zone_link(self):
-    zone = self.get_zone() 
+    zone = self.get_zone()
     if zone is None:
-        path = reverse('admin:dns_zone_add')
-        #TODO: contact link must be implemented on contacts app
-        path += '?contact_id=%s&origin=%s.%s' % (self.contact.pk, self.name, self.extension)
-        return '<a href="%s">Add Zone</a>' % (path)
+        path = reverse('admin:zones_zone_add') + '?'
+        #TODO: contact link should be implemented on contacts app
+        if 'contacts.service_support' in django_settings.INSTALLED_APPS:
+            path += 'contact_id=%s&' % (self.contact.pk,)
+        path += 'origin=%s.%s' % (self.name, self.extension)
+        return '<a href="%s">Add Zone</a>' % (path,)
     else:
-        path = reverse('admin:dns_zone_change', args=(zone.pk,))
+        path = reverse('admin:zones_zone_change', args=(zone.pk,))
         return '<a href="%s">%s</a>' % (path, zone.origin)
 zone_link.short_description = _("Zone link")
 zone_link.allow_tags = True
@@ -52,41 +55,42 @@ domain.short_description = _("Domain")
 domain.admin_order_field = 'name'
 
 
-class NameAdminForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(NameAdminForm, self).__init__(*args, **kwargs)
-        if 'initial' in kwargs:
-            # Add form
-            contact = Contact.objects.get(pk=kwargs['initial']['contact_id'])
-            self.fields['administrative_contact'].initial = contact.administrative.pk
-            self.fields['technical_contact'].initial = contact.technical.pk
-            self.fields['billing_contact'].initial = contact.billing.pk
-            self.contact = contact
-            
-        else:
-            try: self.contact = self.instance.contact
-            except Contract.DoesNotExist: return
+#class NameAdminForm(forms.ModelForm):
+#    def __init__(self, *args, **kwargs):
+#        super(NameAdminForm, self).__init__(*args, **kwargs)
+#        if 'initial' in kwargs:
+#            # Add form
+#            contact = Contact.objects.get(pk=kwargs['initial']['contact_id'])
+#            self.fields['administrative_contact'].initial = contact.administrative.pk
+#            self.fields['technical_contact'].initial = contact.technical.pk
+#            self.fields['billing_contact'].initial = contact.billing.pk
+#            self.contact = contact
+#            
+#        else:
+#            try: self.contact = self.instance.contact
+#            except Contract.DoesNotExist: return
 
-        qset = Q(Q(contact__pk=self.contact.pk)|
-            Q(billingcontact__contact__pk=self.contact.pk)|
-            Q(administrativecontact__contact__pk=self.contact.pk)|
-            Q(technicalcontact__contact__pk=self.contact.pk))
+#        qset = Q(Q(contact__pk=self.contact.pk)|
+#            Q(billingcontact__contact__pk=self.contact.pk)|
+#            Q(administrativecontact__contact__pk=self.contact.pk)|
+#            Q(technicalcontact__contact__pk=self.contact.pk))
 
-        self.fields['administrative_contact'].queryset = self.fields['administrative_contact'].queryset.filter(qset)
-        self.fields['technical_contact'].queryset = self.fields['technical_contact'].queryset.filter(qset)
-        self.fields['billing_contact'].queryset = self.fields['billing_contact'].queryset.filter(qset)
+#        self.fields['administrative_contact'].queryset = self.fields['administrative_contact'].queryset.filter(qset)
+#        self.fields['technical_contact'].queryset = self.fields['technical_contact'].queryset.filter(qset)
+#        self.fields['billing_contact'].queryset = self.fields['billing_contact'].queryset.filter(qset)
 
 
 class NameAdmin(admin.ModelAdmin):
     list_display = [domain, 'extension', zone_link, 'register_provider', ]
     list_filter = ['extension', 'register_provider']
     inlines = [NameServerInline,]
-    form = NameAdminForm
+    #form = NameAdminForm
     fieldsets = ((None, {'fields': (('name', 'extension',), 
                                     ('register_provider',),
-                                    ('administrative_contact',),
-                                    ('technical_contact',),
-                                    ('billing_contact',),)}),)
+                                    #('administrative_contact',),
+                                    #('technical_contact',),
+                                    #('billing_contact',),
+                                    )}),)
 
 
 

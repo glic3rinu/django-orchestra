@@ -2,7 +2,7 @@ from django.conf import settings
 
 ugettext = lambda s: s
 
-
+# Paths where daemon scripts are stored
 DAEMONS_TEMPLATE_PATHS = getattr(settings, 'DAEMONS_TEMPLATE_PATHS', ['/home/ucp/trunk/ucp/daemons/templates/scripts/',])
 
 

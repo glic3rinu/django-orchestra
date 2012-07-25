@@ -14,10 +14,10 @@ class Name(models.Model):
     extension = models.CharField(max_length=8, choices=settings.DNS_EXTENSIONS, default=settings.DNS_DEFAULT_EXTENSION)
     register_provider = models.CharField(max_length=255, blank=True,
         choices=settings.DNS_REGISTER_PROVIDER_CHOICES, default=settings.DNS_DEFAULT_REGISTER_PROVIDER)
-    # TODO: this contact FK approach is bullshit (dependencies are bad :()
-    administrative_contact = models.ForeignKey('contacts.BaseContact', related_name='administrative_name_set', null=True, blank=True)
-    technical_contact = models.ForeignKey('contacts.BaseContact', related_name='technical_name_set', null=True, blank=True) 
-    billing_contact = models.ForeignKey('contacts.BaseContact', related_name='billing_name_set', null=True, blank=True)
+    # TODO: this will be needed when support for domain registration is provided
+#    administrative_contact = models.ForeignKey('contacts.BaseContact', related_name='administrative_name_set', null=True, blank=True)
+#    technical_contact = models.ForeignKey('contacts.BaseContact', related_name='technical_name_set', null=True, blank=True) 
+#    billing_contact = models.ForeignKey('contacts.BaseContact', related_name='billing_name_set', null=True, blank=True)
 
     # TODO: create a virtual relation with zone in order to deprecate the signal approach of auto deletions.
 

@@ -60,8 +60,8 @@ class DeletionDate(models.Model):
         deletion.save()
         if not snapshot:
             schedule_deletion_task.apply_async(args=[deletion.pk,], 
-                                                   eta=date, 
-                                                   task_id="deletion.%s" % deletion.pk)
+                                               eta=date, 
+                                               task_id="deletion.%s" % deletion.pk)
         
     @classmethod
     def take_snapshot(cls, instances, related=False):

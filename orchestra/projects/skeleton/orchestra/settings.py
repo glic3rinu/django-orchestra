@@ -134,9 +134,6 @@ INSTALLED_APPS = (
     # Mandatory
     'common',
 
-    # System
-    'extra_fields',
-
     # Administration
     'contacts',
     'contacts.service_support',
@@ -145,12 +142,17 @@ INSTALLED_APPS = (
     'dns.zones',
     'dns.names',
     'mail',
-#    'lists',
+    'lists',
     'databases',
     'system_users',
     'web',
     'web.modules.fcgid', # depends on system_users application
     'web.modules.php',
+
+
+    # System
+    'extra_fields',
+    'scheduling',
 
 )
 
@@ -167,17 +169,35 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugFalse'
         }
     },
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+    'file':{
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'formatter': 'verbose',
+            'filename': '/var/log/orchestra.log',
+        },
     },
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
+            'propagate': True,
+        },
+        '': {
+            'handlers': ['file'],
             'propagate': True,
         },
     }

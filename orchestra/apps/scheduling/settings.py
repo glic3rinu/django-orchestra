@@ -2,11 +2,10 @@ from django.conf import settings
 
 ugettext = lambda s: s
 
-
 # Models that wants to keep contraced
 SCHEDULING_SCHEDULABLE_MODELS = getattr(settings, 'SCHEDULING_SCHEDULABLE_MODELS', (
     'django.contrib.auth.models.User',
-    'dns.models.Name', 'dns.models.Zone',
+    'dns.names.models.Name', 'dns.zones.models.Zone',
     'system_users.models.SystemGroup', 
     'web.models.VirtualHost',
     'mail.models.VirtualAliase',

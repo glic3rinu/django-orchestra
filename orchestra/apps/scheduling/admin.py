@@ -10,13 +10,15 @@ from django.contrib.admin.widgets import AdminSplitDateTime
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from scheduling.models import DeletionDate, DeactivationPeriod
+import logging
 import settings
-
 
 # TODO: The admin scheduling confirmation page needs some improvements in terms of display the correct effect of the schedule.
 #       It doesn't take into account the existing schedulings in order to exactly determinate what will happends
 #       with the new schedule, unfortunately this stuff is hard to implement, so for now it only takes into account the 
 #       the scheduling effect of the selected objects.
+
+logger = logging.getLogger(__name__)
 
 
 class ExecutedFilter(SimpleListFilter):
@@ -206,7 +208,9 @@ class ActiveFilter(SimpleListFilter):
 
 for module in settings.SCHEDULING_SCHEDULABLE_MODELS:
     try: model = _import(module)
-    except ImportError: continue
+    except ImportError: 
+        logger.error('Can not import %s' % module)
+        continue
     insert_list_display(model, cancel_date)
     insert_list_display(model, active)
     insert_list_display(model, deactivation_periods)

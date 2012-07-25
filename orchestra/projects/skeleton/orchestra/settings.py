@@ -139,12 +139,12 @@ INSTALLED_APPS = (
 
     # Administration
     'contacts',
-#    'contacts.service_support',
+    'contacts.service_support',
 
     # Services
     'dns.zones',
     'dns.names',
-#    'mail',
+    'mail',
 #    'lists',
     'databases',
     'system_users',

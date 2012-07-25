@@ -2,10 +2,10 @@ from django.conf import settings
 
 ugettext = lambda s: s
 
-# Provide Contract support
+# Provide Contract support to:
 CONTACTS_CONTRACTED_MODELS = getattr(settings, 'CONTACTS_CONTRACTED_MODELS', (
             'django.contrib.auth.models.User',
-            'dns.models.Name', 'dns.models.Zone',
+            'dns.names.models.Name', 'dns.zones.models.Zone',
             'system_users.models.SystemGroup', 
             'web.models.VirtualHost',
             'mail.models.VirtualAliase',

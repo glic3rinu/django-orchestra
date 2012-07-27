@@ -7,9 +7,9 @@ from datetime import datetime
 from django.db import models
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+import logging
 import settings
 from tasks import schedule_deletion_task, schedule_deactivation_task
-
 
 #TODO: this app is based on snapshot approach to make sure that we can retrieve the current state at some point on the future,
 #      It would be nice if this behaviour is integrated on the create method but at the same time it is hard to implement
@@ -20,6 +20,9 @@ from tasks import schedule_deletion_task, schedule_deactivation_task
 #
 #TODO  auto snapshot and manual snapshot on settings?
 #TODO  union of overlaping periods by default? 
+
+
+logger = logging.getLogger(__name__)
 
 
 class DeletionDateQuerySet(models.query.QuerySet):
@@ -59,10 +62,12 @@ class DeletionDate(models.Model):
                                       deletion_date=date, snapshot=snapshot)
         deletion.save()
         if not snapshot:
-            schedule_deletion_task.apply_async(args=[deletion.pk,], 
+            task_id = "deletion.%s" % deletion.pk
+            schedule_deletion_task.apply_async(args=[deletion.pk], 
                                                eta=date, 
-                                               task_id="deletion.%s" % deletion.pk)
-        
+                                               task_id=task_id)
+            logger.info('Deletion scheduling queued: args=[%d], eta=%s, task_id=%s' % (deletion.pk, date, task_id))
+
     @classmethod
     def take_snapshot(cls, instances, related=False):
         """ Create snapshot of the instances for future reference of their current state 
@@ -166,13 +171,17 @@ class DeactivationPeriod(models.Model):
         deactivation.save()
 
         if not snapshot:
+            task_id = "deactivation.%s" % deactivation.pk
             schedule_deactivation_task.apply_async(args=[deactivation.pk,], 
                                                    eta=start_date, 
-                                                   task_id="deactivation.%s" % deactivation.pk)
+                                                   task_id=task_id)
+            logger.info('Deactivation scheduling queued: args=[%d], eta=%s, task_id=%s' % (deactivation.pk, start_date, task_id))
             if end_date:
+                task_id = "reactivation.%s" % deactivation.pk
                 schedule_deactivation_task.apply_async(args=[deactivation.pk,], 
                                                        eta=end_date, 
-                                                       task_id="reactivation.%s" % deactivation.pk)
+                                                       task_id=task_id)
+                logger.info('Reactivation scheduling queued: args=[%d], eta=%s, task_id=%s' % (deactivation.pk, end_date, task_id))
 
     @classmethod
     def take_snapshot(cls, instances):
@@ -273,7 +282,9 @@ def active(self):
 
 for module in settings.SCHEDULING_SCHEDULABLE_MODELS:
     try: model = _import(module)
-    except ImportError: continue
+    except ImportError:
+        logger.error('Can not import %s' % module)
+        continue
     model.cancel_date = cancel_date
     model.deactivation_periods = deactivation_periods
     model.set_cancel_date = set_cancel_date

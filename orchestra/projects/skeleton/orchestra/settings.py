@@ -12,11 +12,11 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'orchestra',                      # Or path to database file if using sqlite3.
-        'USER': 'orchestra',                      # Not used with sqlite3.
-        'PASSWORD': 'orchestra',                  # Not used with sqlite3.
-        'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'NAME': 'orchestra',     # Or path to database file if using sqlite3.
+        'USER': 'orchestra',     # Not used with sqlite3.
+        'PASSWORD': 'orchestra', # Not used with sqlite3.
+        'HOST': 'localhost',     # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',              # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -124,13 +124,15 @@ INSTALLED_APPS = (
     'admin_tools.menu',
     'admin_tools.dashboard',
 
+    'djcelery',
+
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    
+
     # Mandatory
     'common',
 
@@ -151,8 +153,8 @@ INSTALLED_APPS = (
 
 
     # System
-    'extra_fields',
-    'scheduling',
+#    'extra_fields',
+    'scheduling', # depends on celery
 
 )
 
@@ -183,7 +185,7 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         },
-    'file':{
+        'file':{
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'verbose',
@@ -198,6 +200,7 @@ LOGGING = {
         },
         '': {
             'handlers': ['file'],
+            'level': 'INFO',
             'propagate': True,
         },
     }
@@ -268,6 +271,22 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'extra_fields/extrafield': "extrafield.png",
     'aps/apsinstance': "apsinstance.png",
 }
+
+
+## django-celery
+import djcelery
+djcelery.setup_loader()
+# Broker
+BROKER_HOST = "localhost"
+BROKER_PORT = 5672
+BROKER_USER = "guest"
+BROKER_PASSWORD = "guest"
+BROKER_VHOST = "/"
+CELERY_SEND_EVENTS = True
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERY_DISABLE_RATE_LIMITS = True
+## end
+
 
 
 from custom_settings import *

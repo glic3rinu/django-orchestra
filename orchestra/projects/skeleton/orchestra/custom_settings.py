@@ -5,7 +5,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-SERVER_EMAIL = "marcay@pangea.org"
+SERVER_EMAIL = "orchestra@pangea.org"
 EMAIL_SUBJECT_PREFIX = "[ORCHESTRA] "
 
 # E-mail settings
@@ -57,7 +57,10 @@ WEB_PHPVERSION_CHOICES = ((None, 'Disabled'),
 
 
 # System_users
-SYSTEM_USERS_DEFAULT_BASE_HOMEDIR = '/home/pangea'
+SYSTEM_USERS_DEFAULT_BASE_HOMEDIR = '/home/pangea/'
+
+# Mail
+MAIL_DEFAULT_BASE_MAILDIR = '/home/pangea/'
 
 # Billing 
 BILLING_INVOICE_ID_PREFIX = 'F'

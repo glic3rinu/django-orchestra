@@ -36,12 +36,15 @@ class ChangeSystemUserInlineForm(forms.ModelForm):
 
 
 class AddSystemUserInlineForm(ChangeSystemUserInlineForm):
+    enable = forms.BooleanField(label=_("Enable"))
+    
     class Meta:
+        fields = ('enable', 'primary_group', 'homedir')
         exclude = ('uid', 'shell')
 
 
 #TODO: , ServiceAdminStackedInline
-class SystemUserTabularInline(admin.StackedInline, AddOrChangeInlineFormMixin):
+class SystemUserTabularInline(admin.TabularInline, AddOrChangeInlineFormMixin):
     model = SystemUser
     max_num = 0
     add_form = AddSystemUserInlineForm

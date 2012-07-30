@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
+import settings
 
 MAIL_DOMAIN_TYPES = (
     ('canonical', _('Canonical domain')),
@@ -23,7 +23,7 @@ class VirtualUser(models.Model):
     user = models.OneToOneField(User, primary_key=True, unique=True)
     emailname = models.CharField(max_length=23)
     domain = models.ForeignKey(VirtualDomain)
-    home = models.CharField(max_length=255, unique=True, blank=True)
+    home = models.CharField(max_length=255, unique=True, blank=True, default=settings.MAIL_DEFAULT_BASE_MAILDIR)
     
     class Meta:
         unique_together = ("emailname", "domain")

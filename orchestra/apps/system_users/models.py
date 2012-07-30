@@ -16,11 +16,8 @@ class SystemUser(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.uid:
-            last = SystemUser.objects.all().order_by('-uid')[0].uid
-            if not last:
-                self.uid = settings.SYSTEM_USERS_START_UID
-            else:
-                self.uid = last + 1
+            try: self.uid = SystemUser.objects.all().order_by('-uid')[0].uid + 1
+            except IndexError: self.uid = settings.SYSTEM_USERS_START_UID
         super(SystemUser, self).save(*args, **kwargs)       
 
     @property

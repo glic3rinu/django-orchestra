@@ -79,7 +79,7 @@ class AddVirtualUserInlineForm(ChangeVirtualUserInlineForm):
 
 
 #TODO: this doesn't work with contactsupportmixin
-class VirtualUserTabularInline(admin.StackedInline, AddOrChangeInlineFormMixin):
+class VirtualUserTabularInline(admin.TabularInline, AddOrChangeInlineFormMixin):
     model = VirtualUser
     add_form = AddVirtualUserInlineForm
     change_form = ChangeVirtualUserInlineForm

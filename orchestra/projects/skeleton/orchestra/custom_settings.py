@@ -43,7 +43,6 @@ CONTACTS_LANGUAGE_CHOICES = (('ca', 'Catalan'),
                              ('es', 'Spanish'),
                              ('en', 'English'),)
 
-
 # Web
 WEB_DEFAULT_VIRTUAL_HOST_CUSTOM_DIRECTIVES = '\
 Alias /webalizer /home/httpd/webalizer/{{ self.unique_ident }}\n\
@@ -54,7 +53,6 @@ WEB_PHPVERSION_CHOICES = ((None, 'Disabled'),
                           ('5.3', 'PHP5.3'),
                           ('5.2', 'PHP5.2'),
                           ('4', 'PHP4'),)
-
 
 # System_users
 SYSTEM_USERS_DEFAULT_BASE_HOMEDIR = '/home/pangea/'

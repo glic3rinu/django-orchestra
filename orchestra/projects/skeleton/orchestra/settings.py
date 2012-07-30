@@ -208,7 +208,7 @@ LOGGING = {
 
 # Admin Tools
 ADMIN_TOOLS_MENU = 'orchestra.menu.CustomMenu'
-ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'dashboard.CustomAppIndexDashboard'
+ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'fluent_dashboard.dashboard.FluentAppIndexDashboard'
 ADMIN_TOOLS_INDEX_DASHBOARD = 'fluent_dashboard.dashboard.FluentIndexDashboard'
 FLUENT_DASHBOARD_ICON_THEME = '../orchestra/icons'
 

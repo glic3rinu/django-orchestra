@@ -11,6 +11,6 @@ SCHEDULING_SCHEDULABLE_MODELS = getattr(settings, 'SCHEDULING_SCHEDULABLE_MODELS
     'mail.models.VirtualAliase',
     'lists.models.List',
     'vps.models.VPS',
-    'jobs.models.Job',
+    'tasks.models.Task',
     'databases.models.Database', 'databases.models.DBUser',
 ))

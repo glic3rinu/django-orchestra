@@ -1,6 +1,5 @@
 from celery.task import task
 import logging
-
 logger = logging.getLogger(__name__)
 
 #TODO: before doing things make sure that the deletion/deactivation is still active

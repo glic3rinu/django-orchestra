@@ -1,7 +1,7 @@
 import tarfile 
 import cStringIO as StringIO
 import time 
-import ho.pisa as pisa
+import xhtml2pdf.pisa as pisa
 import os, cgi
 
 

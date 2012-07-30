@@ -150,12 +150,12 @@ INSTALLED_APPS = (
     'web',
     'web.modules.fcgid', # depends on system_users application
     'web.modules.php',
-    'tasks',
+    'human_tasks',
 
     # System
 #    'extra_fields',
     'scheduling', # depends on celery
-
+    'resources', # depends on xhtml2pdf
 )
 
 # A sample logging configuration. The only tangible logging
@@ -220,7 +220,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'mail.*VirtualUser',
             'lists.*List',
             'vps.*VPS',
-            'tasks.*Task',
+            'human_tasks.*HumanTask',
             'databases.*Database',
             'aps.*APSInstance',
         ),
@@ -258,7 +258,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'mail/virtualuser': "virtualuser.png",
     'lists/list': "list.png",
     'vps/vps': "vps.png",
-    'tasks/task': "task.png",
+    'human_tasks/humantask': "humantask.png",
     'databases/database': "database.png",
     'contacts/contact': "contact.png",
     'ordering/order': "order.png",

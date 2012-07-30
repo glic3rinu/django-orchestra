@@ -1,4 +1,19 @@
 
+ADMINS = (
+    ('Marc Aymerich', 'marcay@pangea.org'),
+)
+
+MANAGERS = ADMINS
+
+SERVER_EMAIL = "marcay@pangea.org"
+EMAIL_SUBJECT_PREFIX = "[ORCHESTRA] "
+
+# E-mail settings
+EMAIL_HOST='mail.pangea.org'
+EMAIL_PORT=2525
+EMAIL_HOST_USER='ucp'
+EMAIL_HOST_PASSWORD='cpM41lp4'
+
 # DNS
 DNS_DEFAULT_PRIMARY_NS = 'ns1.pangea.org'
 DNS_DEFAULT_HOSTMASTER_EMAIL = 'suport.pangea.org'

@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 #TODO: scheduling failure: how to proced? and UUID of retryed tasks
 @task(name="schedule_deletion")
 def schedule_deletion_task(deletion_pk):
+    raise 'hola'
     from models import DeletionDate
     deletion = DeletionDate.objects.get(pk=deletion_pk)
     instance = deletion.content_object

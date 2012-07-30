@@ -285,8 +285,9 @@ BROKER_VHOST = "/"
 CELERY_SEND_EVENTS = True
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERY_DISABLE_RATE_LIMITS = True
-# Use orchestra logging system instead of celery built-in
+# Use orchestra logging system instead of celer
 CELERYD_HIJACK_ROOT_LOGGER = False
+CELERY_SEND_TASK_ERROR_EMAILS = True
 ## end
 
 

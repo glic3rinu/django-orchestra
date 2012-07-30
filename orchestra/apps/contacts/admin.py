@@ -55,7 +55,7 @@ cancel_date.admin_order_field = 'cancel_date'
 
 
 def active(self):
-
+    #TODO: take deactivation into acount
     return not self.cancel_date or self.cancel_date > datetime.now()
 active.short_description = _("Active")
 active.boolean = True

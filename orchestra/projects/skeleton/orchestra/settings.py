@@ -150,7 +150,7 @@ INSTALLED_APPS = (
     'web',
     'web.modules.fcgid', # depends on system_users application
     'web.modules.php',
-
+    'tasks',
 
     # System
 #    'extra_fields',

@@ -1,14 +1,14 @@
 from django.contrib import admin
-from models import Task, Category
+from models import HumanTask, Category
 
 
-class TaskAdmin(admin.ModelAdmin):
+class HumanTaskAdmin(admin.ModelAdmin):
     list_display = ('category', 'description', 'time',)
 
 
 class CategoryAdmin(admin.ModelAdmin): pass
 
 
-admin.site.register(Task, TaskAdmin)
+admin.site.register(HumanTask, HumanTaskAdmin)
 admin.site.register(Category, CategoryAdmin)
 

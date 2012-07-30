@@ -51,11 +51,11 @@ if 'lists' in settings.INSTALLED_APPS:
 if 'vps' in settings.INSTALLED_APPS:
     service_childrens.append(items.MenuItem('VPS', reverse('admin:vps_vps_changelist')),)
 
-if 'tasks' in settings.INSTALLED_APPS:
-    service_childrens.append(items.MenuItem('Tasks', '/admin/tasks/',
+if 'human_tasks' in settings.INSTALLED_APPS:
+    service_childrens.append(items.MenuItem('Human Tasks', '/admin/human_tasks/',
         children=[
-            items.MenuItem('Tasks', reverse('admin:tasks_task_changelist')),                    
-            items.MenuItem('Categories', reverse('admin:tasks_category_changelist')),
+            items.MenuItem('Human Tasks', reverse('admin:human_tasks_humantask_changelist')),                    
+            items.MenuItem('Categories', reverse('admin:human_tasks_category_changelist')),
         ]))  
 
 if 'databases' in settings.INSTALLED_APPS:

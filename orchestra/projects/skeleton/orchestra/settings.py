@@ -155,7 +155,7 @@ INSTALLED_APPS = (
     # System
 #    'extra_fields',
     'scheduling', # depends on celery
-    'resources', # depends on xhtml2pdf
+#    'resources', # depends on xhtml2pdf
 )
 
 # A sample logging configuration. The only tangible logging

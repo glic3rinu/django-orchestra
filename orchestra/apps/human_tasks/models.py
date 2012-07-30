@@ -9,7 +9,7 @@ class Category(models.Model):
         return self.name
 
 
-class Task(models.Model):
+class HumanTask(models.Model):
     category = models.ForeignKey(Category)
     description = models.CharField(max_length=256, blank=True)
     time = models.IntegerField(_('time in hours'))

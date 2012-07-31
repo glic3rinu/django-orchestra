@@ -182,6 +182,7 @@ class Contract(models.Model):
     register_date = models.DateTimeField(auto_now_add=True)
     cancel_date = models.DateTimeField(null=True, blank=True)
     content_object = generic.GenericForeignKey()
+
     objects = generate_chainer_manager(ContractQuerySet)
 
     class Meta:

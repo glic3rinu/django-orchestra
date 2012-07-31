@@ -95,17 +95,16 @@ def insert_action(model, action):
     else: model_admin.actions.append(action)
 
 
-def insert_generic_plugin_inlines(grouped_objects, _model, make_inline_form, save_objects):
+def insert_dynamic_inline(grouped_objects, _model, inline_form_factory, save_objects):
     """ 
-        Creates an inline form for the resources. Inlines is used insted of other 
-        kind because of modularity, bit tricky but I don't know hot to make it simple :(
+        Creates and insert an admin inline form based on the input
     """
     for content_type, objects in grouped_objects:
         #TODO: do it with GenericTabularInline
         model = content_type.model_class()
         name = str(model) + "Form"
         
-        Form = make_inline_form(name, objects, model)
+        Form = inline_form_factory(name, objects, model)
         Formset = generic.generic_inlineformset_factory(_model, form=Form, max_num=1, can_order=False)
        
         def save_new(self, form, commit=True):
@@ -126,12 +125,13 @@ def insert_generic_plugin_inlines(grouped_objects, _model, make_inline_form, sav
             formset = Formset
             can_delete = False
             max_num = 1
-            #Give a unique identification in order to future replacement/deletion
+            #Give a predictable unique identification in order to future replacement/deletion
             inline_identify = "%s:%s" % (content_type, model._meta.module_name)
 
         delete_inline(content_type.model_class(), "%s:%s" % (content_type, model._meta.module_name))
         insert_inline(model, GenericPluginInline)
 
 
-def delete_generic_plugin_inlines(content_type, model):
+def delete_dynamic_inline(content_type, model):
     delete_inline(content_type.model_class(), "%s:%s" % (content_type, model._meta.module_name))
+    

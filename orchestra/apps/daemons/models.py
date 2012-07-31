@@ -1,7 +1,7 @@
 from common.collector import DependencyCollector
 from common.utils.file import list_files
 from common.utils.models import generate_chainer_manager
-from django.db import models
+from django.db import models, router
 from django.db.models.signals import post_save
 from django.db.models.deletion import Collector
 from django.dispatch import receiver
@@ -113,7 +113,7 @@ def execution_handler(sender, **kwargs):
     # If bulk support do it with bulk
     if action == admin.models.DELETION:
         dependencies.pop(obj)
-        collector = Collector()
+        collector = Collector(using=router.db_for_write(obj.__class__))
         collector.collect([obj])
         Daemon.exec_delete(obj)
     for dependency in dependencies.keys():

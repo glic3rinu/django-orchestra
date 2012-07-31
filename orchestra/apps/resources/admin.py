@@ -1,10 +1,14 @@
-from common.utils.admin import insert_generic_plugin_inlines, delete_generic_plugin_inlines, UsedContentTypeFilter
+from common.actions import delete_selected
+from common.utils.admin import insert_dynamic_inline, delete_dynamic_inline, UsedContentTypeFilter
 from common.utils.models import group_by
 from common.widgets import ShowText
 from datetime import datetime
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext as _
 from resources.models import Monitoring, Monitor
@@ -22,7 +26,7 @@ class MonitorAdmin(admin.ModelAdmin):
                     'default_initial', 'block_size', 'algorithm', 'period', 'crontab', 'active')
     list_filter = ('active', 'allow_limit', 'allow_unlimit', 'resource', 'algorithm', 'period')
     list_editable = ('allow_limit', 'allow_unlimit', 'default_initial', 'block_size', 'algorithm', 'period',) 
-    actions = ['disable_selected', 'enable_selected',]
+    actions = ['disable_selected', 'enable_selected']
     fieldsets = ((None,        {'fields': (('daemon'),
                                            ('resource'),),
                  }),
@@ -38,15 +42,21 @@ class MonitorAdmin(admin.ModelAdmin):
                                            ('crontab',),),
                  }),)
 
+    def get_actions(self, request):
+        actions = super(MonitorAdmin, self).get_actions(request)
+        description = getattr(delete_selected, 'short_description', 'delete selected')
+        actions['delete_selected'] = (delete_selected, 'delete_selected', description)
+        return actions
+
     @transaction.commit_on_success
     def disable_selected(modeladmin, request, queryset):
         for monitor in queryset:
             monitor.disable()
             if monitor.has_partners:
                 grouped = Monitor.get_grouped()
-                insert_generic_plugin_inlines(grouped, Monitoring, make_limit_form, save_monitors)
+                insert_dynamic_inline(grouped, Monitoring, limit_form_factory, save_monitors)
             else:
-                delete_generic_plugin_inlines(monitor.daemon.content_type, Monitoring)
+                delete_dynamic_inline(monitor.daemon.content_type, Monitoring)
         messages.add_message(request, messages.INFO, _("All Selected monitors has been disabled"))
         return
 
@@ -54,32 +64,43 @@ class MonitorAdmin(admin.ModelAdmin):
     def enable_selected(modeladmin, request, queryset):
         for monitor in queryset:
             monitor.enable()
-            insert_generic_plugin_inlines(Monitor.get_grouped(), Monitoring, make_limit_form, save_monitors)
+            insert_dynamic_inline(Monitor.get_grouped(), Monitoring, limit_form_factory, save_monitors)
         messages.add_message(request, messages.INFO, _("All Selected monitors has been enabled"))
         return        
 
     def initialize(self, *args, **kwargs): pass
 
-    def save_model(self, request, obj, form, change):
-        #FIXME: insert new inline in an existing inline breaks.
-        super(MonitorAdmin, self).save_model(request, obj, form, change)
-        insert_generic_plugin_inlines(Monitor.get_grouped(), Monitoring, make_limit_form, save_monitors)
+#    def save_model(self, request, obj, form, change):
+#        #FIXME: insert new inline in an existing inline breaks.
+#        super(MonitorAdmin, self).save_model(request, obj, form, change)
+#        insert_dynamic_inline(Monitor.get_grouped(), Monitoring, limit_form_factory, save_monitors)
 
-    def delete_model(self, request, obj):
-        #TODO: make bulk delete compatible with this shit. 
-        super(MonitorAdmin, self).delete_model(request, obj)
-        if obj.has_partners:
-            grouped = Monitor.get_grouped()
-            insert_generic_plugin_inlines(grouped, Monitoring, make_limit_form, save_monitors)
-        else:
-            delete_generic_plugin_inlines(obj.daemon.content_type, Monitoring)
+
+#    def delete_model(self, request, obj):
+#        #TODO: make bulk delete compatible with this shit. 
+#        super(MonitorAdmin, self).delete_model(request, obj)
+#        if obj.has_partners:
+#            grouped = Monitor.get_grouped()
+#            insert_dynamic_inline(grouped, Monitoring, limit_form_factory, save_monitors)
+#        else:
+#            delete_dynamic_inline(obj.daemon.content_type, Monitoring)
+
+
+@receiver(post_save, sender=Monitor, dispatch_uid="resources.maintain_dynamic_forms")
+@receiver(post_delete, sender=Monitor, dispatch_uid="resources.maintain_dynamic_forms")
+def maintain_dynamic_forms(sender, **kwargs):
+    obj = kwargs['instance']
+    if obj.has_partners:
+        insert_dynamic_inline(Monitor.get_grouped(), Monitoring, limit_form_factory, save_monitors)
+    else:
+        delete_dynamic_inline(obj.daemon.content_type, Monitoring)
 
 
 admin.site.register(Monitoring, MonitoringAdmin)
 admin.site.register(Monitor, MonitorAdmin)
 
 
-def make_limit_form(name, monitors, _model):
+def limit_form_factory(name, monitors, _model):
     """ return an ModelForm class based on _model and with their monitors limit fields """
     
     dct = {}
@@ -114,7 +135,7 @@ def make_limit_form(name, monitors, _model):
                                     widget = ShowText(warning=True),
                                     initial="Sorry but this form field will not be rendered util you save this object")
                                     
-    def __init__(self, *args, **kwargs): 
+    def __init__(self, *args, **kwargs):
         forms.ModelForm.__init__(self, *args, **kwargs) 
         obj = self.instance.content_object
         g_monitors = group_by(monitors.__class__, 'resource', monitors, dictionary=True, queryset=False)
@@ -174,4 +195,4 @@ def save_monitors(self, monitors, form):
     except: return self.instance
 
 
-insert_generic_plugin_inlines(Monitor.get_grouped(), Monitoring, make_limit_form, save_monitors)
+insert_dynamic_inline(Monitor.get_grouped(), Monitoring, limit_form_factory, save_monitors)

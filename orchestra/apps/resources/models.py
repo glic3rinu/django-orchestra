@@ -19,8 +19,10 @@ class MonitorQuerySet(models.query.QuerySet):
     """Manager for Version models."""
     def by_object(self, obj, **kwargs):
         ct = ContentType.objects.get_for_model(obj)
-        return self.filter(**kwargs).get(content_type=ct)
-
+        return self.filter(daemon__content_type=ct, **kwargs)
+        
+    def active(self, **kwargs):
+        return self.filter(active=True, **kwargs)
 
 class Monitor(models.Model):
     daemon = models.ForeignKey(Daemon, help_text=_('Used for find the object: content_type + Host + expression'))
@@ -69,8 +71,9 @@ class Monitor(models.Model):
             
     def delete(self, *args, **kwargs):
         # Delete Celery related periodic task
-        PeriodicTask.objects.get(name=str(self), task='Monitoring', args=[self.pk]).delete()
-        super(Monitor, self).save(*args, **kwargs)
+        try: PeriodicTask.objects.get(name=str(self), task='Monitoring', args=[self.pk]).delete()
+        except PeriodicTask.DoesNotExist: pass
+        super(Monitor, self).delete(*args, **kwargs)
 
     @property
     def content_type(self):
@@ -99,7 +102,7 @@ class Monitor(models.Model):
     @classmethod
     def get_grouped(cls):
         #TODO: convert to Manager
-        monitors = cls.objects.filter(active=True).order_by('daemon__content_type')
+        monitors = cls.objects.active().order_by('daemon__content_type')
         #return group_by_content_type(monitors)
         return group_by(cls, 'daemon__content_type', monitors, queryset=False)
  

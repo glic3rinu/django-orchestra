@@ -1,4 +1,4 @@
-from common.utils.admin import insert_generic_plugin_inlines, delete_generic_plugin_inlines, UsedContentTypeFilter
+from common.utils.admin import insert_dynamic_inline, delete_dynamic_inline, UsedContentTypeFilter
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
@@ -14,16 +14,16 @@ class ExtraFieldAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super(ExtraFieldAdmin, self).save_model(request, obj, form, change)
         related = ExtraField.objects.filter(content_type=obj.content_type)
-        insert_generic_plugin_inlines([[obj.content_type, related]], ExtraValue, make_extravalue_form, save_extravalue)        
+        insert_dynamic_inline([[obj.content_type, related]], ExtraValue, make_extravalue_form, save_extravalue)        
         
 
     def delete_model(self, request, obj):
         super(ExtraFieldAdmin, self).delete_model(request, obj)        
         grouped = ExtraField.get_grouped()
         if grouped:
-            insert_generic_plugin_inlines(grouped, ExtraField, make_extravalue_form, save_extravalue)
+            insert_dynamic_inline(grouped, ExtraField, make_extravalue_form, save_extravalue)
         else:
-            delete_generic_plugin_inlines(obj.content_type, ExtraValue)
+            delete_dynamic_inline(obj.content_type, ExtraValue)
 
 
 class ExtraValueAdmin(admin.ModelAdmin):
@@ -37,7 +37,7 @@ admin.site.register(ExtraValue, ExtraValueAdmin)
 #TODO: override form.has_changed in order to save default initial values
 #TODO: Create generic plugin insertion on common.admin.py BasePlugin. For resources and extravalues.
 
-def make_extravalue_form(name, extra_fields, _model):
+def extravalue_form_factory(name, extra_fields, _model):
     """ return an ModelForm class based on _model and with their monitors limit fields """
     
     dct = {}
@@ -85,4 +85,4 @@ def save_extravalue(self, extra_fields, form):
     return extravalue
 
 
-insert_generic_plugin_inlines(ExtraField.get_grouped(), ExtraValue, make_extravalue_form, save_extravalue)
+insert_dynamic_inline(ExtraField.get_grouped(), ExtraValue, extravalue_form_factory, save_extravalue)

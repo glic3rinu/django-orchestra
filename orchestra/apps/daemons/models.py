@@ -41,7 +41,7 @@ class DaemonInstance(models.Model):
     expression = models.CharField(max_length=255)
 
     def __unicode__(self):
-        return self.host.name
+        return "%s on %s" % (self.daemon.name, self.host.name)
 
     def match(self, O):
         return eval(self.expression)        

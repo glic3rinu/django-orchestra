@@ -22,8 +22,9 @@ class DaemonForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(DaemonForm, self).__init__(*args, **kwargs)
-        self.fields['save_template'].choices = [('', '---------')] + list_files(settings.DAEMONS_TEMPLATE_PATHS)
-        self.fields['delete_template'].choices = self.fields['save_template'].choices
+        template_choices = [('', '---------')] + list_files(settings.DAEMONS_TEMPLATE_PATHS)
+        self.fields['save_template'].choices = template_choices
+        self.fields['delete_template'].choices = template_choices
         
 class DaemonAdmin(admin.ModelAdmin):
     list_display = ('name', 'content_type', 'save_template', 'save_method', 'delete_template', 'delete_method', 'active')

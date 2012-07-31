@@ -35,7 +35,7 @@ RESOURCES_PERIOD_CHOICES = getattr(settings, 'RESOURCES_PERIOD_CHOICES', (('', u
                                                      ))
 
 
-RESOURCES_TEMPLATE_PATHS = getattr(settings, 'RESOURCES_TEMPLATE_PATHS', ['/home/orchestra/panel/templates/scripts/',])
+RESOURCES_TEMPLATE_PATHS = getattr(settings, 'RESOURCES_TEMPLATE_PATHS', ['/home/orchestra/orchestra/scripts/',])
 
 
 

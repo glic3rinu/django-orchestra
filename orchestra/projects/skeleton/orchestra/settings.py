@@ -161,7 +161,7 @@ INSTALLED_APPS = (
     'daemons.methods.ssh',  # depends on python-paramiko
     'daemons.methods.local',
     'daemons.methods.python',
-#    'resources',           # depends on daemons and xhtml2pdf
+    'resources',           # depends on daemons and xhtml2pdf
 )
 
 # A sample logging configuration. The only tangible logging

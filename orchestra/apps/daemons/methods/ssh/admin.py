@@ -15,7 +15,7 @@ class SHHOptionAdminForm(forms.ModelForm):
 #            if not cleaned_data.get("user"):
 #                self._errors["user"] = self.error_class([msg])
 #            if not cleaned_data.get("host_keys"):
-#                self._errors["host_keys"] = self.error_class([msg])            
+#                self._errors["host_keys"] = self.error_class([msg])
 #            if not cleaned_data.get("port"):
 #                self._errors["port"] = self.error_class([msg])
 

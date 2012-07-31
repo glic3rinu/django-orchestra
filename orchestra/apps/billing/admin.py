@@ -183,7 +183,7 @@ class ManageBillLineAdmin(admin.ModelAdmin):
         """ Disable add link when bill is close"""
         bill = self.get_bill(request)
         if bill.status == settings.OPEN:
-            if bill.__class__ == Bill and bill.subclass_instance.__class__ in (Invoice, Fee):
+            if isinstance(bill, Bill) and isinstance(bill.subclass_instance, (Invoice, Fee)):
                 return super(ManageBillLineAdmin, self).has_add_permission(request)
         return False
                                        

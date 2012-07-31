@@ -69,7 +69,7 @@ def get_depends_on(obj):
     # FK
     for field in obj._meta.fields:
         _result = []
-        if field.__class__ is django.db.models.fields.related.ForeignKey or field.__class__ is django.db.models.fields.related.OneToOneField:
+        if isinstance(field, (django.db.models.fields.related.ForeignKey, django.db.models.fields.related.OneToOneField)):
             if not field.null:
                 rel = getattr(obj, field.name)
                 _result.append(rel)

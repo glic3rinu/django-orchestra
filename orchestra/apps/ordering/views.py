@@ -57,7 +57,7 @@ def billing_options_view(modeladmin, request, queryset):
 def select_dependencies_view(modeladmin, request, queryset, not_selected_dependencies={}, 
                              bill_point=None, fixed_point=None, force_next=None, create_new_open=None):
 
-    if not_selected_dependencies.__class__ == dict:
+    if isinstance(not_selected_dependencies, dict):
         pks = [ order.pk for order in not_selected_dependencies ]
         qset = Order.objects.filter(pk__in=pks)
     else: qset = not_selected_dependencies

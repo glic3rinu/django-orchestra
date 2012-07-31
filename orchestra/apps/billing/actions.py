@@ -46,7 +46,7 @@ def move_lines(modeladmin, request, queryset, extra_context=None):
     request.GET=QueryDict('')
     bill_id = request.META['PATH_INFO'].split('/manage_lines')[0].split('/')[-1]
     bill = bill_cls.objects.get(pk=bill_id)
-    if bill.__class__ is Budget:
+    if isinstance(bill, Budget):
         bill_cls_lower = 'budget'
     else:
         bill_cls_lower = bill.subclass_instance.__class__.__name__.lower()

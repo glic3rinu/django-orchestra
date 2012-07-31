@@ -8,7 +8,7 @@ import settings
 
 
 def get_bill_change_link(bill, extra_name=''):
-    if bill.__class__ is Bill:
+    if isinstance(bill, Bill):
         bill_cls = bill.subclass_instance.__class__
     else: bill_cls = bill.__class__        
     url = reverse('admin:billing_%s_change' % (bill_cls.__name__.lower()), args=(bill.id,))
@@ -67,7 +67,6 @@ def get_bill_form(cls):
         
         
         def __init__(self, *args, **kwargs):
-            print self.__class__.__bases__
             super(BillForm,self).__init__(*args, **kwargs)
             if 'instance' in kwargs:
                 instance = kwargs['instance']

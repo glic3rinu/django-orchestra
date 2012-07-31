@@ -56,7 +56,7 @@ class Daemon(models.Model):
     content_type = models.ForeignKey(ContentType)
     save_method = PluginField(DaemonMethod, null=True, blank=True, related_name='daemon_save_method')
 #    save_signal = models.CharField(max_length=255, choices=settings.DAEMONS_SAVE_SIGNALS, default=settings.DEFAULT_SAVE_SIGNAL)
-    save_template = models.CharField(max_length=256, choices=list_files(settings.DAEMONS_TEMPLATE_PATHS), blank=True)
+    save_template = models.CharField(max_length=256, blank=True)
     delete_method = PluginField(DaemonMethod, null=True, blank=True, related_name='daemon_delete_method')
 #    delete_signal = models.CharField(max_length=255, choices=settings.DELETE_SIGNALS, default=settings.DEFAULT_DELETE_SIGNAL)
     delete_template = models.CharField(max_length=256, choices=list_files(settings.DAEMONS_TEMPLATE_PATHS), blank=True)

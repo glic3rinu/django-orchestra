@@ -60,6 +60,9 @@ SYSTEM_USERS_DEFAULT_BASE_HOMEDIR = '/home/pangea/'
 # Mail
 MAIL_DEFAULT_BASE_MAILDIR = '/home/pangea/'
 
+# Daemons
+DAEMONS_TEMPLATE_PATHS = ['/home/orchestra/orchestra/scripts']
+
 # Billing 
 BILLING_INVOICE_ID_PREFIX = 'F'
 BILLING_AMENDMENTINVOICE_ID_PREFIX = 'RF'

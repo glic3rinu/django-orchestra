@@ -1,12 +1,12 @@
 from common.collector import DependencyCollector
-from common.utils.file import list_file
+from common.utils.file import list_files
 from common.utils.models import generate_chainer_manager
 from django.db import models
 from django.db.models.signals import post_save
 from django.db.models.deletion import Collector
 from django.dispatch import receiver
 from django.contrib import admin
-from django.contrib.contenttypes.models import ContentTyp
+from django.contrib.contenttypes.models import ContentType
 from django.core.signals import request_started, request_finished
 from django.utils.translation import ugettext as _
 from django_transaction_signals import defer
@@ -19,7 +19,7 @@ from tasks import execute
 class Host(models.Model):
     ip = models.GenericIPAddressField()
     name = models.CharField(max_length=32, unique=True)
-    os = models.CharField("OS", max_length=16, choices=settings.OS_CHOICES, default=settings.DEFAULT_OS_CHOICE)
+    os = models.CharField("OS", max_length=16, choices=settings.DAEMONS_OS_CHOICES, default=settings.DAEMONS_DEFAULT_OS_CHOICE)
 
     def __unicode__(self):
         return self.name
@@ -55,11 +55,11 @@ class Daemon(models.Model):
     name = models.CharField(max_length=64)
     content_type = models.ForeignKey(ContentType)
     save_method = PluginField(DaemonMethod, null=True, blank=True, related_name='daemon_save_method')
-    save_signal = models.CharField(max_length=255, choices=settings.SAVE_SIGNALS, default=settings.DEFAULT_SAVE_SIGNAL)
-    save_template = models.CharField(max_length=256, choices=list_files(settings.TEMPLATE_PATHS), blank=True)
+#    save_signal = models.CharField(max_length=255, choices=settings.DAEMONS_SAVE_SIGNALS, default=settings.DEFAULT_SAVE_SIGNAL)
+    save_template = models.CharField(max_length=256, choices=list_files(settings.DAEMONS_TEMPLATE_PATHS), blank=True)
     delete_method = PluginField(DaemonMethod, null=True, blank=True, related_name='daemon_delete_method')
-    delete_signal = models.CharField(max_length=255, choices=settings.DELETE_SIGNALS, default=settings.DEFAULT_DELETE_SIGNAL)
-    delete_template = models.CharField(max_length=256, choices=list_files(settings.TEMPLATE_PATHS), blank=True)
+#    delete_signal = models.CharField(max_length=255, choices=settings.DELETE_SIGNALS, default=settings.DEFAULT_DELETE_SIGNAL)
+    delete_template = models.CharField(max_length=256, choices=list_files(settings.DAEMONS_TEMPLATE_PATHS), blank=True)
     active = models.BooleanField(default=True)
     
     hosts = models.ManyToManyField(Host, through='DaemonInstance')

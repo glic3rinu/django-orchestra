@@ -123,7 +123,7 @@ INSTALLED_APPS = (
     'admin_tools.theming',
     'admin_tools.menu',
     'admin_tools.dashboard',
-
+    'djangoplugins',
     'djcelery',
 
     'django.contrib.auth',
@@ -154,8 +154,12 @@ INSTALLED_APPS = (
 
     # System
 #    'extra_fields',
-    'scheduling', # depends on celery
-#    'resources', # depends on xhtml2pdf
+    'scheduling',       # depends on celery
+    'daemons',          # depends on celery, django_transaction_signals (https://github.com/davehughes/django-transaction-signals) and django-plugins
+    'daemons.methods.ssh',
+    'daemons.methods.local',
+    'daemons.methods.python',
+#    'resources',       # depends on daemons and xhtml2pdf
 )
 
 # A sample logging configuration. The only tangible logging

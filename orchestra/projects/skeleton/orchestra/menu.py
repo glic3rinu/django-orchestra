@@ -54,7 +54,7 @@ if 'vps' in settings.INSTALLED_APPS:
 if 'human_tasks' in settings.INSTALLED_APPS:
     service_childrens.append(items.MenuItem('Human Tasks', '/admin/human_tasks/',
         children=[
-            items.MenuItem('Human Tasks', reverse('admin:human_tasks_humantask_changelist')),                    
+            items.MenuItem('Human Tasks', reverse('admin:human_tasks_humantask_changelist')),
             items.MenuItem('Categories', reverse('admin:human_tasks_category_changelist')),
         ]))  
 

@@ -17,8 +17,8 @@ class DaemonAdmin(admin.ModelAdmin):
     fieldsets = ((None,     {'fields': (('name', 'active'),)}),
                  ('Manager',{'fields': (('content_type'),
                                         )}),
-                 ('Driver', {'fields': (('save_template', 'save_method', 'save_signal'),
-                                        ('delete_template', 'delete_method', 'delete_signal'),)}),)
+                 ('Driver', {'fields': (('save_template', 'save_method'),
+                                        ('delete_template', 'delete_method'),)}),)
     inlines = [DaemonInstanceInline]              
     actions = ['disable_selected','enable_selected']
     

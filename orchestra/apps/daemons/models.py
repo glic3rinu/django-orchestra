@@ -40,6 +40,9 @@ class DaemonInstance(models.Model):
     daemon = models.ForeignKey('daemons.Daemon', related_name='instances')
     expression = models.CharField(max_length=255)
 
+    def __unicode__(self):
+        return self.host.name
+
     def match(self, O):
         return eval(self.expression)        
         
@@ -137,6 +140,6 @@ def bulk_init(sender, **kwargs):
 
 @receiver(request_finished, dispatch_uid="daemon.bulk_execute")
 def bulk_execute(sender, **kwargs):
-    if bulk_accessor.save_queue: print bulk_accessor.save_queue
-    if bulk_accessor.delete_queue: print bulk_accessor.delete_queue
+    if hasattr(bulk_accessor, 'save_queue') and bulk_accessor.save_queue: print bulk_accessor.save_queue
+    if hasattr(bulk_accessor, 'delete_queue') and bulk_accessor.delete_queue: print bulk_accessor.delete_queue
 

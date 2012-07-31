@@ -144,7 +144,7 @@ def limit_form_factory(name, monitors, _model):
                 monitor = Monitor.get_monitor(obj, resource)
                 if monitor.allow_limit:
                     self.fields[monitor.resource+"_limit"].initial = Monitoring.get_limit(obj=obj,monitor=monitor)
-                self.fields["current_"+monitor.resource].initial = Monitoring.get_current(obj=obj, monitor=monitor)               
+                self.fields["current_"+monitor.resource].initial = Monitoring.get_current(obj=obj, monitor=monitor)
         else:
             for resource in g_monitors:
                 display = True
@@ -172,7 +172,7 @@ def save_monitors(self, monitors, form):
     g_monitors = group_by(monitors.__class__, 'resource', monitors, dictionary=True, queryset=False)
     for resource in g_monitors:
         try: monitor = Monitor.get_monitor(self.instance, resource)
-        except Monitor.DoesNotExist: pass
+        except IndexError: pass # Do not match with any daemon instance
         else: 
             if monitor.allow_limit: 
                 limit = form.cleaned_data[monitor.resource+"_limit"]
@@ -180,7 +180,7 @@ def save_monitors(self, monitors, form):
                     limit = monitor.default_initial
                 monitoring = Monitoring(
                     limit = limit,
-                    monitor = monitor, 
+                    monitor = monitor,
                     content_type = monitor.content_type, 
                     object_id = self.instance.pk,
                     date = datetime.now())

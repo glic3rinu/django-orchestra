@@ -15,7 +15,14 @@
 
 == General == 
 * Change expression concept to RULE
+* Write model validations on validation-py files and reuse them
+* Logging more!!
 
 
 == Human tasks ==
 * Rename to jobs?
+
+
+== Coding style ==
+* less coupling     function(contact) <- wrong
+                    function(contact.id, contact.date) <- good

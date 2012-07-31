@@ -1,15 +1,18 @@
 from common.actions import delete_selected
-from common.utils.admin import insert_dynamic_inline, delete_dynamic_inline, UsedContentTypeFilter
+from common.utils.admin import insert_dynamic_inline, delete_dynamic_inline, UsedContentTypeFilter, insert_inline
 from common.utils.models import group_by
 from common.widgets import ShowText
+from daemons.models import Daemon
 from datetime import datetime
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from django.contrib.contenttypes import generic
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from resources.models import Monitoring, Monitor
 
@@ -196,3 +199,27 @@ def save_monitors(self, monitors, form):
 
 
 insert_dynamic_inline(Monitor.get_grouped(), Monitoring, limit_form_factory, save_monitors)
+
+
+from common.widgets import ShowText
+
+class MonitorInlineForm(forms.ModelForm):
+    resource = forms.CharField(label=_("Resource"), widget=ShowText(bold=True))
+    
+    class Meta:
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super(MonitorInlineForm, self).__init__(*args, **kwargs)
+        if 'instance' in kwargs:
+            instance = kwargs['instance']
+            monitor_change = reverse('admin:resources_monitor_change', args=(instance.pk,))
+            self.initial['resource'] = mark_safe("<a href='%s' id='add_id_user' onclick='return showAddAnotherPopup(this);'>%s </a>" % (monitor_change, instance))
+
+
+class MonitorInline(admin.TabularInline):
+    model = Monitor
+    max_num = 0
+    form = MonitorInlineForm
+
+insert_inline(Daemon, MonitorInline)

@@ -109,8 +109,8 @@ class Monitor(models.Model):
     @classmethod
     def get_monitor(cls, obj, resource):
         #TODO: multidaemon support
-        daemon = Daemon.get_instances(obj)[0]
-        return cls.objects.get(daemon=daemon, resource=resource)
+        daemon_instance = Daemon.get_instances(obj)[0]
+        return cls.objects.get(daemon=daemon_instance.daemon, resource=resource)
 
     def disable(self):
         self.active = False

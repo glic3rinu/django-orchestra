@@ -1,11 +1,12 @@
 from common.utils.admin import UsedContentTypeFilter
+from common.utils.file import list_files
 from daemons.models import Host, Daemon, DaemonInstance
+from django import forms
 from django.contrib import admin, messages
 from django.db import transaction
 from django.utils.translation import ugettext as _
 import settings
-from django import forms
-from common.utils.file import list_files
+
 
 class DaemonInstanceInline(admin.TabularInline):
     model = DaemonInstance
@@ -25,7 +26,8 @@ class DaemonForm(forms.ModelForm):
         template_choices = [('', '---------')] + list_files(settings.DAEMONS_TEMPLATE_PATHS)
         self.fields['save_template'].choices = template_choices
         self.fields['delete_template'].choices = template_choices
-        
+
+
 class DaemonAdmin(admin.ModelAdmin):
     list_display = ('name', 'content_type', 'save_template', 'save_method', 'delete_template', 'delete_method', 'active')
     list_filter = ['active', UsedContentTypeFilter]
@@ -61,4 +63,3 @@ class HostAdmin(admin.ModelAdmin):
 
 admin.site.register(Host, HostAdmin)
 admin.site.register(Daemon, DaemonAdmin)
-

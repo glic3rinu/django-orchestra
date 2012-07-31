@@ -119,6 +119,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    # Third party apps
     'fluent_dashboard',
     'admin_tools.theming',
     'admin_tools.menu',
@@ -126,6 +127,7 @@ INSTALLED_APPS = (
     'djangoplugins',
     'djcelery',
 
+    # Django contrib
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -148,18 +150,18 @@ INSTALLED_APPS = (
     'databases',
     'system_users',
     'web',
-    'web.modules.fcgid', # depends on system_users application
+    'web.modules.fcgid',    # depends on system_users application
     'web.modules.php',
     'human_tasks',
 
     # System
 #    'extra_fields',
-    'scheduling',       # depends on celery
-    'daemons',          # depends on celery, django_transaction_signals (https://github.com/davehughes/django-transaction-signals) and django-plugins
-    'daemons.methods.ssh',
+    'scheduling',           # depends on celery
+    'daemons',              # depends on celery, django_transaction_signals and django-plugins
+    'daemons.methods.ssh',  # depends on python-paramiko
     'daemons.methods.local',
     'daemons.methods.python',
-#    'resources',       # depends on daemons and xhtml2pdf
+#    'resources',           # depends on daemons and xhtml2pdf
 )
 
 # A sample logging configuration. The only tangible logging

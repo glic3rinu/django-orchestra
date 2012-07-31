@@ -14,8 +14,8 @@ class DaemonAdmin(admin.ModelAdmin):
     list_display = ('name', 'content_type', 'save_template', 'save_method', 'delete_template', 'delete_method', 'active')
     list_filter = ['active', UsedContentTypeFilter]
     actions = ['disable_selected',]
-    fieldsets = ((None,     {'fields': (('name', 'active'),)}),
-                 ('Manager',{'fields': (('content_type'),
+    fieldsets = ((None,     {'fields': (('name', 'active'),
+                                        ('content_type',),
                                         )}),
                  ('Driver', {'fields': (('save_template', 'save_method'),
                                         ('delete_template', 'delete_method'),)}),)

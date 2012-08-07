@@ -26,29 +26,30 @@ Contact [application/vnd.orchestra.Contact+json]
 ================================================
 
 A Contact represents 
+
 ==========================  ===========  ==========  ===========================
 **Name**                    **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-**uri**                     _URI_
-**name**                    String       1
-**surname**                 String       0..1
-**second_surname**          String       0..1
-**national_id**             String       1
-**type**                    String       1
-**language**                String       1
-**address**                 String       1
-**city**                    String       1
-**zipcode**                 Number       1
-**province**                ``String``   1
-**country**                 ``String``   1
-**fax**                     ``String``   0..1
-**comments**                _String_     0..1
-**emails**                  _String[]_   1
-``**phones**``              _String[]_   1
-``**billing_contact**``     _Contact_    0..1        
-``**technical_contact**``   _Contact_    0..1        
-``administrative_contact``  _Contact_    0..1
-``payment``                 kakak        lskslk
+**uri**                     _URI_        1           eeee
+**name**                    String       1           2222
+**surname**                 String       0..1        22
+**second_surname**          String       0..1        222
+**national_id**             String       1           222
+**type**                    String       1           222
+**language**                String       1           222
+**address**                 String       1           2222
+**city**                    String       1           2222
+**zipcode**                 Number       1           222
+**province**                ``String``   1           222
+**country**                 ``String``   1           2222
+**fax**                     ``String``   0..1        2222
+**comments**                _String_     0..1        222
+**emails**                  _String[]_   1           222
+``**phones**``              _String[]_   1           222
+``**billing_contact**``     _Contact_    0..1        22
+``**technical_contact**``   _Contact_    0..1        222
+``administrative_contact``  _Contact_    0..1        222
+``payment``                 kakak        lskslk      222
 ==========================  ===========  ==========  ===========================
 
 TODO: phone and emails for this contacts

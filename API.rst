@@ -18,12 +18,12 @@ A "Panel" resource model contains the following fields:
 ==========================  ===========  ==========  ===========================
 **Name**                    **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-``uri``                     ``URI``     0..1        A GET against this URI refreshes the client representation of the resources accessible to this user.
-==========================  ===========  =======================================
+``uri``                     ``URI``      0..1        A GET against this URI refreshes the client representation of the resources accessible to this user.
+==========================  ===========  ==========  ===========================
 
 
 Contact [application/vnd.orchestra.Contact+json]
-------------------------------------------------
+================================================
 
 A Contact represents 
 ==========================  ===========  ==========  ===========================

@@ -45,11 +45,15 @@ A Contact represents
 **comments**                _String_     0..1
 **emails**                  _String[]_   1
 ``**phones**``              _String[]_   1
-``**billing_contact**``     _Contact_    0..1        TODO: phone and emails for this contacts
-``**technical_contact**``   _Contact_    0..1        TODO: this contacts should be equal to Contact on Django models
+``**billing_contact**``     _Contact_    0..1        
+``**technical_contact**``   _Contact_    0..1        
 ``administrative_contact``  _Contact_    0..1
-``payment``
+``payment``                 kakak        lskslk
 ==========================  ===========  ==========  ===========================
+
+TODO: phone and emails for this contacts
+TODO: this contacts should be equal to Contact on Django models
+
 
 User [application/vnd.orchestra.User+json]
 ==========================================

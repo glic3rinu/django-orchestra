@@ -9,6 +9,34 @@ A "Panel" resource model contains the following fields:
 * **uri**                     _URI_  
     A GET against this URI refreshes the client representation of the resources accessible to this user.
 
+Contact [application/vnd.orchestra.Contact+json]
+------------------------------------------------
+A Contact represents 
+
+* **uri**                     _URI_
+* **name**                    _String_      1
+* **surname**                 _String_      0..1
+* **second_surname**          _String_      0..1
+* **national_id**             _String_      1
+* **type**                    _String_      1
+* **language**                _String_      1
+* **address**                 _String_      1
+* **city**                    _String_      1
+* **zipcode**                 _Number_      1
+* **province**                _String_      1
+* **country**                 _String_      1
+* **fax**                     _String_      0..1
+* **comments**                _String_      0..1
+* **emails**                  _String[]_    1
+* **phones**                  _String[]_    1
+* **billing_contact**         _Contact_     0..1  
+    #TODO: phone and emails for this contacts !!
+* **technical_contact**       _Contact_     0..1  
+    #TODO: this contacts should be equal to Contact on Django models!
+* **administrative_contact**  _Contact_     0..1
+* **payment**
+
+
 VirtualHost [application/vnd.orchestra.VirtualHost+json]
 --------------------------------------------------------
 <TODO: REST and dynamic attributes (resources, contacts)>
@@ -39,32 +67,27 @@ A VirtualHost resource model contains the following fields:
 * ....
 
 
-Contact [application/vnd.orchestra.Contact+json]
-------------------------------------------------
-A Contact represents 
-
-* **uri**                     _URI_
-* **name**                    _String_      1
-* **surname**                 _String_      0..1
-* **second_surname**          _String_      0..1
-* **national_id**             _String_      1
-* **type**                    _String_      1
-* **language**                _String_      1
-* **address**                 _String_      1
-* **city**                    _String_      1
-* **zipcode**                 _Number_      1
-* **province**                _String_      1
-* **country**                 _String_      1
-* **fax**                     _String_      0..1
-* **comments**                _String_      0..1
-* **emails**                  _String[]_    1
-* **phones**                  _String[]_    1
-* **billing_contact**         _Contact_     0..1  
-    #TODO: phone and emails for this contacts !!
-* **technical_contact**       _Contact_     0..1  
-    #TODO: this contacts should be equal to Contact on Django models!
-* **administrative_contact**  _Contact_     0..1
-* **payment**
+Name [application/vnd.orchestra.Name+json]
+------------------------------------------
+* **name**                  _String_
+* **extension**             _String_
+* **register_provider**     _String_
+* **name_server**           _Object[]_  
+    Name server key/value i.e. {'ns1.pangea.org': '1.1.1.1'}
+* **virtual_domain**        _Boolean_   <TODO: is redundant with virtual_domain_type?>
+* **virtual_domain_type**   _String_
 
 
+Zone [application/vnd.orchestra.Zone+json]
+------------------------------------------
+* **origin**                _String_
+* **primary_ns**            _String_
+* **hostmaster_email**      _String_
+* **serial**                _Number_
+* **slave_refresh**         _Number_
+* **slave_retry**           _Number_
+* **slave_expiration**      _Number_
+* **min_caching_time**      _Number_
+* **records**               _Object[]_  
+    Domain record i.e. {'name': ('type', 'value') } 
 

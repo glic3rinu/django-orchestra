@@ -4,7 +4,6 @@
 
 :Version: 0.1
 
-
 .. contents::
     :local:
 
@@ -61,20 +60,20 @@ User [application/vnd.orchestra.User+json]
 ==========================  ===========  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-username                    String 
-contact                     Contact 
-password                    String 
-first_name                  String 
-last_name                   String 
-email_address               String 
-active                      Boolean 
-staff_status                Boolean 
-superuser_status            Boolean 
-groups                      Group 
-user_permissions            Permission[] 
-last_login                  String 
-date_joined                 String 
-system_user                 SystemUser 
+username                    String
+contact                     Contact
+password                    String
+first_name                  String
+last_name                   String
+email_address               String
+active                      Boolean
+staff_status                Boolean
+superuser_status            Boolean
+groups                      Group
+user_permissions            Permission[]
+last_login                  String
+date_joined                 String
+system_user                 SystemUser
 virtual_user                VirtualUser
 ==========================  ===========  ==========  ===========================
 

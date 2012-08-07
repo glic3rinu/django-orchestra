@@ -1,14 +1,9 @@
-# Hola
-## que
-## pasa
-# nose
-## ni santa
-### idea
-
-
-
 REST API Specification
 ======================
+
+.. contents::
+    :local:
+
 
 Panel [application/vnd.orchestra.Panel+json]
 --------------------------------------------

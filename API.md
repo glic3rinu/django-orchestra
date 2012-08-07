@@ -67,18 +67,6 @@ payment_
 ####proves
 #####github
 
->kajsaksjaklsjaskajsalksjalkjs
->lkjsalsjaslkjasalksj
-akjsalskjalksja
-
-(hola)
-_empla
- * empla
- * *empla*
-_empla_
-**empla*
-**empla**
-*_wtf_*
 
 
 ****

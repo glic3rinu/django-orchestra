@@ -24,11 +24,15 @@ A VirtualHost resource model contains the following fields:
 * **custom_directives**       _String[]_
 * **fcgid_user**              _String_
 * **fcgid_group string**      _String_
-* **fcgid_directives**        _Object_      Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
+* **fcgid_directives**        _Object_
+    Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
 * **php_version**             _String_
-* **php_directives**          _Object_      PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
+* **php_directives**          _Object_      
+    -- PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
 * **resource_swap_current**   _Number_
+    - PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
 * **resource_swap_limit**     _Number_
+    + PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
 * **resource_cpu_current**    _Number_
 * **resource_cpu_limit**      _Number_
 * ....

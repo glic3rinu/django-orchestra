@@ -60,6 +60,8 @@ TODO: this contacts should be equal to Contact on Django models
 User [application/vnd.orchestra.User+json]
 ==========================================
 
+A User represents 
+
 ==========================  ===========  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================

@@ -46,7 +46,7 @@ A Contact represents
 **comments**                _String_     0..1        222
 **emails**                  _String[]_   1           222
 ``**phones**``              _String[]_   1           222
-``**billing_contact**``     _Contact_    0..1        22
+**``billing_contact``**     _Contact_    0..1        22
 ``**technical_contact**``   _Contact_    0..1        222
 ``administrative_contact``  _Contact_    0..1        222
 ``payment``                 kakak        lskslk      222

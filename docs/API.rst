@@ -50,11 +50,9 @@ phones                      String[]     1
 billing_contact             Contact      0..1  
 technical_contact           Contact      0..1    
 administrative_contact      Contact      0..1  
-payment    
 ==========================  ===========  ==========  ===========================
 
-TODO: phone and emails for this contacts
-TODO: this contacts should be equal to Contact on Django models
+TODO: phone and emails for this contacts this contacts should be equal to Contact on Django models
 
 
 User [application/vnd.orchestra.User+json]

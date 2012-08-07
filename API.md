@@ -16,16 +16,16 @@ VirtualHost [application/vnd.orchestra.VirtualHost+json]
 A VirtualHost represents an Apache-like virtualhost configuration, which is useful for generating all the configuration files on the web server.
 A VirtualHost resource model contains the following fields:
 
-* server_name             String
-* uri                     URI
-* contact                 Contact
-* ip                      String
-* port                    Number
-* domains                 String[]
-* document_root           String
-* custom_directives       String[]
-* fcgid_user              String
-* fcgid_group string      String
+* *server_name*             _String
+* *uri*                     _URI
+* *contact*                 _Contact
+* ip                      _String
+* port                    _Number
+* 'domains                 String[]'
+* >document_root           String<
+* >custom_directives       String[]
+* <fcgid_user              String>
+* "fcgid_group string      String"
 * fcgid_directives        Object      Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
 * php_version             String
 * php_directives          Object      PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}

@@ -27,10 +27,10 @@ A VirtualHost resource model contains the following fields:
 * fcgid_user              String
 * fcgid_group string      String
 * fcgid_directives        Object      Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
-* php_version             String
-* php_directives          Object      PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
-* resource_swap_current   Number
-* resource_swap_limit     Number
+* `php_version`             String
+* `php_directives          Object      PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}`
+* "resource_swap_current   Number"
+* ``resource_swap_limit     Number``
 * resource_cpu_current    Number
 * resource_cpu_limit      Number
 ....
@@ -51,14 +51,14 @@ A Contact represents
 city                    String      1
 zipcode                 Number      1
 province                String      1
-country                 String      1
-fax                     String      0..1
+|country                 String      1
+| -- fax                     String      0..1
 comments                String      0..1
-emails                  String[]    1
-phones                  String[]    1
+emails                  String[]    1 ::
+phones                  String[]    1 ::
 billing_contact         Contact     0..1 #TODO: phone and emails for this contacts !!
 technical_contact       Contact     0..1 #TODO: this contacts should be equal to Contact on Django models!
-administrative_contact  Contact     0..1
+administrative_contact  Contact     0..1 ::
 payment_
 
 #hola
@@ -80,3 +80,42 @@ _empla_
 **empla**
 *_wtf_*
 
+
+****
+______
+----------
+
+
++-------+----------+------+
+| Table Headings   | Here |
++-------+----------+------+
+| Sub   | Headings | Too  |
++=======+==========+======+
+| cell  | column spanning |
++ spans +----------+------+
+| rows  | normal   | cell |
++-------+----------+------+
+| multi | * cells can be  |
+| line  | * formatted     |
+| cells | * paragraphs    |
+| too   |                 |
++-------+-----------------+
+
+
+
+===== ========= =====
+Table Headings  Here
+--------------- -----
+Sub   Headings  Too
+===== ========= =====
+column spanning no
+--------------- -----
+cell  cell      row
+column spanning spans
+=============== =====
+
+
+hola
+ : que
+ : tal
+ : com

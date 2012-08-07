@@ -57,12 +57,18 @@ A Contact represents
 * **country**                 _String_      1
 * **fax**                     _String_      0..1
 * **comments**                _String_      0..1
-* **emails**                  _String[]_    1 ::
-* **phones**                  _String[]_    1 ::
-* **billing_contact**         _Contact_     0..1    
+* **emails**                  _String[]_    1
+* **phones**                  _String[]_    1
+* **billing_contact**         _Contact_     0..1  
     #TODO: phone and emails for this contacts !!
-* **technical_contact**       _Contact_     0..1    
+* **technical_contact**       _Contact_     0..1  
     #TODO: this contacts should be equal to Contact on Django models!
 * **administrative_contact**  _Contact_     0..1
 * **payment**
 
+
+*"What is Robotlegs":#whatisrobotlegs*
+
+
+
+(#whatisrobotlegs). What is Robotlegs

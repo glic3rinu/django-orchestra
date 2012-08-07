@@ -67,17 +67,6 @@ A VirtualHost resource model contains the following fields:
 * ....
 
 
-Name [application/vnd.orchestra.Name+json]
-------------------------------------------
-* **name**                  _String_
-* **extension**             _String_
-* **register_provider**     _String_
-* **name_server**           _Object[]_  
-    Name server key/value i.e. {'ns1.pangea.org': '1.1.1.1'}
-* **virtual_domain**        _Boolean_   <TODO: is redundant with virtual_domain_type?>
-* **virtual_domain_type**   _String_
-
-
 Zone [application/vnd.orchestra.Zone+json]
 ------------------------------------------
 * **origin**                _String_
@@ -89,5 +78,21 @@ Zone [application/vnd.orchestra.Zone+json]
 * **slave_expiration**      _Number_
 * **min_caching_time**      _Number_
 * **records**               _Object[]_  
-    Domain record i.e. {'name': ('type', 'value') } 
+    Domain record i.e. {'name': ('type', 'value') }
+
+
+Name [application/vnd.orchestra.Name+json]
+------------------------------------------
+* **name**                  _String_
+* **extension**             _String_
+* **register_provider**     _String_
+* **name_server**           _Object[]_  
+    Name server key/value i.e. {'ns1.pangea.org': '1.1.1.1'}
+* **virtual_domain**        _Boolean_   <TODO: is redundant with virtual_domain_type?>
+* **virtual_domain_type**   _String_
+* **zone**                  _Zone_
+
+
+
+
 

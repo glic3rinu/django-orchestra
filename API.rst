@@ -35,8 +35,8 @@ A Contact represents
 uri                         URI          1 
 name                        String       1  
 surname                     String       0..1   
-second surname              String       0..1     
-national id                 String       1         
+second_surname              String       0..1     
+national_id                 String       1         
 type                        String       1     
 language                    String       1    
 address                     String       1        
@@ -47,10 +47,10 @@ country                     String       1
 fax                         String       0..1     
 comments                    String       0..1   
 emails                      String[]     1       
-phon es                     String[]     1     
-billing contact             Contact      0..1  
-technical contact           Contact      0..1    
-administrative contact      Contact      0..1  
+phones                      String[]     1     
+billing_contact             Contact      0..1  
+technical_contact           Contact      0..1    
+administrative_contact      Contact      0..1  
 payment    
 ==========================  ===========  ==========  ===========================
 
@@ -67,18 +67,18 @@ User [application/vnd.orchestra.User+json]
 username                    String 
 contact                     Contact 
 password                    String 
-first name                  String 
-last name                   String 
-email address               String 
+first_name                  String 
+last_name                   String 
+email_address               String 
 active                      Boolean 
-staff status                Boolean 
-superuser status            Boolean 
+staff_status                Boolean 
+superuser_status            Boolean 
 groups                      Group 
-user permissions            Permission[] 
-last login                  String 
-date joined                 String 
-system user                 SystemUser 
-virtual user                VirtualUser
+user_permissions            Permission[] 
+last_login                  String 
+date_joined                 String 
+system_user                 SystemUser 
+virtual_user                VirtualUser
 ==========================  ===========  ==========  ===========================
 
 
@@ -89,11 +89,11 @@ SystemUser [application/vnd.orchestra.SystemUser+json]
 **Name**                    **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 user                        User 
-user shell                  String 
-user uid                    Number 
-primary group               Group 
+user_shell                  String 
+user_uid                    Number 
+primary_group               Group 
 homedir                     String 
-only ftp                    Boolean 
+only_ftp                    Boolean 
 ==========================  ===========  ==========  ===========================
 
 
@@ -117,13 +117,13 @@ Zone [application/vnd.orchestra.Zone+json]
 ==========================  ===========  ==========  ===========================
 origin                      String 
 contact                     Contact 
-primary ns                  String 
-hostmaster email            String 
+primary_ns                  String 
+hostmaster_email            String 
 serial                      Number 
-slave refresh               Number 
-slave retry                 Number 
-slave expiration            Number 
-min caching time            Number 
+slave_refresh               Number 
+slave_retry                 Number 
+slave_expiration            Number 
+min_caching_time            Number 
 records                     Object[]                 Domain record i.e. {'name': ('type', 'value') }
 ==========================  ===========  ==========  ===========================
 
@@ -135,10 +135,10 @@ Name [application/vnd.orchestra.Name+json]
 name                        String 
 contact                     Contact 
 extension                   String 
-register provider           String 
-name server                 Object[]                 Name server key/value i.e. {'ns1.pangea.org': '1.1.1.1'}
-virtual domain              Boolean                  <TODO: is redundant with virtual domain type?>
-virtual domain type         String 
+register_provider           String 
+name_server                 Object[]                 Name server key/value i.e. {'ns1.pangea.org': '1.1.1.1'}
+virtual_domain              Boolean                  <TODO: is redundant with virtual domain type?>
+virtual_domain_type         String 
 zone                        Zone 
 ==========================  ===========  ==========  ===========================
 
@@ -151,23 +151,23 @@ A VirtualHost resource model contains the following fields:
 ==========================  ===========  ==========  ===========================
 **Name**                    **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-server name                 String 
+server_name                 String 
 uri                         URI 
 contact                     Contact 
 ip                          String 
 port                        Number 
 domains                     Name[] 
-document root               String 
-custom directives           String[] 
-fcgid user                  String 
-fcgid group string          String 
-fcgid directives            Object                   Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
-php version                 String   
-php directives              Object                   PHP custom directives represented on key/value pairs i.e. {'display errors': 'True'}
-resource swap current       Number                   PHP custom directives represented on key/value pairs i.e. {'display errors': 'True'}
-resource swap limit         Number                   PHP custom directives represented on key/value pairs i.e. {'display errors': 'True'}
-resource cpu current        Number 
-resource cpu limit          Number 
+document_root               String 
+custom_directives           String[] 
+fcgid_user                  String 
+fcgid_group string          String 
+fcgid_directives            Object                   Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
+php_version                 String   
+php_directives              Object                   PHP custom directives represented on key/value pairs i.e. {'display errors': 'True'}
+resource_swap_current       Number                   PHP custom directives represented on key/value pairs i.e. {'display errors': 'True'}
+resource_swap_limit         Number                   PHP custom directives represented on key/value pairs i.e. {'display errors': 'True'}
+resource_cpu_current        Number 
+resource_cpu_limit          Number 
 ==========================  ===========  ==========  ===========================
 
 Daemon [application/vnd.orchestra.Daemon+json]
@@ -177,13 +177,13 @@ Daemon [application/vnd.orchestra.Daemon+json]
 **Name**                    **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 name                        String 
-content type                String 
+content_type                String 
 active                      Boolean 
-save template               String 
-save method                 String 
-delete template             String 
-delete method               String 
-daemon instances            Object[]                 {'host': 'expression'}
+save_template               String 
+save_method                 String 
+delete_template             String 
+delete_method               String 
+daemon_instances            Object[]                 {'host': 'expression'}
 ==========================  ===========  ==========  ===========================
 
 Monitor [application/vnd.orchestra.Monitor+json]
@@ -194,16 +194,16 @@ Monitor [application/vnd.orchestra.Monitor+json]
 ==========================  ===========  ==========  ===========================
 daemon                      Daemon 
 resource                    String 
-monitoring template         String 
+monitoring_template         String 
 monitoring method           String 
-exceed template             String                   <TODO: rename on monitor django model>
-exceed method               String 
-recover template            String 
-recover method              String 
-allow limit                 Boolean 
-allow unlimit               Boolean 
-default initial             Number 
-block size                  Number 
+exceed_template             String                   <TODO: rename on monitor django model>
+exceed_method               String 
+recover_template            String 
+recover_method              String 
+allow_limit                 Boolean 
+allow_unlimit               Boolean 
+default_initial             Number 
+block_size                  Number 
 algorithm                   String 
 period                      String 
 interval                    String       0..1

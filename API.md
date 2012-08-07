@@ -1,12 +1,17 @@
+REST API Specification
+======================
 
-=== Panel [application/vnd.orchestra.Panel+json] ===
+
+Panel [application/vnd.orchestra.Panel+json]
+--------------------------------------------
 A Panel represents a user's view of all accessible resources.
 A "Panel" resource model contains the following fields:
 
 uri                     URI         A GET against this URI refreshes the client representation of the resources accessible to this user.
 
 
-=== VirtualHost [application/vnd.orchestra.VirtualHost+json] ===
+VirtualHost [application/vnd.orchestra.VirtualHost+json]
+--------------------------------------------------------
 #TODO: REST and dynamic attributes (resources, contacts)
 A VirtualHost represents an Apache-like virtualhost configuration, which is useful for generating all the configuration files on the web server.
 A VirtualHost resource model contains the following fields:
@@ -31,7 +36,8 @@ resource_cpu_limit      Number
 ....
 
 
-=== Contact == [application/vnd.orchestra.Contact+json] ===
+Contact [application/vnd.orchestra.Contact+json]
+------------------------------------------------
 A Contact represents 
 
 uri                     URI
@@ -55,4 +61,22 @@ technical_contact       Contact     0..1 #TODO: this contacts should be equal to
 administrative_contact  Contact     0..1
 payment_
 
+#hola
+##que
+###tal
+####proves
+#####github
+
+>kajsaksjaklsjaskajsalksjalkjs
+>lkjsalsjaslkjasalksj
+akjsalskjalksja
+
+(hola)
+_empla
+*empla
+*empla*
+_empla_
+**empla*
+**empla**
+*_wtf_*
 

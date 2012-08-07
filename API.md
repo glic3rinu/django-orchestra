@@ -6,7 +6,7 @@ Panel [application/vnd.orchestra.Panel+json]
 A Panel represents a user's view of all accessible resources.
 A "Panel" resource model contains the following fields:
 
-* **uri**                     _URI_ 
+* **uri**                     _URI_  
     A GET against this URI refreshes the client representation of the resources accessible to this user.
 
 VirtualHost [application/vnd.orchestra.VirtualHost+json]

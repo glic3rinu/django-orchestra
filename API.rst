@@ -18,7 +18,7 @@ A Panel represents a user's view of all accessible resources.
 A "Panel" resource model contains the following fields:
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 uri                         URI          0..1        A GET against this URI refreshes the client representation of the resources accessible to this user.
 ==========================  ===========  ==========  ===========================
@@ -30,7 +30,7 @@ Contact [application/vnd.orchestra.Contact+json]
 A Contact represents 
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 uri                         URI          1 
 name                        String       1  
@@ -62,7 +62,7 @@ User [application/vnd.orchestra.User+json]
 ==========================================
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 username                    String 
 contact                     Contact 
@@ -86,7 +86,7 @@ SystemUser [application/vnd.orchestra.SystemUser+json]
 ======================================================
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 user                        User 
 user_shell                  String 
@@ -101,7 +101,7 @@ VirtualUser [application/vnd.orchestra.VirtualUser+json]
 ========================================================
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 user                        User 
 emailname                   String 
@@ -113,7 +113,7 @@ Zone [application/vnd.orchestra.Zone+json]
 ==========================================
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 origin                      String 
 contact                     Contact 
@@ -130,7 +130,7 @@ records                     Object[]                 Domain record i.e. {'name':
 Name [application/vnd.orchestra.Name+json]
 ==========================================
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 name                        String 
 contact                     Contact 
@@ -149,7 +149,7 @@ A VirtualHost represents an Apache-like virtualhost configuration, which is usef
 A VirtualHost resource model contains the following fields:
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 server_name                 String 
 uri                         URI 
@@ -174,7 +174,7 @@ Daemon [application/vnd.orchestra.Daemon+json]
 ==============================================
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 name                        String 
 content_type                String 
@@ -190,7 +190,7 @@ Monitor [application/vnd.orchestra.Monitor+json]
 ================================================
 
 ==========================  ===========  ==========  ===========================
-**Name**                    **Type**     **Occurs**  **Description**
+**Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 daemon                      Daemon 
 resource                    String 

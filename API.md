@@ -16,10 +16,10 @@ VirtualHost [application/vnd.orchestra.VirtualHost+json]
 A VirtualHost represents an Apache-like virtualhost configuration, which is useful for generating all the configuration files on the web server.
 A VirtualHost resource model contains the following fields:
 
-* *server_name*             _String
-* *uri*                     _URI
-* *contact*                 _Contact
-* ip                      _String
+* *server_name*             _String_
+* *uri*                     _URI_
+* *contact*                 _Contact_
+* **ip**                      __String__
 * port                    _Number
 * 'domains                 String[]'
 * >document_root           String<

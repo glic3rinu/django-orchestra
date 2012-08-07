@@ -5,9 +5,6 @@
 :Version: 0.1
 
 
-Contents
---------
-
 .. contents::
     :local:
 

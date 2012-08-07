@@ -12,20 +12,20 @@ A "Panel" resource model contains the following fields:
 
 VirtualHost [application/vnd.orchestra.VirtualHost+json]
 --------------------------------------------------------
-#TODO: REST and dynamic attributes (resources, contacts)
+<TODO: REST and dynamic attributes (resources, contacts)>
 A VirtualHost represents an Apache-like virtualhost configuration, which is useful for generating all the configuration files on the web server.
 A VirtualHost resource model contains the following fields:
 
-* *server_name*             _String_
-* *uri*                     _URI_
-* *contact*                 _Contact_
-* **ip**                      __String__
+* **server_name**             _String_
+* **uri**                     _URI_
+* **contact**                 _Contact_
+* **ip**                      _String_
 * port                    _Number
-* 'domains                 String[]'
-* >document_root           String<
-* >custom_directives       String[]
-* <fcgid_user              String>
-* "fcgid_group string      String"
+* 'domains                 String[]
+* document_root           String
+* custom_directives       String[]
+* fcgid_user              String
+* fcgid_group string      String
 * fcgid_directives        Object      Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
 * php_version             String
 * php_directives          Object      PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}

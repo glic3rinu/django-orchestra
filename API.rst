@@ -2,66 +2,25 @@
  django-celery - Celery Integration for Django
 ===============================================
 
-.. image:: http://cloud.github.com/downloads/ask/celery/celery_128.png
-
-:Version: 2.5.5
-:Web: http://celeryproject.org/
-:Download: http://pypi.python.org/pypi/django-celery/
-:Source: http://github.com/ask/django-celery/
-:Keywords: celery, task queue, job queue, asynchronous, rabbitmq, amqp, redis,
-  python, django, webhooks, queue, distributed
+:Version: 0.1
 
 --
-
-django-celery provides Celery integration for Django; Using the Django ORM
-and cache backend for storing results, autodiscovery of task modules
-for applications listed in ``INSTALLED_APPS``, and more.
 
 .. contents::
     :local:
 
-Using django-celery
-===================
+Panel [application/vnd.orchestra.Panel+json]
+============================================
 
-To enable ``django-celery`` for your project you need to add ``djcelery`` to
-``INSTALLED_APPS``::
+A Panel represents a user's view of all accessible resources.
+A "Panel" resource model contains the following fields:
 
-    INSTALLED_APPS += ("djcelery", )
+========================  =========  ==========================================
+**Name**                  **Type**   **Description**
+========================  =========  ==========================================
+``uri``                   ``URI``    A GET against this URI refreshes the client representation of the resources accessible to this user.
+========================  =========  ==========================================
 
-then add the following lines to your ``settings.py``::
-
-    import djcelery
-    djcelery.setup_loader()
-
-Everything works the same as described in the `Celery User Manual`_, except you
-need to invoke the programs through ``manage.py``:
-
-=====================================  =====================================
-**Program**                            **Replace with**
-=====================================  =====================================
-``celeryd``                            ``python manage.py celeryd``
-``celeryctl``                          ``python manage.py celeryctl``
-``celerybeat``                         ``python manage.py celerybeat``
-``camqadm``                            ``python manage.py camqadm``
-``celeryev``                           ``python manage.py celeryev``
-``celeryd-multi``                      ``python manage.py celeryd_multi``
-=====================================  =====================================
-
-The other main difference is that configuration values are stored in
-your Django projects' ``settings.py`` module rather than in
-``celeryconfig.py``.
-
-If you're trying celery for the first time you should start by reading
-`Getting started with django-celery`_
-
-Special note for mod_wsgi users
--------------------------------
-
-If you're using ``mod_wsgi`` to deploy your Django application you need to
-include the following in your ``.wsgi`` module::
-
-    import djcelery
-    djcelery.setup_loader()
 
 Documentation
 =============

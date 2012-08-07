@@ -1,8 +1,11 @@
+======================
 REST API Specification
 ======================
 
+Table of contents:
 .. contents::
     :local:
+
 
 
 Panel [application/vnd.orchestra.Panel+json]

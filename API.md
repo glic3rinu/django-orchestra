@@ -2,12 +2,41 @@ REST API Specification
 ======================
 
 
++-------+----------+------+
+| Table Headings   | Here |
++-------+----------+------+
+| Sub   | Headings | Too  |
++=======+==========+======+
+| cell  | column spanning |
++ spans +----------+------+
+| rows  | normal   | cell |
++-------+----------+------+
+| multi | * cells can be  |
+| line  | * formatted     |
+| cells | * paragraphs    |
+| too   |                 |
++-------+-----------------+
+
+
+
 Panel [application/vnd.orchestra.Panel+json]
 --------------------------------------------
 A Panel represents a user's view of all accessible resources.
 A "Panel" resource model contains the following fields:
 
 * uri                     URI         A GET against this URI refreshes the client representation of the resources accessible to this user.
+
+
+===== ========= =====
+Table Headings  Here
+--------------- -----
+Sub   Headings  Too
+===== ========= =====
+column spanning no
+--------------- -----
+cell  cell      row
+column spanning spans
+=============== =====
 
 
 VirtualHost [application/vnd.orchestra.VirtualHost+json]

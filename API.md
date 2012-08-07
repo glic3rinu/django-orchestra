@@ -1,6 +1,10 @@
 REST API Specification
 ======================
 
+* auto-gen TOC:
+{:toc}
+
+
  [my internal link][#contact-applicationvndorchestracontactjson]
 
 

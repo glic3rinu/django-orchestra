@@ -61,6 +61,7 @@ User [application/vnd.orchestra.User+json]
 
 SystemUser [application/vnd.orchestra.SystemUser+json]
 ------------------------------------------------------
+* **user**              _User_
 * **user_shell**        _String_
 * **user_uid**          _Number_
 * **primary_group**     _Group_
@@ -70,6 +71,7 @@ SystemUser [application/vnd.orchestra.SystemUser+json]
 
 VirtualUser [application/vnd.orchestra.VirtualUser+json]
 --------------------------------------------------------
+* **user**              _User_
 * **emailname**         _String_
 * **domain**            _Name_ <VirtualDomain?>
 * **home**              _String_

@@ -19,7 +19,7 @@ A "Panel" resource model contains the following fields:
 ==========================  ===========  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-uri                         URI          0..1        A GET against this URI refreshes the client representation of the resources accessible to this user.
+uri                         URI          1           A GET against this URI refreshes the client representation of the resources accessible to this user.
 ==========================  ===========  ==========  ===========================
 
 
@@ -64,6 +64,7 @@ A User represents
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 username                    String
+uri                         URI          1 
 contact                     Contact
 password                    String
 first_name                  String
@@ -88,6 +89,7 @@ SystemUser [application/vnd.orchestra.SystemUser+json]
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 user                        User 
+uri                         URI          1 
 user_shell                  String 
 user_uid                    Number 
 primary_group               Group 
@@ -102,7 +104,8 @@ VirtualUser [application/vnd.orchestra.VirtualUser+json]
 ==========================  ===========  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-user                        User 
+user                        User
+uri                         URI          1 
 emailname                   String 
 domain                      Name                     <VirtualDomain?>
 home                        String 
@@ -114,7 +117,8 @@ Zone [application/vnd.orchestra.Zone+json]
 ==========================  ===========  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-origin                      String 
+origin                      String
+uri                         URI          1 
 contact                     Contact 
 primary_ns                  String 
 hostmaster_email            String 
@@ -132,8 +136,9 @@ Name [application/vnd.orchestra.Name+json]
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
 name                        String 
-contact                     Contact 
 extension                   String 
+uri                         URI          1 
+contact                     Contact 
 register_provider           String 
 name_server                 Object[]                 Name server key/value i.e. {'ns1.pangea.org': '1.1.1.1'}
 virtual_domain              Boolean                  <TODO: is redundant with virtual domain type?>
@@ -175,7 +180,8 @@ Daemon [application/vnd.orchestra.Daemon+json]
 ==========================  ===========  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-name                        String 
+name                        String
+uri                         URI          1 
 content_type                String 
 active                      Boolean 
 save_template               String 
@@ -191,7 +197,8 @@ Monitor [application/vnd.orchestra.Monitor+json]
 ==========================  ===========  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-daemon                      Daemon 
+uri                         URI          1 
+daemon                      Daemon
 resource                    String 
 monitoring_template         String 
 monitoring method           String 
@@ -209,3 +216,5 @@ interval                    String       0..1
 crontab                     String       0..1
 ==========================  ===========  ==========  ===========================
 
+
+#Layout inspired from http://kenai.com/projects/suncloudapis/pages/CloudAPISpecificationResourceModels

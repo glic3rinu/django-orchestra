@@ -1,45 +1,12 @@
 REST API Specification
 ======================
 
-
-Make sure previous paragraph does not end with ``::``.
-
-+-------+----------+------+
-| Table Headings   | Here |
-+-------+----------+------+
-| Sub   | Headings | Too  |
-+=======+==========+======+
-| cell  | column spanning |
-+ spans +----------+------+
-| rows  | normal   | cell |
-+-------+----------+------+
-| multi | * cells can be  |
-| line  | * formatted     |
-| cells | * paragraphs    |
-| too   |                 |
-+-------+-----------------+
-
-
-
 Panel [application/vnd.orchestra.Panel+json]
 --------------------------------------------
 A Panel represents a user's view of all accessible resources.
 A "Panel" resource model contains the following fields:
 
-* uri                     URI         A GET against this URI refreshes the client representation of the resources accessible to this user.
-
-
-===== ========= =====
-Table Headings  Here
---------------- -----
-Sub   Headings  Too
-===== ========= =====
-column spanning no
---------------- -----
-cell  cell      row
-column spanning spans
-=============== =====
-
+* **uri**                     _URI_         A GET against this URI refreshes the client representation of the resources accessible to this user.
 
 VirtualHost [application/vnd.orchestra.VirtualHost+json]
 --------------------------------------------------------
@@ -51,85 +18,44 @@ A VirtualHost resource model contains the following fields:
 * **uri**                     _URI_
 * **contact**                 _Contact_
 * **ip**                      _String_
-* port                    _Number
-* 'domains                 String[]
-* document_root           String
-* custom_directives       String[]
-* fcgid_user              String
-* fcgid_group string      String
-* fcgid_directives        Object      Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
-* `php_version`             String
-* `php_directives          Object      PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}`
-* "resource_swap_current   Number"
-* ``resource_swap_limit     Number``
-* resource_cpu_current    Number
-* resource_cpu_limit      Number
-....
+* **port**                    _Number_
+* **domains**                 _String[]_
+* **document_root**           _String_
+* **custom_directives**       _String[]_
+* **fcgid_user**              _String_
+* **fcgid_group string**      _String_
+* **fcgid_directives**        _Object_      Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
+* **php_version**             _String_
+* **php_directives**          _Object_      PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
+* **resource_swap_current**   _Number_
+* **resource_swap_limit**     _Number_
+* **resource_cpu_current**    _Number_
+* **resource_cpu_limit**      _Number_
+* ....
 
 
 Contact [application/vnd.orchestra.Contact+json]
 ------------------------------------------------
 A Contact represents 
 
-* uri                     URI
-* name                    String      1
-* surname                 String      0..1
-* second_surname          String      0..1
-* national_id             String      1
-* type                    String      1
-* language                String      1
-* address                 String      1
-city                    String      1
-zipcode                 Number      1
-province                String      1
-|country                 String      1
-| -- fax                     String      0..1
-comments                String      0..1
-emails                  String[]    1 ::
-phones                  String[]    1 ::
-billing_contact         Contact     0..1 #TODO: phone and emails for this contacts !!
-technical_contact       Contact     0..1 #TODO: this contacts should be equal to Contact on Django models!
-administrative_contact  Contact     0..1 ::
-payment_
+* **uri**                     _URI_
+* **name**                    _String_      1
+* **surname**                 _String_      0..1
+* **second_surname**          _String_      0..1
+* **national_id**             _String_      1
+* **type**                    _String_      1
+* **language**                _String_      1
+* **address**                 _String_      1
+* **city**                    _String_      1
+* **zipcode**                 _Number_      1
+* **province**                _String_      1
+* **country**                 _String_      1
+* **fax**                     _String_      0..1
+* **comments**                _String_      0..1
+* **emails**                  _String[]_    1 ::
+* **phones**                  _String[]_    1 ::
+* **billing_contact**         _Contact_     0..1 #TODO: phone and emails for this contacts !!
+* **technical_contact**       _Contact_     0..1 #TODO: this contacts should be equal to Contact on Django models!
+* **administrative_contact**  _Contact_     0..1 ::
+* **payment**
 
-#hola
-##que
-###tal
-####proves
-
-
-
-
-+-------+----------+------+
-| Table Headings   | Here |
-+-------+----------+------+
-| Sub   | Headings | Too  |
-+=======+==========+======+
-| cell  | column spanning |
-+ spans +----------+------+
-| rows  | normal   | cell |
-+-------+----------+------+
-| multi | * cells can be  |
-| line  | * formatted     |
-| cells | * paragraphs    |
-| too   |                 |
-+-------+-----------------+
-
-
-
-===== ========= =====
-Table Headings  Here
---------------- -----
-Sub   Headings  Too
-===== ========= =====
-column spanning no
---------------- -----
-cell  cell      row
-column spanning spans
-=============== =====
-
-
-hola
- : que
- : tal
- : com

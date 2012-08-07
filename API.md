@@ -2,6 +2,8 @@ REST API Specification
 ======================
 
 
+Make sure previous paragraph does not end with ``::``.
+
 +-------+----------+------+
 | Table Headings   | Here |
 +-------+----------+------+

@@ -1,7 +1,8 @@
 REST API Specification
 ======================
 
-[my internal link][#contact-applicationvndorchestracontactjson]
+[TOC]
+
 
 Panel [application/vnd.orchestra.Panel+json]
 --------------------------------------------

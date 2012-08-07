@@ -1,6 +1,6 @@
-===============================================
- django-celery - Celery Integration for Django
-===============================================
+=================================
+ Orchestra REST API Specification
+=================================
 
 :Version: 0.1
 
@@ -23,7 +23,7 @@ A "Panel" resource model contains the following fields:
 
 
 Contact [application/vnd.orchestra.Contact+json]
-================================================
+------------------------------------------------
 
 A Contact represents 
 ==========================  ===========  ==========  ===========================

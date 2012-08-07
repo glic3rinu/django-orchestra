@@ -67,8 +67,4 @@ A Contact represents
 * **payment**
 
 
-*"What is Robotlegs":#whatisrobotlegs*
 
-
-
-(#whatisrobotlegs). What is Robotlegs

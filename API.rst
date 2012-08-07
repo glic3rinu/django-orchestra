@@ -29,25 +29,25 @@ A Contact represents
 ==========================  ===========  ==========  ===========================
 **Name**                    **Type**     **Occurs**  **Description**
 ==========================  ===========  ==========  ===========================
-``uri``                     _URI_
-``name``                    _String_      1
-``surname``                 _String_      0..1
-``second_surname``          _String_      0..1
-``national_id``             _String_      1
-``type``                    _String_      1
-``language``                _String_      1
-``address``                 _String_      1
-``city``                    _String_      1
-``zipcode``                 _Number_      1
-``province``                _String_      1
-``country``                 _String_      1
-``fax``                     _String_      0..1
-``comments``                _String_      0..1
-``emails``                  _String[]_    1
-``phones``                  _String[]_    1
-``billing_contact``         _Contact_     0..1       #TODO: phone and emails for this contacts !!
-``technical_contact``       _Contact_     0..1       #TODO: this contacts should be equal to Contact on Django models!
-``administrative_contact``  _Contact_     0..1
+**uri**                     _URI_
+**name**                    String       1
+**surname**                 String       0..1
+**second_surname**          String       0..1
+**national_id**             String       1
+**type**                    String       1
+**language**                String       1
+**address**                 String       1
+**city**                    String       1
+**zipcode**                 Number       1
+**province**                ``String``   1
+**country**                 ``String``   1
+**fax**                     ``String``   0..1
+**comments**                _String_     0..1
+**emails**                  _String[]_   1
+``**phones**``              _String[]_   1
+``**billing_contact**``     _Contact_    0..1        TODO: phone and emails for this contacts
+``**technical_contact**``   _Contact_    0..1        TODO: this contacts should be equal to Contact on Django models
+``administrative_contact``  _Contact_    0..1
 ``payment``
 ==========================  ===========  ==========  ===========================
 

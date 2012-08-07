@@ -134,3 +134,34 @@ A VirtualHost resource model contains the following fields:
 * **resource_cpu_limit**      _Number_
 * ....
 
+
+Daemon [application/vnd.orchestra.Daemon+json]
+----------------------------------------------
+* **name**                  _String_
+* **content_type**          _String_
+* **active**                _Boolean_
+* **save_template**         _String_
+* **save_method**           _String_
+* **delete_template**       _String_
+* **delete_method**         _String_
+* **daemon_instances**      _Object[]_ {'host': 'expression'}
+
+
+Monitor [application/vnd.orchestra.Monitor+json]
+------------------------------------------------
+* **daemon**                _Daemon_
+* **resource**              _String_
+* **monitoring_template**   _String_
+* **monitoring_method**     _String_
+* **exceed_template**       _String_ <TODO: rename on monitor django model>
+* **exceed_method**         _String_
+* **recover_template**      _String_
+* **recover_method**        _String_
+* **allow_limit**           _Boolean_
+* **allow_unlimit**         _Boolean_
+* **default_initial**       _Number_
+* **block_size**            _Number_
+* **algorithm**             _String_
+* **period**                _String_
+* **interval**              _String_    0..1
+* **crontab**               _String_    0..1

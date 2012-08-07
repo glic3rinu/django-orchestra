@@ -1,172 +1,171 @@
-======================
-REST API Specification
-======================
+===============================================
+ django-celery - Celery Integration for Django
+===============================================
 
-Table of contents:
+.. image:: http://cloud.github.com/downloads/ask/celery/celery_128.png
+
+:Version: 2.5.5
+:Web: http://celeryproject.org/
+:Download: http://pypi.python.org/pypi/django-celery/
+:Source: http://github.com/ask/django-celery/
+:Keywords: celery, task queue, job queue, asynchronous, rabbitmq, amqp, redis,
+  python, django, webhooks, queue, distributed
+
+--
+
+django-celery provides Celery integration for Django; Using the Django ORM
+and cache backend for storing results, autodiscovery of task modules
+for applications listed in ``INSTALLED_APPS``, and more.
+
 .. contents::
     :local:
 
+Using django-celery
+===================
+
+To enable ``django-celery`` for your project you need to add ``djcelery`` to
+``INSTALLED_APPS``::
+
+    INSTALLED_APPS += ("djcelery", )
+
+then add the following lines to your ``settings.py``::
+
+    import djcelery
+    djcelery.setup_loader()
+
+Everything works the same as described in the `Celery User Manual`_, except you
+need to invoke the programs through ``manage.py``:
+
+=====================================  =====================================
+**Program**                            **Replace with**
+=====================================  =====================================
+``celeryd``                            ``python manage.py celeryd``
+``celeryctl``                          ``python manage.py celeryctl``
+``celerybeat``                         ``python manage.py celerybeat``
+``camqadm``                            ``python manage.py camqadm``
+``celeryev``                           ``python manage.py celeryev``
+``celeryd-multi``                      ``python manage.py celeryd_multi``
+=====================================  =====================================
+
+The other main difference is that configuration values are stored in
+your Django projects' ``settings.py`` module rather than in
+``celeryconfig.py``.
+
+If you're trying celery for the first time you should start by reading
+`Getting started with django-celery`_
+
+Special note for mod_wsgi users
+-------------------------------
+
+If you're using ``mod_wsgi`` to deploy your Django application you need to
+include the following in your ``.wsgi`` module::
+
+    import djcelery
+    djcelery.setup_loader()
+
+Documentation
+=============
+
+The `Celery User Manual`_ contains user guides, tutorials and an API
+reference. Also the `django-celery documentation`_, contains information
+about the Django integration.
+
+.. _`django-celery documentation`: http://django-celery.readthedocs.org/
+.. _`Celery User Manual`: http://docs.celeryproject.org/
+.. _`Getting started with django-celery`:
+    http://django-celery.readthedocs.org/en/latest/getting-started/first-steps-with-django.html
+
+Installation
+=============
+
+You can install ``django-celery`` either via the Python Package Index (PyPI)
+or from source.
+
+To install using ``pip``,::
+
+    $ pip install django-celery
+
+To install using ``easy_install``,::
+
+    $ easy_install django-celery
+
+You will then want to create the necessary tables. If you are using south_
+for schema migrations, you'll want to::
+
+    $ python manage.py migrate djcelery
+
+For those who are not using south, a normal ``syncdb`` will work::
+
+    $ python manage.py syncdb
+
+.. _south: http://pypi.python.org/pypi/South/
+
+Downloading and installing from source
+--------------------------------------
+
+Download the latest version of ``django-celery`` from
+http://pypi.python.org/pypi/django-celery/
+
+You can install it by doing the following,::
+
+    $ tar xvfz django-celery-0.0.0.tar.gz
+    $ cd django-celery-0.0.0
+    # python setup.py install # as root
+
+Using the development version
+------------------------------
+
+You can clone the git repository by doing the following::
+
+    $ git clone git://github.com/ask/django-celery.git
+
+Getting Help
+============
+
+Mailing list
+------------
+
+For discussions about the usage, development, and future of celery,
+please join the `celery-users`_ mailing list. 
+
+.. _`celery-users`: http://groups.google.com/group/celery-users/
+
+IRC
+---
+
+Come chat with us on IRC. The `#celery`_ channel is located at the `Freenode`_
+network.
+
+.. _`#celery`: irc://irc.freenode.net/celery
+.. _`Freenode`: http://freenode.net
 
 
-Panel [application/vnd.orchestra.Panel+json]
---------------------------------------------
-A Panel represents a user's view of all accessible resources.
-A "Panel" resource model contains the following fields:
+Bug tracker
+===========
 
-* **uri**                     _URI_  
-    A GET against this URI refreshes the client representation of the resources accessible to this user.
+If you have any suggestions, bug reports or annoyances please report them
+to our issue tracker at http://github.com/ask/django-celery/issues/
 
+Wiki
+====
 
-Contact [application/vnd.orchestra.Contact+json]
-------------------------------------------------
-A Contact represents 
+http://wiki.github.com/ask/celery/
 
-* **uri**                     _URI_
-* **name**                    _String_      1
-* **surname**                 _String_      0..1
-* **second_surname**          _String_      0..1
-* **national_id**             _String_      1
-* **type**                    _String_      1
-* **language**                _String_      1
-* **address**                 _String_      1
-* **city**                    _String_      1
-* **zipcode**                 _Number_      1
-* **province**                _String_      1
-* **country**                 _String_      1
-* **fax**                     _String_      0..1
-* **comments**                _String_      0..1
-* **emails**                  _String[]_    1
-* **phones**                  _String[]_    1
-* **billing_contact**         _Contact_     0..1  
-    #TODO: phone and emails for this contacts !!
-* **technical_contact**       _Contact_     0..1  
-    #TODO: this contacts should be equal to Contact on Django models!
-* **administrative_contact**  _Contact_     0..1
-* **payment**
+Contributing
+============
 
+Development of ``django-celery`` happens at Github:
+http://github.com/ask/django-celery
 
-User [application/vnd.orchestra.User+json]
-------------------------------------------
-* **username**              _String_
-* **contact**               _Contact_
-* **password**              _String_
-* **first_name**            _String_
-* **last_name**             _String_
-* **email_address**         _String_
-* **active**                _Boolean_
-* **staff_status**          _Boolean_
-* **superuser_status**      _Boolean_
-* **groups**                _Group_
-* **user_permissions**      _Permission[]_
-* **last_login**            _String_
-* **date_joined**           _String_
-* **system_user**           _SystemUser_
-* **virtual_user**          _VirtualUser
+You are highly encouraged to participate in the development.
+If you don't like Github (for some reason) you're welcome
+to send regular patches.
 
+License
+=======
 
-SystemUser [application/vnd.orchestra.SystemUser+json]
-------------------------------------------------------
-* **user**              _User_
-* **user_shell**        _String_
-* **user_uid**          _Number_
-* **primary_group**     _Group_
-* **homedir**           _String_
-* **only_ftp**          _Boolean_
+This software is licensed under the ``New BSD License``. See the ``LICENSE``
+file in the top distribution directory for the full license text.
 
+.. # vim: syntax=rst expandtab tabstop=4 shiftwidth=4 shiftround
 
-VirtualUser [application/vnd.orchestra.VirtualUser+json]
---------------------------------------------------------
-* **user**              _User_
-* **emailname**         _String_
-* **domain**            _Name_ <VirtualDomain?>
-* **home**              _String_
-
-
-Zone [application/vnd.orchestra.Zone+json]
-------------------------------------------
-* **origin**                _String_
-* **contact**               _Contact_
-* **primary_ns**            _String_
-* **hostmaster_email**      _String_
-* **serial**                _Number_
-* **slave_refresh**         _Number_
-* **slave_retry**           _Number_
-* **slave_expiration**      _Number_
-* **min_caching_time**      _Number_
-* **records**               _Object[]_  
-    Domain record i.e. {'name': ('type', 'value') }
-
-
-Name [application/vnd.orchestra.Name+json]
-------------------------------------------
-* **name**                  _String_
-* **contact**                 _Contact_
-* **extension**             _String_
-* **register_provider**     _String_
-* **name_server**           _Object[]_  
-    Name server key/value i.e. {'ns1.pangea.org': '1.1.1.1'}
-* **virtual_domain**        _Boolean_   <TODO: is redundant with virtual_domain_type?>
-* **virtual_domain_type**   _String_
-* **zone**                  _Zone_
-
-
-VirtualHost [application/vnd.orchestra.VirtualHost+json]
---------------------------------------------------------
-<TODO: REST and dynamic attributes (resources, contacts)>
-A VirtualHost represents an Apache-like virtualhost configuration, which is useful for generating all the configuration files on the web server.
-A VirtualHost resource model contains the following fields:
-
-* **server_name**             _String_
-* **uri**                     _URI_
-* **contact**                 _Contact_
-* **ip**                      _String_
-* **port**                    _Number_
-* **domains**                 _Name[]_
-* **document_root**           _String_
-* **custom_directives**       _String[]_
-* **fcgid_user**              _String_
-* **fcgid_group string**      _String_
-* **fcgid_directives**        _Object_  
-    Fcgid custom directives represented on a key/value pairs i.e. {'FcgidildeTimeout': 1202}
-* **php_version**             _String_  
-* **php_directives**          _Object_  
-    PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
-* **resource_swap_current**   _Number_  
-    PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
-* **resource_swap_limit**     _Number_  
-    PHP custom directives represented on key/value pairs i.e. {'display_errors': 'True'}
-* **resource_cpu_current**    _Number_
-* **resource_cpu_limit**      _Number_
-* ....
-
-
-Daemon [application/vnd.orchestra.Daemon+json]
-----------------------------------------------
-* **name**                  _String_
-* **content_type**          _String_
-* **active**                _Boolean_
-* **save_template**         _String_
-* **save_method**           _String_
-* **delete_template**       _String_
-* **delete_method**         _String_
-* **daemon_instances**      _Object[]_ {'host': 'expression'}
-
-
-Monitor [application/vnd.orchestra.Monitor+json]
-------------------------------------------------
-* **daemon**                _Daemon_
-* **resource**              _String_
-* **monitoring_template**   _String_
-* **monitoring_method**     _String_
-* **exceed_template**       _String_ <TODO: rename on monitor django model>
-* **exceed_method**         _String_
-* **recover_template**      _String_
-* **recover_method**        _String_
-* **allow_limit**           _Boolean_
-* **allow_unlimit**         _Boolean_
-* **default_initial**       _Number_
-* **block_size**            _Number_
-* **algorithm**             _String_
-* **period**                _String_
-* **interval**              _String_    0..1
-* **crontab**               _String_    0..1

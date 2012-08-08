@@ -16,11 +16,11 @@ Panel [application/vnd.orchestra.Panel+json]
 A Panel represents a user's view of all accessible resources.
 A "Panel" resource model contains the following fields:
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 uri                         URI          1           A GET against this URI refreshes the client representation of the resources accessible to this user.
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 
 Contact [application/vnd.orchestra.Contact+json]
@@ -28,9 +28,9 @@ Contact [application/vnd.orchestra.Contact+json]
 
 A Contact represents 
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 uri                         URI          1 
 name                        String       1  
 surname                     String       0..1   
@@ -50,7 +50,7 @@ phones                      String[]     1
 billing_contact             Contact      0..1  
 technical_contact           Contact      0..1    
 administrative_contact      Contact      0..1  
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 TODO: phone and emails for this contacts this contacts should be equal to Contact on Django models
 
@@ -60,9 +60,9 @@ User [application/vnd.orchestra.User+json]
 
 A User represents 
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 username                    String
 uri                         URI          1 
 contact                     Contact
@@ -79,7 +79,7 @@ last_login                  String
 date_joined                 String
 system_user                 SystemUser
 virtual_user                VirtualUser
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 
 SystemUser [application/vnd.orchestra.SystemUser+json]
@@ -101,22 +101,22 @@ only_ftp                    Boolean
 VirtualUser [application/vnd.orchestra.VirtualUser+json]
 ========================================================
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 user                        User
 uri                         URI          1 
 emailname                   String 
 domain                      Name                     <VirtualDomain?>
 home                        String 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 Zone [application/vnd.orchestra.Zone+json]
 ==========================================
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 origin                      String
 uri                         URI          1 
 contact                     Contact 
@@ -128,13 +128,13 @@ slave_retry                 Number
 slave_expiration            Number 
 min_caching_time            Number 
 records                     Object[]                 Domain record i.e. {'name': ('type', 'value') }
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 Name [application/vnd.orchestra.Name+json]
 ==========================================
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 name                        String 
 extension                   String 
 uri                         URI          1 
@@ -144,7 +144,7 @@ name_server                 Object[]                 Name server key/value i.e. 
 virtual_domain              Boolean                  <TODO: is redundant with virtual domain type?>
 virtual_domain_type         String 
 zone                        Zone 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 VirtualHost [application/vnd.orchestra.VirtualHost+json]
 ========================================================
@@ -152,9 +152,9 @@ VirtualHost [application/vnd.orchestra.VirtualHost+json]
 A VirtualHost represents an Apache-like virtualhost configuration, which is useful for generating all the configuration files on the web server.
 A VirtualHost resource model contains the following fields:
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 server_name                 String 
 uri                         URI 
 contact                     Contact 
@@ -172,14 +172,14 @@ resource_swap_current       Number                   PHP custom directives repre
 resource_swap_limit         Number                   PHP custom directives represented on key/value pairs i.e. {'display errors': 'True'}
 resource_cpu_current        Number 
 resource_cpu_limit          Number 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 Daemon [application/vnd.orchestra.Daemon+json]
 ==============================================
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 name                        String
 uri                         URI          1 
 content_type                String 
@@ -189,14 +189,14 @@ save_method                 String
 delete_template             String 
 delete_method               String 
 daemon_instances            Object[]                 {'host': 'expression'}
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 Monitor [application/vnd.orchestra.Monitor+json]
 ================================================
 
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 **Field name**              **Type**     **Occurs**  **Description**
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 uri                         URI          1 
 daemon                      Daemon
 resource                    String 
@@ -214,7 +214,7 @@ algorithm                   String
 period                      String 
 interval                    String       0..1
 crontab                     String       0..1
-==========================  ===========  ==========  ===========================
+==========================  ============  ==========  ===========================
 
 
 #Layout inspired from http://kenai.com/projects/suncloudapis/pages/CloudAPISpecificationResourceModels

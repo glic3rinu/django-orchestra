@@ -26,3 +26,7 @@
 == Coding style ==
 * less coupling     function(contact) <- wrong
                     function(contact.id, contact.date) <- good
+
+== ORM ==
+* Group_by: Members.objects.values('designation').annotate(dcount=Count('designation'))
+

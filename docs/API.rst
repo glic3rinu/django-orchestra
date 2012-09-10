@@ -44,8 +44,7 @@ zipcode                     Number        1
 province                    String        1        
 country                     String        1       
 fax                         String        0..1     
-comments                    String        0..1   
-emails                      String[]      1       
+9emails                      String[]      1       
 phones                      String[]      1     
 billing_contact             Contact       0..1  
 technical_contact           Contact       0..1    

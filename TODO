@@ -1,4 +1,3 @@
-
 == Tasks/Celery ==
 * Tasks wrapped within a transaction?
 * Reload workers when an update is done on their code: 

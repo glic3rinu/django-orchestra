@@ -29,3 +29,5 @@
 == ORM ==
 * Group_by: Members.objects.values('designation').annotate(dcount=Count('designation'))
 
+
+* http://djangosnippets.org/snippets/2753/

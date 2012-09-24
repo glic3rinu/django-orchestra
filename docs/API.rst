@@ -20,6 +20,9 @@ A "Panel" resource model contains the following fields:
 **Field name**              **Type**      **Occurs**  **Description**
 ==========================  ============  ==========  ===========================
 uri                         URI           1           A GET against this URI refreshes the client representation of the resources accessible to this user.
+services                    Object[]      0..1        {'DNS': {'names': "names_URI", 'zones': "zones_URI}, {'Mail': {'Virtual_user': "virtual_user_URI" .... 
+accountancy                 Object[]      0..1
+administration              Object[]      0..1
 ==========================  ============  ==========  ===========================
 
 
@@ -44,7 +47,7 @@ zipcode                     Number        1
 province                    String        1        
 country                     String        1       
 fax                         String        0..1     
-9emails                      String[]      1       
+emails                      String[]      1       
 phones                      String[]      1     
 billing_contact             Contact       0..1  
 technical_contact           Contact       0..1    

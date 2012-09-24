@@ -126,6 +126,7 @@ INSTALLED_APPS = (
     'admin_tools.dashboard',
     'djangoplugins',
     'djcelery',
+    'djangorestframework',
 
     # Django contrib
     'django.contrib.auth',

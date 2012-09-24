@@ -15,4 +15,8 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin_tools/', include('admin_tools.urls')),
 
+    # django-rest-framework browsable API
+    url(r'^api-auth/', include('djangorestframework.urls', namespace='djangorestframework')),
+    
+    url(r'^contacts/', include('contacts.urls')),
 )

@@ -1,3 +1,5 @@
+**This project has been reactivated :)**
+
 django-orchestra
 ================
 

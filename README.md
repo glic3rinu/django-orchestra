@@ -1,26 +1,22 @@
-django-orchestra
-================
+# Django Orchestra
 
 Orchestra is a framework for building web hosting control panels.
 
-[http://django-orchestra.readthedocs.org/en/latest/][Docs]
+[Docs]: http://django-orchestra.readthedocs.org/en/latest/
 
 
-Motivation
-----------
+# Motivation
 There are a lot of widely used open source hosting control panels however none of them seems apropiate when you already have a production service infrastructure or simply you want a particular architecture.
 
 The goal of this project is provide the tools for easily build a fully featured control panel that fits any service architecture.
 
 
-Overview
---------
+# Overview
 * Based on reusable applications, feel free to reuse what you need
 * Web interface based on django.contrib.admin, enhaced with admin_tools and fluent_dashboard
 
 
-Quick Install
--------------
+# Quick Install
 - Create a system user for running the server
 ```bash
     adduser orchestra
@@ -53,8 +49,7 @@ Quick Install
     sudo python manage.py setupnginx
 
 
-Upgrade
--------
+# Upgrade
 To upgrade your Orchestra installation to the last release you can use upgradeorchestra management command. Before rolling the upgrade it is strongly recommended to check the release notes.
     sudo python manage.py upgradeorchestra
 
@@ -66,8 +61,7 @@ Additionally the following command can be used in order to determine the current
 
 
 
-Development and Testing Setup
------------------------------
+# Development and Testing Setup
 If you are planing to do some serious development or testing you really should be doing it under the following setup
 
 - Install the vct container as described here

@@ -1,6 +1,9 @@
 #!/bin/bash
 
 
+set -u
+
+
 SUITE="wheezy"
 lxc-create -n orchestra -t debian
 

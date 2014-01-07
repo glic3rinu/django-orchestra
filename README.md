@@ -41,31 +41,31 @@ sudo pip install django-orchestra
 sudo controller-admin.sh install_requirements
 ```
 
-- Create a new instance
+4. Create a new instance
 ```bash
 cd ~orchestra
 orchestra-admin clone <project_name> # ie: controlpanel
 cd <project_name>
 ```
 
-- Create and configure a Postgres database
+5. Create and configure a Postgres database
 ```bash
 sudo python manage.py setuppostgres --db_user orchestra --db_password <password> --db_name <project_name>
 python manage.py syncdb
 python manage.py migrate
 ```
 
-- Create a panel administrator
+6. Create a panel administrator
 ```bash
 python manage.py createsuperuser
 ```
 
-- Configure celeryd
+7. Configure celeryd
 ```bash
 sudo python manage.py setupcelery --username orchestra
 ```
 
-- Configure the web server:
+8. Configure the web server:
 ```bash
 python manage.py collectstatic --noinput
 sudo apt-get install nginx uwsgi uwsgi-plugin-python
@@ -96,8 +96,8 @@ Development and Testing Setup
 -----------------------------
 If you are planing to do some serious development or testing you really should be doing it under the following setup
 
-- Install the vct container as described [here](http://django-orchestra.readthedocs.org/en/latest)
-- Remove existing confine-controller egg and install it from the repository
+1. Install the vct container as described [here](http://django-orchestra.readthedocs.org/en/latest)
+2. Remove existing confine-controller egg and install it from the repository
 ```bash
 sudo rm -r /usr/local/lib/python2.7/dist-packages/orchestra
 su - orchestra
@@ -105,25 +105,25 @@ git clone https://github.com/glic3rinu/django-orchestra.git ~orchestra/django-or
 echo ~vct/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
 ```
 
-- Install missing requirements
+3. Install missing requirements
 ```bash
 sudo ~orchestra/django-orchestra/orchestra/bin/orchestra-admin install_requirements
 ```
 
-- You can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for example
+4. You can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for example
 
-- Don't forget to apply all the changes
+5. Don't forget to apply all the changes
 ```bash
 cd ~orchestra/<project_name>/
 sudo python manage.py restartservices
 ```
 
-- And use Django's development server as usual
+6. And use Django's development server as usual
 ```bash
 python manage.py runserver 0.0.0.0:8888
 ```
 
-- A convenient practice can be mounting ~vct on your host machine so you can code with your favorite IDE, sshfs can be used for that
+7. A convenient practice can be mounting ~vct on your host machine so you can code with your favorite IDE, sshfs can be used for that
 ```bash
 # On your host
 mkdir ~<user>/orchestra

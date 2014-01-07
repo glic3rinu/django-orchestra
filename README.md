@@ -22,7 +22,7 @@ Overview
 Quick Install
 -------------
 
-- Create a system user for running the server
+1. Create a system user for running the server
 ```bash
 adduser orchestra
 # not required but it will be very handy
@@ -30,13 +30,13 @@ sudo adduser orchestra sudo
 su - orchestra
 ```
 
-- Install django-orchestra's source code
+2. Install django-orchestra's source code
 ```bash
 sudo apt-get install python-pip
 sudo pip install django-orchestra
 ```
 
-- Install requirements
+3. Install requirements
 ```bash
 sudo controller-admin.sh install_requirements
 ```

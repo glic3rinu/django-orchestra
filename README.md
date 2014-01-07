@@ -58,7 +58,6 @@ sudo python manage.py setuppostgres --db_user orchestra --db_password <password>
 python manage.py syncdb
 python manage.py migrate
 ```
-
 - Create a panel administrator```bash
 python manage.py createsuperuser
 ```

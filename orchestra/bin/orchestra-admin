@@ -1,0 +1,203 @@
+#!/bin/bash
+
+set -u
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+
+function help () {
+    if [[ $# -gt 1 ]]; then
+        CMD="print_${2}_help"
+        $CMD
+    else
+        print_help
+    fi
+}
+
+
+function print_help () {
+    cat <<- EOF 
+		
+		${bold}NAME${normal}
+		    ${bold}orchestra-admin${normal} - Orchetsra administration script
+		
+		${bold}OPTIONS${normal}
+		    ${bold}install_requirements${normal}
+		        Installs all Orchestra requirements using apt-get and pip
+		    
+		    ${bold}clone${normal}
+		        Creates a new Django-orchestra instance
+		    
+		    ${bold}help${normal}
+		        Displays this help text or related help page as argument
+		        for example:
+		            ${bold}orchestra-admin help clone${normal}
+		
+		EOF
+}
+# in
+
+
+show () {
+    echo " ${bold}\$ ${@}${normal}"
+}
+export -f show
+
+
+run () {
+    show "${@}"
+    "${@}"
+}
+export -f run
+
+
+check_root () {
+    [ $(whoami) != 'root' ] && { echo -e "\nErr. This should be run as root\n" >&2; exit 1; }
+}
+export -f check_root
+
+
+get_orchestra_dir () {
+    if ! $(echo "import orchestra"|python 2> /dev/null); then
+        echo -e "\nErr. orchestra not installed.\n" >&2
+        exit 1
+    fi
+    PATH=$(echo "import orchestra, os; print os.path.dirname(os.path.realpath(orchestra.__file__))" | python)
+    echo $PATH
+}
+export -f get_orchestra_dir
+
+
+function print_install_requirements_help () {
+    cat <<- EOF 
+		
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin install_requirements${normal} - Installs all Orchestra requirements using apt-get and pip
+		
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+		
+		EOF
+}
+
+
+function install_requirements () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+    
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+    
+    check_root
+    ORCHESTRA_PATH=$(get_orchestra_dir)
+    
+    APT="python-pip \
+         python-psycopg2 \
+         postgresql \
+         rabbitmq-server"
+    
+    PIP="Django==1.6.1 \
+         django-celery-email==1.0.3 \
+         django-fluent-dashboard==0.3.5 \
+         django-admin-tools==0.5.1 \
+         South==0.8.1 \
+         IPy==0.81 \
+         django-extensions==1.1.1 \
+         django-transaction-signals==1.0.0 \
+         django-celery==3.0.23 \
+         celery==3.0.24 \
+         kombu==2.5.14 "
+    
+    # Make sure locales are in place before installing postgres
+    if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then
+        run sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /etc/locale.gen
+        run locale-gen
+        update-locale LANG=en_US.UTF-8
+    fi
+    
+    run apt-get update
+    run apt-get install -y $APT
+    run pip install $PIP
+    
+    # Some versions of rabbitmq-server will not start automatically by default unless ...
+    sed -i "s/# Default-Start:.*/# Default-Start:     2 3 4 5/" /etc/init.d/rabbitmq-server
+    sed -i "s/# Default-Stop:.*/# Default-Stop:      0 1 6/" /etc/init.d/rabbitmq-server
+    run update-rc.d rabbitmq-server defaults
+}
+export -f install_requirements
+
+
+print_clone_help () {
+    cat <<- EOF
+		
+		${bold}NAME${normal}
+		    ${bold}orchestra-admin clone${normal} - Create a new Django-Orchestra instance
+		
+		${bold}SYNOPSIS${normal}
+		    Options: [ -h ]
+		    
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		            This help message
+		    
+		${bold}EXAMPLES${normal}
+		    orchestra-admin clone controlpanel
+		
+		EOF
+}
+
+
+function clone () {
+    local PROJECT_NAME="$2"; shift
+    
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+    
+    set -- $opts
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_clone_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    
+    unset OPTIND
+    unset opt
+    
+    [ $(whoami) == 'root' ] && { echo -e "\nYou don't want to run this as root\n" >&2; exit 1; }
+    ORCHESTRA_PATH=$(get_confine_dir)
+    if [[ ! -e $PROJECT_NAME/manage.py ]]; then
+        run django-admin.py startproject $PROJECT_NAME --template="${ORCHESTRA_PATH}/conf/project_template"
+        # This is a workaround for this issue https://github.com/pypa/pip/issues/317
+        run chmod +x $PROJECT_NAME/manage.py
+        # End of workaround ###
+    else
+        echo "Not cloning: $PROJECT_NAME already exists."
+    fi
+    # Install bash autocompletition for django commands
+    if [[ ! $(grep 'source $HOME/.django_bash_completion.sh' ~/.bashrc &> /dev/null) ]]; then
+        # run wget https://raw.github.com/django/django/master/extras/django_bash_completion \
+        #    --no-check-certificate -O ~/.django_bash_completion.sh
+        cp ${ORCHESTRA_PATH}/bin/django_bash_completion.sh ~/.django_bash_completion.sh
+        echo 'source $HOME/.django_bash_completion.sh' >> ~/.bashrc
+    fi
+}
+export -f clone
+
+
+[ $# -lt 1 ] && print_help
+$1 "${@}"

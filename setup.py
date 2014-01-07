@@ -1,47 +1,49 @@
-#!/usr/bin/env python
-
-import ez_setup
-ez_setup.use_setuptools()
+import os, sys
+from distutils.sysconfig import get_python_lib
 from setuptools import setup, find_packages
-import os, os.path
-import sys
 
-DIRNAME = os.path.dirname(__file__)
-APPDIR = os.path.join(DIRNAME, 'orchestra/apps')
-if not APPDIR in sys.path:
-    sys.path.insert(0,APPDIR)
 
-# Dynamically calculate the version based on django.VERSION.
-#version = __import__('satchmo_store').__version__
-packages = find_packages('orchestra/apps')
-packages.append('media')
-#packages.append('docs')
-packages.append('orchestra_skeleton')
+# allow setup.py to be run from any path
+os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-setup(name = "Orchestra",
-      version = "1",
-      author = "Marc Aymerich",
-      author_email = "marcay@pangea.org",
-      url = "http://orchestra.calmisko.org",
-      license = "GPLv3",
-      description = "Web hosting control panel.",
-      long_description = "Orchestra is a fully featured web hosting control panel based on django reusable applications.",
-      include_package_data = True,
-      zip_safe = False,
-      package_dir = {
-      '' : 'orchestra/apps',
-      'media' : 'orchestra/media',
-#      'docs' : 'docs',
-      'orchestra_skeleton' : 'orchestra/projects/skeleton',
-      },
-#      scripts=['scripts/clonesatchmo.py'],
-#      setup_requires=["setuptools_hg"],
-      packages = packages,
-      classifiers = [
-      'Development Status :: 1 - Alpha',
-      'License :: OSI Approved :: GPL v3 License',
-      'Operating System :: OS Independent', 
-      'Topic :: Server/Management',
-      ]
+packages = find_packages('.')
+
+# Dynamically calculate the version based on orchestra.VERSION.
+version = __import__('orchestra').get_version()
+
+
+setup(
+    name = "django-orchestra",
+    version = version,
+    author = "Marc Aymerich",
+    author_email = "marcay@pangea.org",
+    url = "http://orchestra.pangea.org",
+    license = "GPLv3",
+    description = "A framework for building web hosting control panels",
+    long_description = (
+        "There are a lot of widely used open source hosting control panels, "
+        "however none of them seems apropiate when you already have a production "
+        "service infrastructure or simply you want a particular architecture.\n"
+        "The goal of this project is to provide the tools for easily build a fully "
+        "featured control panel that fits any service architecture."),
+    include_package_data = True,
+    scripts=['orchestra/bin/orchestra-admin'],
+    packages = packages,
+    classifiers = [
+        'Development Status :: 1 - Alpha',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+        'Topic :: Internet :: WWW/HTTP :: Site Management',
+        'Topic :: Software Development :: Libraries :: Application Frameworks',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Server/Management',
+    ]
 )
-

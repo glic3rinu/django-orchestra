@@ -53,16 +53,13 @@ cd <project_name>
 ```
 
 - Create and configure a Postgres database
-
 ```bash
 sudo python manage.py setuppostgres --db_user orchestra --db_password <password> --db_name <project_name>
 python manage.py syncdb
 python manage.py migrate
 ```
 
-- Create a panel administrator
-
-```bash
+- Create a panel administrator```bash
 python manage.py createsuperuser
 ```
 
@@ -71,7 +68,6 @@ python manage.py createsuperuser
 ```bash
 sudo python manage.py setupcelery --username orchestra
 ```
-
 - Configure the web server:
 
 ```bash

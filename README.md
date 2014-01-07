@@ -1,7 +1,9 @@
+**This project is in early development stage**
+
 Django Orchestra
 ================
 
-Orchestra is a framework for building web hosting control panels.
+Orchestra is a Django-based framework for building web hosting control panels.
 
 [Docs](http://django-orchestra.readthedocs.org/en/latest/)
 
@@ -21,6 +23,13 @@ Overview
 
 Quick Install
 -------------
+
+Django-orchestra ships with a set of management commands for automating some of the installation steps.
+
+These commands are meant to be run within a **clean** Debian-like distribution, you should be specially careful while following this guide on a customized system.
+
+Django-orchestra can be installed in any Linux system, however it is **strongly recommended** to chose the reference platform for your deployment (Debian 7.0 wheezy and Python 2.7).
+
 
 1. Create a system user for running the server
 ```bash
@@ -75,12 +84,12 @@ sudo python manage.py setupnginx
 
 Upgrade
 -------
-To upgrade your Orchestra installation to the last release you can use upgradeorchestra management command. Before rolling the upgrade it is strongly recommended to check the release notes.
+To upgrade your Orchestra installation to the last release you can use `upgradeorchestra` management command. Before rolling the upgrade it is strongly recommended to check the [release notes](http://django-orchestra.readthedocs.org/en/latest/).
 ```bash
 sudo python manage.py upgradeorchestra
 ```
 
-Current in development version (master branch) can be installed by
+Current in *development* version (master branch) can be installed by
 ```bash
 sudo python manage.py upgradeorchestra --orchestra_version dev
 ```
@@ -110,7 +119,7 @@ echo ~vct/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/or
 sudo ~orchestra/django-orchestra/orchestra/bin/orchestra-admin install_requirements
 ```
 
-4. You can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for example
+4. You can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for [example](http://django-orchestra.readthedocs.org/en/latest/).
 
 5. Don't forget to apply all the changes
 ```bash
@@ -123,7 +132,7 @@ sudo python manage.py restartservices
 python manage.py runserver 0.0.0.0:8888
 ```
 
-7. A convenient practice can be mounting ~vct on your host machine so you can code with your favorite IDE, sshfs can be used for that
+7. A convenient practice can be mounting `~vct` on your host machine so you can code with your favourite IDE, sshfs can be used for that
 ```bash
 # On your host
 mkdir ~<user>/orchestra

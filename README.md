@@ -3,7 +3,7 @@ django-orchestra
 
 Orchestra is a framework for building web hosting control panels.
 
-`Documentation <http://django-orchestra.readthedocs.org/en/latest/>`_
+[http://django-orchestra.readthedocs.org/en/latest/][Docs]
 
 
 Motivation
@@ -22,13 +22,17 @@ Overview
 Quick Install
 -------------
 - Create a system user for running the server
+```bash
     adduser orchestra
     # not required but it will be very handy
     sudo adduser orchestra sudo
     su - orchestra
+```
 - Install django-orchestra's source code
+```bash
     sudo apt-get install python-pip
     sudo pip install django-orchestra
+```
 - Install requirements
     sudo controller-admin.sh install_requirements
 - Create a new instance
@@ -68,26 +72,29 @@ If you are planing to do some serious development or testing you really should b
 
 - Install the vct container as described here
 - Remove existing confine-controller egg and install it from the repository
-
+```bash
     sudo rm -r /usr/local/lib/python2.7/dist-packages/orchestra
     su - orchestra
     git clone https://github.com/glic3rinu/django-orchestra.git ~orchestra/django-orchestra
     echo ~vct/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
-
+```
 - Install missing requirements
-
+```bash
     sudo ~orchestra/django-orchestra/orchestra/bin/orchestra-admin install_requirements
-
+```
 - You can place your custom settings under ~orchestra/<project_name>/<project_name>/local_settings.py for example
 - Don't forget to apply all the changes
-
+```bash
     cd ~orchestra/<project_name>/
     sudo python manage.py restartservices
+```
 - And use Django's development server as usual
-
+```bash
     python manage.py runserver 0.0.0.0:8888
+```
 - A convenient practice can be mounting ~vct on your host machine so you can code with your favorite IDE, sshfs can be used for that
-
+```bash
     # On your host
     mkdir ~<user>/orchestra
     sshfs orchestra@<container-ip>: ~<user>/orchestra
+```

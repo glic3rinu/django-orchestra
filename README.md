@@ -68,19 +68,26 @@ If you are planing to do some serious development or testing you really should b
 
 - Install the vct container as described here
 - Remove existing confine-controller egg and install it from the repository
+
     sudo rm -r /usr/local/lib/python2.7/dist-packages/orchestra
     su - orchestra
     git clone https://github.com/glic3rinu/django-orchestra.git ~orchestra/django-orchestra
     echo ~vct/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
+
 - Install missing requirements
+
     sudo ~orchestra/django-orchestra/orchestra/bin/orchestra-admin install_requirements
+
 - You can place your custom settings under ~orchestra/<project_name>/<project_name>/local_settings.py for example
 - Don't forget to apply all the changes
+
     cd ~orchestra/<project_name>/
     sudo python manage.py restartservices
 - And use Django's development server as usual
+
     python manage.py runserver 0.0.0.0:8888
 - A convenient practice can be mounting ~vct on your host machine so you can code with your favorite IDE, sshfs can be used for that
+
     # On your host
     mkdir ~<user>/orchestra
     sshfs orchestra@<container-ip>: ~<user>/orchestra

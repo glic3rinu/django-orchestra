@@ -3,13 +3,18 @@
 
 set -u
 
-
-SUITE="wheezy"
-lxc-create -n orchestra -t debian
-
 CONTAINER="/var/lib/lxc/orchestra/rootfs"
 USER="orchestra"
 PASSWORD="orchestra"
+SUITE="wheezy"
+
+
+[ $(whoami) != 'root' ] && {
+    echo -e "\nErr. This script should run as root\n" >&2
+    exit 1
+}
+
+lxc-create -n orchestra -t debian
 
 mount --bind /dev $CONTAINER/dev
 mount -t sysfs none $CONTAINER/sys

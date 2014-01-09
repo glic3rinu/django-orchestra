@@ -6,7 +6,7 @@ set -u
 CONTAINER="/var/lib/lxc/orchestra/rootfs"
 USER="orchestra"
 PASSWORD="orchestra"
-SUITE="wheezy"
+export SUITE="wheezy"
 
 
 [ $(whoami) != 'root' ] && {

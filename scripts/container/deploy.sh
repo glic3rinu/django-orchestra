@@ -28,14 +28,14 @@ CURRENT_VERSION=$(python -c "from orchestra import get_version; print get_versio
 
 if [[ ! $CURRENT_VERSION ]]; then
     # First Orchestra installation
-    run git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra
+    run "git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra"
     echo ~/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
     sudo cp ~orchestra/django-orchestra/orchestra/bin/orchestra-admin /usr/local/
     sudo orchestra-admin install_requirements
 fi
 
 if [[ ! -e $BASE_DIR ]]; then
-    run orchestra-admin clone $BASE_DIR
+    run "orchestra-admin clone $BASE_DIR"
 fi
 
 sudo service postgresql start
@@ -52,8 +52,8 @@ fi
 sudo python MANAGE setupcelery --username $USER --processes 2
 
 # Install and configure Nginx web server
-run mkdir -p $BASE_DIR/static
-run python MANAGE collectstatic --noinput
+run "mkdir -p $BASE_DIR/static"
+run "python MANAGE collectstatic --noinput"
 sudo apt-get install -y nginx uwsgi uwsgi-plugin-python
 sudo python manage.py setupnginx
 

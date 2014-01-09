@@ -5,6 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from orchestra.utils.apps import is_installed
+from orchestra.utils.paths import get_site_root
 from orchestra.utils.system import run, check_root
 
 
@@ -66,10 +67,11 @@ class Command(BaseCommand):
             run('chmod +x %s' % orchestra_admin)
             run("%s install_requirements" % orchestra_admin)
             
-            run("python manage.py syncdb --noinput")
-            run("python manage.py migrate --noinput")
+            manage_path = os.path.join(get_site_root(), 'manage.py')
+            run("python %s syncdb --noinput" % manage_path)
+            run("python %s migrate --noinput" % manage_path)
             if options.get('restart'):
-                run("python manage.py restartservices")
+                run("python %s restartservices" % manage_path)
         
         if not version:
             self.stderr.write('\n'

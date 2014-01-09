@@ -53,7 +53,7 @@ sudo orchestra-admin install_requirements
 4. Create a new instance
 ```bash
 cd ~orchestra
-orchestra-admin clone <project_name> # ie: controlpanel
+orchestra-admin clone <project_name> # i.e.: panel
 cd <project_name>
 ```
 

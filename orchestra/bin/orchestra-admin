@@ -179,7 +179,7 @@ function clone () {
     unset opt
     
     [ $(whoami) == 'root' ] && { echo -e "\nYou don't want to run this as root\n" >&2; exit 1; }
-    ORCHESTRA_PATH=$(get_confine_dir) || { echo "Error getting confine dir"; exit 1; }
+    ORCHESTRA_PATH=$(get_orchestra_dir) || { echo "Error getting orchestra dir"; exit 1; }
     if [[ ! -e $PROJECT_NAME/manage.py ]]; then
         run django-admin.py startproject $PROJECT_NAME --template="${ORCHESTRA_PATH}/conf/project_template"
         # This is a workaround for this issue https://github.com/pypa/pip/issues/317

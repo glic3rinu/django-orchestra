@@ -47,7 +47,7 @@ sudo pip install django-orchestra
 
 3. Install requirements
 ```bash
-sudo controller-admin.sh install_requirements
+sudo orchestra-admin install_requirements
 ```
 
 4. Create a new instance
@@ -105,13 +105,13 @@ Development and Testing Setup
 -----------------------------
 If you are planing to do some serious development or testing you really should be doing it under the following setup
 
-1. Install the vct container as described [here](http://django-orchestra.readthedocs.org/en/latest)
-2. Remove existing confine-controller egg and install it from the repository
+1. Install the Orchestra container as described [here](http://django-orchestra.readthedocs.org/en/latest)
+2. Remove existing django-orchestra egg and install it from the repository
 ```bash
 sudo rm -r /usr/local/lib/python2.7/dist-packages/orchestra
 su - orchestra
 git clone https://github.com/glic3rinu/django-orchestra.git ~orchestra/django-orchestra
-echo ~vct/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
+echo ~orchestra/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
 ```
 
 3. Install missing requirements
@@ -132,7 +132,7 @@ sudo python manage.py restartservices
 python manage.py runserver 0.0.0.0:8888
 ```
 
-7. A convenient practice can be mounting `~vct` on your host machine so you can code with your favourite IDE, sshfs can be used for that
+7. A convenient practice can be mounting `~orchestra` on your host machine so you can code with your favourite IDE, sshfs can be used for that
 ```bash
 # On your host
 mkdir ~<user>/orchestra

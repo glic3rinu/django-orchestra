@@ -1,4 +1,4 @@
-from controller.conf.base_settings import *
+from orchestra.conf.base_settings import *
 
 
 DEBUG = True

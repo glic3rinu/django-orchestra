@@ -66,10 +66,10 @@ sudo python $MANAGE restartservices
 
 # Create a orchestra user
 cat <<- EOF | python $MANAGE shell
-    from users.models import *
-    if not User.objects.filter(username='orchestra').exists():
-        print 'Creating orchestra superuser'
-        User.objects.create_superuser('orchestra', 'orchestra@localhost', 'orchestra')
+from users.models import *
+if not User.objects.filter(username='orchestra').exists():
+    print 'Creating orchestra superuser'
+    User.objects.create_superuser('orchestra', 'orchestra@localhost', 'orchestra')
     
 EOF
 

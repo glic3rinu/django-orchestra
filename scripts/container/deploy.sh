@@ -37,7 +37,7 @@ if [[ ! $CURRENT_VERSION ]]; then
 fi
 
 if [[ ! -e $BASE_DIR ]]; then
-    cd $HOME/
+    cd $HOME
     run "orchestra-admin clone $PROJECT_NAME"
     cd -
 fi

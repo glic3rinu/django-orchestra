@@ -70,6 +70,7 @@ from users.models import *
 if not User.objects.filter(username='orchestra').exists():
     print 'Creating orchestra superuser'
     User.objects.create_superuser('orchestra', 'orchestra@localhost', 'orchestra')
-    
+
 EOF
 
+echo

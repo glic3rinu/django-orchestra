@@ -35,7 +35,7 @@ class Command(BaseCommand):
         
         celery_config = (
             '# Name of nodes to start, here we have a single node\n'
-            'CELERYD_NODES="w1 w2"\n'
+            'CELERYD_NODES="w1"\n'
             '\n'
             '# Where to chdir at start.\n'
             'CELERYD_CHDIR="%(site_root)s"\n'
@@ -44,7 +44,7 @@ class Command(BaseCommand):
             'CELERYD_MULTI="$CELERYD_CHDIR/manage.py celeryd_multi"\n'
             '\n'
             '# Extra arguments to celeryd\n'
-            'CELERYD_OPTS="-P:w1 processes -c:w1 %(processes)s -Q:w1 celery \n'
+            'CELERYD_OPTS="-P:w1 processes -c:w1 %(processes)s -Q:w1 celery"\n'
             '\n'
             '# Name of the celery config module.\n'
             'CELERY_CONFIG_MODULE="celeryconfig"\n'

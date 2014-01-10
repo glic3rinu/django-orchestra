@@ -138,9 +138,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    
-    # django-orchestra apps that should load last
-    'permissions', # because of overriding admin templates
 )
 
 

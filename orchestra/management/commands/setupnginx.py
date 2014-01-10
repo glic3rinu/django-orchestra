@@ -110,9 +110,6 @@ class Command(BaseCommand):
         
         run('ln -s /etc/uwsgi/apps-available/%(project_name)s.ini /etc/uwsgi/apps-enabled/' % context, err_codes=[0,1])
         
-        # Give read permissions to cert key file
-        run('chmod g+r %(cert_key_path)s' % context)
-        
         # nginx should start after tincd
         current = "\$local_fs \$remote_fs \$network \$syslog"
         run('sed -i "s/  %s$/  %s \$named/g" /etc/init.d/nginx' % (current, current))

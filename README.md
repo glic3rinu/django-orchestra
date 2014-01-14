@@ -20,7 +20,7 @@ Development or Testing Setup
 -----------------------------
 If you are planing to do some development or perhaps just checking out this project, you may want to consider doing it under the following setup
 
-1. Create a basic [LXC](http://linuxcontainers.org/) container, start it, and get inside.
+1. Create a basic [LXC](http://linuxcontainers.org/) container, start it and get inside.
 ```bash
 wget -O /tmp/create.sh \
        https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh

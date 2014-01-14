@@ -30,7 +30,7 @@ If you are planing to do some development or perhaps just checking out this proj
 wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh -O /tmp/create.sh
 chmod +x /tmp/create.sh
 sudo /tmp/create.sh
-lxc-start -n orchestra
+sudo lxc-start -n orchestra
 ```
 
 2. Deploy Django-orchestra development environment inside the container

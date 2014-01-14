@@ -9,9 +9,9 @@ from . import settings
 
 # TODO validations and max_length!
 
-class VirtualDomain(models.Model):
+class Domain(models.Model):
     """
-    Represents a virtual domain, used for mail servers
+    Represents a domain that is associated to a mail server
     
     http://www.postfix.org/VIRTUAL_README.html#canonical
     """
@@ -34,9 +34,9 @@ class VirtualDomain(models.Model):
         return str(self.domain)
 
 
-class VirtualUser(models.Model):
+class MailBox(models.Model):
     """
-    Represents a virtual mail box 
+    Represents an email box for mail delivery
     
     http://www.postfix.org/VIRTUAL_README.html#virtual_mailbox
     """
@@ -63,9 +63,9 @@ class VirtualUser(models.Model):
         return "%s@%s" % (self.emailname, self.domain)
 
 
-class VirtualAliase(models.Model):
+class Aliase(models.Model):
     """
-    Represents virtual alias
+    Represents aliases. An alias can have the following features
     
       * Catch-all, when emailname is not provided
       * Redirection, when destination is a full email address

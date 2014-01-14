@@ -47,7 +47,8 @@ Django-orchestra source code is now under `~orchestra/django-orchestra` and an O
 
 4. And use Django's development server as usual
 ```bash
-cd ~orchestra/panel
+su - orchestra
+cd panel
 python manage.py runserver 0.0.0.0:8888
 ```
 

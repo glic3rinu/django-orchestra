@@ -73,4 +73,11 @@ if not User.objects.filter(username='orchestra').exists():
 
 EOF
 
+# Change to development settings
+PRODUCTION="from orchestra.conf.production_settings import *"
+DEVEL="from orchestra.conf.devel_settings import *"
+sed -i "s/^$PRODUCTION$/#$PRODUCTION/" $BASE_DIR/$PROJECT_NAME/settings.py
+sed -s "s/^#$DEVEL/$DEVEL/" $BASE_DIR/$PROJECT_NAME/settings.py
+
+
 echo

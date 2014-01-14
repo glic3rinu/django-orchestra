@@ -107,17 +107,17 @@ function install_requirements () {
          postgresql \
          rabbitmq-server"
     
-    PIP="Django==1.6.1 \
+    PIP="django==1.6.1 \
          django-celery-email==1.0.3 \
          django-fluent-dashboard==0.3.5 \
-         django-admin-tools==0.5.1 \
+         https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
          South==0.8.1 \
          IPy==0.81 \
          django-extensions==1.1.1 \
          django-transaction-signals==1.0.0 \
-         django-celery==3.0.23 \
-         celery==3.0.24 \
-         kombu==2.5.14 "
+         django-celery==3.1.1 \
+         celery==3.1.7 \
+         kombu==3.0.8 "
     
     # Make sure locales are in place before installing postgres
     if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then

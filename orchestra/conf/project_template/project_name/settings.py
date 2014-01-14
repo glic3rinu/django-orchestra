@@ -13,6 +13,12 @@ from orchestra.conf.production_settings import *
 # Development settings
 # from orchestra.conf.devel_settings import *
 
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
 # Hardcoded values can leak through source control. Consider loading
 # the secret key from an environment variable or a file instead.
@@ -36,6 +42,13 @@ DATABASES = {
         'PORT': '',                # Set to empty string for default. Not used with sqlite3.
     }
 }
+
+
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = os.path.join(BASE_PATH, 'static')
 
 
 # EMAIL_HOST = 'smtp.yourhost.eu'

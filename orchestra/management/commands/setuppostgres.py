@@ -13,9 +13,9 @@ class Command(BaseCommand):
         self.option_list = BaseCommand.option_list + (
             make_option('--db_name', dest='db_name', default='orchestra',
                 help='Specifies the database to create.'),
-            make_option('--db_user', dest='db_user', default='confine',
+            make_option('--db_user', dest='db_user', default='orchestra',
                 help='Specifies the database to create.'),
-            make_option('--db_password', dest='db_password', default='confine',
+            make_option('--db_password', dest='db_password', default='orchestra',
                 help='Specifies the database to create.'),
             make_option('--db_host', dest='db_host', default='localhost',
                 help='Specifies the database to create.'),

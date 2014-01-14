@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # This is a helper script for creating a basic LXC container with some convenient packages
-
+# ./create.sh [container_name]
 
 set -u
 
-CONTAINER="/var/lib/lxc/orchestra/rootfs"
-PASSWORD="orchestra"
+NAME==${1:-orchestra}
+CONTAINER="/var/lib/lxc/$NAME/rootfs"
+PASSWORD=$NAME
 export SUITE="wheezy"
 
 
@@ -15,17 +16,17 @@ export SUITE="wheezy"
     exit 1
 }
 
-lxc-create -n orchestra -t debian
+lxc-create -n $NAME -t debian
 
 mount --bind /dev $CONTAINER/dev
 mount -t sysfs none $CONTAINER/sys
 trap "umount $CONTAINER/{dev,sys}; exit 1;"INT TERM EXIT
 
 echo "root:$PASSWORD" | chroot $CONTAINER chpasswd
-sed -i "s/\tlocalhost$/\tlocalhost orchestra/" $CONTAINER/etc/hosts
+sed -i "s/\tlocalhost$/\tlocalhost $NAME/" $CONTAINER/etc/hosts
 
 chroot $CONTAINER apt-get install -y --force-yes \
-    nano git screen sudo iputils-ping python2.7 python-pip wget curl
+    nano git screen sudo iputils-ping python2.7 python-pip wget curl lxc
 
 sleep 0.1
 umount $CONTAINER/{dev,sys}

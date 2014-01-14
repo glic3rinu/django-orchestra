@@ -1,0 +1,11 @@
+from django.conf import settings
+
+
+SYSTEMUSERS_UID_START = getattr(settings, 'SYSTEMUSERS_UID_START', 1001)
+
+SYSTEMUSERS_DEFAULT_PRIMARY_GROUP_PK = getattr(settings, 'SYSTEMUSERS_DEFAULT_PRIMARY_GROUP_PK', 1)
+
+SYSTEMUSERS_DEFAULT_BASE_HOME = getattr(settings, 'SYSTEMUSERS_DEFAULT_BASE_HOME', '/home/')
+
+SYSTEMUSERS_DEFAULT_SHELL = getattr(settings, 'SYSTEMUSERS_DEFAULT_SHELL', '/bin/false')
+

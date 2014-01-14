@@ -22,7 +22,8 @@ If you are planing to do some development or perhaps just checking out this proj
 
 1. Create a basic [LXC](http://linuxcontainers.org/) container, start it, and enter.
 ```bash
-wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh -O /tmp/create.sh
+wget -O /tmp/create.sh \
+       https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh
 chmod +x /tmp/create.sh
 sudo /tmp/create.sh
 sudo lxc-start -n orchestra
@@ -30,7 +31,8 @@ sudo lxc-start -n orchestra
 
 2. Deploy Django-orchestra development environment inside the container
 ```bash
-wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh -O /tmp/deploy.sh
+wget -O /tmp/deploy.sh \
+       https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh
 chmod +x /tmp/deploy.sh
 cd /tmp/ # Moving away from /root before running deploy.sh
 /tmp/deploy.sh

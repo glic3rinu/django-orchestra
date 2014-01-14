@@ -98,7 +98,7 @@ cd <project_name>
 
 5. Create and configure a Postgres database
 ```bash
-sudo python manage.py setuppostgres --db_user orchestra --db_password <password> --db_name <project_name>
+sudo python manage.py setuppostgres
 python manage.py syncdb
 python manage.py migrate
 ```

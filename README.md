@@ -21,7 +21,7 @@ Overview
 * Web interface based on `django.contrib.admin`, enhaced with `admin_tools` and `fluent_dashboard`
 
 
-Development and Testing Setup
+Development or Testing Setup
 -----------------------------
 If you are planing to do some serious development or testing you really should be doing it under the following setup
 

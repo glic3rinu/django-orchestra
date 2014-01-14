@@ -35,7 +35,7 @@ sudo lxc-start -n orchestra
 
 2. Deploy Django-orchestra development environment inside the container
 ```bash
-wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/delpoy.sh -O /tmp/deploy.sh
+wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh -O /tmp/deploy.sh
 chmod +x /tmp/deploy.sh
 sudo /tmp/deploy.sh
 ```

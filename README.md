@@ -35,7 +35,7 @@ chmod +x /tmp/deploy.sh
 cd /tmp/ # Moving away from /root before running deploy.sh
 /tmp/deploy.sh
 ```
-Django-orchestra source code is now under `~orchestra/django-orchestra` and an Orchestra instance called panel is under `~orchestra/panel`
+Django-orchestra source code should be now under `~orchestra/django-orchestra` and an Orchestra instance called _panel_ under `~orchestra/panel`
 
 
 3. Nginx is serving on port 80 but Django's development server can also be used

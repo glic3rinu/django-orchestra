@@ -21,6 +21,45 @@ Overview
 * Web interface based on `django.contrib.admin`, enhaced with `admin_tools` and `fluent_dashboard`
 
 
+Development and Testing Setup
+-----------------------------
+If you are planing to do some serious development or testing you really should be doing it under the following setup
+
+1. Create a basic LXC container
+```bash
+wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh -O /tmp/create.sh
+chmod +x /tmp/create.sh
+sudo /tmp/create.sh
+```
+2. Deploy Django-orchestra development environment
+```bash
+wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/delpoy.sh -O /tmp/deploy.sh
+chmod +x /tmp/deploy.sh
+sudo /tmp/deploy.sh
+```
+
+3. Optionally you can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for [example](http://django-orchestra.readthedocs.org/en/latest/).
+
+4. And use Django's development server as usual
+```bash
+python manage.py runserver 0.0.0.0:8888
+```
+
+5. A convenient practice can be mounting `~orchestra` on your host machine so you can code with your favourite IDE, sshfs can be used for that
+```bash
+# On your host
+mkdir ~<user>/orchestra
+sshfs orchestra@<container-ip>: ~<user>/orchestra
+```
+
+6. To upgrade to current master just
+```bash
+cd ~orchestra/django-orchestra/
+git pull origin master
+sudo ./scripts/container/deploy.sh
+```
+
+
 Quick Install
 -------------
 
@@ -97,44 +136,4 @@ sudo python manage.py upgradeorchestra --orchestra_version dev
 Additionally the following command can be used in order to determine the currently installed version:
 ```bash
 python manage.py orchestraversion
-```
-
-
-
-Development and Testing Setup
------------------------------
-If you are planing to do some serious development or testing you really should be doing it under the following setup
-
-1. Install the Orchestra container as described [here](http://django-orchestra.readthedocs.org/en/latest)
-2. Remove existing django-orchestra egg and install it from the repository
-```bash
-sudo rm -r /usr/local/lib/python2.7/dist-packages/orchestra
-su - orchestra
-git clone https://github.com/glic3rinu/django-orchestra.git ~orchestra/django-orchestra
-echo ~orchestra/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
-```
-
-3. Install missing requirements
-```bash
-sudo ~orchestra/django-orchestra/orchestra/bin/orchestra-admin install_requirements
-```
-
-4. You can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for [example](http://django-orchestra.readthedocs.org/en/latest/).
-
-5. Don't forget to apply all the changes
-```bash
-cd ~orchestra/<project_name>/
-sudo python manage.py restartservices
-```
-
-6. And use Django's development server as usual
-```bash
-python manage.py runserver 0.0.0.0:8888
-```
-
-7. A convenient practice can be mounting `~orchestra` on your host machine so you can code with your favourite IDE, sshfs can be used for that
-```bash
-# On your host
-mkdir ~<user>/orchestra
-sshfs orchestra@<container-ip>: ~<user>/orchestra
 ```

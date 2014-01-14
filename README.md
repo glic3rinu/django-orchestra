@@ -12,7 +12,7 @@ Motivation
 ----------
 There are a lot of widely used open source hosting control panels, however, none of them seems apropiate when you already have an existing service infrastructure or simply you want your services to run on a particular architecture.
 
-The goal of this project is to provide the tools for easily build a fully featured control panel that fits any service architecture.
+The goal of this project is to provide the tools for easily build a fully featured control panel that is not coupled with any particular service architecture.
 
 
 

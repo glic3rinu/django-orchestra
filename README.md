@@ -38,23 +38,21 @@ cd /tmp/ # Moving away from /root before running deploy.sh
 Django-orchestra source code is now under `~orchestra/django-orchestra` and an Orchestra instance called panel is under `~orchestra/panel`
 
 
-3. Optionally you can place your custom settings under `~orchestra/panel/panel/local_settings.py` for [example](http://django-orchestra.readthedocs.org/en/latest/).
-
-4. And use Django's development server as usual
+3. Nginx is serving on port 80 but Django's development server can also be used
 ```bash
 su - orchestra
 cd panel
 python manage.py runserver 0.0.0.0:8888
 ```
 
-5. A convenient practice can be mounting `~orchestra` on your host machine so you can code with your favourite IDE, sshfs can be used for that
+4. A convenient practice can be mounting `~orchestra` on your host machine so you can code with your favourite IDE, sshfs can be used for that
 ```bash
 # On your host
 mkdir ~<user>/orchestra
 sshfs orchestra@<container-ip>: ~<user>/orchestra
 ```
 
-6. To upgrade to current master just
+5. To upgrade to current master just
 ```bash
 cd ~orchestra/django-orchestra/
 git pull origin master

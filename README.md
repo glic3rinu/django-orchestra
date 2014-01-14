@@ -20,9 +20,10 @@ Development or Testing Setup
 -----------------------------
 If you are planing to do some development or perhaps just checking out this project, you may want to consider doing it under the following setup
 
-1. Create a basic [LXC](http://linuxcontainers.org/) container, start it, and enter.
+1. Create a basic [LXC](http://linuxcontainers.org/) container, start it and get inside.
 ```bash
-wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh -O /tmp/create.sh
+wget -O /tmp/create.sh \
+       https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh
 chmod +x /tmp/create.sh
 sudo /tmp/create.sh
 sudo lxc-start -n orchestra
@@ -30,12 +31,13 @@ sudo lxc-start -n orchestra
 
 2. Deploy Django-orchestra development environment inside the container
 ```bash
-wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh -O /tmp/deploy.sh
+wget -O /tmp/deploy.sh \
+       https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh
 chmod +x /tmp/deploy.sh
 cd /tmp/ # Moving away from /root before running deploy.sh
 /tmp/deploy.sh
 ```
-Django-orchestra source code is now under `~orchestra/django-orchestra` and an Orchestra instance called panel is under `~orchestra/panel`
+Django-orchestra source code should be now under `~orchestra/django-orchestra` and an Orchestra instance called _panel_ under `~orchestra/panel`
 
 
 3. Nginx is serving on port 80 but Django's development server can also be used
@@ -98,7 +100,7 @@ cd <project_name>
 
 5. Create and configure a Postgres database
 ```bash
-sudo python manage.py setuppostgres --db_user orchestra --db_password <password> --db_name <project_name>
+sudo python manage.py setuppostgres
 python manage.py syncdb
 python manage.py migrate
 ```
@@ -137,3 +139,22 @@ Additionally the following command can be used in order to determine the current
 ```bash
 python manage.py orchestraversion
 ```
+
+
+License
+-------
+Copyright (C) 2013 Marc Aymerich
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+Status API Training Shop Blog About

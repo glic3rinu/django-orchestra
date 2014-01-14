@@ -28,6 +28,7 @@ run () {
 }
 
 
+# Create a system user for running Orchestra
 useradd orchestra -s "/bin/bash"
 echo "$USER:$PASSWORD" | chpasswd
 mkdir /home/$USER
@@ -69,6 +70,7 @@ run "mkdir $BASE_DIR/static"
 run "python $MANAGE collectstatic --noinput"
 sudo apt-get install -y nginx uwsgi uwsgi-plugin-python
 sudo python $MANAGE setupnginx
+sudo service nginx start
 
 # Apply changes
 sudo python $MANAGE restartservices
@@ -76,9 +78,9 @@ sudo python $MANAGE restartservices
 # Create a orchestra user
 cat <<- EOF | python $MANAGE shell
 from django.contrib.auth.models import User
-if not User.objects.filter(username='orchestra').exists():
+if not User.objects.filter(username=$USER).exists():
     print 'Creating orchestra superuser'
-    User.objects.create_superuser('orchestra', 'orchestra@localhost', 'orchestra')
+    User.objects.create_superuser($USER, "'$USER@localhost'", $PASSWORD)
 
 EOF
 
@@ -88,4 +90,12 @@ DEVEL="from orchestra.conf.devel_settings import \*"
 sed -i "s/^$PRODUCTION/# $PRODUCTION/" $BASE_DIR/$PROJECT_NAME/settings.py
 sed -i "s/^#\s*$DEVEL/$DEVEL/" $BASE_DIR/$PROJECT_NAME/settings.py
 
-echo
+
+cat << EOF
+
+${bold}
+ * Admin interface login *
+    - username: $USER
+    - password: $PASSWORD
+${normal}
+EOF

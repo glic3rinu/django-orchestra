@@ -15,11 +15,6 @@ There are a lot of widely used open source hosting control panels, however, none
 The goal of this project is to provide the tools for easily build a fully featured control panel that fits any service architecture.
 
 
-Overview
---------
-* Based on reusable applications, feel free to reuse what you need
-* Web interface based on `django.contrib.admin`, enhaced with `admin_tools` and `fluent_dashboard`
-
 
 Development or Testing Setup
 -----------------------------

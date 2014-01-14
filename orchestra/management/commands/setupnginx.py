@@ -36,7 +36,6 @@ class Command(BaseCommand):
             'project_name': get_project_name(),
             'project_root': get_project_root(),
             'site_root': get_site_root(),
-            'media_root': settings.MEDIA_ROOT,
             'static_root': settings.STATIC_ROOT,
             'user': options.get('user'),
             'group': options.get('group') or options.get('user'),
@@ -52,10 +51,6 @@ class Command(BaseCommand):
             '    location / {\n'
             '        uwsgi_pass unix:///var/run/uwsgi/app/%(project_name)s/socket;\n'
             '        include uwsgi_params;\n'
-            '    }\n'
-            '    location /media  {\n'
-            '        alias %(media_root)s;\n'
-            '        expires 30d;\n'
             '    }\n'
             '    location /static {\n'
             '        alias %(static_root)s;\n'

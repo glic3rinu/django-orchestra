@@ -13,6 +13,7 @@ normal=$(tput sgr0)
 }
 
 USER='orchestra'
+PASSWORD="orchestra"
 HOME=$(eval echo "~$USER")
 PROJECT_NAME='panel'
 BASE_DIR="$HOME/$PROJECT_NAME"
@@ -24,7 +25,12 @@ run () {
 }
 
 
+useradd orchestra -s "/bin/bash"
+echo "$USER:$PASSWORD" | chpasswd
+mkdir /home/$USER
+chown $USER.$USER /home/$USER
 sudo adduser $USER sudo
+
 
 CURRENT_VERSION=$(python -c "from orchestra import get_version; print get_version();" 2> /dev/null || false)
 
@@ -66,7 +72,7 @@ sudo python $MANAGE restartservices
 
 # Create a orchestra user
 cat <<- EOF | python $MANAGE shell
-from users.models import *
+from django.contrib.auth.models import User
 if not User.objects.filter(username='orchestra').exists():
     print 'Creating orchestra superuser'
     User.objects.create_superuser('orchestra', 'orchestra@localhost', 'orchestra')
@@ -74,10 +80,9 @@ if not User.objects.filter(username='orchestra').exists():
 EOF
 
 # Change to development settings
-PRODUCTION="from orchestra.conf.production_settings import *"
-DEVEL="from orchestra.conf.devel_settings import *"
-sed -i "s/^$PRODUCTION$/#$PRODUCTION/" $BASE_DIR/$PROJECT_NAME/settings.py
-sed -s "s/^#$DEVEL/$DEVEL/" $BASE_DIR/$PROJECT_NAME/settings.py
-
+PRODUCTION="from orchestra.conf.production_settings import \*"
+DEVEL="from orchestra.conf.devel_settings import \*"
+sed -i "s/^$PRODUCTION/# $PRODUCTION/" $BASE_DIR/$PROJECT_NAME/settings.py
+sed -i "s/^#\s*$DEVEL/$DEVEL/" $BASE_DIR/$PROJECT_NAME/settings.py
 
 echo

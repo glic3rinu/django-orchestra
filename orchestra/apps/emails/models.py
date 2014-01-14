@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -33,7 +35,11 @@ class VirtualDomain(models.Model):
 
 
 class VirtualUser(models.Model):
-    """ Represents an email user """
+    """
+    Represents a virtual mail box 
+    
+    http://www.postfix.org/VIRTUAL_README.html#virtual_mailbox
+    """
     user = models.OneToOneField(User, primary_key=True, verbose_name=_("User"))
     emailname = models.CharField(_("Email name"), max_length=23)
     domain = models.ForeignKey(VirtualDomain, verbose_name=_("Domain"))
@@ -59,10 +65,13 @@ class VirtualUser(models.Model):
 
 class VirtualAliase(models.Model):
     """
-    Represents email aliases, providing the following features:
-        * Catchall when emailname is not provided
-        * Redirection
-        * Alias
+    Represents virtual alias
+    
+      * Catch-all, when emailname is not provided
+      * Redirection, when destination is a full email address
+      * Alias, when destination is an emailname
+    
+    http://www.postfix.org/VIRTUAL_README.html#virtual_alias
     """
     emailname = models.CharField(_("Email name"), max_length=256, blank=True)
     domain = models.ForeignKey(VirtualDomain, verbose_name=_("Domain"))
@@ -72,4 +81,9 @@ class VirtualAliase(models.Model):
         unique_together = ("emailname", "domain")
     
     def __unicode__(self):
+        return self.source
+    
+    @property
+    def source(self):
+        """ Parity with destination """
         return "%s@%s" % (self.emailname, self.domain)

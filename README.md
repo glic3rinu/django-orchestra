@@ -39,7 +39,7 @@ wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container
 chmod +x /tmp/deploy.sh
 cd /tmp/ # Moving away from /root before running deploy.sh
 /tmp/deploy.sh
-
+  
 # Django-orchestra source code is now under
 ~orchestra/django-orchestra
 # An Orchestra instance called panel is under
@@ -50,6 +50,7 @@ cd /tmp/ # Moving away from /root before running deploy.sh
 
 4. And use Django's development server as usual
 ```bash
+cd ~orchestra/panel
 python manage.py runserver 0.0.0.0:8888
 ```
 

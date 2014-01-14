@@ -25,7 +25,7 @@ Development and Testing Setup
 -----------------------------
 If you are planing to do some serious development or testing you really should be doing it under the following setup
 
-1. Create a basic LXC container, start it, and enter.
+1. Create a basic [LXC](http://linuxcontainers.org/) container, start it, and enter.
 ```bash
 wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh -O /tmp/create.sh
 chmod +x /tmp/create.sh

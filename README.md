@@ -62,8 +62,8 @@ sudo ./scripts/container/deploy.sh
 ```
 
 
-Quick Install
--------------
+Installation
+------------
 
 Django-orchestra ships with a set of management commands for automating some of the installation steps.
 

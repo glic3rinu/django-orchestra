@@ -2,6 +2,9 @@
 
 # Automated development deployment of django-orchestra
 
+# This script is safe to run several times, for example in order to upgrade your deployment
+
+
 set -u
 bold=$(tput bold)
 normal=$(tput sgr0)

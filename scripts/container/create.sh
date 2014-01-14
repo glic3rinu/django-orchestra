@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This is a helper script for creating a basic LXC container with some convenient packages
+
 
 set -u
 

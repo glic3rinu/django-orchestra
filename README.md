@@ -31,6 +31,7 @@ wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container
 chmod +x /tmp/create.sh
 sudo /tmp/create.sh
 ```
+
 2. Deploy Django-orchestra development environment
 ```bash
 wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/delpoy.sh -O /tmp/deploy.sh

@@ -24,7 +24,8 @@ trap "umount $CONTAINER/{dev,sys}; exit 1;"INT TERM EXIT
 echo "root:$PASSWORD" | chroot $CONTAINER chpasswd
 sed -i "s/\tlocalhost$/\tlocalhost orchestra/" $CONTAINER/etc/hosts
 
-chroot $CONTAINER apt-get install -y --force-yes nano git screen sudo iputils-ping python2.7 python-pip
+chroot $CONTAINER apt-get install -y --force-yes \
+    nano git screen sudo iputils-ping python2.7 python-pip wget curl
 
 sleep 0.1
 umount $CONTAINER/{dev,sys}

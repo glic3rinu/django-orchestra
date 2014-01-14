@@ -25,14 +25,15 @@ Development and Testing Setup
 -----------------------------
 If you are planing to do some serious development or testing you really should be doing it under the following setup
 
-1. Create a basic LXC container
+1. Create a basic LXC container, start it, and enter.
 ```bash
 wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh -O /tmp/create.sh
 chmod +x /tmp/create.sh
 sudo /tmp/create.sh
+lxc-start -n orchestra
 ```
 
-2. Deploy Django-orchestra development environment
+2. Deploy Django-orchestra development environment inside the container
 ```bash
 wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/delpoy.sh -O /tmp/deploy.sh
 chmod +x /tmp/deploy.sh

@@ -37,7 +37,8 @@ sudo lxc-start -n orchestra
 ```bash
 wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh -O /tmp/deploy.sh
 chmod +x /tmp/deploy.sh
-cd /tmp/; /tmp/deploy.sh
+cd /tmp/ # Moving away from /root before running deploy.sh
+/tmp/deploy.sh
 ```
 
 3. Optionally you can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for [example](http://django-orchestra.readthedocs.org/en/latest/).

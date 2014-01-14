@@ -39,9 +39,14 @@ wget https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container
 chmod +x /tmp/deploy.sh
 cd /tmp/ # Moving away from /root before running deploy.sh
 /tmp/deploy.sh
+
+# Django-orchestra source code is now under
+~orchestra/django-orchestra
+# An Orchestra instance called panel is under
+~orchestra/panel
 ```
 
-3. Optionally you can place your custom settings under `~orchestra/<project_name>/<project_name>/local_settings.py` for [example](http://django-orchestra.readthedocs.org/en/latest/).
+3. Optionally you can place your custom settings under `~orchestra/panel/panel/local_settings.py` for [example](http://django-orchestra.readthedocs.org/en/latest/).
 
 4. And use Django's development server as usual
 ```bash

@@ -23,7 +23,7 @@ Overview
 
 Development or Testing Setup
 -----------------------------
-If you are planing to do some serious development or testing you really should be doing it under the following setup
+If you are planing to do some development or perhaps just checking out this project, you may want to consider doing it under the following setup
 
 1. Create a basic [LXC](http://linuxcontainers.org/) container, start it, and enter.
 ```bash

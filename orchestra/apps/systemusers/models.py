@@ -16,15 +16,15 @@ class SystemUser(models.Model):
     """
     
     uid = models.PositiveIntegerField("UID", primary_key=True)
-    user = models.OneToOneField(get_user_model(), verbose_name=_("User"))
-    group = models.ForeignKey(_("Primary group"),
+    user = models.OneToOneField(get_user_model(), verbose_name=_("user"))
+    group = models.ForeignKey(_("primary group"),
             default=settings.SYSTEMUSERS_DEFAULT_PRIMARY_GROUP_PK)
-    home = models.CharField(_("Home directory"), max_length=256,
+    home = models.CharField(_("home directory"), max_length=256,
             default=settings.SYSTEMUSERS_DEFAULT_BASE_HOMEDIR)
-    description = models.CharField(_("Description"), max_length=256)
-    shell = models.CharField(_("Shell"), max_length=256,
+    description = models.CharField(_("description"), max_length=256)
+    shell = models.CharField(_("shell"), max_length=256,
             default=settings.SYSTEMUSERS_DEFAULT_SHELL)
-    ftp_only = models.BooleanField(_("FTP Only"), default=False)
+    ftp_only = models.BooleanField(_("FTP only"), default=False)
     
     def __unicode__(self):
         return self.username
@@ -54,10 +54,9 @@ class SystemUser(models.Model):
 class SystemGroup(models.Model):
     """ Represents the content of /etc/groups UNIX file """
     gid = models.PositiveIntegerField("GID", primary_key=True)
-    name = models.CharField(_("Name"), max_length=30)
+    name = models.CharField(_("name"), max_length=30)
     users = models.ManyToManyField(SystemUser, verbose_name=_("Users"), null=True,
             blank=True)
     
     def __unicode__(self):
         return self.name
-

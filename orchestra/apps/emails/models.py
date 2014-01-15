@@ -16,14 +16,14 @@ class Domain(models.Model):
     http://www.postfix.org/VIRTUAL_README.html#canonical
     """
     
-    CANONICAL = 'canonical' # Server domain name
-    HOSTED = 'hosted'       # Other domains hosted on the server besides canonical
-    RELAY = 'relay'         # Backup MX for other domains
+    CANONICAL = 'CANONICAL' # Server domain name
+    HOSTED = 'HOSTED'       # Other domains hosted on the server besides canonical
+    RELAY = 'RELAY'         # Backup MX for other domains
     
     DOMAIN_TYPES = (
-        (CANONICAL, _('Canonical domain')),
-        (HOSTED, _('Hosted domain')),
-        (RELAY, _('Relay domain')),
+        (CANONICAL, _('canonical domain')),
+        (HOSTED, _('hosted domain')),
+        (RELAY, _('relay domain')),
     )
     
     domain = models.OneToOneField(settings.EMAILS_VIRTUAL_DOMAIN_MODEL,
@@ -40,14 +40,14 @@ class MailBox(models.Model):
     
     http://www.postfix.org/VIRTUAL_README.html#virtual_mailbox
     """
-    user = models.OneToOneField(User, primary_key=True, verbose_name=_("User"))
-    emailname = models.CharField(_("Email name"), max_length=23)
-    domain = models.ForeignKey(VirtualDomain, verbose_name=_("Domain"))
-    home = models.CharField(_("Home directory"), max_length=256, unique=True,
+    user = models.OneToOneField(User, primary_key=True, verbose_name=_("user"))
+    emailname = models.CharField(_("email name"), max_length=23)
+    domain = models.ForeignKey(VirtualDomain, verbose_name=_("domain"))
+    home = models.CharField(_("home directory"), max_length=256, unique=True,
             blank=True, default=settings.EMAILS_DEFAULT_BASE_HOME)
     
     class Meta:
-        unique_together = ("emailname", "domain")
+        unique_together = ('emailname', 'domain')
     
     def __unicode__(self):
         return self.address
@@ -63,7 +63,7 @@ class MailBox(models.Model):
         return "%s@%s" % (self.emailname, self.domain)
 
 
-class Aliase(models.Model):
+class Alias(models.Model):
     """
     Represents aliases. An alias can have the following features
     
@@ -73,12 +73,13 @@ class Aliase(models.Model):
     
     http://www.postfix.org/VIRTUAL_README.html#virtual_alias
     """
-    emailname = models.CharField(_("Email name"), max_length=256, blank=True)
-    domain = models.ForeignKey(VirtualDomain, verbose_name=_("Domain"))
-    destination = models.CharField(_("Destination"), max_length=256)
+    emailname = models.CharField(_("email name"), max_length=256, blank=True)
+    domain = models.ForeignKey(VirtualDomain, verbose_name=_("domain"))
+    destination = models.CharField(_("destination"), max_length=256)
     
     class Meta:
-        unique_together = ("emailname", "domain")
+        unique_together = ('emailname', 'domain')
+        verbose_name_plurarl = 'aliases'
     
     def __unicode__(self):
         return self.source

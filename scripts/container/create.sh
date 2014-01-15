@@ -5,7 +5,7 @@
 
 set -u
 
-NAME==${1:-orchestra}
+NAME=${1:-orchestra}
 CONTAINER="/var/lib/lxc/$NAME/rootfs"
 PASSWORD=$NAME
 export SUITE="wheezy"
@@ -26,7 +26,7 @@ echo "root:$PASSWORD" | chroot $CONTAINER chpasswd
 sed -i "s/\tlocalhost$/\tlocalhost $NAME/" $CONTAINER/etc/hosts
 
 chroot $CONTAINER apt-get install -y --force-yes \
-    nano git screen sudo iputils-ping python2.7 python-pip wget curl lxc
+    nano git screen sudo iputils-ping python2.7 python-pip wget curl
 
 sleep 0.1
 umount $CONTAINER/{dev,sys}

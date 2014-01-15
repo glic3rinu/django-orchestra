@@ -10,7 +10,7 @@ class Web(models.Model):
             default=settings.WEB_DEFAULT_IP)
     port = models.PositiveIntegerField(_("port"), choices=settings.WEBS_PORT_CHOICES,
             default=settings.WEBS_DEFAULT_PORT)
-    names = models.ManyToManyField(settings.WEBS_DOMAIN_MODEL, verbose_name=_("Domains"))
+    names = models.ManyToManyField(settings.WEBS_DOMAIN_MODEL, verbose_name=_("domains"))
     root = models.CharField(_("root"), max_length=256, blank=True,
             default=settings.WEBS_DEFAULT_ROOT)
     directives = models.TextField(blank=True, help_text=_("Custom fields in template "

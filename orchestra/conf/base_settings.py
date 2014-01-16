@@ -63,6 +63,7 @@ TEMPLATE_CONTEXT_PROCESSORS =(
     "django.core.context_processors.media",
     "django.contrib.messages.context_processors.messages",
     "django.core.context_processors.request",
+    "orchestra.core.context_processors.site",
 )
 
 
@@ -98,6 +99,48 @@ EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 #################################
 ## 3RD PARTY APPS CONIGURATION ##
 #################################
+
+# Admin Tools
+#ADMIN_TOOLS_MENU = 'orchestra.menu.CustomMenu'
+
+# Fluent dashboard
+ADMIN_TOOLS_INDEX_DASHBOARD = 'fluent_dashboard.dashboard.FluentIndexDashboard'
+FLUENT_DASHBOARD_ICON_THEME = '../orchestra/icons'
+
+FLUENT_DASHBOARD_APP_GROUPS = (
+    ('Servicess', {
+        'models': (
+            'dns.zones.models.Domain',
+            'webs.models.Web',
+            'emails.models.Mailbox',
+            'lists.models.List',
+            'databases.models.Database',
+        ),
+        'collapsible': True,
+    }),
+    ('Administration', {
+        'models': (
+            'django.contrib.auth.models.User',
+            'djcelery.models.TaskState',
+            'daemons.models.Daemon',
+        ),
+        'collapsible': True,
+    }),
+)
+
+FLUENT_DASHBOARD_APP_ICONS = {
+    'zones/zone': "zone.png",
+    'names/name': "name.png",
+    'webs/web': "virtualhost.png",
+    'systemusers/users': "systemuser.png",
+    'mail/virtualuser': "virtualuser.png",
+    'lists/list': "list.png",
+    'databases/database': "database.png",
+    'entities/entity': "contact.png",
+    'djcelery/taskstate': "taskstate.png",
+    'daemons/daemon': "daemon.png",
+    'apps/instance': "apsinstance.png",
+}
 
 # Django-celery
 import djcelery

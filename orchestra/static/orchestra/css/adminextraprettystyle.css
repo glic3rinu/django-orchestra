@@ -1,0 +1,95 @@
+body {
+    background:#FBFAF9 url(/static/orchestra/images/page-gradient.png)top left repeat-x;
+}
+
+#header #branding h1 {
+    margin: 0;
+    padding: 5px 10px;
+    background: transparent url(/static/orchestra/images/orchestra-logo.png) 10px 5px no-repeat;
+    text-indent: 0;
+    height: 31px;
+    font-size: 18px;
+    color: whitesmoke;
+    font-weight: bold;
+    padding-left: 50px;
+    line-height: 30px;
+}
+
+.version:before {
+    content: "v";
+    opacity: 0.6;
+    padding-right: 0.25em;
+}
+
+.version {
+  font-size: 60%;
+}
+
+#header #branding:hover a {
+    text-decoration: none;
+    color: azure;
+}
+
+#header-branding {
+    background-image: url(/static/admin_tools/images/admin-tools.png);
+    width: 100%;
+    z-index: -1;
+    height: 41px;
+    position: absolute;
+}
+
+#header-menu {
+    background: url(/static/admin_tools/images/admin-tools.png) 0 295px;
+    width: 100%;
+    z-index: -1;
+    margin-top: 41px;
+    height: 41px;
+    position: absolute;
+}
+
+#header-breadcrumb {
+    width: 100%;
+    z-index: -1;
+    margin-top: 76px;
+    height: 69px;
+    position: absolute;
+    background-attachment: scroll; background-clip: border-box; 
+    background-color: rgb(255, 255, 255); 
+    background-image: url(/static/admin/img/nav-bg-reverse.gif);
+    background-origin: padding-box;
+    background-position: 0px -8px;
+    background-size: auto;
+    border-bottom-color: rgb(237, 237, 237);
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-left-color: rgb(153, 153, 153);
+    border-left-style: none;
+    border-left-width: 0px;
+    border-right-color: rgb(153, 153, 153);
+    border-right-style: none;
+    border-right-width: 0px;
+    border-top-color: rgb(153, 153, 153);
+    border-top-style: none;
+    border-top-width: 0px; 
+    color: white;
+    height: 13px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    background-repeat: repeat-x;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#container {
+    max-width:1100px;
+    margin:0 auto;
+}
+
+#header {
+    background:none;
+}
+
+.dashboard-module   {
+    background-color: white;
+}
+

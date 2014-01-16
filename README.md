@@ -16,7 +16,7 @@ The goal of this project is to provide the tools for easily build a fully featur
 
 
 
-Development or Testing Setup
+Development and Testing Setup
 -----------------------------
 If you are planing to do some development or perhaps just checking out this project, you may want to consider doing it under the following setup
 

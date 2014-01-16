@@ -35,6 +35,6 @@ class Instance(models.Model):
     host = models.ForeignKey(Host, verbose_name=_("host"))
     router = models.CharField(_("router"), max_length=256, blank=True,
             help_text=_("Python expression used for selecting the targe host"))
-
+    
     class Meta:
         unique_together = ('daemon', 'host')

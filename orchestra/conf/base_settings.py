@@ -73,6 +73,7 @@ INSTALLED_APPS = (
     
     'applications',
     'daemons',
+    'daemons.backends.ssh',
     'databases',
     'dns.zones',
     'dns.names',

@@ -68,6 +68,7 @@ class Command(BaseCommand):
             run("%s install_requirements" % orchestra_admin)
             
             manage_path = os.path.join(get_site_root(), 'manage.py')
+            run("python %s collectstatic --noinput" % manage_path)
             run("python %s syncdb --noinput" % manage_path)
             run("python %s migrate --noinput" % manage_path)
             if options.get('restart'):

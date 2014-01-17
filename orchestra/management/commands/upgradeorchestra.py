@@ -26,7 +26,7 @@ class Command(BaseCommand):
             )
     
     option_list = BaseCommand.option_list
-    help = "Upgrading Orchestra's installation"
+    help = "Upgrading Orchestra's installation. Desired version is accepted as argument"
     can_import_settings = False
     leave_locale_alone = True
     
@@ -37,6 +37,8 @@ class Command(BaseCommand):
         
         if current_path is not None:
             desired_version = options.get('version')
+            if args:
+                desired_version = args[0]
             if current_version == desired_version:
                 msg = "Not upgrading, you already have version %s installed"
                 raise CommandError(msg % desired_version)

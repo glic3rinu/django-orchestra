@@ -120,13 +120,22 @@ ADMIN_TOOLS_INDEX_DASHBOARD = 'fluent_dashboard.dashboard.FluentIndexDashboard'
 FLUENT_DASHBOARD_ICON_THEME = '../orchestra/icons'
 
 FLUENT_DASHBOARD_APP_GROUPS = (
-    ('Servicess', {
+    ('Services', {
         'models': (
-            'dns.zones.models.Domain',
+            'systemusers.models.SystemUser',
             'webs.models.Web',
             'emails.models.Mailbox',
             'lists.models.List',
+            'dns.zones.models.Zone',
+            'dns.names.models.Name',
             'databases.models.Database',
+            'applications.models.Application',
+        ),
+        'collapsible': True,
+    }),
+    ('Billing', {
+        'models': (
+            'entities.models.Entity',
         ),
         'collapsible': True,
     }),
@@ -141,17 +150,22 @@ FLUENT_DASHBOARD_APP_GROUPS = (
 )
 
 FLUENT_DASHBOARD_APP_ICONS = {
+    # Services
+    'systemusers/systemuser': "TuxBox.png",
+    'webs/web': "web.png",
+    'emails/mailbox': "email.png",
+    'lists/list': "email-alter.png",
     'zones/zone': "zone.png",
-    'names/name': "name.png",
-    'webs/web': "virtualhost.png",
-    'systemusers/users': "systemuser.png",
-    'mail/virtualuser': "virtualuser.png",
-    'lists/list': "list.png",
+    'names/name': "dns.png",
     'databases/database': "database.png",
+    'mail/virtualuser': "virtualuser.png",
+    'applications/application': "apps.png",
+    # Billing
     'entities/entity': "contact.png",
+    # Administration
+    'auth/user': "Mr-potato.png",
     'djcelery/taskstate': "taskstate.png",
     'daemons/daemon': "daemon.png",
-    'apps/instance': "apsinstance.png",
 }
 
 # Django-celery

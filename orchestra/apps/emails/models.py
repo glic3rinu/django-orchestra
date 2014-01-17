@@ -34,7 +34,7 @@ class Domain(models.Model):
         return str(self.domain)
 
 
-class MailBox(models.Model):
+class Mailbox(models.Model):
     """
     Represents an email box for mail delivery
     
@@ -49,6 +49,7 @@ class MailBox(models.Model):
     
     class Meta:
         unique_together = ('emailname', 'domain')
+        verbose_name_plural = _("mailboxes")
     
     def __unicode__(self):
         return self.address
@@ -80,7 +81,7 @@ class Alias(models.Model):
     
     class Meta:
         unique_together = ('emailname', 'domain')
-        verbose_name_plural = 'aliases'
+        verbose_name_plural = _("aliases")
     
     def __unicode__(self):
         return self.source

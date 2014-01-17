@@ -118,7 +118,7 @@ sudo python manage.py setupcelery --username orchestra
 8. Configure the web server:
 ```bash
 python manage.py collectstatic --noinput
-sudo apt-get install nginx uwsgi uwsgi-plugin-python
+sudo apt-get install nginx-full uwsgi uwsgi-plugin-python
 sudo python manage.py setupnginx
 ```
 
@@ -132,7 +132,7 @@ sudo python manage.py upgradeorchestra
 
 Current in *development* version (master branch) can be installed by
 ```bash
-sudo python manage.py upgradeorchestra --orchestra_version dev
+sudo python manage.py upgradeorchestra dev
 ```
 
 Additionally the following command can be used in order to determine the currently installed version:

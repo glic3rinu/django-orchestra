@@ -52,7 +52,7 @@ cd /tmp/ # Moving away from /root before running deploy.sh
 Django-orchestra source code should be now under `~orchestra/django-orchestra` and an Orchestra instance called _panel_ under `~orchestra/panel`
 
 
-3. Nginx is serving on port 80 but Django's development server can also be used
+3. Nginx should be serving on port 80, but Django's development server can also be used:
 ```bash
 su - orchestra
 cd panel

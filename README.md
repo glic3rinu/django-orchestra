@@ -83,7 +83,7 @@ su - orchestra
 2. Install django-orchestra's source code
 ```bash
 sudo apt-get install python-pip
-sudo pip install django-orchestra
+sudo pip install django-orchestra # ==dev if you want the in-devel version
 ```
 
 3. Install requirements

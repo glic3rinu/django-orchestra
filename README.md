@@ -5,6 +5,8 @@ Django Orchestra
 
 Orchestra is a Django-based framework for building web hosting control panels.
 
+Orchestra is mostly a bunch of [plugable applications](tree/master/orchestra/apps) providing common functionalities, like service management or billing.
+
 * [Install and upgrade](INSTALL.md)
 * [Documentation](http://django-orchestra.readthedocs.org/en/latest/)
 

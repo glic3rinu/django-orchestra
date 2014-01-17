@@ -71,6 +71,17 @@ INSTALLED_APPS = (
     # django-orchestra apps
     'orchestra',
     
+    'applications',
+    'daemons',
+    'databases',
+    'dns.zones',
+    'dns.names',
+    'emails',
+    'entities',
+    'lists',
+    'systemusers',
+    'webs',
+    
     # Third-party apps
     'south',
     'django_extensions',

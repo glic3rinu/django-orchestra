@@ -1,7 +1,10 @@
 from datetime import datetime
 
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+
 
 from . import settings
 
@@ -41,7 +44,7 @@ class Entity(models.Model):
 
 class Contract(models.Model):
     """ Represents contracted services by a particular entity """
-    entity = models.ForeignKey(_("entity"), Entity)
+    entity = models.ForeignKey(Entity, verbose_name=_("entity"))
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField(null=True)
     service = generic.GenericForeignKey()

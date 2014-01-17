@@ -20,7 +20,7 @@ DNS_ZONE_DEFAULT_MIN_CACHING_TIME = getattr(settings, 'DNS_ZONE_DEFAULT_MIN_CACH
 DNS_RECORD_TYPE_CHOICES = getattr(settings, 'DNS_RECORD_TYPE_CHOICES', (
     ('MX', "MX"),
     ('NS', "NS"),
-    ('CNAME', "CNAME")),
+    ('CNAME', "CNAME"),
     ('A', _("A: IPv4 Address")),
     ('AAAA', _("AAAA: IPv6 Address")),
 ))

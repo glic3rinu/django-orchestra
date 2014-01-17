@@ -40,9 +40,10 @@ class MailBox(models.Model):
     
     http://www.postfix.org/VIRTUAL_README.html#virtual_mailbox
     """
-    user = models.OneToOneField(User, primary_key=True, verbose_name=_("user"))
+    user = models.OneToOneField(get_user_model(), primary_key=True,
+            verbose_name=_("user"))
     emailname = models.CharField(_("email name"), max_length=23)
-    domain = models.ForeignKey(VirtualDomain, verbose_name=_("domain"))
+    domain = models.ForeignKey(Domain, verbose_name=_("domain"))
     home = models.CharField(_("home directory"), max_length=256, unique=True,
             blank=True, default=settings.EMAILS_DEFAULT_BASE_HOME)
     
@@ -74,12 +75,12 @@ class Alias(models.Model):
     http://www.postfix.org/VIRTUAL_README.html#virtual_alias
     """
     emailname = models.CharField(_("email name"), max_length=256, blank=True)
-    domain = models.ForeignKey(VirtualDomain, verbose_name=_("domain"))
+    domain = models.ForeignKey(Domain, verbose_name=_("domain"))
     destination = models.CharField(_("destination"), max_length=256)
     
     class Meta:
         unique_together = ('emailname', 'domain')
-        verbose_name_plurarl = 'aliases'
+        verbose_name_plural = 'aliases'
     
     def __unicode__(self):
         return self.source

@@ -6,6 +6,8 @@ WEBS_IP_CHOICES = getattr(settings, 'WEBS_IP_CHOICES', (
     ('all', None),
 ))
 
+WEBS_DEFAULT_IP = getattr(settings, 'WEBS_DEFAULT_IP', 'all')
+
 WEBS_PORT_CHOICES = getattr(settings, 'WEBS_PORT_CHOICES', (
     ('HTTP', 80),
     ('HTTPS', 443),

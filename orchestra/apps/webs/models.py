@@ -7,7 +7,7 @@ from . import settings
 class Web(models.Model):
     """ Represents the web server configuration of a particular web site """
     ip = models.GenericIPAddressField(_("IP"), choices=settings.WEBS_IP_CHOICES,
-            default=settings.WEB_DEFAULT_IP)
+            default=settings.WEBS_DEFAULT_IP, null=True)
     port = models.PositiveIntegerField(_("port"), choices=settings.WEBS_PORT_CHOICES,
             default=settings.WEBS_DEFAULT_PORT)
     names = models.ManyToManyField(settings.WEBS_DOMAIN_MODEL, verbose_name=_("domains"))

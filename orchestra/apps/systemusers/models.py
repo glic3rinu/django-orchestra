@@ -17,10 +17,11 @@ class SystemUser(models.Model):
     
     uid = models.PositiveIntegerField("UID", primary_key=True)
     user = models.OneToOneField(get_user_model(), verbose_name=_("user"))
-    group = models.ForeignKey(_("primary group"),
+    group = models.ForeignKey('systemusers.SystemGroup',
+            verbose_name=_("primary group"),
             default=settings.SYSTEMUSERS_DEFAULT_PRIMARY_GROUP_PK)
     home = models.CharField(_("home directory"), max_length=256,
-            default=settings.SYSTEMUSERS_DEFAULT_BASE_HOMEDIR)
+            default=settings.SYSTEMUSERS_DEFAULT_BASE_HOME)
     description = models.CharField(_("description"), max_length=256)
     shell = models.CharField(_("shell"), max_length=256,
             default=settings.SYSTEMUSERS_DEFAULT_SHELL)

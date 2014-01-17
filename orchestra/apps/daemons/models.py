@@ -7,7 +7,7 @@ from . import settings
 class Daemon(models.Model):
     """ Represents a particular program which provides some service that has to be managed """
     name = models.CharField(_("name"), max_length=256)
-    hosts = models.ManyToManyField('host', through='Instance', verbose_name=_("Hosts"))
+    hosts = models.ManyToManyField('daemons.Host', through='Instance', verbose_name=_("Hosts"))
     # TODO scripts (sync or setp based daemon managemente)
     is_active = models.BooleanField(_("is active"), default=True)
     

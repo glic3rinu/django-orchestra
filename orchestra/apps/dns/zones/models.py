@@ -15,7 +15,7 @@ class Domain(models.Model):
     name_server = models.CharField(_("name server"), max_length=128,
             default=settings.DNS_ZONE_DEFAULT_NAME_SERVER,
             help_text=_("hostname of the primary nameserver that is authoritative "
-                        "for this domain"),
+                        "for this domain")),
     hostmaster = models.EmailField(_("hostmaster"),
             default=settings.DNS_ZONE_DEFAULT_HOSTMASTER,
             help_text=_("email of the person to contact"))

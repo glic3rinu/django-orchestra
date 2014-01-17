@@ -5,6 +5,9 @@ Django Orchestra
 
 Orchestra is a Django-based framework for building web hosting control panels.
 
+* [Documentation](http://django-orchestra.readthedocs.org/)
+* [Install and upgrade](INSTALL.md)
+
 
 Motivation
 ----------
@@ -16,10 +19,13 @@ The goal of this project is to provide the tools for easily build a fully featur
 Overview
 --------
 
-Django-orchestra is mostly a bunch of [plugable applications](orchestra/apps) providing common functionalities, like service management, resource monitoring or billing. Every Orhestra app is [reusable](https://docs.djangoproject.com/en/dev/intro/reusable-apps/), this means that you can add any of its applications into your Django project `INSTALLED_APPS` strigh away. However, Orchestra also provides glue, tools and patterns that you may find very convinient to use. Checkout the documentation if you want to know more.
+Django-orchestra is mostly a bunch of [plugable applications](orchestra/apps) providing common functionalities, like service management, resource monitoring or billing.
 
-* [Documentation](http://django-orchestra.readthedocs.org/en/latest/)
-* [Install and upgrade](INSTALL.md)
+The admin interface relies on [Django Admin](https://docs.djangoproject.com/en/dev/ref/contrib/admin/), but enhaced with [Django Admin Tools](https://bitbucket.org/izi/django-admin-tools), [Django Fluent Dashboard](https://github.com/edoburu/django-fluent-dashboard) and more. Orchestra uses [Django REST Framework](http://www.django-rest-framework.org/) for its API, with it you can build your custom user interface.
+
+Every app is [reusable](https://docs.djangoproject.com/en/dev/intro/reusable-apps/), this means that you can add any Orchestra application into your Django project `INSTALLED_APPS` strigh away.
+However, Orchestra also provides glue, tools and patterns that you may find very convinient to use. Checkout the [documentation](http://django-orchestra.readthedocs.org/) if you want to know more.
+
 
 
 Development and Testing Setup

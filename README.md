@@ -13,7 +13,7 @@ Motivation
 ----------
 There are a lot of widely used open source hosting control panels, however, none of them seems apropiate when you already have an existing service infrastructure or simply you want your services to run on a particular architecture.
 
-The goal of this project is to provide the tools for easily build a fully featured control panel that is not tied with any particular service architecture.
+The goal of this project is to provide the tools for easily build a fully featured control panel that is not tied to any particular service architecture.
 
 
 Overview
@@ -21,7 +21,7 @@ Overview
 
 Django-orchestra is mostly a bunch of [plugable applications](orchestra/apps) providing common functionalities, like service management, resource monitoring or billing.
 
-The admin interface relies on [Django Admin](https://docs.djangoproject.com/en/dev/ref/contrib/admin/), but enhaced with [Django Admin Tools](https://bitbucket.org/izi/django-admin-tools), [Django Fluent Dashboard](https://github.com/edoburu/django-fluent-dashboard) and more. [Django REST Framework](http://www.django-rest-framework.org/) is used for the REST API, with it you can build your client-side custom user interface.
+The admin interface relies on [Django Admin](https://docs.djangoproject.com/en/dev/ref/contrib/admin/), but enhaced with [Django Admin Tools](https://bitbucket.org/izi/django-admin-tools) and [Django Fluent Dashboard](https://github.com/edoburu/django-fluent-dashboard). [Django REST Framework](http://www.django-rest-framework.org/) is used for the REST API, with it you can build your client-side custom user interface.
 
 Every app is [reusable](https://docs.djangoproject.com/en/dev/intro/reusable-apps/), this means that you can add any Orchestra application into your Django project `INSTALLED_APPS` strigh away.
 However, Orchestra also provides glue, tools and patterns that you may find very convinient to use. Checkout the [documentation](http://django-orchestra.readthedocs.org/) if you want to know more.

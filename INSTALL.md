@@ -5,10 +5,10 @@ Django-orchestra ships with a set of management commands for automating some of 
 
 These commands are meant to be run within a **clean** Debian-like distribution, you should be specially careful while following this guide on a customized system.
 
-Django-orchestra can be installed in any Linux system, however it is **strongly recommended** to chose the reference platform for your deployment (Debian 7.0 wheezy and Python 2.7).
+Django-orchestra can be installed on any Linux system, however it is **strongly recommended** to chose the reference platform for your deployment (Debian 7.0 wheezy and Python 2.7).
 
 
-1. Create a system user for running the server
+1. Create a system user for running Orchestra
 ```bash
 adduser orchestra
 # not required but it will be very handy

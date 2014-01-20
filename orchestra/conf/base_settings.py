@@ -1,12 +1,3 @@
-import os
-import sys
-
-
-ORCHESTRA_ROOT = os.path.dirname(os.path.realpath(__file__))
-ORCHESTRA_ROOT = os.path.abspath(os.path.join(ORCHESTRA_ROOT, '..'))
-sys.path.insert(0, os.path.join(ORCHESTRA_ROOT, 'apps'))
-
-
 # Django settings for orchestra project.
 
 DEBUG = False
@@ -71,17 +62,17 @@ INSTALLED_APPS = (
     # django-orchestra apps
     'orchestra',
     
-    'applications',
-    'daemons',
-    'daemons.backends.ssh',
-    'databases',
-    'dns.zones',
-    'dns.names',
-    'emails',
-    'entities',
-    'lists',
-    'systemusers',
-    'webs',
+    'orchestra.apps.applications',
+    'orchestra.apps.daemons',
+    'orchestra.apps.daemons.backends.ssh',
+    'orchestra.apps.databases',
+    'orchestra.apps.dns.zones',
+    'orchestra.apps.dns.names',
+    'orchestra.apps.emails',
+    'orchestra.apps.entities',
+    'orchestra.apps.lists',
+    'orchestra.apps.systemusers',
+    'orchestra.apps.webs',
     
     # Third-party apps
     'south',
@@ -129,20 +120,20 @@ FLUENT_DASHBOARD_ICON_THEME = '../orchestra/icons'
 FLUENT_DASHBOARD_APP_GROUPS = (
     ('Services', {
         'models': (
-            'systemusers.models.SystemUser',
-            'webs.models.Web',
-            'emails.models.Mailbox',
-            'lists.models.List',
-            'dns.zones.models.Zone',
-            'dns.names.models.Name',
-            'databases.models.Database',
-            'applications.models.Application',
+            'orchestra.apps.systemusers.models.SystemUser',
+            'orchestra.apps.webs.models.Web',
+            'orchestra.apps.emails.models.Mailbox',
+            'orchestra.apps.lists.models.List',
+            'orchestra.apps.dns.zones.models.Zone',
+            'orchestra.apps.dns.names.models.Name',
+            'orchestra.apps.databases.models.Database',
+            'orchestra.apps.applications.models.Application',
         ),
         'collapsible': True,
     }),
     ('Billing', {
         'models': (
-            'entities.models.Entity',
+            'orchestra.apps.entities.models.Entity',
         ),
         'collapsible': True,
     }),
@@ -150,7 +141,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
         'models': (
             'django.contrib.auth.models.User',
             'djcelery.models.TaskState',
-            'daemons.models.Daemon',
+            'orchestra.apps.daemons.models.Daemon',
         ),
         'collapsible': True,
     }),

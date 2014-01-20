@@ -3,12 +3,17 @@ from __future__ import absolute_import
 from django.contrib import admin
 from django.conf.urls import patterns, include, url
 
+from . import api
+
 
 admin.autodiscover()
-
+api.autodiscover()
 
 urlpatterns = patterns('',
     # Admin
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin_tools/', include('admin_tools.urls')),
+    # REST API
+    url(r'^api/', include(api.router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 )

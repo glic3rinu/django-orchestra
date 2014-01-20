@@ -93,6 +93,7 @@ INSTALLED_APPS = (
     'admin_tools.theming',
     'admin_tools.menu',
     'admin_tools.dashboard',
+    'rest_framework',
     
     # Django.contrib
     'django.contrib.auth',
@@ -102,6 +103,12 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
 )
+
+
+AUTHENTICATION_BACKENDS = [
+    'orchestra.permissions.auth.OrchestraPermissionBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 
 # Email config
@@ -178,3 +185,18 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 CELERY_DISABLE_RATE_LIMITS = True
 # Do not fill the logs with crap
 CELERY_REDIRECT_STDOUTS_LEVEL = 'DEBUG'
+
+
+# rest_framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'orchestra.permissions.api.OrchestraPermissionBackend',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+#    'PAGINATE_BY': 10,
+#    'PAGINATE_BY_PARAM': 'page_size',
+}
+

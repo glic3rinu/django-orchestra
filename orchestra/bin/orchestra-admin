@@ -117,7 +117,8 @@ function install_requirements () {
          django-transaction-signals==1.0.0 \
          django-celery==3.1.1 \
          celery==3.1.7 \
-         kombu==3.0.8 "
+         kombu==3.0.8 \
+         djangorestframework==2.3.12"
     
     # Make sure locales are in place before installing postgres
     if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then

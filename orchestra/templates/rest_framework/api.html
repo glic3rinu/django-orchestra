@@ -1,0 +1,27 @@
+{% extends "rest_framework/base.html" %}
+{% load rest_framework utils %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="icon" href="{% static "orchestra/images/favicon.png" %}" type="image/png" />
+{% endblock %}
+
+{% block title %}{{ SITE_VERBOSE_NAME }} REST API{% endblock %}
+{% block branding %}<a class='brand' href="{% url 'api-root' %}">{{ SITE_VERBOSE_NAME }} REST API <span class="version">{% version %}</span></a>{% endblock %}
+{% block userlinks %}
+    <li><a href="{% admin_url %}">Admin</a></li>
+    {% if user.is_authenticated %}
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                {{ user }}
+                <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li>{% optional_logout request %}</li>
+            </ul>
+        </li>
+    {% else %}
+        <li>{% optional_login request %}</li>
+    {% endif %}
+{% endblock %}
+

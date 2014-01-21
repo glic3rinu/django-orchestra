@@ -14,9 +14,8 @@ class Entity(models.Model):
     Represents a customer or member, depending on the context,
     with contact information and related contracted services
     """
-    short_name = models.CharField(_("short name"), max_length=128)
-    full_name = models.CharField(_("full name"), max_length=256, blank=True,
-            unique=True)
+    short_name = models.CharField(_("short name"), max_length=128, blank=True)
+    full_name = models.CharField(_("full name"), max_length=256, unique=True)
     national_id = models.CharField(_("national ID"), max_length=64)
     address = models.CharField(_("address"), max_length=256, blank=True)
     city = models.CharField(_("city"), max_length=128, blank=True,

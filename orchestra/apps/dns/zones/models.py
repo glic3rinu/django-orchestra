@@ -5,9 +5,9 @@ from . import settings
 from .utils import generate_zone_serial
 
 
-class Domain(models.Model):
+class Zone(models.Model):
     """
-    Represents the domain part of a zone file
+    Represents the a zone file
     
     http://en.wikipedia.org/wiki/Zone_file
     """
@@ -43,7 +43,7 @@ class Domain(models.Model):
         return self.name
     
     def refresh_serial(self):
-        """ Increases the domain serial number by one """
+        """ Increases the zone serial number by one """
         serial = generate_zone_serial()
         if serial <= self.serial:
             num = int(str(self.serial[8:])) + 1
@@ -57,10 +57,10 @@ class Domain(models.Model):
 
 class Record(models.Model):
     """ Represents a zone file resource record  """
-    domain = models.ForeignKey(Domain, verbose_name=_("domain"))
+    zone = models.ForeignKey(Zone, verbose_name=_("zone"))
     name = models.CharField(max_length=256, default="@")
     type = models.CharField(max_length=32, choices=settings.DNS_RECORD_TYPE_CHOICES)
     value = models.CharField(max_length=128)
     
     def __unicode__(self):
-        return "%s: %s %s %s" % (self.domain, self.name, self.type, self.value)
+        return "%s: %s %s %s" % (self.zone, self.name, self.type, self.value)

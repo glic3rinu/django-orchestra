@@ -7,4 +7,4 @@ class Name(models.Model):
     name = models.CharField(_("name"), max_length=256, unique=True)
     
     def __unicode__(self):
-        self.names
+        return self.name

@@ -62,7 +62,7 @@ INSTALLED_APPS = (
     # django-orchestra apps
     'orchestra',
     
-    'orchestra.apps.applications',
+    'orchestra.apps.multitenance',
     'orchestra.apps.daemons',
     'orchestra.apps.daemons.backends.ssh',
     'orchestra.apps.databases',
@@ -127,7 +127,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.dns.zones.models.Zone',
             'orchestra.apps.dns.names.models.Name',
             'orchestra.apps.databases.models.Database',
-            'orchestra.apps.applications.models.Application',
+            'orchestra.apps.multitenance.models.Application',
         ),
         'collapsible': True,
     }),
@@ -149,7 +149,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
 
 FLUENT_DASHBOARD_APP_ICONS = {
     # Services
-    'systemusers/systemuser': "TuxBox.png",
+    'systemusers/systemuser': "Tux.png",
     'webs/web': "web.png",
     'emails/mailbox': "email.png",
     'lists/list': "email-alter.png",
@@ -157,7 +157,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'names/name': "dns.png",
     'databases/database': "database.png",
     'mail/virtualuser': "virtualuser.png",
-    'applications/application': "apps.png",
+    'multitenance/application': "apps.png",
     # Billing
     'entities/entity': "contact.png",
     # Administration

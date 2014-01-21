@@ -21,14 +21,17 @@ class Domain(models.Model):
     RELAY = 'RELAY'         # Backup MX for other domains
     
     DOMAIN_TYPES = (
-        (CANONICAL, _('canonical domain')),
-        (HOSTED, _('hosted domain')),
-        (RELAY, _('relay domain')),
+        (CANONICAL, _("Canonical domain")),
+        (HOSTED, _("Hosted domain")),
+        (RELAY, _("Relay domain")),
     )
     
     domain = models.OneToOneField(settings.EMAILS_VIRTUAL_DOMAIN_MODEL,
-            verbose_name=_("Domain"))
-    type = models.CharField(max_length=20, choices=DOMAIN_TYPES, default=HOSTED)
+            verbose_name=_("domain"))
+    type = models.CharField(max_length=20, choices=DOMAIN_TYPES, default=HOSTED,
+            help_text=_("Canonical: Server domain name<br>"
+                        "Hosted: Other domains hosted on the server besides canonical<br>"
+                        "Relay: Backup MX for other domains"))
     
     def __unicode__(self):
         return str(self.domain)

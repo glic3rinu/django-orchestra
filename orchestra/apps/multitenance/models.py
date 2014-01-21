@@ -7,6 +7,6 @@ class Application(models.Model):
     description = models.TextField(_("description"))
 
 
-class Installation(models.Model):
+class Tenant(models.Model):
     application = models.OneToOneField(Application, verbose_name=_("Application"))
     data = models.TextField(blank=True)

@@ -13,6 +13,14 @@ class Daemon(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    def enable(self):
+        self.is_active = True
+        self.save()
+    
+    def disable(self):
+        self.is_active = False
+        self.save()
 
 
 class Host(models.Model):
@@ -33,8 +41,11 @@ class Instance(models.Model):
     """ Represents a daemon running on a particular host """
     daemon = models.ForeignKey(Daemon, verbose_name=_("daemon"))
     host = models.ForeignKey(Host, verbose_name=_("host"))
-    router = models.CharField(_("router"), max_length=256, blank=True,
+    router = models.CharField(_("router"), max_length=256, blank=True, default='True',
             help_text=_("Python expression used for selecting the targe host"))
     
     class Meta:
         unique_together = ('daemon', 'host')
+    
+    def __unicode__(self):
+        return "%s@%s" % (self.daemon, self.host)

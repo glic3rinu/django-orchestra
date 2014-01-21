@@ -1,13 +1,14 @@
 from django.contrib import admin
 
-from .models import Domain, Record
+from .models import Zone, Record
 
 
 class RecordInline(admin.TabularInline):
     model = Record
 
 
-class DomainAdmin(admin.ModelAdmin):
+class ZoneAdmin(admin.ModelAdmin):
     inlines = [RecordInline]
 
-admin.site.register(Domain, DomainAdmin)
+
+admin.site.register(Zone, ZoneAdmin)

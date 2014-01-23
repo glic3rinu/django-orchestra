@@ -64,7 +64,7 @@ class Zone(models.Model):
         self.save()
     
     @property
-    def mapped_hostname(self):
+    def formatted_hostname(self):
         """
         The DNS encodes the <local-part> as a single label, and encodes the
         <mail-domain> as a domain name.  The single label from the <local-part>

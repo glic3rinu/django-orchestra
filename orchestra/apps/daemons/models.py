@@ -1,14 +1,24 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core.backends import ServiceBackend
+from orchestra.utils import autodiscover
+
 from . import settings
+
+
+autodiscover('backends')
+
+backend_choices = (
+    (backend.name, backend.verbose_name)
+        for backend in ServiceBackend.get_backends())
 
 
 class Daemon(models.Model):
     """ Represents a particular program which provides some service that has to be managed """
     name = models.CharField(_("name"), max_length=256)
     hosts = models.ManyToManyField('daemons.Host', through='Instance', verbose_name=_("Hosts"))
-    # TODO scripts (sync or setp based daemon managemente)
+    backend = models.CharField(_("backend"), max_length=256, choices=backend_choices)
     is_active = models.BooleanField(_("is active"), default=True)
     
     def __unicode__(self):

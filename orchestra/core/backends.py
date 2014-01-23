@@ -6,8 +6,8 @@ class ServiceBackend(object):
     Service management backend base class
     
     It uses the _unit of work_ design principle, which allows bulk operations to
-    be supported. Each backend will generate the configuration for all the changes 
-    for all the modified objects, and reload the daemon once.
+    be supported. Each backend generates the configuration for all the changes 
+    of all modified objects, and reload the daemon just once.
     """
     name = None
     verbose_name = None

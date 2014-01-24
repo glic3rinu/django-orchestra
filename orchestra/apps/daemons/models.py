@@ -17,7 +17,8 @@ backend_choices = (
 class Daemon(models.Model):
     """ Represents a particular program which provides some service that has to be managed """
     name = models.CharField(_("name"), max_length=256)
-    hosts = models.ManyToManyField('daemons.Host', through='Instance', verbose_name=_("Hosts"))
+    hosts = models.ManyToManyField('daemons.Host', verbose_name=_("Hosts"),
+            through='Instance')
     backend = models.CharField(_("backend"), max_length=256, choices=backend_choices)
     is_active = models.BooleanField(_("is active"), default=True)
     
@@ -26,15 +27,20 @@ class Daemon(models.Model):
     
     @classmethod
     def get_instances(cls, obj):
-        # TODO create a test case
         """ returns all related instances that match with obj """
         opts = obj._meta
-        model = '%s.%s' % (opts.app_label, object_name)
+        model = '%s.%s' % (opts.app_label, opts.object_name)
         instances = []
         for daemon in Daemon.objects.filter(is_active=True):
-            if model in daemon.backend.models:
+            if model in daemon.get_backend().models:
                 instances += list(daemon.instances.match(obj))
         return instances
+    
+    def get_backend(self):
+        for backend in ServiceBackend.get_backends():
+            if backend.name == self.backend:
+                return backend
+        raise ValueError("This backend is not registered")
     
     def enable(self):
         self.is_active = True
@@ -62,10 +68,9 @@ class Host(models.Model):
 # TODO rename router
 class InstanceManager(models.Manager):
     def match(self, obj):
-        # TODO create a test case
         """ returns all instances which the router evaluates true """
         safe_locals = { 'obj': obj }
-        pks = [ inst.pk for inst in self.all() if eval(instance.router, safe_locals) ]
+        pks = [ inst.pk for inst in self.all() if eval(inst.router, safe_locals) ]
         return self.filter(pk__in=pks)
 
 

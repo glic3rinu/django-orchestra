@@ -17,6 +17,9 @@ class ServiceBackend(object):
     
     __metaclass__ = plugins.PluginMount
     
+    def __unicode__(self):
+        return self.name
+    
     def __init__(self):
         self.cmds = []
     

@@ -7,6 +7,12 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    from ..settings import LISTS_DOMAIN_MODEL
+    app_name = LISTS_DOMAIN_MODEL.split('.')[0]
+    depends_on = (
+        (app_name, "0001_initial"),
+    )
+
     def forwards(self, orm):
         # Adding model 'List'
         db.create_table(u'lists_list', (

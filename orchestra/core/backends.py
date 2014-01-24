@@ -1,6 +1,8 @@
 from orchestra.utils import plugins
 
 
+# TODO create script objects
+
 class ServiceBackend(object):
     """
     Service management backend base class

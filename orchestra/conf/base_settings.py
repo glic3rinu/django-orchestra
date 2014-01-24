@@ -64,7 +64,6 @@ INSTALLED_APPS = (
     
     'orchestra.apps.multitenance',
     'orchestra.apps.daemons',
-    'orchestra.apps.daemons.backends.ssh',
     'orchestra.apps.databases',
     'orchestra.apps.dns.zones',
     'orchestra.apps.dns.names',

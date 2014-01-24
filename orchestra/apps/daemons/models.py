@@ -24,6 +24,18 @@ class Daemon(models.Model):
     def __unicode__(self):
         return self.name
     
+    @classmethod
+    def get_instances(cls, obj):
+        # TODO create a test case
+        """ returns all related instances that match with obj """
+        opts = obj._meta
+        model = '%s.%s' % (opts.app_label, object_name)
+        instances = []
+        for daemon in Daemon.objects.filter(is_active=True):
+            if model in daemon.backend.models:
+                instances += list(daemon.instances.match(obj))
+        return instances
+    
     def enable(self):
         self.is_active = True
         self.save()
@@ -47,12 +59,25 @@ class Host(models.Model):
         return self.name
 
 
+# TODO rename router
+class InstanceManager(models.Manager):
+    def match(self, obj):
+        # TODO create a test case
+        """ returns all instances which the router evaluates true """
+        safe_locals = { 'obj': obj }
+        pks = [ inst.pk for inst in self.all() if eval(instance.router, safe_locals) ]
+        return self.filter(pk__in=pks)
+
+
 class Instance(models.Model):
     """ Represents a daemon running on a particular host """
-    daemon = models.ForeignKey(Daemon, verbose_name=_("daemon"))
+    daemon = models.ForeignKey(Daemon, verbose_name=_("daemon"),
+            related_name='instances')
     host = models.ForeignKey(Host, verbose_name=_("host"))
     router = models.CharField(_("router"), max_length=256, blank=True, default='True',
             help_text=_("Python expression used for selecting the targe host"))
+    
+    objects = InstanceManager()
     
     class Meta:
         unique_together = ('daemon', 'host')

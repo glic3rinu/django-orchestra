@@ -5,6 +5,7 @@
 # This script is safe to run several times, for example in order to upgrade your deployment
 
 # TODO speedup postgres
+# TODO create table permissions
 
 set -u
 bold=$(tput bold)

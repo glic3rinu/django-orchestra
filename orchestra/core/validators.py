@@ -1,3 +1,4 @@
+from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from IPy import IP
@@ -22,3 +23,12 @@ def validate_ipv6_address(value):
         raise ValidationError(msg)
     if ip.version() != 6:
         raise ValidationError(msg)
+
+
+def validate_name(value):
+    """
+    A single non-empty line of free-form text with no whitespace
+    surrounding it.
+    """
+    validators.RegexValidator('^\S.*\S$',
+        _("Enter a valid name (text without whitspaces)."), 'invalid')(value)

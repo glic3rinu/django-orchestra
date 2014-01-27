@@ -4,8 +4,6 @@
 
 # This script is safe to run several times, for example in order to upgrade your deployment
 
-# TODO speedup postgres
-# TODO create table permissions
 
 set -u
 bold=$(tput bold)
@@ -54,8 +52,16 @@ if [[ ! -e $BASE_DIR ]]; then
     cd -
 fi
 
-sudo service postgresql start
+# Speeding up tests (don't do it in production!)
+POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | cut -d'.' -f1,2)
+sudo sed -i "^#fsync = /fsyn = off/" /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
+sudo sed -i "^#full_page_writes = /full_page_writes = off/" /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
+
+sudo service postgresql restart
 sudo python $MANAGE setuppostgres --db_name orchestra --db_user orchestra --db_password orchestra
+# Create database permissions are needed for running tests
+sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
+
 
 if [[ $CURRENT_VERSION ]]; then
     # Per version upgrade specific operations

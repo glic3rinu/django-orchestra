@@ -1,8 +1,0 @@
-Speed up PostgreSQL with Django tests
-
-$ sudo vim /etc/postgresql/9.1/main/postgresql.conf
-Change these lines and saved:
-
-fsync = off
-full_page_writes = off
-

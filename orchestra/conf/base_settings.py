@@ -64,14 +64,14 @@ INSTALLED_APPS = (
     
     'orchestra.apps.multitenance',
     'orchestra.apps.daemons',
-    'orchestra.apps.databases',
     'orchestra.apps.dns.zones',
     'orchestra.apps.dns.names',
     'orchestra.apps.emails',
     'orchestra.apps.entities',
     'orchestra.apps.lists',
-    'orchestra.apps.systemusers',
     'orchestra.apps.webs',
+    'orchestra.apps.webs.databases',
+    'orchestra.apps.webs.ftp',
     
     # Third-party apps
     'south',

@@ -3,4 +3,8 @@ from django.contrib import admin
 from .models import Web
 
 
-admin.site.register(Web)
+class WebAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Web, WebAdmin)

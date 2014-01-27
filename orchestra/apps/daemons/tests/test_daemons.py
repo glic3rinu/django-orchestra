@@ -11,6 +11,7 @@ class DaemonTests(TestCase):
         self.host2 = Host.objects.create(name='web2.example.com')
     
     def test_list_backends(self):
+        # TODO count actual, register and compare
         choices = list(Daemon._meta.get_field_by_name('backend')[0]._choices)
         self.assertLess(1, len(choices))
     

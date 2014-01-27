@@ -6,7 +6,7 @@ from orchestra.core.backends import ServiceBackend
 
 
 class MasterBindBackend(ServiceBackend):
-    name = _("master Bind")
+    name = 'master-Bind'
     verbose_name = _("master Bind")
     models = ['zones.Zone', 'zones.Record']
     
@@ -25,7 +25,7 @@ class MasterBindBackend(ServiceBackend):
         context = self.get_context(zone)
         context.update({ 'content': template.render(Context({'zone': zone})) })
         self.append("{ echo -e '%(content)s' | diff %(path)s - ; } ||"
-                    "   { echo -e '%(content)s' > %(path)s; UPDATED=1;}" % context)
+                    "   { echo -e '%(content)s' > %(path)s; UPDATED=1; }" % context)
         self.append("grep '\s*zone\s*\"%(name)s\"\s*{' %(master)s ||"
                     "   echo -e %(conf)s >> %(master)s" % context)
     
@@ -39,7 +39,7 @@ class MasterBindBackend(ServiceBackend):
         self.append('$UPDATED=1')
     
     def commit(self):
-        """ reload bind after all the configuration has been generated (bulk support) """
+        """ reload bind if needed """
         self.append('$UPDATED && service bind9 reload')
     
     def get_context(self, zone):
@@ -58,7 +58,7 @@ class MasterBindBackend(ServiceBackend):
 
 
 class SlaveBindBackend(MasterBindBackend):
-    name = _("slave Bind")
+    name = 'slave-Bind'
     verbose_name = _("Slave Bind")
     
     def save(self, zone):

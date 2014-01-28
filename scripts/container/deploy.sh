@@ -52,7 +52,7 @@ if [[ ! -e $BASE_DIR ]]; then
     cd -
 fi
 
-# Speeding up tests (don't do it in production!)
+# Speeding up tests, don't do this in production!
 POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | cut -d'.' -f1,2)
 sudo sed -i "^#fsync = /fsyn = off/" /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
 sudo sed -i "^#full_page_writes = /full_page_writes = off/" /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf

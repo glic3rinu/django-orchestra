@@ -70,7 +70,7 @@ sshfs orchestra@<container-ip>: ~<user>/orchestra
 ```bash
 cd ~orchestra/django-orchestra/
 git pull origin master
-sudo ./scripts/container/deploy.sh
+sudo ~orchestra/django-orchestra/scripts/container/deploy.sh
 ```
 
 

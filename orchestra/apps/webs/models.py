@@ -10,9 +10,9 @@ from . import settings
 # TODO validators
 class Web(models.Model):
     """ Represents a web application """
-    user = models.ForeignKey(get_user_model(), verbose_name=_("user"), related_name='webs')
     name = models.CharField(_("name"), max_length=128, unique=True,
             validators=[validators.validate_name])
+    user = models.ForeignKey(get_user_model(), verbose_name=_("user"), related_name='webs')
     port = models.PositiveIntegerField(_("port"), choices=settings.WEBS_PORT_CHOICES,
             default=settings.WEBS_DEFAULT_PORT)
     domains = models.ManyToManyField(settings.WEBS_DOMAIN_MODEL, verbose_name=_("domains"))

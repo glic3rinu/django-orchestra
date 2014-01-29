@@ -16,6 +16,12 @@ export SUITE="wheezy"
     exit 1
 }
 
+lxc-create -h &> /dev/null || {
+    echo -e "\nErr. LXC seems to be not installed, run apt-get install lxc\n" >&2
+    exit 1
+}
+
+
 lxc-create -n $NAME -t debian
 
 mount --bind /dev $CONTAINER/dev

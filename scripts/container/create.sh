@@ -28,8 +28,11 @@ mount --bind /dev $CONTAINER/dev
 mount -t sysfs none $CONTAINER/sys
 trap "umount $CONTAINER/{dev,sys}; exit 1;"INT TERM EXIT
 
-echo "root:$PASSWORD" | chroot $CONTAINER chpasswd
+# echo "root:$PASSWORD" | chroot $CONTAINER chpasswd
 sed -i "s/\tlocalhost$/\tlocalhost $NAME/" $CONTAINER/etc/hosts
+sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" $CONTAINER/etc/locale.gen
+chroot $CONTAINER locale-gen
+
 
 chroot $CONTAINER apt-get install -y --force-yes \
     nano git screen sudo iputils-ping python2.7 python-pip wget curl

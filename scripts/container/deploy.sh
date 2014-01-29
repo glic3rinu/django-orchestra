@@ -17,7 +17,7 @@ normal=$(tput sgr0)
 
 USER='orchestra'
 PASSWORD="orchestra"
-HOME=$(eval echo "~$USER")
+HOME="/home/$USER"
 PROJECT_NAME='panel'
 BASE_DIR="$HOME/$PROJECT_NAME"
 MANAGE="$BASE_DIR/manage.py"
@@ -31,8 +31,8 @@ run () {
 # Create a system user for running Orchestra
 useradd orchestra -s "/bin/bash"
 echo "$USER:$PASSWORD" | chpasswd
-mkdir /home/$USER
-chown $USER.$USER /home/$USER
+mkdir $HOME
+chown $USER.$USER $HOME
 sudo adduser $USER sudo
 
 
@@ -54,8 +54,10 @@ fi
 
 # Speeding up tests, don't do this in production!
 POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | cut -d'.' -f1,2)
-sudo sed -i "^#fsync = /fsyn = off/" /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
-sudo sed -i "^#full_page_writes = /full_page_writes = off/" /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
+sudo sed -i "s/^#fsync =\s*.*/fsync = off/" \
+        /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
+sudo sed -i "s/^#full_page_writes =\s*.*/full_page_writes = off/" \
+        /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
 
 sudo service postgresql restart
 sudo python $MANAGE setuppostgres --db_name orchestra --db_user orchestra --db_password orchestra

@@ -10,6 +10,8 @@ from ..models import Web
 class Database(models.Model):
     """ Represents a basic database for a web application """
     web = models.ForeignKey(Web, verbose_name=_("web"), related_name='databases')
+    name = models.CharField(_("name"), max_length=128,
+            validators=[validators.validate_name])
     username = models.CharField(_("username"), max_length=128, unique=True,
             validators=[validators.validate_name])
     password = models.CharField(_("password"), max_length=64)

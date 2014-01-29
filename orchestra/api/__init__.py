@@ -58,9 +58,18 @@ class OrchestraRouter(DefaultRouter):
                 retrieve_links.append('%s-%s' % (base_name, methodname))
         viewset.retrieve = insert_links(viewset.retrieve, retrieve_links)
         self.registry.append((prefix, viewset, base_name))
+    
+    def insert(self, prefix, name, field, **kwargs):
+        """ Dynamically add new fields to an existing serializer """
+        for _prefix, viewset, basename in self.registry:
+            if _prefix == prefix:
+                if viewset.serializer_class is None:
+                    viewset.serializer_class = viewset().get_serializer_class()
+                viewset.serializer_class.base_fields.update({name: field(**kwargs)})
+
 
 
 # Create a router and register our viewsets with it.
 router = OrchestraRouter()
 
-autodiscover = lambda: module_autodiscover('api')
+autodiscover = lambda: (module_autodiscover('api'), module_autodiscover('serializers'))

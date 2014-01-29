@@ -3,8 +3,8 @@ from django.utils.translation import ugettext_lazy as _
 
 
 WEBS_PORT_CHOICES = getattr(settings, 'WEBS_PORT_CHOICES', (
-    ('HTTP', 80),
-    ('HTTPS', 443),
+    (80, 'HTTP'),
+    (443, 'HTTPS'),
 ))
 
 WEBS_DEFAULT_PORT = getattr(settings, 'WEBS_DEFAULT_PORT', 80)

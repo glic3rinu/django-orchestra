@@ -2,15 +2,15 @@ from rest_framework import viewsets
 
 from orchestra.api import router
 
-from .models import Name
-from .serializers import NameSerializer
+from .models import Domain
+from .serializers import DomainSerializer
 
 
-class NameViewSet(viewsets.ModelViewSet):
-    model = Name
-    serializer_class = NameSerializer
+class DomainViewSet(viewsets.ModelViewSet):
+    model = Domain
+    serializer_class = DomainSerializer
 
 
-router.register(r'names', NameViewSet)
+router.register(r'domains', DomainViewSet)
 
 

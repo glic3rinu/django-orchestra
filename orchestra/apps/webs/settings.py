@@ -9,7 +9,7 @@ WEBS_PORT_CHOICES = getattr(settings, 'WEBS_PORT_CHOICES', (
 
 WEBS_DEFAULT_PORT = getattr(settings, 'WEBS_DEFAULT_PORT', 80)
 
-WEBS_DOMAIN_MODEL = getattr(settings, 'WEBS_DOMAIN_MODEL', 'names.Name')
+WEBS_DOMAIN_MODEL = getattr(settings, 'WEBS_DOMAIN_MODEL', 'names.Domain')
 
 WEBS_DEFAULT_ROOT = getattr(settings, 'WEBS_DEFAULT_ROOT', '/var/www/%(name)s/')
 

@@ -11,7 +11,7 @@ class Migration(SchemaMigration):
         # Adding model 'MailDomain'
         db.create_table(u'mails_maildomain', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('domain', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['names.Name'], unique=True)),
+            ('domain', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['names.Domain'], unique=True)),
             ('type', self.gf('django.db.models.fields.CharField')(default='HOSTED', max_length=20)),
         ))
         db.send_create_signal(u'mails', ['MailDomain'])
@@ -111,12 +111,12 @@ class Migration(SchemaMigration):
         },
         u'mails.maildomain': {
             'Meta': {'object_name': 'MailDomain'},
-            'domain': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['names.Name']", 'unique': 'True'}),
+            'domain': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['names.Domain']", 'unique': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'type': ('django.db.models.fields.CharField', [], {'default': "'HOSTED'", 'max_length': '20'})
         },
-        u'names.name': {
-            'Meta': {'object_name': 'Name'},
+        u'names.domain': {
+            'Meta': {'object_name': 'Domain'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256'})
         }

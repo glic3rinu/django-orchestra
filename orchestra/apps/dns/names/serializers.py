@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from .models import Name
+from .models import Domain
 
 
-class NameSerializer(serializers.HyperlinkedModelSerializer):
+class DomainSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Name
+        model = Domain

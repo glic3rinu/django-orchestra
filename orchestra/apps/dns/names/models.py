@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from ..zones.models import Zone
 
 
-class Name(models.Model):
+class Domain(models.Model):
     """ Represents any domain name (or a subdomain) that _points to_ our servers """
     name = models.CharField(_("name"), max_length=256, unique=True)
     

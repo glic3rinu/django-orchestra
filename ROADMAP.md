@@ -5,6 +5,7 @@
 ### 1.0 Milestone (first alpha release)
 
 1. [x] Automated deployment of the development environment
+2. [x] Automated installation and upgrading
 2. [ ] Admin interface based on django.contrib.admin
 3. [ ] REST API based on django-rest-framework
 4. [ ] Minimal management of the following services:

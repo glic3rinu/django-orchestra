@@ -20,7 +20,7 @@ PASSWORD="orchestra"
 HOME="/home/$USER"
 PROJECT_NAME='panel'
 BASE_DIR="$HOME/$PROJECT_NAME"
-MANAGE="$BASE_DIR/manage.py"
+
 
 run () {
     echo " ${bold}\$ su $USER -c \"${@}\"${normal}"
@@ -52,18 +52,22 @@ if [[ ! -e $BASE_DIR ]]; then
     cd -
 fi
 
-# Speeding up tests, don't do this in production!
-POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | cut -d'.' -f1,2)
-sudo sed -i "s/^#fsync =\s*.*/fsync = off/" \
-        /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
-sudo sed -i "s/^#full_page_writes =\s*.*/full_page_writes = off/" \
-        /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
+MANAGE="$BASE_DIR/manage.py"
 
-sudo service postgresql restart
-sudo python $MANAGE setuppostgres --db_name orchestra --db_user orchestra --db_password orchestra
-# Create database permissions are needed for running tests
-sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
-
+if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$') ]]; then
+    # orchestra database does not esists
+    # Speeding up tests, don't do this in production!
+    POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | cut -d'.' -f1,2)
+    sudo sed -i "s/^#fsync =\s*.*/fsync = off/" \
+            /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
+    sudo sed -i "s/^#full_page_writes =\s*.*/full_page_writes = off/" \
+            /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
+    
+    sudo service postgresql restart
+    sudo python $MANAGE setuppostgres --db_name orchestra --db_user orchestra --db_password orchestra
+    # Create database permissions are needed for running tests
+    sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
+fi
 
 if [[ $CURRENT_VERSION ]]; then
     # Per version upgrade specific operations

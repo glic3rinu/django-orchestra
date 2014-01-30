@@ -9,7 +9,7 @@ from . import settings
 
 # TODO validations and max_length!
 
-class Domain(models.Model):
+class MailDomain(models.Model):
     """
     Represents a domain that is associated to a mail server
     
@@ -46,7 +46,7 @@ class Mailbox(models.Model):
     user = models.OneToOneField(get_user_model(), primary_key=True,
             verbose_name=_("user"))
     emailname = models.CharField(_("email name"), max_length=23)
-    domain = models.ForeignKey(Domain, verbose_name=_("domain"))
+    domain = models.ForeignKey(MailDomain, verbose_name=_("domain"))
     home = models.CharField(_("home directory"), max_length=256, unique=True,
             blank=True, default=settings.EMAILS_DEFAULT_BASE_HOME)
     
@@ -79,7 +79,7 @@ class Alias(models.Model):
     http://www.postfix.org/VIRTUAL_README.html#virtual_alias
     """
     emailname = models.CharField(_("email name"), max_length=256, blank=True)
-    domain = models.ForeignKey(Domain, verbose_name=_("domain"))
+    domain = models.ForeignKey(MailDomain, verbose_name=_("domain"))
     destination = models.CharField(_("destination"), max_length=256)
     
     class Meta:

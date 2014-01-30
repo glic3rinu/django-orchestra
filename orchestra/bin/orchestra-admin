@@ -118,6 +118,7 @@ function install_requirements () {
          django-celery==3.1.1 \
          celery==3.1.7 \
          kombu==3.0.8 \
+         django-debug-toolbar==1.0.1 \
          djangorestframework==2.3.12"
     
     # Make sure locales are in place before installing postgres

@@ -29,6 +29,6 @@
 
 ### 3.0 Milestone (first stable release)
 
-1. [ ] Stabilize internal APIs and REST API
+1. [ ] Stabilize data model, internal APIs and REST API
 1. [ ] Integration with third-party service providers, e.g. Gandi
 1. [ ] Support for additional services like VPS

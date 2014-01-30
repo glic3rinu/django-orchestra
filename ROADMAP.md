@@ -21,7 +21,7 @@
 ### 2.0 Milestone (first beta release)
 
 1. [ ] Resource monitoring
-1. [ ] Accountancy and billing
+1. [ ] Accountancy, pricing and billing
 1. [ ] Payment gateways
 1. [ ] Full documentation
 1. [ ] Integration tests

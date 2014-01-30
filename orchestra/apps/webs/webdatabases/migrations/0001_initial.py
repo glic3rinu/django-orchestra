@@ -8,21 +8,21 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Database'
-        db.create_table(u'databases_database', (
+        # Adding model 'WebDatabase'
+        db.create_table(u'webdatabases_webdatabase', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('web', self.gf('django.db.models.fields.related.ForeignKey')(related_name='databases', to=orm['webs.Web'])),
+            ('web', self.gf('django.db.models.fields.related.ForeignKey')(related_name='webdatabases', to=orm['webs.Web'])),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=128)),
             ('username', self.gf('django.db.models.fields.CharField')(unique=True, max_length=128)),
             ('password', self.gf('django.db.models.fields.CharField')(max_length=64)),
             ('type', self.gf('django.db.models.fields.CharField')(default='mysql', max_length=32)),
         ))
-        db.send_create_signal(u'databases', ['Database'])
+        db.send_create_signal(u'webdatabases', ['WebDatabase'])
 
 
     def backwards(self, orm):
-        # Deleting model 'Database'
-        db.delete_table(u'databases_database')
+        # Deleting model 'WebDatabase'
+        db.delete_table(u'webdatabases_webdatabase')
 
 
     models = {
@@ -62,19 +62,19 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'databases.database': {
-            'Meta': {'object_name': 'Database'},
+        u'names.name': {
+            'Meta': {'object_name': 'Name'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256'})
+        },
+        u'webdatabases.webdatabase': {
+            'Meta': {'object_name': 'WebDatabase'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'type': ('django.db.models.fields.CharField', [], {'default': "'mysql'", 'max_length': '32'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '128'}),
-            'web': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'databases'", 'to': u"orm['webs.Web']"})
-        },
-        u'names.name': {
-            'Meta': {'object_name': 'Name'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256'})
+            'web': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'webdatabases'", 'to': u"orm['webs.Web']"})
         },
         u'webs.web': {
             'Meta': {'object_name': 'Web'},
@@ -90,4 +90,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['databases']
+    complete_apps = ['webdatabases']

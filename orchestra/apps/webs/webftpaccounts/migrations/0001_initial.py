@@ -8,15 +8,20 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'FTP.directory'
-        db.add_column(u'ftp_ftp', 'directory',
-                      self.gf('django.db.models.fields.CharField')(default='', max_length=256, blank=True),
-                      keep_default=False)
+        # Adding model 'WebFTPAccount'
+        db.create_table(u'webftpaccounts_webftpaccount', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('web', self.gf('django.db.models.fields.related.ForeignKey')(related_name='webftpaccounts', to=orm['webs.Web'])),
+            ('username', self.gf('django.db.models.fields.CharField')(unique=True, max_length=128)),
+            ('password', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('directory', self.gf('django.db.models.fields.CharField')(max_length=256, blank=True)),
+        ))
+        db.send_create_signal(u'webftpaccounts', ['WebFTPAccount'])
 
 
     def backwards(self, orm):
-        # Deleting field 'FTP.directory'
-        db.delete_column(u'ftp_ftp', 'directory')
+        # Deleting model 'WebFTPAccount'
+        db.delete_table(u'webftpaccounts_webftpaccount')
 
 
     models = {
@@ -56,18 +61,18 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'ftp.ftp': {
-            'Meta': {'object_name': 'FTP'},
-            'directory': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '128'}),
-            'web': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['webs.Web']"})
-        },
         u'names.name': {
             'Meta': {'object_name': 'Name'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256'})
+        },
+        u'webftpaccounts.webftpaccount': {
+            'Meta': {'object_name': 'WebFTPAccount'},
+            'directory': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'password': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '128'}),
+            'web': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'webftpaccounts'", 'to': u"orm['webs.Web']"})
         },
         u'webs.web': {
             'Meta': {'object_name': 'Web'},
@@ -83,4 +88,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['ftp']
+    complete_apps = ['webftpaccounts']

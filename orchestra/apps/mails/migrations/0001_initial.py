@@ -8,54 +8,54 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Domain'
-        db.create_table(u'emails_domain', (
+        # Adding model 'MailDomain'
+        db.create_table(u'mails_maildomain', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('domain', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['names.Name'], unique=True)),
             ('type', self.gf('django.db.models.fields.CharField')(default='HOSTED', max_length=20)),
         ))
-        db.send_create_signal(u'emails', ['Domain'])
+        db.send_create_signal(u'mails', ['MailDomain'])
 
         # Adding model 'Mailbox'
-        db.create_table(u'emails_mailbox', (
+        db.create_table(u'mails_mailbox', (
             ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True)),
             ('emailname', self.gf('django.db.models.fields.CharField')(max_length=23)),
-            ('domain', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['emails.Domain'])),
-            ('home', self.gf('django.db.models.fields.CharField')(default='/home', unique=True, max_length=256, blank=True)),
+            ('domain', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mails.MailDomain'])),
+            ('home', self.gf('django.db.models.fields.CharField')(unique=True, max_length=256, blank=True)),
         ))
-        db.send_create_signal(u'emails', ['Mailbox'])
+        db.send_create_signal(u'mails', ['Mailbox'])
 
         # Adding unique constraint on 'Mailbox', fields ['emailname', 'domain']
-        db.create_unique(u'emails_mailbox', ['emailname', 'domain_id'])
+        db.create_unique(u'mails_mailbox', ['emailname', 'domain_id'])
 
-        # Adding model 'Alias'
-        db.create_table(u'emails_alias', (
+        # Adding model 'MailAlias'
+        db.create_table(u'mails_mailalias', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('emailname', self.gf('django.db.models.fields.CharField')(max_length=256, blank=True)),
-            ('domain', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['emails.Domain'])),
+            ('domain', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mails.MailDomain'])),
             ('destination', self.gf('django.db.models.fields.CharField')(max_length=256)),
         ))
-        db.send_create_signal(u'emails', ['Alias'])
+        db.send_create_signal(u'mails', ['MailAlias'])
 
-        # Adding unique constraint on 'Alias', fields ['emailname', 'domain']
-        db.create_unique(u'emails_alias', ['emailname', 'domain_id'])
+        # Adding unique constraint on 'MailAlias', fields ['emailname', 'domain']
+        db.create_unique(u'mails_mailalias', ['emailname', 'domain_id'])
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'Alias', fields ['emailname', 'domain']
-        db.delete_unique(u'emails_alias', ['emailname', 'domain_id'])
+        # Removing unique constraint on 'MailAlias', fields ['emailname', 'domain']
+        db.delete_unique(u'mails_mailalias', ['emailname', 'domain_id'])
 
         # Removing unique constraint on 'Mailbox', fields ['emailname', 'domain']
-        db.delete_unique(u'emails_mailbox', ['emailname', 'domain_id'])
+        db.delete_unique(u'mails_mailbox', ['emailname', 'domain_id'])
 
-        # Deleting model 'Domain'
-        db.delete_table(u'emails_domain')
+        # Deleting model 'MailDomain'
+        db.delete_table(u'mails_maildomain')
 
         # Deleting model 'Mailbox'
-        db.delete_table(u'emails_mailbox')
+        db.delete_table(u'mails_mailbox')
 
-        # Deleting model 'Alias'
-        db.delete_table(u'emails_alias')
+        # Deleting model 'MailAlias'
+        db.delete_table(u'mails_mailalias')
 
 
     models = {
@@ -95,25 +95,25 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'emails.alias': {
-            'Meta': {'unique_together': "(('emailname', 'domain'),)", 'object_name': 'Alias'},
+        u'mails.mailalias': {
+            'Meta': {'unique_together': "(('emailname', 'domain'),)", 'object_name': 'MailAlias'},
             'destination': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['emails.Domain']"}),
+            'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mails.MailDomain']"}),
             'emailname': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
-        u'emails.domain': {
-            'Meta': {'object_name': 'Domain'},
+        u'mails.mailbox': {
+            'Meta': {'unique_together': "(('emailname', 'domain'),)", 'object_name': 'Mailbox'},
+            'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mails.MailDomain']"}),
+            'emailname': ('django.db.models.fields.CharField', [], {'max_length': '23'}),
+            'home': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256', 'blank': 'True'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'primary_key': 'True'})
+        },
+        u'mails.maildomain': {
+            'Meta': {'object_name': 'MailDomain'},
             'domain': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['names.Name']", 'unique': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'type': ('django.db.models.fields.CharField', [], {'default': "'HOSTED'", 'max_length': '20'})
-        },
-        u'emails.mailbox': {
-            'Meta': {'unique_together': "(('emailname', 'domain'),)", 'object_name': 'Mailbox'},
-            'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['emails.Domain']"}),
-            'emailname': ('django.db.models.fields.CharField', [], {'max_length': '23'}),
-            'home': ('django.db.models.fields.CharField', [], {'default': "'/home'", 'unique': 'True', 'max_length': '256', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'primary_key': 'True'})
         },
         u'names.name': {
             'Meta': {'object_name': 'Name'},
@@ -122,4 +122,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['emails']
+    complete_apps = ['mails']

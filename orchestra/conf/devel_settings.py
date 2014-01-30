@@ -14,7 +14,7 @@ CELERY_SEND_TASK_ERROR_EMAILS = False
 if "celeryd" in sys.argv or 'celeryev' in sys.argv or 'celerybeat' in sys.argv:
     DEBUG = False
 
-#Django debug toolbar
+# Django debug toolbar
 INSTALLED_APPS += ('debug_toolbar', )
 MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 INTERNAL_IPS = ('127.0.0.1', '10.0.3.1',) #10.0.3.1 is the lxcbr0 ip

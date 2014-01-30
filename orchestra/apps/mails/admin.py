@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import MailDomain, Mailbox, Alias
+from .models import MailDomain, Mailbox, MailAlias
 
 
 admin.site.register(MailDomain)
 admin.site.register(Mailbox)
-admin.site.register(Alias)
+admin.site.register(MailAlias)

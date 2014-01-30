@@ -26,7 +26,7 @@ class MailDomain(models.Model):
         (RELAY, _("Relay domain")),
     )
 
-    domain = models.OneToOneField(settings.EMAILS_VIRTUAL_DOMAIN_MODEL,
+    domain = models.OneToOneField(settings.MAILS_VIRTUAL_DOMAIN_MODEL,
             verbose_name=_("domain"))
     type = models.CharField(max_length=20, choices=DOMAIN_TYPES, default=HOSTED,
             help_text=_("Canonical: Server domain name<br>"
@@ -59,8 +59,8 @@ class Mailbox(models.Model):
 
     def save(self, *args, **kwargs):
         """ Generates home directory, if not provided """
-        if not self.home or self.home == settings.EMAILS_DEFAULT_BASE_HOME:
-            self.home = os.path.join(settings.EMAILS_DEFAULT_BASE_HOME,
+        if not self.home or self.home == settings.MAILS_DEFAULT_BASE_HOME:
+            self.home = os.path.join(settings.MAILS_DEFAULT_BASE_HOME,
                                      self.domain.domain.name, self.emailname)
         super(Mailbox, self).save(*args, **kwargs)
 
@@ -69,7 +69,7 @@ class Mailbox(models.Model):
         return "%s@%s" % (self.emailname, self.domain)
 
 
-class Alias(models.Model):
+class MailAlias(models.Model):
     """
     Represents aliases. An alias can have the following features
 
@@ -85,7 +85,7 @@ class Alias(models.Model):
 
     class Meta:
         unique_together = ('emailname', 'domain')
-        verbose_name_plural = _("aliases")
+        verbose_name_plural = _("mail aliases")
 
     def __unicode__(self):
         return self.source

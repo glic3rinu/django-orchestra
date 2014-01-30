@@ -66,12 +66,12 @@ INSTALLED_APPS = (
     'orchestra.apps.daemons',
     'orchestra.apps.dns.zones',
     'orchestra.apps.dns.names',
-    'orchestra.apps.emails',
-    'orchestra.apps.entities',
+    'orchestra.apps.mails',
+    'orchestra.apps.contacts',
     'orchestra.apps.lists',
     'orchestra.apps.webs',
-    'orchestra.apps.webs.databases',
-    'orchestra.apps.webs.ftp',
+    'orchestra.apps.webs.webdatabases',
+    'orchestra.apps.webs.webftpaccounts',
     
     # Third-party apps
     'south',
@@ -121,18 +121,18 @@ FLUENT_DASHBOARD_APP_GROUPS = (
         'models': (
             'orchestra.apps.systemusers.models.SystemUser',
             'orchestra.apps.webs.models.Web',
-            'orchestra.apps.emails.models.Mailbox',
+            'orchestra.apps.mails.models.Mailbox',
             'orchestra.apps.lists.models.List',
             'orchestra.apps.dns.zones.models.Zone',
             'orchestra.apps.dns.names.models.Name',
-            'orchestra.apps.databases.models.Database',
+            'orchestra.apps.webdatabases.models.WebDatabase',
             'orchestra.apps.multitenance.models.Application',
         ),
         'collapsible': True,
     }),
     ('Billing', {
         'models': (
-            'orchestra.apps.entities.models.Entity',
+            'orchestra.apps.contacts.models.Contact',
         ),
         'collapsible': True,
     }),
@@ -150,15 +150,15 @@ FLUENT_DASHBOARD_APP_ICONS = {
     # Services
     'systemusers/systemuser': "Tux.png",
     'webs/web': "web.png",
-    'emails/mailbox': "email.png",
+    'mails/mailbox': "email.png",
     'lists/list': "email-alter.png",
     'zones/zone': "zone.png",
     'names/name': "dns.png",
-    'databases/database': "database.png",
+    'webdatabases/webdatabase': "database.png",
     'mail/virtualuser': "virtualuser.png",
     'multitenance/application': "apps.png",
     # Billing
-    'entities/entity': "contact.png",
+    'contacts/contact': "contact.png",
     # Administration
     'auth/user': "Mr-potato.png",
     'djcelery/taskstate': "taskstate.png",

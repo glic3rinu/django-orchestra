@@ -8,9 +8,9 @@ from orchestra.core import validators
 from ..models import Web
 
 
-class FTP(models.Model):
+class WebFTPAccount(models.Model):
     """ Represents an FTP account for accessing a related web application """
-    web = models.ForeignKey(Web, verbose_name=_("web"), related_name='ftps')
+    web = models.ForeignKey(Web, verbose_name=_("web"), related_name='webftpaccounts')
     username = models.CharField(_("username"), max_length=128, unique=True,
             validators=[validators.validate_name])
     password = models.CharField(_("password"), max_length=64)

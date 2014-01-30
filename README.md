@@ -1,4 +1,4 @@
-**This project is in early development stage**
+![](orchestra/static/orchestra/icons/Emblem-important.svg) **This project is in early development stage**
 
 Django Orchestra
 ================

@@ -18,8 +18,8 @@ Orchestration module has the following pieces:
 
 
 Execution steps:
+
 1. Collect all save and delete model signals of an HTTP request
 2. Find related daemon instances using the routing backend
 3. Generate per instance scripts
-4. Send the task to Celery just before commiting the transacion to the DB
-   Make sure Celery will execute the scripts in FIFO order (single process?)
+4. Send the task to Celery just before commiting the transacion to the DB Make sure Celery will execute the scripts in FIFO order (single process?)

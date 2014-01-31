@@ -25,3 +25,4 @@ RESTART_SERVICES = getattr(settings, 'RESTART_SERVICES',
 STOP_SERVICES = getattr(settings, 'STOP_SERVICES',
     [('uwsgi', 'nginx'), 'celerybeat', 'celeryd', 'celeryevcam', 'postgresql']
 )
+

@@ -1,8 +1,9 @@
 import os
 
 from django.utils.translation import ugettext_lazy as _
+from django.template import Template, Context
 
-from orchestra.core.backends import ServiceBackend
+from orchestra.orchestration import ServiceBackend
 
 
 class Apache2Backend(ServiceBackend):
@@ -25,7 +26,7 @@ class Apache2Backend(ServiceBackend):
                     "  { echo -e '%(apache_conf)s' > %(apache_path)s; UPDATED=1; }" % context)
         
         # enable or dissabe this site
-        self.append("ls -l %(apache_enabled_path)s; DISABLED=$?" % context)
+        self.append("ls -l %(sites_enabled)s; DISABLED=$?" % context)
         if web.is_active:
             self.append("if [[ $DISABLED ]]; then a2ensite %(name)s;"
                         "else UPDATED=0; fi" % context)
@@ -49,7 +50,7 @@ class Apache2Backend(ServiceBackend):
             "<VirtualHost *:{{ web.port }}"
             "    DocumentRoot {{ web.home }}"
             "    ServerName {{ web.primary_domain }}"
-            "    ServerAlias {{ web.secondary_domains|join' ' }}"
+            "    ServerAlias {{ web.secondary_domains|join:' ' }}"
             "    CustomLog %(logs)s{{ web.primary_domain }} common"
             "</VirtualHost>" % { 'logs': self.BASE_APACHE_LOGS })
         sites_available = os.path.join(self.BASE_APACHE_PATH, 'sites-available')
@@ -57,7 +58,7 @@ class Apache2Backend(ServiceBackend):
         return {
             'username': web.user.username,
             'password': web.user.password,
-            'home': web.home,
+            'home': web.root,
             'name': web.name,
             'sites_enabled': sites_enabled,
             'apache_path': os.path.join('sites_availble', web.name),

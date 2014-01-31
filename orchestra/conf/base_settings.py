@@ -42,7 +42,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'orchestra.core.middlewares.ProcessPendingOperations',
+    'orchestra.orchestration.middlewares.ProcessPendingOperations',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -62,6 +62,7 @@ TEMPLATE_CONTEXT_PROCESSORS =(
 INSTALLED_APPS = (
     # django-orchestra apps
     'orchestra',
+    'orchestra.orchestration',
     
     'orchestra.apps.multitenance',
     'orchestra.apps.daemons',

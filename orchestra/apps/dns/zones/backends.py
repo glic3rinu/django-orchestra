@@ -2,7 +2,7 @@ import os
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core.backends import ServiceBackend
+from orchestra.orchestration import ServiceBackend
 
 
 class MasterBindBackend(ServiceBackend):

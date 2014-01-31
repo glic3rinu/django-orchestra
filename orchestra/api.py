@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.routers import DefaultRouter
 
-from ..utils import autodiscover as module_autodiscover
+from .utils import autodiscover as module_autodiscover
 
 
-class OrchestraRouter(DefaultRouter):
+class LinkHeaderRouter(DefaultRouter):
     def get_api_root_view(self):
         """ returns the root view, with all the linked collections """
         api_root_dict = {}
@@ -70,6 +70,6 @@ class OrchestraRouter(DefaultRouter):
 
 
 # Create a router and register our viewsets with it.
-router = OrchestraRouter()
+router = LinkHeaderRouter()
 
 autodiscover = lambda: (module_autodiscover('api'), module_autodiscover('serializers'))

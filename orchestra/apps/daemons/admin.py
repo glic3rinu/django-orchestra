@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Daemon, Host, Instance
+from .models import Daemon, Instance
 
 
 class InstanceInline(admin.TabularInline):
@@ -12,4 +12,3 @@ class DaemonAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Daemon, DaemonAdmin)
-admin.site.register(Host)

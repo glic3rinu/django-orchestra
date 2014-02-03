@@ -11,4 +11,4 @@ class WebDatabaseSerializer(serializers.ModelSerializer):
         fields = ('name', 'username', 'password', 'type')
 
 
-router.insert(r'webs', 'webdatabases', WebDatabaseSerializer)
+router.insert(r'webs', 'webdatabases', WebDatabaseSerializer, many=True)

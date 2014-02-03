@@ -26,3 +26,11 @@ class Web(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        context = {
+            'name': self.name,
+            'username': self.user.username,
+        }
+        self.root = self.root % context
+        super(Web, self).save(*args, **kwargs)

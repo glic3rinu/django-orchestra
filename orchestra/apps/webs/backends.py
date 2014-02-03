@@ -15,30 +15,40 @@ class Apache2Backend(ServiceBackend):
     BASE_APACHE_LOGS = '/var/log/apache2/virtual/'
     
     def save(self, web):
+        template = Template(
+            "<VirtualHost *:{{ web.port }}\n"
+            "    DocumentRoot {{ web.root }}\n"
+            "    ServerName {{ web.domains.all|first }}"
+            "{%% if web.domains.all|slice:\"1:\" %%}"
+            "    ServerAlias {{ web.domains.all|slice:\"1:\"|join:' ' }}{%% endif %%}\n"
+            "    CustomLog %(logs)s{{ web.primary_domain }} common\n"
+            "</VirtualHost>\n" % { 'logs': self.BASE_APACHE_LOGS })
         context = self.get_context(web)
+        context.update({ 'conf': template.render(Context({'web': web})) })
         # create system user if not exists
-        self.append("id %(username)s || useradd %(username)s"
-                    "  --password %(password)s"
-                    "  --home-dir %(home)s --create-home"
+        self.append("id %(username)s || useradd %(username)s \\\n"
+                    "  --password '%(password)s' \\\n"
                     "  --shell SHELL /dev/null" % context)
+        self.append("mkdir -p %(root)s" % context)
+        self.append("chown %(username)s.%(username)s %(root)s" % context)
         # create apache conf
-        self.append("{ echo -e '%(apache_conf)s' | diff %(apache_path)s - ; } ||"
-                    "  { echo -e '%(apache_conf)s' > %(apache_path)s; UPDATED=1; }" % context)
+        self.append("{ echo -e '%(conf)s' | diff %(sites_available)s - ; } ||"
+                    "  { echo -e '%(conf)s' > %(sites_available)s; UPDATED=1; }" % context)
         
         # enable or dissabe this site
         self.append("ls -l %(sites_enabled)s; DISABLED=$?" % context)
         if web.is_active:
-            self.append("if [[ $DISABLED ]]; then a2ensite %(name)s;"
+            self.append("if [[ $DISABLED ]]; then a2ensite %(name)s;\n"
                         "else UPDATED=0; fi" % context)
         else:
-            self.append("if [[ ! $DISABLED ]]; then a2dissite %(name)s;"
+            self.append("if [[ ! $DISABLED ]]; then a2dissite %(name)s;\n"
                         "else UPDATED=0; fi" % context)
     
     def delete(self, web):
         context = self.get_context(web)
         self.append("a2dissite %(name)s && UPDATED=1" % context)
         self.append("rm -fr %(home)s" % context)
-        self.append("rm -fr %(apache_conf)s" % context)
+        self.append("rm -fr %(sites_available)s" % context)
         # TODO cleanup system user
     
     def commit(self):
@@ -46,21 +56,13 @@ class Apache2Backend(ServiceBackend):
         self.append('$UPDATED && service apache2 reload')
     
     def get_context(self, web):
-        template = Template(
-            "<VirtualHost *:{{ web.port }}"
-            "    DocumentRoot {{ web.home }}"
-            "    ServerName {{ web.primary_domain }}"
-            "    ServerAlias {{ web.secondary_domains|join:' ' }}"
-            "    CustomLog %(logs)s{{ web.primary_domain }} common"
-            "</VirtualHost>" % { 'logs': self.BASE_APACHE_LOGS })
         sites_available = os.path.join(self.BASE_APACHE_PATH, 'sites-available')
         sites_enabled = os.path.join(self.BASE_APACHE_PATH, 'sites-enabled')
         return {
             'username': web.user.username,
             'password': web.user.password,
-            'home': web.root,
+            'root': web.root,
             'name': web.name,
             'sites_enabled': sites_enabled,
-            'apache_path': os.path.join('sites_availble', web.name),
-            'apache_conf': template.render(Context({'web': web})),
+            'sites_available': os.path.join(sites_available, web.name),
         }

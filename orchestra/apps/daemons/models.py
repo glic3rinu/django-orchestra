@@ -12,25 +12,29 @@ backend_choices = (
         for backend in ServiceBackend.get_backends())
 
 
-class Daemon(models.Model):
-    """ Represents a particular program which provides some service that has to be managed """
-    name = models.CharField(_("name"), max_length=256)
-    hosts = models.ManyToManyField('orchestration.Server', verbose_name=_("Hosts"),
-            through='Instance')
+class Route(models.Model):
     backend = models.CharField(_("backend"), max_length=256, choices=backend_choices,
             unique=True)
+    host = models.ForeignKey('orchestration.Server', verbose_name=_("host"))
+    match = models.CharField(_("match"), max_length=256, blank=True, default='True',
+            help_text=_("Python expression used for selecting the targe host"))
     is_active = models.BooleanField(_("is active"), default=True)
     
+    class Meta:
+        unique_together = ('backend', 'host')
+    
     def __unicode__(self):
-        return self.name
+        return "%s@%s" % (self.backend, self.host)
     
     @classmethod
     def get_servers(cls, operation):
         try:
-            daemon = cls.objects.get(is_active=True, backend=operation.backend)
+            routes = cls.objects.filter(is_active=True, backend=operation.backend)
         except cls.DoesNotExist:
             return []
-        return [ host for host in daemon.instances.match(operation.obj) ]
+        safe_locals = { 'obj': operation.obj }
+        pks = [ route.pk for route in routes.all() if eval(route.match, safe_locals) ]
+        return [ route.host for route in routes.filter(pk__in=pks) ]
     
     def get_backend(self):
         for backend in ServiceBackend.get_backends():
@@ -45,29 +49,3 @@ class Daemon(models.Model):
     def disable(self):
         self.is_active = False
         self.save()
-
-
-# TODO rename router
-class InstanceManager(models.Manager):
-    def match(self, obj):
-        """ returns all instances which the router evaluates true """
-        safe_locals = { 'obj': obj }
-        pks = [ inst.pk for inst in self.all() if eval(inst.router, safe_locals) ]
-        return self.filter(pk__in=pks)
-
-
-class Instance(models.Model):
-    """ Represents a daemon running on a particular host """
-    daemon = models.ForeignKey(Daemon, verbose_name=_("daemon"),
-            related_name='instances')
-    host = models.ForeignKey('orchestration.Server', verbose_name=_("host"))
-    router = models.CharField(_("router"), max_length=256, blank=True, default='True',
-            help_text=_("Python expression used for selecting the targe host"))
-    
-    objects = InstanceManager()
-    
-    class Meta:
-        unique_together = ('daemon', 'host')
-    
-    def __unicode__(self):
-        return "%s@%s" % (self.daemon, self.host)

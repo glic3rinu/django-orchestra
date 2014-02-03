@@ -55,7 +55,8 @@ class LinkHeaderRouter(DefaultRouter):
         for methodname in dir(viewset):
             attr = getattr(viewset, methodname)
             if hasattr(attr, 'bind_to_methods'):
-                retrieve_links.append('%s-%s' % (base_name, methodname))
+                view_name = '%s-%s' % (base_name, methodname.replace('_', '-'))
+                retrieve_links.append(view_name)
         viewset.retrieve = insert_links(viewset.retrieve, retrieve_links)
         self.registry.append((prefix, viewset, base_name))
     

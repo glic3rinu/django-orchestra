@@ -9,7 +9,7 @@ def get_router():
 
 
 def execute(operations):
-    """ generates and executes the operations on remote servers """
+    """ generates and executes the operations on the servers """
     router = get_router()
     # Generate scripts per server+backend
     scripts = {}

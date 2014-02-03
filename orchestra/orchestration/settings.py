@@ -1,5 +1,6 @@
-from django.conf import settings
+from os import path
 
+from django.conf import settings
 
 
 ORCHESTRATION_OS_CHOICES = getattr(settings, 'ORCHESTRATION_OS_CHOICES', (
@@ -8,8 +9,10 @@ ORCHESTRATION_OS_CHOICES = getattr(settings, 'ORCHESTRATION_OS_CHOICES', (
 
 ORCHESTRATION_DEFAULT_OS = getattr(settings, 'ORCHESTRATION_DEFAULT_OS', 'LINUX')
 
+ORCHESTRATION_SSH_KEY_PATH = getattr(settings, 'ORCHESTRATION_SSH_KEY_PATH', 
+    path.join(path.expanduser('~'), '.ssh/id_rsa'))
 
 ORCHESTRATION_ROUTER = getattr(settings, 'ORCHESTRATION_ROUTER',
-    'orchestra.apps.daemons.models.Daemon'
+    'orchestra.apps.daemons.models.Route'
 )
 

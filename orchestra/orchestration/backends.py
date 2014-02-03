@@ -2,7 +2,7 @@ from orchestra.utils import plugins
 
 from . import methods
 
-# TODO create script objects
+# TODO support for both, step based and sync based backends
 
 class ServiceBackend(object):
     """
@@ -15,7 +15,7 @@ class ServiceBackend(object):
     name = None
     verbose_name = None
     models = []
-    method = methods.SSHMethod()
+    method = methods.SSH
     
     __metaclass__ = plugins.PluginMount
     
@@ -27,7 +27,7 @@ class ServiceBackend(object):
     
     @property
     def script(self):
-        return '\n'.join(self.cmds)
+        return '\n\n'.join(self.cmds)
     
     @classmethod
     def get_backends(cls):

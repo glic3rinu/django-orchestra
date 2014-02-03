@@ -6,14 +6,14 @@ This module handles the server management of the services controlled by Orchestr
 
 Orchestration module has the following pieces:
 
-* `operation` encapsulates an operation, storing the object, the action and the backend
+* `Operation` encapsulates an operation, storing the object, the action and the backend
 * `collector` collects a bunch of operations into a _unit of work_, usually all operations triggered on the same request
 * `manager` it manage the execution of the operations
 * `backends` defines the logic that will be executed on the servers in order to control a particular service
 * `router` determines in which server an operation should be executed
-* `server` defines a server hosting services
-* `script` code meant to be executed on a server in order to apply all of its pending operations
-* `logger` it logs the script execution
+* `Server` defines a server hosting services
+* `methods` script execution methods, e.g. SSH
+* `ScriptLog` it logs the script execution
 
 
 

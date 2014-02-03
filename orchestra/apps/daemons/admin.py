@@ -1,14 +1,12 @@
 from django.contrib import admin
 
-from .models import Daemon, Instance
+from .models import Route
 
 
-class InstanceInline(admin.TabularInline):
-    model = Instance
+class RouteAdmin(admin.ModelAdmin):
+    list_display = ['id', 'backend', 'host', 'match', 'is_active']
+    list_editable = ['backend', 'host', 'match', 'is_active']
+    list_filter = ['backend', 'host', 'is_active']
 
 
-class DaemonAdmin(admin.ModelAdmin):
-    inlines = [InstanceInline]
-
-
-admin.site.register(Daemon, DaemonAdmin)
+admin.site.register(Route, RouteAdmin)

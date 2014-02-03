@@ -12,7 +12,7 @@ from . import collector, settings
 
 @receiver(post_save)
 def post_save_collector(sender, *args, **kwargs):
-   collector.collect('save', sender, *args, **kwargs)
+    collector.collect('save', sender, *args, **kwargs)
 
 
 @receiver(post_delete)
@@ -33,7 +33,40 @@ class Server(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    def get_address(self):
+        return address if self.address else self.name
 
 
 class ScriptLog(models.Model):
-    pass
+    RECEIVED = 'RECEIVED'
+    TIMEOUT = 'TIMEOUT'
+    STARTED = 'STARTED'
+    SUCCESS = 'SUCCESS'
+    FAILURE = 'FAILURE'
+    ERROR = 'ERROR'
+    REVOKED = 'REVOKED'
+    OUTDATED = 'OUTDATED'
+    
+    STATES = (
+        (RECEIVED, RECEIVED),
+        (TIMEOUT, TIMEOUT),
+        (STARTED, STARTED),
+        (SUCCESS, SUCCESS),
+        (FAILURE, FAILURE),
+        (ERROR, ERROR),
+        (REVOKED, REVOKED),
+        (OUTDATED, OUTDATED))
+    
+    state = models.CharField(_("state"), max_length=16, choices=STATES, default=RECEIVED)
+    server = models.ForeignKey(Server, verbose_name=_("server"),
+            related_name='execution_logs')
+    script = models.TextField(_("script"))
+    stdout = models.TextField()
+    stderr = models.TextField()
+    traceback = models.TextField(_("traceback"))
+    exit_code = models.IntegerField(_("exit code"), null=True)
+    task_id = models.CharField(_("task ID"), max_length=36, unique=True, null=True,
+            help_text="Celery task ID")
+    created = models.DateTimeField(_("created"), auto_now_add=True)
+    last_update = models.DateTimeField(_("last update"), auto_now=True)

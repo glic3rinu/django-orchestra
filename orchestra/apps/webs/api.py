@@ -9,6 +9,7 @@ from .serializers import WebSerializer
 
 class WebViewSet(viewsets.ModelViewSet):
     model = Web
+    serializer_class = WebSerializer
     
     @action()
     def reload(self, request, pk=None):

@@ -15,6 +15,8 @@
   1. [ ] DNS
   1. [ ] Mailing lists
   1. [ ] Multitenant applications
+1. [ ] Contact management and service contraction
+1. [ ] Object level permissions system
 1. [ ] Unittests of all the logic
 1. [ ] Initial documentation
 
@@ -22,7 +24,7 @@
 ### 2.0 Milestone (first beta release)
 
 1. [ ] Resource monitoring
-1. [ ] Accountancy
+1. [ ] Orders
 2. [ ] Pricing
 3. [ ] Billing
 1. [ ] Payment gateways

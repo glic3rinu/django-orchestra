@@ -11,4 +11,4 @@ class WebFTPAccountSerializer(serializers.ModelSerializer):
         fields = ('username', 'password', 'directory')
 
 
-router.insert(r'webs', 'webftpaccounts', WebFTPAccountSerializer)
+router.insert(r'webs', 'webftpaccounts', WebFTPAccountSerializer, many=True)

@@ -105,7 +105,8 @@ function install_requirements () {
     APT="python-pip \
          python-psycopg2 \
          postgresql \
-         rabbitmq-server"
+         rabbitmq-server \
+         python-dev"
     
     PIP="django==1.6.1 \
          django-celery-email==1.0.3 \
@@ -119,7 +120,8 @@ function install_requirements () {
          celery==3.1.7 \
          kombu==3.0.8 \
          django-debug-toolbar==1.0.1 \
-         djangorestframework==2.3.12"
+         djangorestframework==2.3.12 \
+         paramiko==1.12.1"
     
     # Make sure locales are in place before installing postgres
     if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then

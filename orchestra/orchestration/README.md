@@ -30,14 +30,14 @@ Orchestra considers two approaches for service management depending on the strat
 Isolated changes on the data model are directly translated to chanes on the related service configuration. For example `save` or `delete` data operations have sibiling configuration management operations. Tasks are driven by the Orchestra server using a _push_ strategy.
 
 This model is intuitive and efficient, but it is prone to inconsistencies becuase tasks maintain state, and this state can be lost when:
-- A failure occur while appling the configuration
-- Scripts are executed out of order
+- A failure occur while appling some changes, e.g. network error or worker crash while deleting a database
+- Scripts are executed out of order, e.g. create and delete a database is applied in the inverse order
 
 
 #### Synchronization based management
 The entire service configuration is kept in sync with the server database, synchronization can be done periodically or triggered by a change on the data model. In contrast to tasks, here the full service configuration is **regenerated** every time.
 
-This model is highly consistent since the configuration is fully regenerated from the current state. Notice that _out of band_ configuration changes can be lost during synchronization.
+This model is not very efficient, but highly consistent, since the configuration is fully regenerated from the current state. Notice that Orchestra will act as the only configuration authority, _out of band_ configuration changes can be lost during synchronization.
 
 Service management can be driven by both, Orchestra server or a client application that _pulls_ the current state via Orchestra's REST API.
 

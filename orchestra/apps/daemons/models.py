@@ -8,7 +8,7 @@ from orchestra.utils import autodiscover
 autodiscover('backends')
 
 backend_choices = (
-    (backend.name, backend.verbose_name)
+    (backend.name, backend.verbose_name.capitalize())
         for backend in ServiceBackend.get_backends())
 
 

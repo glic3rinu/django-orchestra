@@ -1,8 +1,11 @@
 import os
 
+from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.orchestration import ServiceBackend
+
+from . import settings
 
 
 class MasterBindBackend(ServiceBackend):
@@ -12,15 +15,15 @@ class MasterBindBackend(ServiceBackend):
     
     def save(self, zone):
         template = Template(
-            "{{ zone.origin }}.  IN  SOA {{ zone.primary_ns }}. {{ zone.hostmaster_email }}. (\n"
+            "{{ zone.name }}.  IN  SOA {{ zone.name_server }}. {{ zone.formatted_hostname }}. (\n"
             "       {{ zone.serial }}\t; serial number\n"
-            "       {{ zone.slave_refresh }}\t; slave refresh\n"
-            "       {{ zone.slave_retry }}\t; slave retry time in case of problem\n"
-            "       {{ zone.slave_expiration }}\t; slave expiration time\n"
+            "       {{ zone.refresh }}\t; slave refresh\n"
+            "       {{ zone.retry }}\t; slave retry time in case of problem\n"
+            "       {{ zone.expiration }}\t; slave expiration time\n"
             "       {{ zone.min_caching_time }}\t; maximum caching time in case of failed lookups\n"
             "   )\n"
-            "{% for record in zone.records %}"
-            "{{ record.name }}\t\tIN\t{{ record.type }}\t{{ record.data }}\n"
+            "{% for record in zone.records.all %}"
+            "{{ record.name }}\t\tIN\t{{ record.type }}\t{{ record.value }}\n"
             "{% endfor %}")
         context = self.get_context(zone)
         context.update({ 'content': template.render(Context({'zone': zone})) })

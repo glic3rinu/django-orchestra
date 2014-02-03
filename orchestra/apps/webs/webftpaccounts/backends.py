@@ -6,7 +6,7 @@ from orchestra.orchestration import ServiceBackend
 class SystemUserFTPBackend(ServiceBackend):
     name = 'SystemUserFTP'
     verbose_name = _("System user FTP")
-    models = ['ftp.FTP']
+    models = ['webftpaccounts.WebFTPAccount']
     
     def save(self, ftp):
         context = {

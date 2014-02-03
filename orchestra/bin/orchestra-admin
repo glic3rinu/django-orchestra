@@ -121,7 +121,8 @@ function install_requirements () {
          kombu==3.0.8 \
          django-debug-toolbar==1.0.1 \
          djangorestframework==2.3.12 \
-         paramiko==1.12.1"
+         paramiko==1.12.1 \
+         Pygments==1.6"
     
     # Make sure locales are in place before installing postgres
     if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then

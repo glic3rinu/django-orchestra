@@ -14,8 +14,10 @@ class ServiceBackend(object):
     """
     name = None
     verbose_name = None
-    models = []
+    model = None
+    related_models = () # ((model, accessor__attribute),)
     method = methods.SSH
+    type = 'task' # 'sync'
     
     __metaclass__ = plugins.PluginMount
     

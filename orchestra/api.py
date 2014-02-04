@@ -3,12 +3,70 @@ from django.core.urlresolvers import NoReverseMatch
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import DefaultRouter, Route, flatten, replace_methodname
 
 from .utils import autodiscover as module_autodiscover
 
 
+def replace_listmethodname(format_string, methodname):
+    ret = replace_methodname(format_string, methodname)
+    ret = ret.replace('{listmethodname}', methodname)
+    return ret
+
+
+def list_link(**kwargs):
+    """
+    Used to mark a method on a ViewSet that should be routed for GET requests.
+    """
+    def decorator(func):
+        func.list_bind_to_methods = ['get']
+        func.kwargs = kwargs
+        return func
+    return decorator
+
+
 class LinkHeaderRouter(DefaultRouter):
+    def __init__(self, *args, **kwargs):
+        """ list view method route """
+        super(LinkHeaderRouter, self).__init__(*args, **kwargs)
+        self.routes.append(Route(
+            url=r'^{prefix}/{listmethodname}{trailing_slash}$',
+            mapping={
+                '{httpmethod}': '{listmethodname}',
+            },
+            name='{basename}-{methodnamehyphen}',
+            initkwargs={}
+        ))
+    
+    def get_routes(self, viewset):
+        """ allow links and actions to be bind to a list view """
+        known_actions = flatten([route.mapping.values() for route in self.routes])
+        list_routes = []
+        for methodname in dir(viewset):
+            attr = getattr(viewset, methodname)
+            httpmethods = getattr(attr, 'list_bind_to_methods', None)
+            if httpmethods:
+                if methodname in known_actions:
+                    raise ImproperlyConfigured('Cannot use @action or @link decorator on '
+                                               'method "%s" as it is an existing route' % methodname)
+                httpmethods = [method.lower() for method in httpmethods]
+                list_routes.append((httpmethods, methodname))
+        ret = []
+        for route in self.routes:
+            if route.mapping == {'{httpmethod}': '{listmethodname}'}:
+                # Dynamic routes (@link or @action decorator)
+                for httpmethods, methodname in list_routes:
+                    initkwargs = route.initkwargs.copy()
+                    initkwargs.update(getattr(viewset, methodname).kwargs)
+                    ret.append(Route(
+                        url=replace_listmethodname(route.url, methodname),
+                        mapping=dict((httpmethod, methodname) for httpmethod in httpmethods),
+                        name=replace_listmethodname(route.name, methodname),
+                        initkwargs=initkwargs,
+                    ))
+        # list methods goes first on the url definition
+        return ret + super(LinkHeaderRouter, self).get_routes(viewset)
+    
     def get_api_root_view(self):
         """ returns the root view, with all the linked collections """
         api_root_dict = {}
@@ -33,9 +91,8 @@ class LinkHeaderRouter(DefaultRouter):
         if base_name is None:
             base_name = self.get_default_base_name(viewset)
         
-        def insert_links(view, view_names):
-            """ factory function """
-            def inserted_links(self, request, view=view, *args, **kwargs):
+        def insert_links_factory(view, view_names):
+            def insert_links(self, request, view=view, *args, **kwargs):
                 """ wrapper function that inserts HTTP links on view """
                 links = []
                 for name in view_names:
@@ -47,17 +104,21 @@ class LinkHeaderRouter(DefaultRouter):
                 response = view(self, request, *args, **kwargs)
                 response['Link'] = ', '.join(links)
                 return response
-            return inserted_links
+            return insert_links
         
-        viewset.list = insert_links(viewset.list, ['api-root'])
+        list_links = ['api-root']
         retrieve_links = ['api-root', '%s-list' % base_name]
         # Determine any `@action` or `@link` decorated methods on the viewset
         for methodname in dir(viewset):
             attr = getattr(viewset, methodname)
-            if hasattr(attr, 'bind_to_methods'):
-                view_name = '%s-%s' % (base_name, methodname.replace('_', '-'))
+            view_name = '%s-%s' % (base_name, methodname.replace('_', '-'))
+            if hasattr(attr, 'list_bind_to_methods'):
+                list_links.append(view_name)
                 retrieve_links.append(view_name)
-        viewset.retrieve = insert_links(viewset.retrieve, retrieve_links)
+            if hasattr(attr, 'bind_to_methods'):
+                retrieve_links.append(view_name)
+        viewset.list = insert_links_factory(viewset.list, list_links)
+        viewset.retrieve = insert_links_factory(viewset.retrieve, retrieve_links)
         self.registry.append((prefix, viewset, base_name))
     
     def insert(self, prefix, name, field, **kwargs):

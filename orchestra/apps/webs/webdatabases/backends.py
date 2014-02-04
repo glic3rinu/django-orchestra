@@ -8,7 +8,7 @@ from . import settings
 class MySQLBackend(ServiceBackend):
     name = 'MySQL'
     verbose_name = _("MySQL")
-    models = ['webdatabases.WebDatabase']
+    model = 'webdatabases.WebDatabase'
     
     def save(self, database):
         context = self.get_context(database)

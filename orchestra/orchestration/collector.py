@@ -1,52 +1,50 @@
-#import Queue
-
-from orchestra.core.middlewares import threadlocal
-
 from .backends import ServiceBackend
+from .middlewares import OperationsMiddleware
 
 
 class Operation(object):
-    def __init__(self, backend, obj, action):
+    """
+    Encapsulates an operation,
+    storing its related object, the action and the backend.
+    """
+    def __init__(self, backend, instance, action):
         self.backend = backend
-        self.obj = obj
+        self.instance = instance
         self.action = action
+    
+    def __hash__(self):
+        return hash(self.backend) + hash(self.instance) + hash(self.action)
+    
+    def __eq__(self, operation):
+        return hash(self) == hash(operation)
 
 
 def collect(action, sender, *args, **kwargs):
-#    global pending_operations
-    request = threadlocal.get_request()
+    """ collects pending operations into a _unit of work_ """
+    request = OperationsMiddleware.get_request()
     if request is None:
         return
     collection = []
+    instance = None
     for backend in ServiceBackend.get_backends():
-        for model in backend.models:
-            opts = sender._meta
-            if model == '%s.%s' % (opts.app_label, opts.object_name):
-                if not hasattr(request, 'pending_operations'):
-                    request.pending_operations = []
-                operation = Operation(backend, kwargs['instance'], action)
-#                pending_operations.put(operation)
-                request.pending_operations.append(operation)
-                break
+        opts = sender._meta
+        model = '%s.%s' % (opts.app_label, opts.object_name)
+        if backend.model == model:
+            instance = kwargs['instance']
+        else:
+            for rel_model, attribute in backend.related_models:
+                if rel_model == model:
+                    instance = getattr(kwargs['instance'], attribute)
+                    break
+        if instance is not None:
+            if not hasattr(request, 'pending_operations'):
+                request.pending_operations = set()
+            request.pending_operations.add(Operation(backend, instance, action))
+            break
 
 
 def iterator():
-    request = threadlocal.get_request()
+    request = OperationsMiddleware.get_request()
     if request is not None and hasattr(request, 'pending_operations'):
         return iter(request.pending_operations)
     return iter([])
-
-
-#def iterator():
-#    global pending_operations
-#    try:
-#        yield pending_operations.get_nowait()
-#    except Queue.Empty:
-#        return
-
-
-# This thread-safe global variable stores all the pending backend operations
-# Operations are added to the queue during the request/response cycle
-# Operations are removed by a ProcessPendingOperations middleware
-# pending_operations = Queue.Queue()
-

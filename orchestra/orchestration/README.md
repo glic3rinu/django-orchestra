@@ -31,7 +31,7 @@ Isolated changes on the data model are directly translated to chanes on the rela
 
 This model is intuitive and efficient, but it is prone to inconsistencies becuase tasks maintain state, and this state can be lost when:
 - A failure occur while appling some changes, e.g. network error or worker crash while deleting a database
-- Scripts are executed out of order, e.g. create and delete a database is applied in the inverse order
+- Scripts are executed out of order, e.g. create and delete a database is applied in inverse order
 
 
 #### b. Synchronization Based Management

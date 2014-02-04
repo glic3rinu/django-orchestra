@@ -12,9 +12,10 @@ class Migration(SchemaMigration):
         db.create_table(u'zones_zone', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
+            ('name_server', self.gf('django.db.models.fields.CharField')(default='ns.example.com', max_length=128)),
             ('hostmaster', self.gf('django.db.models.fields.EmailField')(default='hostmaster@example.com', max_length=75)),
             ('ttl', self.gf('django.db.models.fields.CharField')(default='1h', max_length=8, null=True, blank=True)),
-            ('serial', self.gf('django.db.models.fields.IntegerField')(default=2014012401)),
+            ('serial', self.gf('django.db.models.fields.IntegerField')(default=2014020401)),
             ('refresh', self.gf('django.db.models.fields.CharField')(default='1d', max_length=8)),
             ('retry', self.gf('django.db.models.fields.CharField')(default='2h', max_length=8)),
             ('expiration', self.gf('django.db.models.fields.CharField')(default='4w', max_length=8)),
@@ -57,9 +58,10 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'min_caching_time': ('django.db.models.fields.CharField', [], {'default': "'1h'", 'max_length': '8'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'name_server': ('django.db.models.fields.CharField', [], {'default': "'ns.example.com'", 'max_length': '128'}),
             'refresh': ('django.db.models.fields.CharField', [], {'default': "'1d'", 'max_length': '8'}),
             'retry': ('django.db.models.fields.CharField', [], {'default': "'2h'", 'max_length': '8'}),
-            'serial': ('django.db.models.fields.IntegerField', [], {'default': '2014012401'}),
+            'serial': ('django.db.models.fields.IntegerField', [], {'default': '2014020401'}),
             'ttl': ('django.db.models.fields.CharField', [], {'default': "'1h'", 'max_length': '8', 'null': 'True', 'blank': 'True'})
         }
     }

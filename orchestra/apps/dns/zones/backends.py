@@ -11,11 +11,12 @@ from . import settings
 class MasterBindBackend(ServiceBackend):
     name = 'master-Bind'
     verbose_name = _("master Bind")
-    models = ['zones.Zone', 'zones.Record']
+    model = 'zones.Zone'
+    related_models = (('zones.Record', 'zone'),)
     
     def save(self, zone):
         template = Template(
-            "{{ zone.name }}.  IN  SOA {{ zone.name_server }}. {{ zone.formatted_hostname }}. (\n"
+            "{{ zone.name }}.  IN  SOA {{ zone.name_server }}. {{ zone.formatted_hostmaster }}. (\n"
             "       {{ zone.serial }}\t; serial number\n"
             "       {{ zone.refresh }}\t; slave refresh\n"
             "       {{ zone.retry }}\t; slave retry time in case of problem\n"
@@ -30,7 +31,7 @@ class MasterBindBackend(ServiceBackend):
         self.append("{ echo -e '%(content)s' | diff %(path)s - ; } ||"
                     "   { echo -e '%(content)s' > %(path)s; UPDATED=1; }" % context)
         self.append("grep '\s*zone\s*\"%(name)s\"\s*{' %(master)s ||"
-                    "   echo -e %(conf)s >> %(master)s" % context)
+                    "   echo -e '%(conf)s' >> %(master)s" % context)
     
     def delete(self, zone):
         context = self.get_context(zone)
@@ -43,7 +44,7 @@ class MasterBindBackend(ServiceBackend):
     
     def commit(self):
         """ reload bind if needed """
-        self.append('$UPDATED && service bind9 reload')
+        self.append('[[ $UPDATED == 1 ]] && service bind9 reload')
     
     def get_context(self, zone):
         context = {

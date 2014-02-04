@@ -43,8 +43,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
-    'orchestra.core.middlewares.ThreadLocalMiddleware',
-    'orchestra.orchestration.middlewares.ProcessPendingOperations',
+    'orchestra.orchestration.middlewares.OperationsMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )

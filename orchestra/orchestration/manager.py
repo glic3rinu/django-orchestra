@@ -19,7 +19,7 @@ def execute(operations):
             key = (server, operation.backend)
             if key not in scripts:
                 scripts[key] = operation.backend()
-            getattr(scripts[key], operation.action)(operation.obj)
+            getattr(scripts[key], operation.action)(operation.instance)
     # Execute scripts on each server
     for key, backend in scripts.iteritems():
         server, __ = key

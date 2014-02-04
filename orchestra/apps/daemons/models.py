@@ -32,7 +32,7 @@ class Route(models.Model):
             routes = cls.objects.filter(is_active=True, backend=operation.backend)
         except cls.DoesNotExist:
             return []
-        safe_locals = { 'obj': operation.obj }
+        safe_locals = { 'instance': operation.instance }
         pks = [ route.pk for route in routes.all() if eval(route.match, safe_locals) ]
         return [ route.host for route in routes.filter(pk__in=pks) ]
     

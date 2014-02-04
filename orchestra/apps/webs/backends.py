@@ -9,7 +9,7 @@ from orchestra.orchestration import ServiceBackend
 class Apache2Backend(ServiceBackend):
     name = 'Apache2'
     verbose_name = _("Apache2")
-    models = ['webs.Web']
+    model = 'webs.Web'
     
     BASE_APACHE_PATH = '/etc/apache2'
     BASE_APACHE_LOGS = '/var/log/apache2/virtual/'
@@ -28,7 +28,7 @@ class Apache2Backend(ServiceBackend):
         # create system user if not exists
         self.append("id %(username)s || useradd %(username)s \\\n"
                     "  --password '%(password)s' \\\n"
-                    "  --shell SHELL /dev/null" % context)
+                    "  --shell /dev/null" % context)
         self.append("mkdir -p %(root)s" % context)
         self.append("chown %(username)s.%(username)s %(root)s" % context)
         # create apache conf
@@ -53,7 +53,7 @@ class Apache2Backend(ServiceBackend):
     
     def commit(self):
         """ reload Apache2 if necessary """
-        self.append('$UPDATED && service apache2 reload')
+        self.append('[[ $UPDATED == 1 ]] && service apache2 reload')
     
     def get_context(self, web):
         sites_available = os.path.join(self.BASE_APACHE_PATH, 'sites-available')

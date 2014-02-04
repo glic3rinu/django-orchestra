@@ -19,7 +19,7 @@ class Zone(models.Model):
             default=settings.DNS_ZONE_DEFAULT_NAME_SERVER,
             validators=[validators.validate_zone_label],
             help_text=_("hostname of the primary nameserver that is authoritative "
-                        "for this domain")),
+                        "for this domain"))
     hostmaster = models.EmailField(_("hostmaster"),
             default=settings.DNS_ZONE_DEFAULT_HOSTMASTER,
             help_text=_("email of the person to contact"))
@@ -52,19 +52,21 @@ class Zone(models.Model):
     def __unicode__(self):
         return self.name
     
-    def refresh_serial(self):
+    def refresh_serial(self, commit=True):
         """ Increases the zone serial number by one """
         serial = generate_zone_serial()
         if serial <= self.serial:
-            num = int(str(self.serial[8:])) + 1
-            assert(num < 99, "No more serial numbers for today")
-            serial = str(self.serial[:8]) + '%.2d' % num
+            num = int(str(self.serial)[8:]) + 1
+            if num >= 99:
+                raise ValueError('No more serial numbers for today')
+            serial = str(self.serial)[:8] + '%.2d' % num
             serial = int(serial)
         self.serial = serial
-        self.save()
+        if commit:
+            self.save()
     
     @property
-    def formatted_hostname(self):
+    def formatted_hostmaster(self):
         """
         The DNS encodes the <local-part> as a single label, and encodes the
         <mail-domain> as a domain name.  The single label from the <local-part>
@@ -78,9 +80,10 @@ class Zone(models.Model):
         Action\.domains.ISI.EDU.
         http://www.ietf.org/rfc/rfc1035.txt
         """
-        if '.' in self.hostname.split('@'):
-            return self.hostname.replace('@', '\.')
-        return self.hostname.replace('@', '.')
+        name, domain = self.hostmaster.split('@')
+        if '.' in name:
+            name = name.replace('.', '\.')
+        return "%s.%s" % (name, domain)
 
 
 class Record(models.Model):
@@ -103,6 +106,9 @@ class Record(models.Model):
             validators=[validators.validate_record_name])
     type = models.CharField(max_length=32, choices=TYPE_CHOICES)
     value = models.CharField(max_length=128)
+    
+    class Meta:
+        unique_together = ('zone', 'name', 'type', 'value')
     
     def __unicode__(self):
         return "%s: %s %s %s" % (self.zone, self.name, self.type, self.value)

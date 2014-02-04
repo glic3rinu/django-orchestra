@@ -42,5 +42,9 @@ class ServiceBackend(object):
         self.cmds.append(cmd)
     
     def commit(self):
-        """ apply the configuration, usually reloading a service """
+        """
+        apply the configuration, usually reloading a service 
+        reloading a service is done in a separated method in order to reload 
+        the service once in bulk operations
+        """
         pass

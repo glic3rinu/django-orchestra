@@ -27,4 +27,11 @@ CONTACTS_DEFAULT_PROVINCE = getattr(settings, 'CONTACTS_DEFAULT_PROVINCE', 'Barc
 CONTACTS_DEFAULT_COUNTRY = getattr(settings, 'CONTACTS_DEFAULT_COUNTRY', 'Spain')
 
 
-CONTACTS_CONTRACT_MODELS = getattr(settings, 'CONTACTS_CONTRACT_MODELS', ())
+CONTACTS_CONTRACT_MODELS = getattr(settings, 'CONTACTS_CONTRACT_MODELS', (
+    'zones.Zone',
+    'names.Domain',
+    'auth.User',
+    'mails.MailAlias',
+    'lists.List',
+    'multitenance.Tenant',
+))

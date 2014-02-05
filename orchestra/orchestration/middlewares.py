@@ -33,7 +33,7 @@ class OperationsMiddleware(object):
     
     @classmethod
     def collect(cls, action, sender, *args, **kwargs):
-        """ Collects """
+        """ Collects all pending operations derived from model signals """
         request = getattr(cls.thread_locals, 'request', None)
         if request is None:
             return
@@ -55,11 +55,11 @@ class OperationsMiddleware(object):
                 break
     
     def process_request(self, request):
-        """ store request on a thread local variable """
+        """ Store request on a thread local variable """
         type(self).thread_locals.request = request
     
     def process_response(self, request, response):
-        """ processes pending backend operations """
+        """ Processes pending backend operations """
         operations = [ op for op  in type(self).get_pending_operations() ]
         manager.execute(operations)
         return response

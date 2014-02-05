@@ -5,6 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.models.utils import get_model
+
 from . import settings
 
 
@@ -47,6 +49,8 @@ class Contract(models.Model):
     register_date = models.DateTimeField(_("eegister date"), auto_now_add=True)
     cancel_date = models.DateTimeField(_("cancel date"), null=True, blank=True)
     
+    content_object = generic.GenericForeignKey()
+    
     class Meta:
         unique_together = ('content_type', 'object_id')
     
@@ -62,3 +66,19 @@ class Contract(models.Model):
         if self.cancel_date and self.cancel_date < datetime.now():
             return True
         return False
+
+
+for model_label in settings.CONTACTS_CONTRACT_MODELS:
+    # Hook contact and contract properties to CONTACTS_CONTRACT_MODELS
+    @property
+    def contract(self):
+        return self.related_contract.get()
+    
+    @property
+    def contact(self):
+        return self.contract.contact
+    
+    model = get_model(model_label)
+    model.add_to_class('related_contract', generic.GenericRelation('contacts.Contract'))
+    model.add_to_class('contract', contract)
+    model.add_to_class('contact', contact)

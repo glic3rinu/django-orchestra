@@ -1,16 +1,24 @@
+from functools import update_wrapper
+
+from django.conf import settings
 from django.contrib import admin
 from django.db import models
+from django.utils import importlib
 
 
 def get_modeladmin(model, import_module=True):
     """ returns the modeladmin registred for model """
     for k,v in admin.site._registry.iteritems():
         if k is model:
-            if v is None and import_module:
-                # Sometimes the admin module is not yet imported
-                import_module('%s.%s' % (model._meta.app_label, 'admin'))
-                get_modeladmin(model, import_module=False)
             return v
+    if import_module:
+        # Sometimes the admin module is not yet imported
+        app_label = model._meta.app_label
+        for app in settings.INSTALLED_APPS:
+            if app.endswith(app_label):
+                app_label = app
+        importlib.import_module('%s.%s' % (app_label, 'admin'))
+        return get_modeladmin(model, import_module=False)
 
 
 def insertattr(model, name, value, weight=0):
@@ -34,4 +42,11 @@ def insertattr(model, name, value, weight=0):
     inserted_attrs[name].sort(key=lambda a: a[1])
     setattr(modeladmin, name, [ attr[0] for attr in inserted_attrs[name] ])
     setattr(modeladmin, '__inserted_attrs__', inserted_attrs)
+
+
+def wrap_admin_view(modeladmin, view):
+    """ Add admin authentication to view """
+    def wrapper(*args, **kwargs):
+        return modeladmin.admin_site.admin_view(view)(*args, **kwargs)
+    return update_wrapper(wrapper, view)
 

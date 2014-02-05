@@ -28,6 +28,7 @@
 2. [ ] Pricing
 3. [ ] Billing
 1. [ ] Payment gateways
+2. [ ] Scheduling of service cancellations
 1. [ ] Full documentation
 2. [ ] Python library for easily interacting with the REST API
 1. [ ] Integration tests

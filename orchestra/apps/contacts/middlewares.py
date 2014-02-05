@@ -39,7 +39,10 @@ class ContractMiddleware(object):
     
     @classmethod
     def collect(cls, action, sender, *args, **kwargs):
-        """ Collects instances in order to create or cancel their contracts """
+        """
+        Collects new and deleted service instances in order to create or cancel 
+        their contracts on a later time
+        """
         request = getattr(cls.thread_locals, 'request', None)
         opts = sender._meta
         model = '%s.%s' % (opts.app_label, opts.object_name)
@@ -57,12 +60,12 @@ class ContractMiddleware(object):
             contracts.add(instance)
     
     def process_request(self, request):
-        """ store request on a thread local variable """
+        """ Stores request on a thread local variable """
         type(self).thread_locals.request = request
     
     def process_response(self, request, response):
-        """ processes the contraction """
-        if not request.user.is_superuser:
+        """ Creates the new contracts and cancels old ones """
+        if hasattr(request, 'user') and not request.user.is_superuser:
             contact = request.user.contact
             for instance in type(self).get_new_services():
                 Contract.objects.create(contact=contact, content_object=instance)

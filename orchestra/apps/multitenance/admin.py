@@ -3,12 +3,9 @@ from django.contrib import admin
 from .models import Application, Tenant
 
 
-class TenantInline(admin.TabularInline):
-    model = Tenant
+class TenantAdmin(admin.ModelAdmin):
+    pass
 
 
-class ApplicationAdmin(admin.ModelAdmin):
-    inlines = [TenantInline]
-
-
-admin.site.register(Application, ApplicationAdmin)
+admin.site.register(Application)
+admin.site.register(Tenant, TenantAdmin)

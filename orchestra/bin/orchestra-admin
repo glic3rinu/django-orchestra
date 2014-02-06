@@ -25,7 +25,19 @@ function print_help () {
 		${bold}OPTIONS${normal}
 		    ${bold}install_requirements${normal}
 		        Installs all Orchestra requirements using apt-get and pip
-		    
+
+		    ${bold}install_postfix${normal}
+		        Installs postfix packages including dovecot, amavis, spamassassin and clamav
+
+		    ${bold}uninstall_postfix${normal}
+		        Uninstall postfix packages including dovecot, amavis, spamassassin and clamav
+
+		    ${bold}install_certificate${normal}
+		        Installs a valid all-purpose self signed certificate that is valid for the next ten years
+
+		    ${bold}uninstall_certificate${normal}
+		        Uninstall certificate
+
 		    ${bold}clone${normal}
 		        Creates a new Django-orchestra instance
 		    
@@ -202,6 +214,189 @@ function clone () {
     fi
 }
 export -f clone
+
+
+function print_install_certificate_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin install_certificate${normal} - Installs a valid all-purpose self signed certificate that is valid for the next ten years
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+function install_certificate () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+    check_root
+    run openssl req -new -x509 -days 3650 -nodes -newkey rsa:4096 -out /etc/ssl/certs/mailserver.pem -keyout /etc/ssl/private/mailserver.pem
+    run chmod go= /etc/ssl/private/mailserver.pem
+}
+export -f install_certificate
+
+
+function print_uninstall_certificate_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin uninstall_certificate${normal} - Remove self signed certificate
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+function uninstall_certificate () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+    check_root
+    run rm -f /etc/ssl/private/mailserver.pem
+}
+export -f uninstall_certificate
+
+
+
+function print_install_postfix_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin install_postfix${normal} - Installs postfix server and its dependencies (dovecot, amavis, spamassassin and clamav) using apt-get. Also it generates a valid all-purpose certificate self signed that is valid for the next ten years.
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+
+function install_postfix () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+    check_root
+    ORCHESTRA_PATH=$(get_orchestra_dir)
+
+    APT="postfix postfix-pgsql \
+         swaks \
+         dovecot-core dovecot-pop3d dovecot-imapd dovecot-antispam \
+         dovecot-pgsql dovecot-sieve dovecot-managesieved dovecot-solr \
+         amavisd-new spamassassin \
+         clamav-freshclam clamav-base clamav clamav-daemon clamav-testfiles \
+         "                    
+	run apt-get update
+	export DEBIAN_FRONTEND=noninteractive
+	run apt-get install -y $APT
+	unset $DEBIAN_FRONTEND;
+	run /usr/bin/freshclam
+	run apt-get --purge remove 'exim4*' -y
+	if [ ! -f /etc/ssl/private/mailserver.pem ]; then
+		install_certificate
+	fi;
+}
+export -f install_postfix
+
+function print_uninstall_postfix_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin uninstall_postfix${normal} - Uninstalls postfix server and its dependencies (dovecot, amavis, spamassassin and clamav) using dpkg and remove self signed certificate
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+
+function uninstall_postfix () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+	check_root
+	ORCHESTRA_PATH=$(get_orchestra_dir)
+
+	APT="postfix postfix-pgsql \
+         swaks \
+         dovecot-core dovecot-pop3d dovecot-imapd dovecot-antispam \
+         dovecot-pgsql dovecot-sieve dovecot-managesieved dovecot-solr \
+         amavisd-new spamassassin \
+         clamav-freshclam clamav-base clamav clamav-daemon libclamav6 clamav-testfiles \
+         "                    
+	run dpkg -P --force-depends $APT
+	run apt-get update
+	run apt-get -f install -y
+
+	if [ -d /var/run/amavis ]; then
+		run rm -rf /var/run/amavis
+	fi;
+
+	if [ -d /var/lib/clamav ]; then
+		run rm -rf /var/lib/clamav
+	fi;
+
+	if [ -f /etc/ssl/private/mailserver.pem ]; then
+		uninstall_certificate
+	fi;
+}
+export -f uninstall_postfix
 
 
 [ $# -lt 1 ] && print_help

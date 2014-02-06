@@ -57,6 +57,8 @@ sudo python manage.py setuppostfix
 Once finished the command we will have the fully configured mail server. Now you only need to generate the
 mailboxes and aliases, and for set the password you can run the commands:
 
+```bash
 python manage.py mail-setpasswd email new_password
 python manage.py mail-chpasswd  email password new_password
+```
 

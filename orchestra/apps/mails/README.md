@@ -21,25 +21,38 @@ python manage.py setuppostfix --db_name --db_user --db_password --db_host \
     --dovecot_dir --postfix_dir --amavis_dir
 ```
 Default values:
+
 --db_name: orchestra
+
 --db_user: orchestra
+
 --db_password: orchestra
+
 --db_host: localhost
+
 --vmail_username: vmail
+
 --vmail_uid: 5000
+
 --vmail_groupname: vmail
+
 --vmail_gid: 5000
+
 --vmail_home: /var/vmail
+
 --dovecot_dir: /etc/dovecot
+
 --postfix_dir: /etc/postfix
+
 --amavis_dir: /etc/amavis
+
 
 This command is intended to configure everything from scratch. If you have configured this packages
 is better to uninstall and re-install as follows:
 ```bash
 sudo orchestra-admin uninstall_postfix
 sudo orchestra-admin install_postfix
-python manage.py setuppostfix
+sudo python manage.py setuppostfix
 ```
 Once finished the command we will have the fully configured mail server. Now you only need to generate the
 mailboxes and aliases, and for set the password you can run the commands:

@@ -1,0 +1,185 @@
+from django.contrib.auth import get_user_model
+from django.db import models
+from django.db.models import Q
+from django.utils.translation import ugettext_lazy as _
+
+from orchestra.apps.contacts import settings as contacts_settings
+from orchestra.models.fields import MultiSelectField
+from orchestra.utils import send_email_template
+
+from . import settings
+
+
+class Queue(models.Model):
+    name = models.CharField(_("name"), max_length=128, unique=True)
+    default = models.BooleanField(_("default"), default=False)
+    notify = MultiSelectField(_("notify"), max_length=256, blank=True,
+            choices=contacts_settings.CONTACTS_EMAIL_USAGES,
+            default=contacts_settings.CONTACTS_DEFAULT_EMAIL_USAGES,
+            help_text=_("Contacts to notify by email"))
+    
+    def __unicode__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        """ mark as default queue if needed """
+        existing_default = Queue.objects.filter(default=True)
+        if self.default:
+            existing_default.update(default=False)
+        elif not existing_default:
+            self.default = True
+        super(Queue, self).save(*args, **kwargs)
+
+
+class Ticket(models.Model):
+    HIGH = 'HIGH'
+    MEDIUM = 'MEDIUM'
+    LOW = 'LOW'
+    PRIORITIES = (
+        (HIGH, 'High'),
+        (MEDIUM, 'Medium'),
+        (LOW, 'Low'),
+    )
+    
+    NEW = 'NEW'
+    IN_PROGRESS = 'IN_PROGRESS'
+    RESOLVED = 'RESOLVED'
+    FEEDBACK = 'FEEDBACK'
+    REJECTED = 'REJECTED'
+    CLOSED = 'CLOSED'
+    STATES = (
+        (NEW, 'New'),
+        (IN_PROGRESS, 'In Progress'),
+        (RESOLVED, 'Resolved'),
+        (FEEDBACK, 'Feedback'),
+        (REJECTED, 'Rejected'),
+        (CLOSED, 'Closed'),
+    )
+    
+    creator = models.ForeignKey(get_user_model(), verbose_name=_("created by"),
+            related_name='tickets_created')
+    owner = models.ForeignKey(get_user_model(), null=True, blank=True,
+            related_name='tickets_owned', verbose_name=_("assigned to"))
+    queue = models.ForeignKey(Queue, related_name='tickets', null=True, blank=True)
+    subject = models.CharField(_("subject"), max_length=256)
+    description = models.TextField(_("description"))
+    priority = models.CharField(_("priority"), max_length=32, choices=PRIORITIES,
+            default=MEDIUM)
+    state = models.CharField(_("state"), max_length=32, choices=STATES, default=NEW)
+    created_on = models.DateTimeField(_("created on"), auto_now_add=True)
+    last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
+    cc = models.TextField("CC", help_text=_("emails to send a carbon copy to"),
+            blank=True)
+    
+    class Meta:
+        ordering = ["-last_modified_on"]
+    
+    def __unicode__(self):
+        return unicode(self.pk)
+    
+    def get_notification_emails(self):
+        """ Get emails of the users related to the ticket """
+        emails = list(settings.ISSUES_SUPPORT_EMAILS)
+        emails.append(self.creator.email)
+        if self.owner:
+            emails.append(self.owner.email)
+        for contact in self.creator.account.contacts.all():
+            if self.queue and set(contact.email_usage).union(set(self.queue.nofify)):
+                emails.append(contact.email)
+        for message in self.messages.distinct('author'):
+            emails.append(message.author.email)
+        return set(emails + self.get_cc_emails())
+        
+    def notify(self, message=None, content=None):
+        """ Send an email to ticket stakeholders notifying an state update """
+        emails = self.get_notification_emails()
+        template = 'issues/ticket_notification.mail'
+        html_template = 'issues/ticket_notification_html.mail'
+        context = {
+            'ticket': self,
+            'ticket_message': message
+        }
+        send_email_template(template, context, emails, html=html_template)
+    
+    def save(self, *args, **kwargs):
+        """ notify stakeholders of new ticket """
+        new_issue = not self.pk
+        super(Ticket, self).save(*args, **kwargs)
+        if new_issue:
+            # PK should be available for rendering the template
+            self.notify()
+    
+    def is_involved_by(self, user):
+        """ returns whether user has participated or is referenced on the ticket
+            as owner or member of the group
+        """
+        return Ticket.objects.filter(pk=self.pk).involved_by(user).exists()
+    
+    def is_visible_by(self, user):
+        """ returns whether ticket is visible by user """
+        return Ticket.objects.filter(pk=self.pk).visible_by(user).exists()
+    
+    def get_cc_emails(self):
+        return self.cc.split(',') if self.cc else []
+    
+    def mark_as_read_by(self, user):
+        TicketTracker.objects.get_or_create(ticket=self, user=user)
+    
+    def mark_as_unread_by(self, user):
+        TicketTracker.objects.filter(ticket=self, user=user).delete()
+    
+    def mark_as_unread(self):
+        TicketTracker.objects.filter(ticket=self).delete()
+    
+    def is_read_by(self, user):
+        return TicketTracker.objects.filter(ticket=self, user=user).exists()
+    
+    def reject(self):
+        self.state = Ticket.REJECTED
+        self.save()
+    
+    def resolve(self):
+        self.state = Ticket.RESOLVED
+        self.save()
+    
+    def close(self):
+        self.state = Ticket.CLOSED
+        self.save()
+    
+    def take(self, user):
+        self.owner = user
+        self.save()
+
+
+class Message(models.Model):
+    ticket = models.ForeignKey('issues.Ticket', verbose_name=_("ticket"),
+            related_name='messages')
+    author = models.ForeignKey(get_user_model(), verbose_name=_("author"),
+            related_name='ticket_messages')
+    content = models.TextField(_("content"))
+    created_on = models.DateTimeField(_("created on"), auto_now_add=True)
+    
+    def __unicode__(self):
+        return u"#%i" % self.id
+    
+    def save(self, *args, **kwargs):
+        """ notify stakeholders of ticket update """
+        if not self.pk:
+            self.ticket.mark_as_unread()
+            self.ticket.notify(message=self)
+        super(Message, self).save(*args, **kwargs)
+    
+    @property
+    def num(self):
+        return self.ticket.messages.filter(id__lte=self.id).count()
+
+
+class TicketTracker(models.Model):
+    """ Keeps track of user read tickets """
+    ticket = models.ForeignKey(Ticket, verbose_name=_("ticket"),
+            related_name='trackers')
+    user = models.ForeignKey(get_user_model(), verbose_name=_("user"),
+            related_name='ticket_trackers')
+    
+    class Meta:
+        unique_together = (('ticket', 'user'),)

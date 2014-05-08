@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% load admin_tools_menu_tags utils %}
+
+{% block title %}{% if header_title %}{{ header_title }}{% else %}{{ title }}{% endif %} | {{ SITE_VERBOSE_NAME }} {% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% if user.is_active and user.is_staff %}
+{% if not is_popup %}
+{% admin_tools_render_menu_css %}
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block branding %}
+<a href="{% url 'admin:index' %}"><h1 id="site-name">{{ SITE_VERBOSE_NAME }} <span class="version">{% version %}</span></a>
+{% endblock %}
+
+{% block nav-global %}
+{% if user.is_active and user.is_staff %}
+{% if not is_popup %}
+{% admin_tools_render_menu %}
+{% endif %}
+{% endif %}
+{% endblock %}
+

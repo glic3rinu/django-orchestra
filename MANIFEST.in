@@ -1,0 +1,8 @@
+recursive-include orchestra *
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *~
+recursive-exclude * *.save
+recursive-exclude * *.svg
+

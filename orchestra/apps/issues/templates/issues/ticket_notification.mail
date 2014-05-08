@@ -1,0 +1,36 @@
+{% if subject %}
+{% if not ticket_message %}
+[{{ site.name }} - Issue #{{ ticket.pk }}] ({{ ticket.get_state_display }}) {{ ticket.subject }}
+{% else %}
+[{{ site.name }} - Issue #{{ ticket.pk }}] {% if '**State** changed' in ticket_message.content %}({{ ticket.get_state_display }}) {% endif %}{{ ticket.subject }}
+{% endif %}
+{% endif %}
+
+{% if message %}
+{% if not ticket_message %}
+Issue #{{ ticket.id }} has been reported by {{ ticket.created_by }}.
+{% else %}
+Issue #{{ ticket.id }} has been updated by {{ ticket_message.author }}.
+{% autoescape off %}
+{{ ticket_message.content }}
+{% endautoescape %}
+{% endif %}
+-----------------------------------------------------------------
+Issue #{{ ticket.pk }}: {{ ticket.subject }}
+
+ * Author: {{ ticket.created_by }}
+ * Status: {{ ticket.get_state_display }}
+ * Priority: {{ ticket.get_priority_display }}
+ * Visibility: {{ ticket.get_visibility_display }}
+ * Group: {% if ticket.group %}{{ ticket.group }}{% endif %}
+ * Assigned to: {% if ticket.owner %}{{ ticket.owner }}{% endif %}
+ * Queue: {{ ticket.queue }}
+
+{% autoescape off %}
+{{ ticket.description }}
+{% endautoescape %}
+-----------------------------------------------------------------
+You have received this notification because you have either subscribed to it, or are involved in it.
+To change your notification preferences, please visit: {{ site.scheme }}://{{ site.domain }}{% url 'admin:issues_ticket_change' ticket.id %}
+{% endif %}
+

@@ -1,0 +1,67 @@
+fieldset .field-box {
+    float: left;
+    margin-right: 20px;
+    width: 300px;
+}
+
+hr {
+    background-color: #B6B6B6;
+}
+
+h4 {
+    color: #666;
+}
+
+form .field-display_description p, form .field-display_description ul {
+    margin-left: 0;
+    padding-left: 12px;
+}
+
+form .field-display_description ul {
+    margin-left: 24px;
+}
+
+ul li {
+    list-style-type: disc;
+    padding: 0;
+}
+
+/*** messages format ***/
+#messages-group {
+    margin-bottom: 0;
+}
+
+#messages-2-group {
+    margin-top: 0;
+}
+
+#messages-2-group h2, #messages-2-group thead {
+    display: none;
+}
+
+#id_messages-2-0-content {
+    width: 99%;
+}
+
+/** ticket.description preview CSS overrides **/
+.content-preview {
+    border: 1px solid #ccc;
+    padding: 2px 5px;
+}
+
+.aligned .content-preview p {
+    margin-left: 5px;
+    padding-left: 0;
+}
+.module .content-preview ol,
+.module .content-preview ul {
+    margin-left: 5px;
+}
+
+/** unread messages admin changelist **/
+strong.unread {
+    display: inline-block;
+    padding-left: 21px;
+    background: url(../images/unread_ticket.gif) no-repeat left;
+}
+

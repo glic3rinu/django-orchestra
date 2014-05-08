@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls admin_static admin_modify %}
+
+
+{% block object-tools-items %}
+<li>
+    <a href="{% url 'admin:domains_domain_view_zone' original.pk %}" class="historylink">{% trans "View zone" %}</a>
+</li>
+<li>
+    {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+    <a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a>
+</li>
+{% if has_absolute_url %}<li><a href="{{ absolute_url }}" class="viewsitelink">{% trans "View on site" %}</a></li>{% endif%}
+{% endblock %}
+

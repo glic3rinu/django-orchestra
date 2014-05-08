@@ -1,0 +1,7 @@
+.inline-group .tabular td.original p {
+    visibility: hidden;
+}
+
+.inline-group .tabular tr.has_original td {
+    padding-top: 0.8em;
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<title>Markdown formatting</title>
+<style type="text/css">
+h1 { font-family: Verdana, sans-serif; font-size: 14px; text-align: center; color: #444; }
+body { font-family: Verdana, sans-serif; font-size: 12px; color: #444; }
+table th { padding-top: 1em; }
+table td { vertical-align: top; background-color: #f5f5f5; height: 2em; vertical-align: middle;}
+table td code { font-size: 1.2em; }
+table td h1 { font-size: 1.8em; text-align: left; }
+table td h2 { font-size: 1.4em; text-align: left; }
+table td h3 { font-size: 1.2em; text-align: left; }
+table td span { background-color: red; letter-spacing: 2px; }
+
+</style>
+</head>
+<body>
+
+<h1>Markdown Syntax Quick Reference</h1>
+
+<table width="100%">
+<tr><th colspan="2">Font Styles</th></tr>
+<tr><th></th><td width="50%">**Strong**</td><td width="50%"><strong>Strong</strong></td></tr>
+<tr><th></th><td>_Italic_</td><td><em>Italic</em></td></tr>
+<tr><th></th><td>> Quote</td><td><cite>Quote</cite></td></tr>
+<tr><th></th><td>&nbsp;&nbsp;&nbsp;&nbsp; 4 or more spaces</td><td><code>Code block</code></td></tr>
+
+<tr><th colspan="2">Break Lines</th></tr>
+<tr><th></th><td>end a line with 2 or more spaces<span>&nbsp;&nbsp;</span></td><td><code>first line <br/>new line</code></td></tr>
+<tr><th></th><td>type an empty line<br/><span>&nbsp;</span><br/> (or containing only spaces)</td><td><code>first line <br/>new line</code></td></tr>
+
+
+<tr><th colspan="2">Lists</th></tr>
+<tr><th></th><td>* Item 1<br />* Item 2</td><td><ul><li>Item 1</li><li>Item 2</li></ul></td></tr>
+<tr><th></th><td>1. Item 1<br />2. Item 2</td><td><ol><li>Item 1</li><li>Item 2</li></ol></td></tr>
+
+<tr><th colspan="2">Headings</th></tr>
+<tr><th></th><td># Title 1 #</td><td><h1>Title 1</h1></td></tr>
+<tr><th></th><td>## Title ##</td><td><h2>Title 2</h2></td></tr>
+
+<tr><th colspan="2">Links</th></tr>
+<tr><th></th><td>&lt;http://foo.bar&gt</td><td><a href="#">http://foo.bar</a></td></tr>
+<tr><th></th><td>[link](http://foo.bar/)</td><td><a href="#">link</a></td></tr>
+<tr><th></th><td>[relative link](/about/)</td><td><a href="#">relative link</a></td></tr>
+</table>
+
+<p><a href="http://daringfireball.net/projects/markdown/syntax">
+   Full reference of markdown syntax</a>.
+</p>
+
+</body>
+</html>

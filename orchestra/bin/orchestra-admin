@@ -1,0 +1,422 @@
+#!/bin/bash
+
+set -u
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+
+function help () {
+    if [[ $# -gt 1 ]]; then
+        CMD="print_${2}_help"
+        $CMD
+    else
+        print_help
+    fi
+}
+
+
+function print_help () {
+    cat <<- EOF 
+		
+		${bold}NAME${normal}
+		    ${bold}orchestra-admin${normal} - Orchetsra administration script
+		
+		${bold}OPTIONS${normal}
+		    ${bold}install_requirements${normal}
+		        Installs Orchestra requirements using apt-get and pip
+
+		    ${bold}install_postfix${normal}
+		        Installs postfix packages including dovecot, amavis, spamassassin and clamav
+
+		    ${bold}uninstall_postfix${normal}
+		        Uninstall postfix packages including dovecot, amavis, spamassassin and clamav
+
+		    ${bold}install_certificate${normal}
+		        Installs a valid all-purpose self signed certificate that is valid for the next ten years
+
+		    ${bold}uninstall_certificate${normal}
+		        Uninstall certificate
+
+		    ${bold}startproject${normal}
+		        Creates a new Django-orchestra instance
+		    
+		    ${bold}help${normal}
+		        Displays this help text or related help page as argument
+		        for example:
+		            ${bold}orchestra-admin help startproject${normal}
+		
+		EOF
+}
+# in
+
+
+show () {
+    echo " ${bold}\$ ${@}${normal}"
+}
+export -f show
+
+
+run () {
+    show "${@}"
+    "${@}"
+}
+export -f run
+
+
+check_root () {
+    [ $(whoami) != 'root' ] && { echo -e "\nErr. This should be run as root\n" >&2; exit 1; }
+}
+export -f check_root
+
+
+get_orchestra_dir () {
+    if ! $(echo "import orchestra"|python 2> /dev/null); then
+        echo -e "\nErr. orchestra not installed.\n" >&2
+        exit 1
+    fi
+    PATH=$(echo "import orchestra, os; print os.path.dirname(os.path.realpath(orchestra.__file__))" | python)
+    echo $PATH
+}
+export -f get_orchestra_dir
+
+
+function print_install_requirements_help () {
+    cat <<- EOF 
+		
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin install_requirements${normal} - Installs all Orchestra requirements using apt-get and pip
+		
+		${bold}OPTIONS${normal}
+		    ${bold}-t, --testing${normal}
+		        Install Orchestra normal requirements plus those needed for running functional tests
+		    
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+		
+		EOF
+}
+
+
+function install_requirements () {
+    opts=$(getopt -o h,t -l help,testing -- "$@") || exit 1
+    set -- $opts
+    testing=false
+    
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            -t|--testing) testing=true; shift ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+    
+    check_root
+    ORCHESTRA_PATH=$(get_orchestra_dir)
+    
+    APT="python-pip \
+         python-psycopg2 \
+         postgresql \
+         rabbitmq-server \
+         python-dev \
+         bind9utils \
+         python-cracklib"
+    
+    PIP="django==1.6.1 \
+         django-celery-email==1.0.3 \
+         django-fluent-dashboard==0.3.5 \
+         https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
+         South==0.8.1 \
+         IPy==0.81 \
+         django-extensions==1.1.1 \
+         django-transaction-signals==1.0.0 \
+         django-celery==3.1.1 \
+         celery==3.1.7 \
+         kombu==3.0.8 \
+         Markdown==2.4 \
+         django-debug-toolbar==1.0.1 \
+         djangorestframework==2.3.12 \
+         paramiko==1.12.1 \
+         Pygments==1.6 \
+         django-filter==0.7 \
+         passlib==1.6.2"
+    
+    if $testing; then
+        APT="${APT} \
+            iceweasel \
+            xvfb"
+        PIP="${PIP} \
+            selenium \
+            xvfbwrapper"
+    fi
+    
+    # Make sure locales are in place before installing postgres
+    if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then
+        run sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /etc/locale.gen
+        run locale-gen
+        update-locale LANG=en_US.UTF-8
+    fi
+    
+    run apt-get update
+    run apt-get install -y $APT
+    run pip install $PIP
+    
+    # Some versions of rabbitmq-server will not start automatically by default unless ...
+    sed -i "s/# Default-Start:.*/# Default-Start:     2 3 4 5/" /etc/init.d/rabbitmq-server
+    sed -i "s/# Default-Stop:.*/# Default-Stop:      0 1 6/" /etc/init.d/rabbitmq-server
+    run update-rc.d rabbitmq-server defaults
+}
+export -f install_requirements
+
+
+print_startproject_help () {
+    cat <<- EOF
+		
+		${bold}NAME${normal}
+		    ${bold}orchestra-admin startproject${normal} - Create a new Django-Orchestra instance
+		
+		${bold}SYNOPSIS${normal}
+		    Options: [ -h ]
+		    
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		            This help message
+		    
+		${bold}EXAMPLES${normal}
+		    orchestra-admin startproject controlpanel
+		
+		EOF
+}
+
+
+function startproject () {
+    local PROJECT_NAME="$2"; shift
+    
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+    
+    set -- $opts
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_startproject_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    
+    unset OPTIND
+    unset opt
+    
+    [ $(whoami) == 'root' ] && { echo -e "\nYou don't want to run this as root\n" >&2; exit 1; }
+    ORCHESTRA_PATH=$(get_orchestra_dir) || { echo "Error getting orchestra dir"; exit 1; }
+    if [[ ! -e $PROJECT_NAME/manage.py ]]; then
+        run django-admin.py startproject $PROJECT_NAME --template="${ORCHESTRA_PATH}/conf/project_template"
+        # This is a workaround for this issue https://github.com/pypa/pip/issues/317
+        run chmod +x $PROJECT_NAME/manage.py
+        # End of workaround ###
+    else
+        echo "Not cloning: $PROJECT_NAME already exists."
+    fi
+    # Install bash autocompletition for django commands
+    if [[ ! $(grep 'source $HOME/.django_bash_completion.sh' ~/.bashrc &> /dev/null) ]]; then
+        # run wget https://raw.github.com/django/django/master/extras/django_bash_completion \
+        #    --no-check-certificate -O ~/.django_bash_completion.sh
+        cp ${ORCHESTRA_PATH}/bin/django_bash_completion.sh ~/.django_bash_completion.sh
+        echo 'source $HOME/.django_bash_completion.sh' >> ~/.bashrc
+    fi
+}
+export -f startproject
+
+
+function print_install_certificate_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin install_certificate${normal} - Installs a valid all-purpose self signed certificate that is valid for the next ten years
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+function install_certificate () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+    check_root
+    run openssl req -new -x509 -days 3650 -nodes -newkey rsa:4096 -out /etc/ssl/certs/mailserver.pem -keyout /etc/ssl/private/mailserver.pem
+    run chmod go= /etc/ssl/private/mailserver.pem
+}
+export -f install_certificate
+
+
+function print_uninstall_certificate_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin uninstall_certificate${normal} - Remove self signed certificate
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+function uninstall_certificate () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+    check_root
+    run rm -f /etc/ssl/private/mailserver.pem
+}
+export -f uninstall_certificate
+
+
+
+function print_install_postfix_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin install_postfix${normal} - Installs postfix server and its dependencies (dovecot, amavis, spamassassin and clamav) using apt-get. Also it generates a valid all-purpose certificate self signed that is valid for the next ten years.
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+
+function install_postfix () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+    check_root
+    ORCHESTRA_PATH=$(get_orchestra_dir)
+
+    APT="postfix postfix-pgsql \
+         swaks \
+         dovecot-core dovecot-pop3d dovecot-imapd dovecot-antispam \
+         dovecot-pgsql dovecot-sieve dovecot-managesieved dovecot-solr \
+         amavisd-new spamassassin \
+         clamav-freshclam clamav-base clamav clamav-daemon clamav-testfiles \
+         "                    
+	run apt-get update
+	export DEBIAN_FRONTEND=noninteractive
+	run apt-get install -y $APT
+	unset $DEBIAN_FRONTEND;
+	run /usr/bin/freshclam
+	run apt-get --purge remove 'exim4*' -y
+	if [ ! -f /etc/ssl/private/mailserver.pem ]; then
+		install_certificate
+	fi;
+}
+export -f install_postfix
+
+function print_uninstall_postfix_help () {
+    cat <<- EOF
+
+		${bold}NAME${normal}
+		    ${bold}orchetsra-admin uninstall_postfix${normal} - Uninstalls postfix server and its dependencies (dovecot, amavis, spamassassin and clamav) using dpkg and remove self signed certificate
+
+		${bold}OPTIONS${normal}
+		    ${bold}-h, --help${normal}
+		        Displays this help text
+
+		EOF
+}
+
+
+function uninstall_postfix () {
+    opts=$(getopt -o h -l help -- "$@") || exit 1
+    set -- $opts
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -h|--help) print_deploy_help; exit 0 ;;
+            (--) shift; break;;
+            (-*) echo "$0: Err. - unrecognized option $1" 1>&2; exit 1;;
+            (*) break;;
+        esac
+        shift
+    done
+    unset OPTIND
+    unset opt
+
+	check_root
+	ORCHESTRA_PATH=$(get_orchestra_dir)
+
+	APT="postfix postfix-pgsql \
+         swaks \
+         dovecot-core dovecot-pop3d dovecot-imapd dovecot-antispam \
+         dovecot-pgsql dovecot-sieve dovecot-managesieved dovecot-solr \
+         amavisd-new spamassassin \
+         clamav-freshclam clamav-base clamav clamav-daemon libclamav6 clamav-testfiles \
+         "                    
+	run dpkg -P --force-depends $APT
+	run apt-get update
+	run apt-get -f install -y
+
+	if [ -d /var/run/amavis ]; then
+		run rm -rf /var/run/amavis
+	fi;
+
+	if [ -d /var/lib/clamav ]; then
+		run rm -rf /var/lib/clamav
+	fi;
+
+	if [ -f /etc/ssl/private/mailserver.pem ]; then
+		uninstall_certificate
+	fi;
+}
+export -f uninstall_postfix
+
+
+[ $# -lt 1 ] && print_help
+$1 "${@}"

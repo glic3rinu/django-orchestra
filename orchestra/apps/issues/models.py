@@ -115,10 +115,6 @@ class Ticket(models.Model):
         """
         return Ticket.objects.filter(pk=self.pk).involved_by(user).exists()
     
-    def is_visible_by(self, user):
-        """ returns whether ticket is visible by user """
-        return Ticket.objects.filter(pk=self.pk).visible_by(user).exists()
-    
     def get_cc_emails(self):
         return self.cc.split(',') if self.cc else []
     
@@ -170,7 +166,7 @@ class Message(models.Model):
         super(Message, self).save(*args, **kwargs)
     
     @property
-    def num(self):
+    def number(self):
         return self.ticket.messages.filter(id__lte=self.id).count()
 
 

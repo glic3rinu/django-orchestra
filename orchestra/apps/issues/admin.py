@@ -54,14 +54,15 @@ class MessageReadOnlyInline(admin.TabularInline):
     
     def content_html(self, obj):
         context = {
-            'num': obj.num,
+            'number': obj.number,
             'time': display_timesince(obj.created_on),
             'author': link('author')(self, obj),
         }
-        summary = _("#%(num)i Updated by %(author)s about %(time)s") % context
+        summary = _("#%(number)i Updated by %(author)s about %(time)s") % context
         header = '<strong style="color:#666;">%s</strong><hr />' % summary
         content = markdown(obj.content)
         content = content.replace('>\n', '>')
+        content = '<div style="padding-left:20px;">%s</div>' % content
         return header + content
     content_html.short_description = _("Content")
     content_html.allow_tags = True

@@ -2,15 +2,10 @@ import threading
 
 from django import db
 
+from orchestra.utils.python import import_class
+
 from . import settings
 from .helpers import send_report
-
-
-def get_router():
-    module = '.'.join(settings.ORCHESTRATION_ROUTER.split('.')[:-1])
-    cls = settings.ORCHESTRATION_ROUTER.split('.')[-1]
-    module = __import__(module, fromlist=[module])
-    return getattr(module, cls)
 
 
 def as_task(execute):
@@ -37,7 +32,7 @@ def close_connection(execute):
 
 def execute(operations):
     """ generates and executes the operations on the servers """
-    router = get_router()
+    router = import_class(settings.ORCHESTRATION_ROUTER)
     # Generate scripts per server+backend
     scripts = {}
     for operation in operations:

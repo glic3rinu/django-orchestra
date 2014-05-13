@@ -75,6 +75,7 @@ class Bind9MasterDomainBackend(ServiceBackend):
 class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     verbose_name = _("Bind9 slave domain")
     related_models = (('domains.Domain', 'origin'),)
+    
     def save(self, domain):
         context = self.get_context(domain)
         self.update_conf(context)

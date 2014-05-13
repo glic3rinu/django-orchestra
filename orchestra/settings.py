@@ -26,3 +26,5 @@ STOP_SERVICES = getattr(settings, 'STOP_SERVICES',
     [('uwsgi', 'nginx'), 'celerybeat', 'celeryd', 'celeryevcam', 'postgresql']
 )
 
+
+API_ROOT_VIEW = getattr(settings, 'API_ROOT_VIEW', 'orchestra.api.root.APIRoot')

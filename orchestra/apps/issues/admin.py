@@ -8,12 +8,12 @@ from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.html import strip_tags
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin#, ChangeViewActions
 from orchestra.admin.utils import (link, colored, wrap_admin_view, display_timesince)
+from orchestra.apps.contacts import settings as contacts_settings
 
 from .actions import (reject_tickets, resolve_tickets, take_tickets, close_tickets,
     mark_as_unread, mark_as_read, set_default_queue)
@@ -52,15 +52,15 @@ class MessageReadOnlyInline(admin.TabularInline):
             'all': ('orchestra/css/hide-inline-id.css',)
         }
     
-    def content_html(self, obj):
+    def content_html(self, msg):
         context = {
-            'number': obj.number,
-            'time': display_timesince(obj.created_on),
-            'author': link('author')(self, obj),
+            'number': msg.number,
+            'time': display_timesince(msg.created_on),
+            'author': link('author')(self, msg) if msg.author else msg.author_name,
         }
         summary = _("#%(number)i Updated by %(author)s about %(time)s") % context
         header = '<strong style="color:#666;">%s</strong><hr />' % summary
-        content = markdown(obj.content)
+        content = markdown(msg.content)
         content = content.replace('>\n', '>')
         content = '<div style="padding-left:20px;">%s</div>' % content
         return header + content
@@ -111,8 +111,9 @@ class TicketInline(admin.TabularInline):
     owner_link = link('owner')
     
     def ticket_id(self, instance):
-        return mark_safe('<b>%s</b>' % link()(self, instance))
+        return '<b>%s</b>' % link()(self, instance)
     ticket_id.short_description = '#'
+    ticket_id.allow_tags = True
     
     def colored_state(self, instance):
         return colored('state', STATE_COLORS, bold=False)(instance)
@@ -165,7 +166,6 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     )
     readonly_fieldsets = (
         (None, {
-            'classes': ('wide',),
             'fields': ('display_summary',
                        ('display_queue', 'display_owner'),
                        ('display_state', 'display_priority'),
@@ -174,7 +174,7 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     )
     fieldsets = readonly_fieldsets + (
         ('Update', {
-            'classes': ('collapse', 'wide'),
+            'classes': ('collapse',),
             'fields': ('subject',
                       ('queue', 'owner',),
                       ('state', 'priority'),
@@ -183,7 +183,6 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     )
     add_fieldsets = (
         (None, {
-            'classes': ('wide',),
             'fields': ('subject',
                       ('queue', 'owner',),
                       ('state', 'priority'),
@@ -204,17 +203,21 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     display_owner = link('owner')
     
     def display_summary(self, ticket):
-        author_url = link('creator')(self, ticket)
-        created = display_timesince(ticket.created_on)
-        messages = ticket.messages.order_by('-created_on')
-        updated = ''
-        if messages:
-            updated_on = display_timesince(messages[0].created_on)
-            updated_by = link('author')(self, messages[0])
-            updated = '. Updated by %s about %s' % (updated_by, updated_on)
-        msg = '<h4>Added by %s about %s%s</h4>' % (author_url, created, updated)
-        return mark_safe(msg)
+        context = {
+            'creator': link('creator')(self, ticket) if ticket.creator else ticket.creator_name,
+            'created': display_timesince(ticket.created_on),
+            'updated': '',
+        }
+        msg = ticket.messages.last()
+        if msg:
+            context.update({
+                'updated': display_timesince(msg.created_on),
+                'updater': link('author')(self, msg) if msg.author else msg.author_name,
+            })
+            context['updated'] = '. Updated by %(updater)s about %(updated)s' % context
+        return '<h4>Added by %(creator)s about %(created)s%(updated)s</h4>' % context
     display_summary.short_description = 'Summary'
+    display_summary.allow_tags = True
     
     def display_priority(self, ticket):
         """ State colored for change_form """
@@ -302,15 +305,17 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     def message_preview_view(self, request):
         """ markdown preview render via ajax """
         data = request.POST.get("data")
-        data_formated = markdown(strip_tags(data))
+        data_formated = markdowt_tn(strip_tags(data))
         return HttpResponse(data_formated)
+    
+    def queryset(self, request):
+        """ Order by structured name and imporve performance """
+        qs = super(TicketAdmin, self).queryset(request)
+        return qs.select_related('queue', 'owner', 'creator')
 
 
 class QueueAdmin(admin.ModelAdmin):
-    # TODO notify
-    list_display = [
-        'name', 'default', 'num_tickets'
-    ]
+    list_display = ['name', 'default', 'num_tickets']
     actions = [set_default_queue]
     inlines = [TicketInline]
     ordering = ['name']
@@ -324,9 +329,21 @@ class QueueAdmin(admin.ModelAdmin):
         num = queue.tickets.count()
         url = reverse('admin:issues_ticket_changelist')
         url += '?my_tickets=False&queue=%i' % queue.pk
-        return mark_safe('<a href="%s">%d</a>' % (url, num))
+        return '<a href="%s">%d</a>' % (url, num)
     num_tickets.short_description = _("Tickets")
     num_tickets.admin_order_field = 'tickets__count'
+    num_tickets.allow_tags = True
+    
+    def get_list_display(self, request):
+        """ show notifications """
+        list_display = list(self.list_display)
+        for value, verbose in contacts_settings.CONTACTS_EMAIL_USAGES:
+            def display_notify(queue, notify=value):
+                return notify in queue.notify
+            display_notify.short_description = verbose
+            display_notify.boolean = True
+            list_display.append(display_notify)
+        return list_display
     
     def queryset(self, request):
         qs = super(QueueAdmin, self).queryset(request)

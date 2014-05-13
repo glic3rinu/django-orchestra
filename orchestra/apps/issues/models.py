@@ -57,7 +57,8 @@ class Ticket(models.Model):
     )
     
     creator = models.ForeignKey(get_user_model(), verbose_name=_("created by"),
-            related_name='tickets_created')
+            related_name='tickets_created', null=True)
+    creator_name = models.CharField(_("creator name"), max_length=256, blank=True)
     owner = models.ForeignKey(get_user_model(), null=True, blank=True,
             related_name='tickets_owned', verbose_name=_("assigned to"))
     queue = models.ForeignKey(Queue, related_name='tickets', null=True, blank=True)
@@ -104,6 +105,8 @@ class Ticket(models.Model):
     def save(self, *args, **kwargs):
         """ notify stakeholders of new ticket """
         new_issue = not self.pk
+        if not self.creator_name and self.creator:
+            self.creator_name = self.creator.get_full_name()
         super(Ticket, self).save(*args, **kwargs)
         if new_issue:
             # PK should be available for rendering the template
@@ -119,16 +122,16 @@ class Ticket(models.Model):
         return self.cc.split(',') if self.cc else []
     
     def mark_as_read_by(self, user):
-        TicketTracker.objects.get_or_create(ticket=self, user=user)
+        self.trackers.get_or_create(user=user)
     
     def mark_as_unread_by(self, user):
-        TicketTracker.objects.filter(ticket=self, user=user).delete()
+        self.trackers.filter(user=user).delete()
     
     def mark_as_unread(self):
-        TicketTracker.objects.filter(ticket=self).delete()
+        self.trackers.all().delete()
     
     def is_read_by(self, user):
-        return TicketTracker.objects.filter(ticket=self, user=user).exists()
+        return self.trackers.filter(user=user).exists()
     
     def reject(self):
         self.state = Ticket.REJECTED
@@ -152,8 +155,12 @@ class Message(models.Model):
             related_name='messages')
     author = models.ForeignKey(get_user_model(), verbose_name=_("author"),
             related_name='ticket_messages')
+    author_name = models.CharField(_("author name"), max_length=256, blank=True)
     content = models.TextField(_("content"))
     created_on = models.DateTimeField(_("created on"), auto_now_add=True)
+    
+    class Meta:
+        get_latest_by = "created_on"
     
     def __unicode__(self):
         return u"#%i" % self.id
@@ -162,7 +169,9 @@ class Message(models.Model):
         """ notify stakeholders of ticket update """
         if not self.pk:
             self.ticket.mark_as_unread()
+            self.ticket.mark_as_read_by(self.author)
             self.ticket.notify(message=self)
+            self.author_name = self.author.get_full_name()
         super(Message, self).save(*args, **kwargs)
     
     @property

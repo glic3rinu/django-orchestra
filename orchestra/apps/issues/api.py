@@ -16,17 +16,19 @@ class TicketViewSet(viewsets.ModelViewSet):
     @action()
     def mark_as_read(self, request, pk=None):
         ticket = self.get_object()
-        ticket.mark_as_read()
-        return Response({'status': 'Ticket marked as readed'})
+        ticket.mark_as_read_by(request.user)
+        return Response({'status': 'Ticket marked as read'})
     
     @action()
     def mark_as_unread(self, request, pk=None):
         ticket = self.get_object()
-        ticket.mark_as_unread()
-        return Response({'status': 'Ticket marked as unreaded'})
+        ticket.mark_as_unread_by(request.user)
+        return Response({'status': 'Ticket marked as unread'})
     
     def get_queryset(self):
         qs = super(TicketViewSet, self).get_queryset()
+        qs = qs.select_related('creator', 'queue')
+        qs = qs.prefetch_related('messages__author')
         return qs.filter(creator__account=self.request.user.account_id)
 
 

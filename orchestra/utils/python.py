@@ -1,6 +1,13 @@
 import collections
 
 
+def import_class(cls):
+    module = '.'.join(cls.split('.')[:-1])
+    cls = cls.split('.')[-1]
+    module = __import__(module, fromlist=[module])
+    return getattr(module, cls)
+
+
 class OrderedSet(collections.MutableSet):
     def __init__(self, iterable=None):
         self.end = end = [] 

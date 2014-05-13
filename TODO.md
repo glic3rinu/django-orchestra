@@ -35,3 +35,9 @@ TODO
 * git deploy in addition to FTP?
 * env vars instead of multiple settings files: https://devcenter.heroku.com/articles/config-vars ?
 * optional chroot shell?
+
+* make sure prefetch_related() is used correctly 
+Remember that, as always with QuerySets, any subsequent chained methods which imply a different database query will ignore previously cached results, and retrieve data using a fresh database query. 
+* profile select_related vs prefetch_related
+
+* use HTTP OPTIONS instead of configuration endpoint, or rename to settings?

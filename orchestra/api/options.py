@@ -1,13 +1,12 @@
-from django import conf
 from django.core.exceptions import ImproperlyConfigured
-from rest_framework import views
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework.routers import DefaultRouter, Route, flatten, replace_methodname
 
-from .. import settings
-from ..utils.apps import autodiscover as module_autodiscover
+from orchestra import settings
+from orchestra.utils.apps import autodiscover as module_autodiscover
+from orchestra.utils.python import import_class
+
 from .helpers import insert_links, replace_collectionmethodname
+from .root import APIRoot
 
 
 def collectionlink(**kwargs):
@@ -79,39 +78,8 @@ class LinkHeaderRouter(DefaultRouter):
     
     def get_api_root_view(self):
         """ returns the root view, with all the linked collections """
-        class APIRoot(views.APIView):
-            def get(instance, request, format=None):
-                root_url = reverse('api-root', request=request, format=format)
-                token_url = reverse('api-token-auth', request=request, format=format)
-                links = [
-                    '<%s>; rel="%s"' % (root_url, 'api-root'),
-                    '<%s>; rel="%s"' % (token_url, 'api-get-auth-token'),
-                ]
-                if not request.user.is_anonymous():
-                    list_name = '{basename}-list'
-                    detail_name = '{basename}-detail'
-                    for prefix, viewset, basename in self.registry:
-                        singleton_pk = getattr(viewset, 'singleton_pk', False)
-                        if singleton_pk:
-                            url_name = detail_name.format(basename=basename)
-                            kwargs = { 'pk': singleton_pk(viewset(), request) }
-                        else:
-                            url_name = list_name.format(basename=basename)
-                            kwargs = {}
-                        url = reverse(url_name, request=request, format=format, kwargs=kwargs)
-                        links.append('<%s>; rel="%s"' % (url, url_name))
-                    # Add user link
-                    url_name = detail_name.format(basename='user')
-                    kwargs = { 'pk': request.user.pk }
-                    url = reverse(url_name, request=request, format=format, kwargs=kwargs)
-                    links.append('<%s>; rel="%s"' % (url, url_name))
-                headers = { 'Link': ', '.join(links) }
-                content = {
-                    name: getattr(settings, name, None)
-                        for name in ['SITE_NAME', 'SITE_VERBOSE_NAME']
-                }
-                content['INSTALLED_APPS'] = conf.settings.INSTALLED_APPS
-                return Response(content, headers=headers)
+        APIRoot = import_class(settings.API_ROOT_VIEW)
+        APIRoot.router = self
         return APIRoot.as_view()
     
     def register(self, prefix, viewset, base_name=None):

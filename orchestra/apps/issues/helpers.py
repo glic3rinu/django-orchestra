@@ -32,5 +32,9 @@ def get_ticket_changes(modeladmin, request, ticket):
             old_value = getattr(ticket, attr)
             new_value = form.cleaned_data[attr]
             if old_value != new_value:
+                choices = dict(form.fields[attr].choices)
+                if old_value in choices:
+                    old_value = choices[old_value]
+                    new_value = choices[new_value]
                 changes[attr] = (old_value, new_value)
     return changes

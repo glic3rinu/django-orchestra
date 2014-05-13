@@ -13,8 +13,8 @@ class QueueSerializer(serializers.HyperlinkedModelSerializer):
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Message
-        fields = ('id', 'author', 'content', 'created_on')
-        read_only_fields = ('author', 'created_on')
+        fields = ('id', 'author', 'author_name', 'content', 'created_on')
+        read_only_fields = ('author', 'author_name', 'created_on')
     
     def get_identity(self, data):
         return data.get('id')
@@ -32,10 +32,10 @@ class TicketSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Ticket
         fields = (
-            'url', 'id', 'creator', 'owner', 'queue', 'subject', 'description',
-            'state', 'messages', 'is_read'
+            'url', 'id', 'creator', 'creator_name', 'owner', 'queue', 'subject',
+            'description', 'state', 'messages', 'is_read'
         )
-        read_only_fields = ('creator', 'owner')
+        read_only_fields = ('creator', 'creator_name', 'owner')
     
     def get_is_read(self, obj):
         return obj.is_read_by(self.context['request'].user)

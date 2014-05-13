@@ -92,7 +92,7 @@ class TicketForm(forms.ModelForm):
             description = description.replace('>\n', '#Ha9G9-?8')
             description = description.replace('\n', '<br>')
             description = description.replace('#Ha9G9-?8', '>\n')
-            description = '<div style="padding-left: 180px;">%s</div>' % description
+            description = '<div style="padding-left: 95px;">%s</div>' % description
             widget = ReadOnlyWidget(description, description)
             self.fields['display_description'].widget = widget
     

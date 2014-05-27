@@ -171,7 +171,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     # Accounts
     'accounts/account': 'Face-monkey.png',
     'contacts/contact': 'contact.png',
-    'orders/order': 'shopping-cart.png',
+    'orders/order': 'basket.png',
     'prices/price': 'price.png',
     # Administration
     'users/user': 'Mr-potato.png',

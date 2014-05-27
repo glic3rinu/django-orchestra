@@ -50,6 +50,12 @@ def get_accounts():
             tokens = reverse('admin:authtoken_token_changelist')
             users.append(items.MenuItem(_("Tokens"), tokens))
         accounts.append(items.MenuItem(_("Users"), url, children=users))
+    if isinstalled('orchestra.apps.prices'):
+        url = reverse('admin:prices_price_changelist')
+        accounts.append(items.MenuItem(_("Prices"), url))
+    if isinstalled('orchestra.apps.orders'):
+        url = reverse('admin:orders_order_changelist')
+        accounts.append(items.MenuItem(_("Orders"), url))
     return accounts
 
 

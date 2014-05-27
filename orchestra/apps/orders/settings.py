@@ -1,7 +1,5 @@
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 
-ORDERS_CONTACT_MODEL = getattr(settings, 'ORDERS_CONTACT_MODEL', 'contacts.Contact')
-
-
-ORDERS_COLLECTOR_MAX_DEPTH = getattr(settings, 'ORDERS_COLLECTOR_MAX_DEPTH', 3)
+ORDERS_PRICE_MODEL = getattr(settings, 'ORDERS_PRICE_MODEL', 'prices.Price')

@@ -76,6 +76,8 @@ INSTALLED_APPS = (
     'orchestra.apps.databases',
     'orchestra.apps.vps',
     'orchestra.apps.issues',
+    'orchestra.apps.prices',
+    'orchestra.apps.orders',
     
     # Third-party apps
     'south',
@@ -136,6 +138,8 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.accounts.models.Account',
             'orchestra.apps.contacts.models.Contact',
             'orchestra.apps.users.models.User',
+            'orchestra.apps.orders.models.Order',
+            'orchestra.apps.prices.models.Price',
         ),
         'collapsible': True,
     }),
@@ -167,6 +171,8 @@ FLUENT_DASHBOARD_APP_ICONS = {
     # Accounts
     'accounts/account': 'Face-monkey.png',
     'contacts/contact': 'contact.png',
+    'orders/order': 'shopping-cart.png',
+    'prices/price': 'price.png',
     # Administration
     'users/user': 'Mr-potato.png',
     'djcelery/taskstate': 'taskstate.png',

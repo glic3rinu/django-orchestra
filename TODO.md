@@ -41,3 +41,5 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * profile select_related vs prefetch_related
 
 * use HTTP OPTIONS instead of configuration endpoint, or rename to settings?
+
+* Log changes from rest api (serialized objects)

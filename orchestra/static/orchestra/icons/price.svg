@@ -25,16 +25,7 @@
    id="metadata11"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
-   id="defs9"><filter
-     inkscape:collect="always"
-     id="filter3785"
-     x="-0.13714286"
-     width="1.2742857"
-     y="-0.96000003"
-     height="2.9200001"><feGaussianBlur
-       inkscape:collect="always"
-       stdDeviation="1.7378048"
-       id="feGaussianBlur3787" /></filter><radialGradient
+   id="defs9"><radialGradient
      inkscape:collect="always"
      xlink:href="#linearGradient2305"
      id="radialGradient2311"
@@ -45,9 +36,8 @@
      r="14"
      gradientTransform="matrix(1,0,0,0.267857,0,27.63839)"
      gradientUnits="userSpaceOnUse" /><linearGradient
-     inkscape:collect="always"
      id="linearGradient2305"><stop
-       style="stop-color:#000000;stop-opacity:1;"
+       style="stop-color:#595959;stop-opacity:1;"
        offset="0"
        id="stop2307" /><stop
        style="stop-color:#000000;stop-opacity:0;"
@@ -76,7 +66,7 @@
    id="namedview7"
    showgrid="false"
    inkscape:zoom="6.675088"
-   inkscape:cx="15.760113"
+   inkscape:cx="-10.606581"
    inkscape:cy="22.890176"
    inkscape:window-x="0"
    inkscape:window-y="27"
@@ -91,7 +81,8 @@
    sodipodi:rx="14"
    sodipodi:ry="3.75"
    d="m 8,37.75 a 14,3.75 0 1 1 -28,0 14,3.75 0 1 1 28,0 z"
-   transform="matrix(1.535714,0,0,1.51296,29.034195,-15.256481)" /><g
+   transform="matrix(1.2681948,0,0,1.0735151,26.979648,4.3812391)" />
+<g
    id="g3"
    style="fill:#555753"
    transform="matrix(0.56980085,-0.08926081,0.08926081,0.56980085,-7.4328135,-0.07503521)">
@@ -100,5 +91,4 @@
    id="path5"
    style="fill:#555753"
    inkscape:connector-curvature="0" />
-</g>
-</svg>
+</g></svg>

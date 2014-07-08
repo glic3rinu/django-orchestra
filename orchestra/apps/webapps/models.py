@@ -13,7 +13,7 @@ from . import settings
 def settings_to_choices(choices):
     return sorted(
         [ (name, opt[0]) for name,opt in choices.iteritems() ],
-        key=lambda e: e[1]
+        key=lambda e: e[0]
     )
 
 

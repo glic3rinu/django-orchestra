@@ -111,9 +111,9 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
             kwargs['queryset'] = mailboxes.filter(user__account=self.account)
         return super(AddressAdmin, self).formfield_for_dbfield(db_field, **kwargs)
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Select related for performance """
-        qs = super(AddressAdmin, self).queryset(request)
+        qs = super(AddressAdmin, self).get_queryset(request)
         # TODO django 1.7 account__user is not needed
         return qs.select_related('domain', 'account__user')
 

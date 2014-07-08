@@ -84,9 +84,9 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         return super(WebsiteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Select related for performance """
-        qs = super(WebsiteAdmin, self).queryset(request)
+        qs = super(WebsiteAdmin, self).get_queryset(request)
         return qs.prefetch_related('domains')
 
 

@@ -107,9 +107,9 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
         return TemplateResponse(request, 'admin/domains/domain/view_zone.html',
             context)
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Order by structured name and imporve performance """
-        qs = super(DomainAdmin, self).queryset(request)
+        qs = super(DomainAdmin, self).get_queryset(request)
         qs = qs.select_related('top', 'account__user')
 #        qs = qs.select_related('top')
         # For some reason if we do this we know for sure that join table will be called T4

@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings as django_settings
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
@@ -56,10 +56,10 @@ class Ticket(models.Model):
         (CLOSED, 'Closed'),
     )
     
-    creator = models.ForeignKey(get_user_model(), verbose_name=_("created by"),
+    creator = models.ForeignKey(django_settings.AUTH_USER_MODEL, verbose_name=_("created by"),
             related_name='tickets_created', null=True)
     creator_name = models.CharField(_("creator name"), max_length=256, blank=True)
-    owner = models.ForeignKey(get_user_model(), null=True, blank=True,
+    owner = models.ForeignKey(django_settings.AUTH_USER_MODEL, null=True, blank=True,
             related_name='tickets_owned', verbose_name=_("assigned to"))
     queue = models.ForeignKey(Queue, related_name='tickets', null=True, blank=True)
     subject = models.CharField(_("subject"), max_length=256)
@@ -153,7 +153,7 @@ class Ticket(models.Model):
 class Message(models.Model):
     ticket = models.ForeignKey('issues.Ticket', verbose_name=_("ticket"),
             related_name='messages')
-    author = models.ForeignKey(get_user_model(), verbose_name=_("author"),
+    author = models.ForeignKey(django_settings.AUTH_USER_MODEL, verbose_name=_("author"),
             related_name='ticket_messages')
     author_name = models.CharField(_("author name"), max_length=256, blank=True)
     content = models.TextField(_("content"))
@@ -183,7 +183,7 @@ class TicketTracker(models.Model):
     """ Keeps track of user read tickets """
     ticket = models.ForeignKey(Ticket, verbose_name=_("ticket"),
             related_name='trackers')
-    user = models.ForeignKey(get_user_model(), verbose_name=_("user"),
+    user = models.ForeignKey(django_settings.AUTH_USER_MODEL, verbose_name=_("user"),
             related_name='ticket_trackers')
     
     class Meta:

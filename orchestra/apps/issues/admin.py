@@ -88,9 +88,9 @@ class MessageInline(admin.TabularInline):
         self.form.user = request.user
         return super(MessageInline, self).get_formset(request, obj, **kwargs)
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Don't show any message """
-        qs = super(MessageInline, self).queryset(request)
+        qs = super(MessageInline, self).get_queryset(request)
         return qs.none()
 
 
@@ -308,9 +308,9 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
         data_formated = markdowt_tn(strip_tags(data))
         return HttpResponse(data_formated)
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Order by structured name and imporve performance """
-        qs = super(TicketAdmin, self).queryset(request)
+        qs = super(TicketAdmin, self).get_queryset(request)
         return qs.select_related('queue', 'owner', 'creator')
 
 
@@ -345,8 +345,8 @@ class QueueAdmin(admin.ModelAdmin):
             list_display.append(display_notify)
         return list_display
     
-    def queryset(self, request):
-        qs = super(QueueAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(QueueAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('tickets'))
         return qs
 

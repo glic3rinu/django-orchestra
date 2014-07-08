@@ -80,7 +80,6 @@ INSTALLED_APPS = (
     'orchestra.apps.orders',
     
     # Third-party apps
-    'south',
     'django_extensions',
     'djcelery',
     'djcelery_email',
@@ -103,6 +102,7 @@ INSTALLED_APPS = (
     
     'orchestra.apps.accounts',
     'orchestra.apps.contacts',
+    'orchestra.apps.resources',
 )
 
 
@@ -150,6 +150,8 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.orchestration.models.BackendLog',
             'orchestra.apps.orchestration.models.Server',
             'orchestra.apps.issues.models.Ticket',
+            'orchestra.apps.resources.models.Resource',
+            'orchestra.apps.resources.models.Monitor',
         ),
         'collapsible': True,
     }),
@@ -180,6 +182,8 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'orchestration/route': 'hal.png',
     'orchestration/backendlog': 'scriptlog.png',
     'issues/ticket': "Ticket_star.png",
+    'resources/resource': "gauge.png",
+    'resources/monitor': "Utilities-system-monitor.png",
 }
 
 # Django-celery

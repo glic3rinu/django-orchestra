@@ -65,8 +65,16 @@ class ServiceBackend(object):
     @classmethod
     def get_choices(cls):
         backends = cls.get_backends()
-        choices = ( (b.get_name(), b.verbose_name or b.get_name()) for b in backends )
-        return sorted(choices, key=lambda e: e[1])
+        choices = []
+        for b in backends:
+            # don't evaluate b.verbose_name ugettext_lazy
+            verbose = getattr(b.verbose_name, '_proxy____args', [None])
+            if verbose[0]:
+                verbose = b.verbose_name
+            else:
+                verbose = b.get_name()
+            choices.append((b.get_name(), verbose))
+        return sorted(choices, key=lambda e: e[0])
     
     def get_banner(self):
         time = datetime.now().strftime("%h %d, %Y %I:%M:%S")

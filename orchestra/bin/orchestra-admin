@@ -131,16 +131,15 @@ function install_requirements () {
          django-celery-email==1.0.3 \
          django-fluent-dashboard==0.3.5 \
          https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
-         South==0.8.1 \
          IPy==0.81 \
          django-extensions==1.1.1 \
          django-transaction-signals==1.0.0 \
-         django-celery==3.1.1 \
+         django-celery==3.1.10 \
          celery==3.1.7 \
          kombu==3.0.8 \
          Markdown==2.4 \
-         django-debug-toolbar==1.0.1 \
-         djangorestframework==2.3.13 \
+         django-debug-toolbar==1.2.1 \
+         djangorestframework==2.3.14 \
          paramiko==1.12.1 \
          Pygments==1.6 \
          django-filter==0.7 \

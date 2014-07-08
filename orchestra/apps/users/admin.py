@@ -61,10 +61,10 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
             new_urls += patterns("",
                 url('^(\d+)/%s/$' % role.url_name,
                     wrap_admin_view(self, role().change_view),
-                    name='%s_%s_%s_change' % (opts.app_label, opts.module_name, role.name)),
+                    name='%s_%s_%s_change' % (opts.app_label, opts.model_name, role.name)),
                 url('^(\d+)/%s/delete/$' % role.url_name,
                     wrap_admin_view(self, role().delete_view),
-                    name='%s_%s_%s_delete' % (opts.app_label, opts.module_name, role.name))
+                    name='%s_%s_%s_delete' % (opts.app_label, opts.model_name, role.name))
             )
         return new_urls + urls
     
@@ -101,10 +101,10 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
         kwargs['extra_context'] = extra_context
         return super(UserAdmin, self).change_view(request, object_id, **kwargs)
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Select related for performance """
         related = ['account__user'] + [ role.name for role in self.roles ]
-        return super(UserAdmin, self).queryset(request).select_related(*related)
+        return super(UserAdmin, self).get_queryset(request).select_related(*related)
 
 
 admin.site.register(User, UserAdmin)

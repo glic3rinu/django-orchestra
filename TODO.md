@@ -43,3 +43,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * use HTTP OPTIONS instead of configuration endpoint, or rename to settings?
 
 * Log changes from rest api (serialized objects)
+
+
+* passlib; nano /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py SortedDict -> collections.OrderedDict
+* pip install pyinotify

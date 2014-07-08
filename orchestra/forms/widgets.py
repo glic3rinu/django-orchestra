@@ -1,5 +1,32 @@
 from django import forms
 from django.utils.safestring import mark_safe
+from django.utils.encoding import force_text
+
+
+class ShowTextWidget(forms.Widget):
+    def render(self, name, value, attrs):
+        value = force_text(value)
+        if value is None:
+            return ''
+        if hasattr(self, 'initial'):
+            value = self.initial
+        if self.bold: 
+            final_value = u'<b>%s</b>' % (value)
+        else:
+            final_value = '<br/>'.join(value.split('\n'))
+        if self.warning:
+            final_value = u'<ul class="messagelist"><li class="warning">%s</li></ul>' %(final_value)
+        if self.hidden:
+            final_value = u'%s<input type="hidden" name="%s" value="%s"/>' % (final_value, name, value)
+        return mark_safe(final_value)
+            
+    def __init__(self, *args, **kwargs):
+        for kwarg in ['bold', 'warning', 'hidden']:
+            setattr(self, kwarg, kwargs.pop(kwarg, False))
+        super(ShowTextWidget, self).__init__(*args, **kwargs)
+        
+    def _has_changed(self, initial, data):
+        return False
 
 
 class ReadOnlyWidget(forms.Widget):

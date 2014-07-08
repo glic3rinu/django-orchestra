@@ -17,7 +17,7 @@ def get_modeladmin(model, import_module=True):
     """ returns the modeladmin registred for model """
     for k,v in admin.site._registry.iteritems():
         if k is model:
-            return v
+            return type(v)
     if import_module:
         # Sometimes the admin module is not yet imported
         app_label = model._meta.app_label
@@ -30,8 +30,9 @@ def get_modeladmin(model, import_module=True):
 
 def insertattr(model, name, value, weight=0):
     """ Inserts attribute to a modeladmin """
-    is_model = models.Model in model.__mro__
-    modeladmin = get_modeladmin(model) if is_model else model
+    modeladmin = model
+    if models.Model in model.__mro__:
+        modeladmin = get_modeladmin(model)
     # Avoid inlines defined on parent class be shared between subclasses
     # Seems that if we use tuples they are lost in some conditions like changing
     # the tuple in modeladmin.__init__

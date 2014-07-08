@@ -1,5 +1,6 @@
 from admin_tools.menu import items, Menu
 from django.core.urlresolvers import reverse
+from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
@@ -17,11 +18,11 @@ def api_link(context):
     if 'object_id' in context: 
         object_id = context['object_id']
         try:
-            return reverse('%s-detail' % opts.module_name, args=[object_id])
+            return reverse('%s-detail' % opts.model_name, args=[object_id])
         except:
             return reverse('api-root')
     try:
-        return reverse('%s-list' % opts.module_name)
+        return reverse('%s-list' % opts.model_name)
     except:
         return reverse('api-root')
 
@@ -32,7 +33,8 @@ def get_services():
         if options.get('menu', True):
             opts = model._meta
             url = reverse('admin:%s_%s_changelist' % (opts.app_label, opts.model_name))
-            result.append(items.MenuItem(options.get('verbose_name_plural'), url))
+            name = capfirst(options.get('verbose_name_plural'))
+            result.append(items.MenuItem(name, url))
     return sorted(result, key=lambda i: i.title)
 
 
@@ -72,6 +74,8 @@ def get_administration_models():
         administration_models.append('djcelery.*')
     if isinstalled('orchestra.apps.issues'):
         administration_models.append('orchestra.apps.issues.*')
+    if isinstalled('orchestra.apps.resources'):
+        administration_models.append('orchestra.apps.resources.*')
     return administration_models
 
 

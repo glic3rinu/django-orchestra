@@ -5,7 +5,6 @@ class Service(object):
         if model in self._registry:
             raise KeyError("%s already registered" % str(model))
         plural = kwargs.get('verbose_name_plural', model._meta.verbose_name_plural)
-        plural = plural[0].upper() + plural[1:]
         self._registry[model] = {
             'verbose_name': kwargs.get('verbose_name', model._meta.verbose_name),
             'verbose_name_plural': plural,

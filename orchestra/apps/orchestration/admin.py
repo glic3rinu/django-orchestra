@@ -109,9 +109,9 @@ class BackendLogAdmin(admin.ModelAdmin):
         return monospace_format(escape(log.traceback))
     mono_traceback.short_description = _("traceback")
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Order by structured name and imporve performance """
-        qs = super(BackendLogAdmin, self).queryset(request)
+        qs = super(BackendLogAdmin, self).get_queryset(request)
         return qs.select_related('server')
 
 

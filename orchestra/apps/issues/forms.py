@@ -36,6 +36,9 @@ class MessageInlineForm(forms.ModelForm):
     created_on = forms.CharField(label="Created On", required=False)
     content = forms.CharField(widget=MarkDownWidget(), required=False)
     
+    class Meta:
+        fields = ('author', 'author_name', 'created_on', 'content')
+    
     def __init__(self, *args, **kwargs):
         super(MessageInlineForm, self).__init__(*args, **kwargs)
         admin_link = reverse('admin:users_user_change', args=(self.user.pk,))
@@ -56,7 +59,7 @@ class UsersIterator(forms.models.ModelChoiceIterator):
     def __init__(self, *args, **kwargs):
         self.ticket = kwargs.pop('ticket', False)
         super(forms.models.ModelChoiceIterator, self).__init__(*args, **kwargs)
-
+    
     def __iter__(self):
         yield ('', '---------')
         users = User.objects.exclude(is_active=False).order_by('name')
@@ -74,6 +77,10 @@ class TicketForm(forms.ModelForm):
     
     class Meta:
         model = Ticket
+        fields = (
+            'creator', 'creator_name', 'owner', 'queue', 'subject', 'description',
+            'priority', 'state', 'cc', 'display_description'
+        )
     
     def __init__(self, *args, **kwargs):
         super(TicketForm, self).__init__(*args, **kwargs)

@@ -77,11 +77,11 @@ class AccountAdmin(ExtendedModelAdmin):
         obj.user.account = obj
         obj.user.save()
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Select related for performance """
         # TODO move invoicecontact to contacts
         related = ('user', 'invoicecontact')
-        return super(AccountAdmin, self).queryset(request).select_related(*related)
+        return super(AccountAdmin, self).get_queryset(request).select_related(*related)
 
 
 admin.site.register(Account, AccountAdmin)
@@ -131,9 +131,9 @@ class AccountAdminMixin(object):
     account_link.allow_tags = True
     account_link.admin_order_field = 'account__user__username'
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         """ Select related for performance """
-        qs = super(AccountAdminMixin, self).queryset(request)
+        qs = super(AccountAdminMixin, self).get_queryset(request)
         return qs.select_related('account__user')
     
     def formfield_for_dbfield(self, db_field, **kwargs):
@@ -177,7 +177,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
         urls = super(AccountAdminMixin, self).get_urls()
         admin_site = self.admin_site
         opts = self.model._meta
-        info = opts.app_label, opts.module_name
+        info = opts.app_label, opts.model_name
         account_list = AccountListAdmin(Account, admin_site).changelist_view
         select_urls = patterns("",
             url("/select-account/$",

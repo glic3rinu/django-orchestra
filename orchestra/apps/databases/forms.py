@@ -130,6 +130,7 @@ class DatabaseUserChangeForm(forms.ModelForm):
     
     class Meta:
         model = DatabaseUser
+        fields = ('username', 'password', 'type', 'account')
     
     def clean_password(self):
         return self.initial["password"]

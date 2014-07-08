@@ -13,6 +13,7 @@ def collectionlink(**kwargs):
     """
     Used to mark a method on a ViewSet collection that should be routed for GET requests.
     """
+    # TODO deprecate in favour of DRF2.0 own method
     def decorator(func):
         func.collection_bind_to_methods = ['get']
         func.kwargs = kwargs
@@ -89,10 +90,10 @@ class LinkHeaderRouter(DefaultRouter):
         insert_links(viewset, base_name)
         self.registry.append((prefix, viewset, base_name))
     
-    def insert(self, prefix, name, field, **kwargs):
+    def insert(self, prefix_or_model, name, field, **kwargs):
         """ Dynamically add new fields to an existing serializer """
         for _prefix, viewset, basename in self.registry:
-            if _prefix == prefix:
+            if _prefix == prefix_or_model or viewset.model == prefix_or_model:
                 if viewset.serializer_class is None:
                     viewset.serializer_class = viewset().get_serializer_class()
                 viewset.serializer_class.Meta.fields += (name,)

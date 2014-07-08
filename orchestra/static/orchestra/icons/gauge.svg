@@ -10,8 +10,8 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32"
-   height="32"
+   width="48"
+   height="48"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
@@ -55,10 +55,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1020.3622)">
+     transform="translate(0,-1004.3622)">
     <image
-       y="1014.6645"
-       x="-5.8903012"
+       y="994.07819"
+       x="-10.061619"
        id="image2993"
        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABHNCSVQICAgIfAhkiAAAIABJREFU
 eJzsvWmUZNtV3/nf55w7xJCRc2ZlVtWreqongd5DsqSHJQEGSdCYwQyiLWHE0ExyL7vpbhvcLC/3
@@ -951,7 +951,7 @@ EgBCCCFEDZEAEEIIIWqIBIAQQghRQyQAhBBCiBoiASCEEELUEAkAIYQQooZIAAghhBA1RAJACCGE
 qCESAEIIIUQNkQAQQgghaogEgBBCCFFDJACEEEKIGiIBIIQQQtQQCQAhhBCihkgACCGEEDVEAkAI
 IYSoIf8fL4wfsLphpR0AAAAASUVORK5CYII=
 "
-       height="43.714287"
-       width="43.714287" />
+       height="67.714287"
+       width="67.714287" />
   </g>
 </svg>

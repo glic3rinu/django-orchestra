@@ -103,10 +103,3 @@ class MonitorData(models.Model):
     
     def __unicode__(self):
         return str(self.monitor)
-
-
-#for resources in Resource.group_by_content_type():
-#    model = resources[0].content_type.model_class()
-#    print resources[0].content_type.model_class()
-#    model.add_to_class('allocations', generic.GenericRelation('resources.ResourceAllocation'))
-

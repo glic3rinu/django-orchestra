@@ -76,16 +76,14 @@ class BackendOperation(models.Model):
     """
     Encapsulates an operation, storing its related object, the action and the backend.
     """
-    SAVE = 'save'
     DELETE = 'delete'
-    ACTIONS = (
-        (SAVE, _("save")),
-        (DELETE, _("delete")),
-    )
+    SAVE = 'save'
+    MONITOR = 'monitor'
     
     log = models.ForeignKey('orchestration.BackendLog', related_name='operations')
+    # TODO backend and backend_class() (like content_type)
     backend_class = models.CharField(_("backend"), max_length=256)
-    action = models.CharField(_("action"), max_length=64, choices=ACTIONS)
+    action = models.CharField(_("action"), max_length=64)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     instance = generic.GenericForeignKey('content_type', 'object_id')
@@ -149,14 +147,21 @@ class Route(models.Model):
     
     @classmethod
     def get_servers(cls, operation):
-        backend_name = operation.backend.get_name()
+        # TODO use cached data sctructure and refactor
+        backend = operation.backend
+        servers = []
         try:
-            routes = cls.objects.filter(is_active=True, backend=backend_name)
+            routes = cls.objects.filter(is_active=True, backend=backend.get_name())
         except cls.DoesNotExist:
-            return []
-        safe_locals = { 'instance': operation.instance }
-        pks = [ route.pk for route in routes.all() if eval(route.match, safe_locals) ]
-        return [ route.host for route in routes.filter(pk__in=pks) ]
+            return servers
+        safe_locals = {
+            'instance': operation.instance
+        }
+        actions = backend.get_actions()
+        for route in routes:
+            if operation.action in actions and eval(route.match, safe_locals):
+                servers.append(route.host)
+        return servers
     
     def get_backend(self):
         for backend in ServiceBackend.get_backends():

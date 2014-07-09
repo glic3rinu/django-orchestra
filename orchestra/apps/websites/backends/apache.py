@@ -3,12 +3,13 @@ import os
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
+from orchestra.apps.resources import ServiceMonitor
 
 from .. import settings
 
 
-class Apache2Backend(ServiceBackend):
+class Apache2Backend(ServiceController):
     model = 'websites.Website'
     related_models = (('websites.Content', 'website'),)
     verbose_name = _("Apache 2")
@@ -173,3 +174,58 @@ class Apache2Backend(ServiceBackend):
             'fpm_port': content.webapp.get_fpm_port(),
         })
         return context
+
+
+class Apache2Traffic(ServiceMonitor):
+    model = 'websites.Website'
+    resource = ServiceMonitor.TRAFFIC
+    verbose_name = _("Apache 2 Traffic")
+    
+    def monitor(self, site):
+        context = self.get_context(site)
+        self.append("""
+            awk 'BEGIN {
+                ini = "%(start_date)s";
+                end = "%(end_date)s";
+                
+                months["Jan"]="01";
+                months["Feb"]="02";
+                months["Mar"]="03";
+                months["Apr"]="04";
+                months["May"]="05";
+                months["Jun"]="06";
+                months["Jul"]="07";
+                months["Aug"]="08";
+                months["Sep"]="09";
+                months["Oct"]="10";
+                months["Nov"]="11";
+                months["Dec"]="12";
+            } {
+                date = substr($4,2)
+                year = substr(date,8,4)
+                month = months[substr(date,4,3)];
+                day = substr(date,1,2)
+                hour = substr(date,13,2)
+                minute = substr(date,16,2)
+                second = substr(date,19,2);
+                line_date = year month day hour minute second
+                if ( line_date > ini && line_date < end)
+                    if ( $10 == "" )
+                        sum+=$9
+                    else
+                        sum+=$10;
+            } END {
+                print sum;
+            }' %(log_file)s | {
+                read value
+                echo %(site_name)s $value
+            }
+            """ % context)
+    
+    def get_context(self, site):
+        return {
+            'log_file': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
+            'start_date': '',
+            'end_date': '',
+            'site_name': '',
+        }

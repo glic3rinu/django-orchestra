@@ -36,6 +36,10 @@ class User(auth.AbstractBaseUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
     
+    @property
+    def is_main(self):
+        return self.account.user == self
+    
     def get_full_name(self):
         full_name = '%s %s' % (self.first_name, self.last_name)
         return full_name.strip() or self.username

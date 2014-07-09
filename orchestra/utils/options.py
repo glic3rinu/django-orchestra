@@ -1,3 +1,4 @@
+import sys
 import urlparse
 
 from django.core.mail import EmailMultiAlternatives
@@ -37,3 +38,6 @@ def send_email_template(template, context, to, email_from=None, html=None):
         msg.attach_alternative(html_message, "text/html")
     msg.send()
 
+
+def running_syncdb():
+    return 'migrate' in sys.argv or 'syncdb' in sys.argv

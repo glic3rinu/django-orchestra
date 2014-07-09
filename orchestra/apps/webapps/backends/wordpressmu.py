@@ -4,13 +4,13 @@ import sys
 import requests
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
 
 from . import WebAppServiceMixin
 from .. import settings
 
 
-class WordpressMuBackend(WebAppServiceMixin, ServiceBackend):
+class WordpressMuBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("Wordpress multisite")
     
     @property

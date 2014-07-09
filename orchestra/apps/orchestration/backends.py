@@ -23,6 +23,7 @@ class ServiceBackend(object):
     function_method = methods.Python
     type = 'task' # 'sync'
     ignore_fields = []
+    actions = []
     
     # TODO type: 'script', execution:'task'
     
@@ -36,6 +37,10 @@ class ServiceBackend(object):
     
     def __init__(self):
         self.cmds = []
+    
+    @classmethod
+    def get_actions(cls):
+        return [ action for action in cls.actions if action in dir(cls) ]
     
     @classmethod
     def get_name(cls):
@@ -68,7 +73,7 @@ class ServiceBackend(object):
         choices = []
         for b in backends:
             # don't evaluate b.verbose_name ugettext_lazy
-            verbose = getattr(b.verbose_name, '_proxy____args', [None])
+            verbose = getattr(b.verbose_name, '_proxy____args', [b.verbose_name])
             if verbose[0]:
                 verbose = b.verbose_name
             else:
@@ -110,3 +115,12 @@ class ServiceBackend(object):
         the service once in bulk operations
         """
         pass
+
+
+class ServiceController(ServiceBackend):
+    actions = ('save', 'delete')
+    
+    @classmethod
+    def get_backends(cls):
+        """ filter controller classes """
+        return [ plugin for plugin in cls.plugins if ServiceController in plugin.__mro__ ]

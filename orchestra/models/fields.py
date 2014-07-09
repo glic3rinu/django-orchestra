@@ -54,4 +54,4 @@ class MultiSelectField(models.CharField):
 
 if isinstalled('south'):
     from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^controller\.models\.fields\.MultiSelectField"])
+    add_introspection_rules([], ["^orchestra\.models\.fields\.MultiSelectField"])

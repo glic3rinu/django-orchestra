@@ -7,23 +7,33 @@ from orchestra.forms.widgets import ShowTextWidget, ReadOnlyWidget
 class ResourceForm(forms.ModelForm):
     verbose_name = forms.CharField(label=_("Name"), widget=ShowTextWidget(bold=True),
             required=False)
-    current = forms.CharField(label=_("Current"), widget=ShowTextWidget(),
+    used = forms.IntegerField(label=_("Used"), widget=ShowTextWidget(),
             required=False)
-    value = forms.CharField(label=_("Allocation"))
+    last_update = forms.CharField(label=_("Last update"), widget=ShowTextWidget(),
+            required=False)
+    allocated = forms.IntegerField(label=_("Allocated"))
     
     class Meta:
-        fields = ('verbose_name', 'current', 'value',)
+        fields = ('verbose_name', 'used', 'last_update', 'allocated',)
     
     def __init__(self, *args, **kwargs):
         self.resource = kwargs.pop('resource', None)
         super(ResourceForm, self).__init__(*args, **kwargs)
         if self.resource:
             self.fields['verbose_name'].initial = self.resource.verbose_name
-            self.fields['current'].initial = self.resource.get_current()
+            self.fields['used'].initial = self.resource.get_current()
             if self.resource.ondemand:
-                self.fields['value'].widget = ReadOnlyWidget('')
+                self.fields['allocated'].required = False
+                self.fields['allocated'].widget = ReadOnlyWidget(None, '')
             else:
-                self.fields['value'].initial = self.resource.default_allocation
+                self.fields['allocated'].required = True
+                self.fields['allocated'].initial = self.resource.default_allocation
+    
+    def has_changed(self):
+        """ Make sure resourcedata objects are created for all resources """
+        if not self.instance.pk:
+            return True
+        return super(ResourceForm, self).has_changed()
     
     def save(self, *args, **kwargs):
         self.instance.resource_id = self.resource.pk

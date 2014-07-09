@@ -3,13 +3,13 @@ import os
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
 
 from . import WebAppServiceMixin
 from .. import settings
 
 
-class PHPFPMBackend(WebAppServiceMixin, ServiceBackend):
+class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("PHP-FPM")
     
     def save(self, webapp):

@@ -3,12 +3,13 @@ import os
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
+from orchestra.apps.resources import ServiceMonitor
 
 from . import settings
 
 
-class MailSystemUserBackend(ServiceBackend):
+class MailSystemUserBackend(ServiceController):
     verbose_name = _("Mail system user")
     model = 'mail.Mailbox'
     
@@ -62,7 +63,7 @@ class MailSystemUserBackend(ServiceBackend):
         return context
 
 
-class PostfixAddressBackend(ServiceBackend):
+class PostfixAddressBackend(ServiceController):
     verbose_name = _("Postfix address")
     model = 'mail.Address'
     
@@ -132,12 +133,12 @@ class PostfixAddressBackend(ServiceBackend):
         return context
 
 
-class AutoresponseBackend(ServiceBackend):
+class AutoresponseBackend(ServiceController):
     verbose_name = _("Mail autoresponse")
     model = 'mail.Autoresponse'
     
-    def save(self, autoresponse):
-        pass
-    
-    def delete(self, autoresponse):
-        pass
+
+class MailDisk(ServiceMonitor):
+    model = 'email.Mailbox'
+    resource = ServiceMonitor.DISK
+    verbose_name = _("Mail disk")

@@ -1,5 +1,3 @@
-import sys
-
 from django.contrib import admin
 from django.contrib.contenttypes import generic
 from django.utils.functional import cached_property
@@ -7,9 +5,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr, get_modeladmin
+from orchestra.utils import running_syncdb
 
 from .forms import ResourceForm
-from .models import Resource, ResourceAllocation, Monitor, MonitorData
+from .models import Resource, ResourceData, MonitorData
 
 
 class ResourceAdmin(admin.ModelAdmin):
@@ -26,30 +25,24 @@ class ResourceAdmin(admin.ModelAdmin):
         resources = obj.content_type.resource_set.filter(is_active=True)
         inlines = []
         for inline in modeladmin.inlines:
-            if inline.model is ResourceAllocation:
+            if inline.model is ResourceData:
                 inline = resource_inline_factory(resources)
             inlines.append(inline)
         modeladmin.inlines = inlines
 
 
-class ResourceAllocationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'resource', 'content_object', 'value')
+class ResourceDataAdmin(admin.ModelAdmin):
+    list_display = ('id', 'resource', 'used', 'allocated', 'last_update',) # TODO content_object
     list_filter = ('resource',)
 
 
-class MonitorAdmin(admin.ModelAdmin):
-    list_display = ('backend', 'resource', 'crontab')
-    list_filter = ('backend', 'resource')
-
-
 class MonitorDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'monitor', 'content_object', 'date', 'value')
+    list_display = ('id', 'monitor', 'date', 'value') # TODO content_object
     list_filter = ('monitor',)
 
 
 admin.site.register(Resource, ResourceAdmin)
-admin.site.register(ResourceAllocation, ResourceAllocationAdmin)
-admin.site.register(Monitor, MonitorAdmin)
+admin.site.register(ResourceData, ResourceDataAdmin)
 admin.site.register(MonitorData, MonitorDataAdmin)
 
 
@@ -68,7 +61,7 @@ def resource_inline_factory(resources):
             return forms
     
     class ResourceInline(generic.GenericTabularInline):
-        model = ResourceAllocation
+        model = ResourceData
         verbose_name_plural = _("resources")
         form = ResourceForm
         formset = ResourceInlineFormSet
@@ -84,7 +77,7 @@ def resource_inline_factory(resources):
     
     return ResourceInline
 
-if not 'migrate' in sys.argv and not 'syncdb' in sys.argv:
+if not running_syncdb():
     # not run during syncdb
     for resources in Resource.group_by_content_type():
         inline = resource_inline_factory(resources)

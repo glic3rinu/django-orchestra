@@ -3,12 +3,12 @@ from functools import partial
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
 
 from .. import settings
 
 
-class WebalizerBackend(ServiceBackend):
+class WebalizerBackend(ServiceController):
     verbose_name = _("Webalizer")
     model = 'websites.Content'
     

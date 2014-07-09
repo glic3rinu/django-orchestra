@@ -47,3 +47,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * passlib; nano /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py SortedDict -> collections.OrderedDict
 * pip install pyinotify
+
+
+* Backend.operations dynamically generated based on defined methods

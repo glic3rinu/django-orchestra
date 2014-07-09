@@ -9,7 +9,7 @@ register = template.Library()
 
 
 @register.simple_tag(name="version")
-def controller_version():
+def orchestra_version():
     return get_version()
 
 

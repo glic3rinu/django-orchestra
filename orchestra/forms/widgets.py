@@ -4,6 +4,11 @@ from django.utils.encoding import force_text
 
 
 class ShowTextWidget(forms.Widget):
+    def __init__(self, *args, **kwargs):
+        for kwarg in ['bold', 'warning', 'hidden']:
+            setattr(self, kwarg, kwargs.pop(kwarg, False))
+        super(ShowTextWidget, self).__init__(*args, **kwargs)
+    
     def render(self, name, value, attrs):
         value = force_text(value)
         if value is None:
@@ -19,12 +24,7 @@ class ShowTextWidget(forms.Widget):
         if self.hidden:
             final_value = u'%s<input type="hidden" name="%s" value="%s"/>' % (final_value, name, value)
         return mark_safe(final_value)
-            
-    def __init__(self, *args, **kwargs):
-        for kwarg in ['bold', 'warning', 'hidden']:
-            setattr(self, kwarg, kwargs.pop(kwarg, False))
-        super(ShowTextWidget, self).__init__(*args, **kwargs)
-        
+    
     def _has_changed(self, initial, data):
         return False
 

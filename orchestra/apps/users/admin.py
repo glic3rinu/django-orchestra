@@ -15,7 +15,7 @@ from .roles.filters import role_list_filter_factory
 
 
 class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
-    list_display = ('username', 'is_main')
+    list_display = ('username', 'display_is_main')
     list_filter = ('is_staff', 'is_superuser', 'is_active')
     fieldsets = (
         (None, {
@@ -25,7 +25,7 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
             'fields': ('first_name', 'last_name', 'email')
         }),
         (_("Permissions"), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'is_admin', 'is_main')
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'display_is_main')
         }),
         (_("Important dates"), {
             'fields': ('last_login', 'date_joined')
@@ -38,7 +38,7 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
         }),
     )
     search_fields = ['username', 'account__user__username']
-    readonly_fields = ('is_main', 'account_link')
+    readonly_fields = ('display_is_main', 'account_link')
     change_readonly_fields = ('username',)
     filter_horizontal = ()
     add_form = UserCreationForm
@@ -46,10 +46,10 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
     roles = []
     ordering = ('-id',)
     
-    
-    def is_main(self, user):
-        return user.account.user == user
-    is_main.boolean = True
+    def display_is_main(self, instance):
+        return instance.is_main
+    display_is_main.short_description = _("is main")
+    display_is_main.boolean = True
     
     def get_urls(self):
         """ Returns the additional urls for the change view links """

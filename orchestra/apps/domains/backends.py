@@ -4,10 +4,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from . import settings
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
 
 
-class Bind9MasterDomainBackend(ServiceBackend):
+class Bind9MasterDomainBackend(ServiceController):
     verbose_name = _("Bind9 master domain")
     model = 'domains.Domain'
     related_models = (

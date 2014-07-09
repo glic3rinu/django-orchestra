@@ -2,13 +2,13 @@ import os
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
 
 from . import WebAppServiceMixin
 from .. import settings
 
 
-class DrupalMuBackend(WebAppServiceMixin, ServiceBackend):
+class DrupalMuBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("Drupal multisite")
     
     def save(self, webapp):

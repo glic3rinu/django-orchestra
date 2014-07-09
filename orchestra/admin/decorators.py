@@ -8,12 +8,13 @@ from django.utils.encoding import force_text
 
 
 def action_with_confirmation(action_name, extra_context={},
-        template='admin/controller/generic_confirmation.html'):
+                             template='admin/orchestra/generic_confirmation.html'):
     """ 
     Generic pattern for actions that needs confirmation step
     If custom template is provided the form must contain:
     <input type="hidden" name="post" value="generic_confirmation" />
     """
+
     def decorator(func, extra_context=extra_context, template=template):
         @wraps(func, assigned=available_attrs(func))
         def inner(modeladmin, request, queryset):

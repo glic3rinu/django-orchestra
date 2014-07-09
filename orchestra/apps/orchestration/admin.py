@@ -22,10 +22,11 @@ STATE_COLORS = {
 
 class RouteAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'backend', 'host', 'match', 'display_model', 'is_active'
+        'id', 'backend', 'host', 'match', 'display_model', 'display_actions',
+        'is_active'
     ]
     list_editable = ['backend', 'host', 'match', 'is_active']
-    list_filter = ['backend', 'host', 'is_active']
+    list_filter = ['host', 'is_active', 'backend']
     
     def display_model(self, route):
         try:
@@ -34,6 +35,14 @@ class RouteAdmin(admin.ModelAdmin):
             return "<span style='color: red;'>NOT AVAILABLE</span>"
     display_model.short_description = _("model")
     display_model.allow_tags = True
+    
+    def display_actions(self, route):
+        try:
+            return '<br>'.join(route.get_backend().get_actions())
+        except KeyError:
+            return "<span style='color: red;'>NOT AVAILABLE</span>"
+    display_actions.short_description = _("actions")
+    display_actions.allow_tags = True
 
 
 class BackendOperationInline(admin.TabularInline):

@@ -1,11 +1,11 @@
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.orchestration import ServiceBackend
+from orchestra.apps.orchestration import ServiceController
 
 from . import WebAppServiceMixin
 
 
-class StaticBackend(WebAppServiceMixin, ServiceBackend):
+class StaticBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("Static")
     
     def save(self, webapp):

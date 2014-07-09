@@ -7,13 +7,25 @@ from django.core import validators
 from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
+from orchestra.models.fields import MultiSelectField
 from orchestra.utils.apps import autodiscover
+
+from .backends import ServiceMonitor
 
 
 class Resource(models.Model):
-    MONTHLY = 'MONTHLY'
+    """
+    Defines a resource, a resource is basically an interpretation of data
+    gathered by a Monitor
+    """
+    
+    LAST = 'LAST'
+    MONTHLY_SUM = 'MONTHLY_SUM'
+    MONTHLY_AVG = 'MONTHLY_AVG'
     PERIODS = (
-        (MONTHLY, _('Monthly')),
+        (LAST, _("Last")),
+        (MONTHLY_SUM, _("Monthly Sum")),
+        (MONTHLY_AVG, _("Monthly Average")),
     )
     
     name = models.CharField(_("name"), max_length=32, unique=True,
@@ -24,11 +36,14 @@ class Resource(models.Model):
     verbose_name = models.CharField(_("verbose name"), max_length=256, unique=True)
     content_type = models.ForeignKey(ContentType) # TODO filter by servicE?
     period = models.CharField(_("period"), max_length=16, choices=PERIODS,
-            default=MONTHLY)
-    ondemand = models.BooleanField(default=False)
-    default_allocation = models.PositiveIntegerField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    disable_trigger = models.BooleanField(default=False)
+            default=LAST)
+    ondemand = models.BooleanField(_("on demand"), default=False)
+    default_allocation = models.PositiveIntegerField(_("default allocation"),
+            null=True, blank=True)
+    is_active = models.BooleanField(_("is active"), default=True)
+    disable_trigger = models.BooleanField(_("disable trigger"), default=False)
+    monitors = MultiSelectField(_("monitors"), max_length=256,
+            choices=ServiceMonitor.get_choices())
     
     def __unicode__(self):
         return self.name
@@ -53,53 +68,68 @@ class Resource(models.Model):
         today = datetime.date.today()
         result = 0
         has_result = False
-        for monitor in self.monitors.all():
-            has_result = True
-            if self.period == self.MONTHLY:
-                data = monitor.dataset.filter(date__year=today.year,
-                                              date__month=today.month)
-                result += data.aggregate(models.Sum('value'))['value__sum']
+        for monitor in self.monitors:
+            dataset = MonitorData.objects.filter(monitor=monitor)
+            if self.period == self.MONTHLY_AVG:
+                try:
+                    last = dataset.latest()
+                except MonitorData.DoesNotExist:
+                    continue
+                has_result = True
+                epoch = datetime(year=today.year, month=today.month, day=1)
+                total = (epoch-last.date).total_seconds()
+                dataset = dataset.filter(date__year=today.year,
+                                                 date__month=today.month)
+                for data in dataset:
+                    slot = (previous-data.date).total_seconds()
+                    result += data.value * slot/total
+            elif self.period == self.MONTHLY_SUM:
+                data = dataset.filter(date__year=today.year,
+                                      date__month=today.month)
+                value = data.aggregate(models.Sum('value'))['value__sum']
+                if value:
+                    has_result = True
+                    result += value
+            elif self.period == self.LAST:
+                try:
+                    result += dataset.latest().value
+                except MonitorData.DoesNotExist:
+                    continue
+                has_result = True
             else:
                 raise NotImplementedError("%s support not implemented" % self.period)
         return result if has_result else None
 
 
-class ResourceAllocation(models.Model):
+class ResourceData(models.Model):
+    """ Stores computed resource usage and allocation """
     resource = models.ForeignKey(Resource)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    value = models.PositiveIntegerField()
+    used = models.PositiveIntegerField(null=True)
+    last_update = models.DateTimeField(null=True)
+    allocated = models.PositiveIntegerField(null=True)
     
     content_object = generic.GenericForeignKey()
     
     class Meta:
         unique_together = ('resource', 'content_type', 'object_id')
-
-
-autodiscover('monitors')
-
-
-class Monitor(models.Model):
-    backend = models.CharField(_("backend"), max_length=256,)
-#            choices=MonitorBackend.get_choices())
-    resource = models.ForeignKey(Resource, related_name='monitors')
-    crontab = models.ForeignKey(CrontabSchedule)
-    
-    class Meta:
-        unique_together=('backend', 'resource')
-    
-    def __unicode__(self):
-        return self.backend
-
+        verbose_name_plural = _("resource data")
 
 class MonitorData(models.Model):
-    monitor = models.ForeignKey(Monitor, related_name='dataset')
+    """ Stores monitored data """
+    monitor = models.CharField(_("monitor"), max_length=256,
+            choices=ServiceMonitor.get_choices())
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     date = models.DateTimeField(auto_now_add=True)
     value = models.PositiveIntegerField()
     
     content_object = generic.GenericForeignKey()
+    
+    class Meta:
+        get_latest_by = 'date'
+        verbose_name_plural = _("monitor data")
     
     def __unicode__(self):
         return str(self.monitor)

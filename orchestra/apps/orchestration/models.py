@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.models.fields import NullableCharField
 from orchestra.utils.apps import autodiscover
 from orchestra.utils.functional import cached
 
@@ -14,9 +15,8 @@ from .backends import ServiceBackend
 class Server(models.Model):
     """ Machine runing daemons (services) """
     name = models.CharField(_("name"), max_length=256, unique=True)
-    # TODO unique address with blank=True (nullablecharfield)
-    address = models.CharField(_("address"), max_length=256, blank=True,
-            help_text=_("IP address or domain name"))
+    address = NullableCharField(_("address"), max_length=256, blank=True,
+            null=True, unique=True, help_text=_("IP address or domain name"))
     description = models.TextField(_("description"), blank=True)
     os = models.CharField(_("operative system"), max_length=32,
             choices=settings.ORCHESTRATION_OS_CHOICES,
@@ -82,8 +82,7 @@ class BackendOperation(models.Model):
     MONITOR = 'monitor'
     
     log = models.ForeignKey('orchestration.BackendLog', related_name='operations')
-    # TODO backend and backend_class() (like content_type)
-    backend_class = models.CharField(_("backend"), max_length=256)
+    backend = models.CharField(_("backend"), max_length=256)
     action = models.CharField(_("action"), max_length=64)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
@@ -94,11 +93,11 @@ class BackendOperation(models.Model):
         verbose_name_plural = _("Operations")
     
     def __unicode__(self):
-        return '%s.%s(%s)' % (self.backend_class, self.action, self.instance)
+        return '%s.%s(%s)' % (self.backend, self.action, self.instance)
     
     def __hash__(self):
         """ set() """
-        backend = getattr(self, 'backend', self.backend_class)
+        backend = getattr(self, 'backend', self.backend)
         return hash(backend) + hash(self.instance) + hash(self.action)
     
     def __eq__(self, operation):
@@ -107,13 +106,16 @@ class BackendOperation(models.Model):
     
     @classmethod
     def create(cls, backend, instance, action):
-        op = cls(backend_class=backend.get_name(), instance=instance, action=action)
+        op = cls(backend=backend.get_name(), instance=instance, action=action)
         op.backend = backend
         return op
     
     @classmethod
     def execute(cls, operations):
         return manager.execute(operations)
+    
+    def backend_class(self):
+        return ServiceBackend.get_backend(self.backend)
 
 
 autodiscover('backends')

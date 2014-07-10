@@ -1,4 +1,9 @@
+import datetime
+
+from django.contrib.contenttypes.models import ContentType
+
 from orchestra.apps.orchestration import ServiceBackend
+from orchestra.utils.functional import cached
 
 
 class ServiceMonitor(ServiceBackend):
@@ -14,14 +19,34 @@ class ServiceMonitor(ServiceBackend):
         """ filter monitor classes """
         return [plugin for plugin in cls.plugins if ServiceMonitor in plugin.__mro__]
     
-    def store(self, stdout):
+    @cached
+    def get_last_date(self, obj):
+        from .models import MonitorData
+        try:
+            # TODO replace
+            #return MonitorData.objects.filter(content_object=obj).latest().date
+            ct = ContentType.objects.get(app_label=obj._meta.app_label, model=obj._meta.model_name)
+            return MonitorData.objects.filter(content_type=ct, object_id=obj.pk).latest().date
+        except MonitorData.DoesNotExist:
+            return self.get_current_date() - datetime.timedelta(days=1)
+    
+    @cached
+    def get_current_date(self):
+        return datetime.datetime.now()
+    
+    def store(self, log):
         """ object_id value """
-        for line in stdout.readlines():
+        from .models import MonitorData
+        name = self.get_name()
+        app_label, model_name = self.model.split('.')
+        ct = ContentType.objects.get(app_label=app_label, model=model_name.lower())
+        for line in log.stdout.splitlines():
             line = line.strip()
             object_id, value = line.split()
-            # TODO date
-            MonitorHistory.store(self.model, object_id, value, date)
+            MonitorData.objects.create(monitor=name, object_id=object_id,
+                    content_type=ct, value=value, date=self.get_current_date())
     
     def execute(self, server):
-        log = super(MonitorBackend, self).execute(server)
+        log = super(ServiceMonitor, self).execute(server)
+        self.store(log)
         return log

@@ -1,8 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr, get_modeladmin
 from orchestra.core import services
@@ -12,14 +13,34 @@ from .forms import ResourceForm
 from .models import Resource, ResourceData, MonitorData
 
 
-class ResourceAdmin(admin.ModelAdmin):
-    # TODO warning message server/celery should be restarted when creating things
-    
+class ResourceAdmin(ExtendedModelAdmin):
     list_display = (
         'name', 'verbose_name', 'content_type', 'period', 'ondemand',
-        'default_allocation', 'disable_trigger'
+        'default_allocation', 'disable_trigger', 'crontab',
     )
     list_filter = (UsedContentTypeFilter, 'period', 'ondemand', 'disable_trigger')
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'content_type', 'period'),
+        }),
+        (_("Configuration"), {
+            'fields': ('verbose_name', 'default_allocation', 'ondemand',
+                       'disable_trigger', 'is_active'),
+        }),
+        (_("Monitoring"), {
+            'fields': ('monitors', 'crontab'),
+        }),
+    )
+    change_readonly_fields = ('name', 'content_type', 'period')
+    
+    def add_view(self, request, **kwargs):
+        """ Warning user if the node is not fully configured """
+        if request.method == 'GET':
+            messages.warning(request, _(
+                "Restarting orchestra and celery is required to fully apply changes. "
+                "Remember that allocated values will be applied when objects are saved"
+            ))
+        return super(ResourceAdmin, self).add_view(request, **kwargs)
     
     def save_model(self, request, obj, form, change):
         super(ResourceAdmin, self).save_model(request, obj, form, change)

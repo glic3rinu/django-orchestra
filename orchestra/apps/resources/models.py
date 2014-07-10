@@ -1,7 +1,7 @@
 import datetime
 
 from django.db import models
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core import validators
 from django.utils.translation import ugettext_lazy as _
@@ -34,17 +34,22 @@ class Resource(models.Model):
             validators=[validators.RegexValidator(r'^[a-z0-9_\-]+$',
                         _('Enter a valid name.'), 'invalid')])
     verbose_name = models.CharField(_("verbose name"), max_length=256, unique=True)
-    content_type = models.ForeignKey(ContentType) # TODO filter by servicE?
-    period = models.CharField(_("period"), max_length=16, choices=PERIODS,
-            default=LAST)
-    ondemand = models.BooleanField(_("on demand"), default=False)
+    content_type = models.ForeignKey(ContentType,
+            help_text=_("Model where this resource will be hooked"))
+    period = models.CharField(_("period"), max_length=16, choices=PERIODS, default=LAST,
+            help_text=_("Operation used for aggregating this resource monitored data."))
+    ondemand = models.BooleanField(_("on demand"), default=False,
+            help_text=_("If enabled the resource will not be pre-allocated, "
+                        "but allocated under the application demand"))
     default_allocation = models.PositiveIntegerField(_("default allocation"),
+            help_text=_("Default allocation value used when this is not an "
+                        "on demand resource"),
             null=True, blank=True)
     is_active = models.BooleanField(_("is active"), default=True)
-    disable_trigger = models.BooleanField(_("disable trigger"), default=False)
+    disable_trigger = models.BooleanField(_("disable trigger"), default=False,
+            help_text=_("Disables monitor's resource exeeded and recovery triggers"))
     crontab = models.ForeignKey(CrontabSchedule, verbose_name=_("crontab"),
             help_text=_("Crontab for periodic execution"))
-    # TODO create custom field that returns backend python objects
     monitors = MultiSelectField(_("monitors"), max_length=256,
             choices=ServiceMonitor.get_choices())
     
@@ -58,13 +63,16 @@ class Resource(models.Model):
         try:
             task = PeriodicTask.objects.get(name=name)
         except PeriodicTask.DoesNotExist:
-            PeriodicTask.objects.create(name=name, task='resources.Monitor',
-                                        args=[self.pk], crontab=self.crontab)
-        else: 
-            if task.crontab != self.crontab:
+            if self.is_active:
+                PeriodicTask.objects.create(name=name, task='resources.Monitor',
+                                            args=[self.pk], crontab=self.crontab)
+        else:
+            if not self.is_active:
+                task.delete()
+            elif task.crontab != self.crontab:
                 task.crontab = self.crontab
                 task.save()
-            
+    
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
         name = 'monitor.%s' % str(self)
@@ -97,7 +105,7 @@ class ResourceData(models.Model):
     last_update = models.DateTimeField(null=True)
     allocated = models.PositiveIntegerField(null=True)
     
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
     
     class Meta:
         unique_together = ('resource', 'content_type', 'object_id')
@@ -159,7 +167,7 @@ class MonitorData(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     value = models.PositiveIntegerField()
     
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
     
     class Meta:
         get_latest_by = 'date'
@@ -170,7 +178,7 @@ class MonitorData(models.Model):
 
 
 def create_resource_relation():
-    relation = generic.GenericRelation('resources.ResourceData')
+    relation = GenericRelation('resources.ResourceData')
     for resources in Resource.group_by_content_type():
         model = resources[0].content_type.model_class()
         model.add_to_class('resources', relation)

@@ -38,7 +38,7 @@ def message_user(request, logs):
     errors = total-successes
     if errors:
         msg = 'backends have' if errors > 1 else 'backend has'
-        msg = _("%d out of %d {0} fail to executed".format(msg))
+        msg = _("%d out of %d {0} fail to execute".format(msg))
         messages.warning(request, msg % (errors, total))
     else:
         msg = 'backends have' if successes > 1 else 'backend has'

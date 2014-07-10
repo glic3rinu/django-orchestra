@@ -40,12 +40,12 @@ def BashSSH(backend, log, server, cmds):
         channel = transport.open_session()
         
         sftp = paramiko.SFTPClient.from_transport(transport)
-        sftp.put(path, path)
+        sftp.put(path, "%s.remote" % path)
         sftp.close()
         os.remove(path)
         
         context = {
-            'path': path,
+            'path': "%s.remote" % path,
             'digest': digest
         }
         cmd = (

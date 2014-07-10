@@ -12,6 +12,7 @@ from . import settings
 class MailSystemUserBackend(ServiceController):
     verbose_name = _("Mail system user")
     model = 'mail.Mailbox'
+    # TODO related_models = ('resources__content_type') ??
     
     DEFAULT_GROUP = 'postfix'
     

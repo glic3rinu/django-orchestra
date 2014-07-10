@@ -69,7 +69,7 @@ class ServiceBackend(object):
     
     @classmethod
     def get_backend(cls, name):
-        for backend in ServiceMonitor.get_backends():
+        for backend in ServiceBackend.get_backends():
             if backend.get_name() == name:
                 return backend
         raise KeyError('This backend is not registered')

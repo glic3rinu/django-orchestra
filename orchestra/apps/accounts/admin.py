@@ -71,6 +71,8 @@ class AccountAdmin(ExtendedModelAdmin):
     
     def save_model(self, request, obj, form, change):
         """ Save user and account, they are interdependent """
+        if change:
+            return super(AccountAdmin, self).save_model(request, obj, form, change)
         obj.user.save()
         obj.user_id = obj.user.pk
         obj.save()

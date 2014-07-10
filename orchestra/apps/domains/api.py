@@ -22,7 +22,9 @@ class DomainViewSet(AccountApiMixin, viewsets.ModelViewSet):
     @link()
     def view_zone(self, request, pk=None):
         domain = self.get_object()
-        return Response({'zone': domain.render_zone()})
+        return Response({
+            'zone': domain.render_zone()
+        })
     
     def metadata(self, request):
         ret = super(DomainViewSet, self).metadata(request)

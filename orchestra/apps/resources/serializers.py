@@ -7,6 +7,9 @@ from .models import Resource, ResourceData
 
 
 class ResourceSerializer(serializers.ModelSerializer):
+    # TODO required allocation serializers (like resource form)
+    # TODO create missing ResourceData (like resource form)
+    # TODO make default allocation available on OPTIONS (like resource form)
     name = serializers.SerializerMethodField('get_name')
     
     class Meta:

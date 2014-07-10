@@ -185,47 +185,48 @@ class Apache2Traffic(ServiceMonitor):
         context = self.get_context(site)
         self.append("""
             awk 'BEGIN {
-                ini = "%(start_date)s";
-                end = "%(end_date)s";
+                ini = "%(last_date)s";
+                end = "%(current_date)s";
                 
-                months["Jan"]="01";
-                months["Feb"]="02";
-                months["Mar"]="03";
-                months["Apr"]="04";
-                months["May"]="05";
-                months["Jun"]="06";
-                months["Jul"]="07";
-                months["Aug"]="08";
-                months["Sep"]="09";
-                months["Oct"]="10";
-                months["Nov"]="11";
-                months["Dec"]="12";
+                months["Jan"] = "01";
+                months["Feb"] = "02";
+                months["Mar"] = "03";
+                months["Apr"] = "04";
+                months["May"] = "05";
+                months["Jun"] = "06";
+                months["Jul"] = "07";
+                months["Aug"] = "08";
+                months["Sep"] = "09";
+                months["Oct"] = "10";
+                months["Nov"] = "11";
+                months["Dec"] = "12";
             } {
-                date = substr($4,2)
-                year = substr(date,8,4)
-                month = months[substr(date,4,3)];
-                day = substr(date,1,2)
-                hour = substr(date,13,2)
-                minute = substr(date,16,2)
-                second = substr(date,19,2);
+                date = substr($4, 2)
+                year = substr(date, 8, 4)
+                month = months[substr(date, 4, 3)];
+                day = substr(date, 1, 2)
+                hour = substr(date, 13, 2)
+                minute = substr(date, 16, 2)
+                second = substr(date, 19, 2);
                 line_date = year month day hour minute second
                 if ( line_date > ini && line_date < end)
                     if ( $10 == "" )
-                        sum+=$9
+                        sum += $9
                     else
-                        sum+=$10;
+                        sum += $10;
             } END {
                 print sum;
             }' %(log_file)s | {
                 read value
-                echo %(site_name)s $value
+                echo %(site_id)s $value
             }
             """ % context)
     
     def get_context(self, site):
+        # TODO log timezone!!
         return {
             'log_file': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
-            'start_date': '',
-            'end_date': '',
-            'site_name': '',
+            'last_date': self.get_last_date(site).strftime("%Y%m%d%H%M%S"),
+            'current_date': self.get_current_date().strftime("%Y%m%d%H%M%S"),
+            'site_id': site.pk,
         }

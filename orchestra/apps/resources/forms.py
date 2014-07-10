@@ -21,7 +21,6 @@ class ResourceForm(forms.ModelForm):
         super(ResourceForm, self).__init__(*args, **kwargs)
         if self.resource:
             self.fields['verbose_name'].initial = self.resource.verbose_name
-            self.fields['used'].initial = self.resource.get_used() # TODO
             if self.resource.ondemand:
                 self.fields['allocated'].required = False
                 self.fields['allocated'].widget = ReadOnlyWidget(None, '')

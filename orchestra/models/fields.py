@@ -52,6 +52,12 @@ class MultiSelectField(models.CharField):
         return [ value for value,__ in arr_choices ]
 
 
+class NullableCharField(models.CharField):
+     def get_db_prep_value(self, value, connection=None, prepared=False):
+         return value or None
+
+
 if isinstalled('south'):
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules([], ["^orchestra\.models\.fields\.MultiSelectField"])
+    add_introspection_rules([], ["^orchestra\.models\.fields\.NullableCharField"])

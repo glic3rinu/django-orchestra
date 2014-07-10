@@ -56,7 +56,7 @@ if not running_syncdb():
         def metadata(self, request, resources=resources):
             """ Display resource configuration """
             ret = old_metadata(self, request)
-            ret['resources'] = [
+            ret['available_resources'] = [
                 {
                     'name': resource.name,
                     'ondemand': resource.ondemand,

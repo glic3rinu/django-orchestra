@@ -9,7 +9,7 @@ class ResourceForm(forms.ModelForm):
             required=False)
     used = forms.IntegerField(label=_("Used"), widget=ShowTextWidget(),
             required=False)
-    last_update = forms.CharField(label=_("Last update"), widget=ShowTextWidget(),
+    last_update = forms.DateTimeField(label=_("Last update"), widget=ShowTextWidget(),
             required=False)
     allocated = forms.IntegerField(label=_("Allocated"))
     
@@ -21,7 +21,7 @@ class ResourceForm(forms.ModelForm):
         super(ResourceForm, self).__init__(*args, **kwargs)
         if self.resource:
             self.fields['verbose_name'].initial = self.resource.verbose_name
-            self.fields['used'].initial = self.resource.get_current()
+            self.fields['used'].initial = self.resource.get_used() # TODO
             if self.resource.ondemand:
                 self.fields['allocated'].required = False
                 self.fields['allocated'].widget = ReadOnlyWidget(None, '')

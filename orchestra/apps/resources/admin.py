@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr, get_modeladmin
+from orchestra.core import services
 from orchestra.utils import running_syncdb
 
 from .forms import ResourceForm
@@ -12,12 +13,14 @@ from .models import Resource, ResourceData, MonitorData
 
 
 class ResourceAdmin(admin.ModelAdmin):
+    # TODO warning message server/celery should be restarted when creating things
+    
     list_display = (
         'name', 'verbose_name', 'content_type', 'period', 'ondemand',
         'default_allocation', 'disable_trigger'
     )
     list_filter = (UsedContentTypeFilter, 'period', 'ondemand', 'disable_trigger')
-
+    
     def save_model(self, request, obj, form, change):
         super(ResourceAdmin, self).save_model(request, obj, form, change)
         model = obj.content_type.model_class()
@@ -29,6 +32,13 @@ class ResourceAdmin(admin.ModelAdmin):
                 inline = resource_inline_factory(resources)
             inlines.append(inline)
         modeladmin.inlines = inlines
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ filter service content_types """
+        if db_field.name == 'content_type':
+            models = [ model._meta.model_name for model in services.get().keys() ]
+            kwargs['queryset'] = db_field.rel.to.objects.filter(model__in=models)
+        return super(ResourceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 class ResourceDataAdmin(admin.ModelAdmin):

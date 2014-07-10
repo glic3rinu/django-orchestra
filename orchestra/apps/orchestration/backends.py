@@ -68,6 +68,13 @@ class ServiceBackend(object):
         return cls.plugins
     
     @classmethod
+    def get_backend(cls, name):
+        for backend in ServiceMonitor.get_backends():
+            if backend.get_name() == name:
+                return backend
+        raise KeyError('This backend is not registered')
+    
+    @classmethod
     def get_choices(cls):
         backends = cls.get_backends()
         choices = []

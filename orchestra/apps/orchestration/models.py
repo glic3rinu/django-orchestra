@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.utils.apps import autodiscover
+from orchestra.utils.functional import cached
 
 from . import settings, manager
 from .backends import ServiceBackend
@@ -146,30 +147,39 @@ class Route(models.Model):
 #            raise ValidationError(msg % (self.backend, self.method)
     
     @classmethod
+    @cached
+    def get_routing_table(cls):
+        table = {}
+        for route in cls.objects.filter(is_active=True):
+            for action in route.backend_class().get_actions():
+                key = (route.backend, action)
+                try:
+                    table[key].append(route)
+                except KeyError:
+                    table[key] = [route]
+        return table
+    
+    @classmethod
     def get_servers(cls, operation):
-        # TODO use cached data sctructure and refactor
-        backend = operation.backend
+        table = cls.get_routing_table()
         servers = []
+        key = (operation.backend.get_name(), operation.action)
         try:
-            routes = cls.objects.filter(is_active=True, backend=backend.get_name())
-        except cls.DoesNotExist:
+            routes = table[key]
+        except KeyError:
             return servers
         safe_locals = {
             'instance': operation.instance
         }
-        actions = backend.get_actions()
         for route in routes:
-            if operation.action in actions and eval(route.match, safe_locals):
+            if eval(route.match, safe_locals):
                 servers.append(route.host)
         return servers
     
-    def get_backend(self):
-        for backend in ServiceBackend.get_backends():
-            if backend.get_name() == self.backend:
-                return backend
-        raise KeyError('This backend is not registered')
+    def backend_class(self):
+        return ServiceBackend.get_backend(self.backend)
     
-#    def get_method_class(self):
+#    def method_class(self):
 #        for method in MethodBackend.get_backends():
 #            if method.get_name() == self.method:
 #                return method

@@ -42,11 +42,34 @@ class Resource(models.Model):
             null=True, blank=True)
     is_active = models.BooleanField(_("is active"), default=True)
     disable_trigger = models.BooleanField(_("disable trigger"), default=False)
+    crontab = models.ForeignKey(CrontabSchedule, verbose_name=_("crontab"),
+            help_text=_("Crontab for periodic execution"))
+    # TODO create custom field that returns backend python objects
     monitors = MultiSelectField(_("monitors"), max_length=256,
             choices=ServiceMonitor.get_choices())
     
     def __unicode__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        super(Resource, self).save(*args, **kwargs)
+        # Create Celery periodic task
+        name = 'monitor.%s' % str(self)
+        try:
+            task = PeriodicTask.objects.get(name=name)
+        except PeriodicTask.DoesNotExist:
+            PeriodicTask.objects.create(name=name, task='resources.Monitor',
+                                        args=[self.pk], crontab=self.crontab)
+        else: 
+            if task.crontab != self.crontab:
+                task.crontab = self.crontab
+                task.save()
+            
+    def delete(self, *args, **kwargs):
+        super(Resource, self).delete(*args, **kwargs)
+        name = 'monitor.%s' % str(self)
+        PeriodicTask.objects.filter(name=name, task='resources.Monitor',
+                                    args=[self.pk]).delete()
     
     @classmethod
     def group_by_content_type(cls):
@@ -63,14 +86,40 @@ class Resource(models.Model):
             prev = ct
         if group:
             yield group
+
+
+class ResourceData(models.Model):
+    """ Stores computed resource usage and allocation """
+    resource = models.ForeignKey(Resource, related_name='dataset')
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    used = models.PositiveIntegerField(null=True)
+    last_update = models.DateTimeField(null=True)
+    allocated = models.PositiveIntegerField(null=True)
     
-    def get_current(self):
+    content_object = generic.GenericForeignKey()
+    
+    class Meta:
+        unique_together = ('resource', 'content_type', 'object_id')
+        verbose_name_plural = _("resource data")
+    
+    @classmethod
+    def get_or_create(cls, obj, resource):
+        try:
+            return cls.objects.get(content_object=obj, resource=resource)
+        except cls.DoesNotExists:
+            return cls.objects.create(content_object=obj, resource=resource,
+                                      allocated=resource.defalt_allocation)
+    
+    def get_used(self):
+        resource = self.resource
         today = datetime.date.today()
         result = 0
         has_result = False
-        for monitor in self.monitors:
-            dataset = MonitorData.objects.filter(monitor=monitor)
-            if self.period == self.MONTHLY_AVG:
+        for monitor in resource.monitors:
+            dataset = MonitorData.objects.filter(monitor=monitor,
+                    content_type=self.content_type, object_id=self.object_id)
+            if resource.period == resource.MONTHLY_AVG:
                 try:
                     last = dataset.latest()
                 except MonitorData.DoesNotExist:
@@ -83,14 +132,14 @@ class Resource(models.Model):
                 for data in dataset:
                     slot = (previous-data.date).total_seconds()
                     result += data.value * slot/total
-            elif self.period == self.MONTHLY_SUM:
+            elif resource.period == resource.MONTHLY_SUM:
                 data = dataset.filter(date__year=today.year,
                                       date__month=today.month)
                 value = data.aggregate(models.Sum('value'))['value__sum']
                 if value:
                     has_result = True
                     result += value
-            elif self.period == self.LAST:
+            elif resource.period == resource.LAST:
                 try:
                     result += dataset.latest().value
                 except MonitorData.DoesNotExist:
@@ -100,21 +149,6 @@ class Resource(models.Model):
                 raise NotImplementedError("%s support not implemented" % self.period)
         return result if has_result else None
 
-
-class ResourceData(models.Model):
-    """ Stores computed resource usage and allocation """
-    resource = models.ForeignKey(Resource)
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    used = models.PositiveIntegerField(null=True)
-    last_update = models.DateTimeField(null=True)
-    allocated = models.PositiveIntegerField(null=True)
-    
-    content_object = generic.GenericForeignKey()
-    
-    class Meta:
-        unique_together = ('resource', 'content_type', 'object_id')
-        verbose_name_plural = _("resource data")
 
 class MonitorData(models.Model):
     """ Stores monitored data """
@@ -133,3 +167,10 @@ class MonitorData(models.Model):
     
     def __unicode__(self):
         return str(self.monitor)
+
+
+def create_resource_relation():
+    relation = generic.GenericRelation('resources.ResourceData')
+    for resources in Resource.group_by_content_type():
+        model = resources[0].content_type.model_class()
+        model.add_to_class('resources', relation)

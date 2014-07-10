@@ -30,7 +30,7 @@ class RouteAdmin(admin.ModelAdmin):
     
     def display_model(self, route):
         try:
-            return route.get_backend().model
+            return route.backend_class().model
         except KeyError:
             return "<span style='color: red;'>NOT AVAILABLE</span>"
     display_model.short_description = _("model")
@@ -38,7 +38,7 @@ class RouteAdmin(admin.ModelAdmin):
     
     def display_actions(self, route):
         try:
-            return '<br>'.join(route.get_backend().get_actions())
+            return '<br>'.join(route.backend_class().get_actions())
         except KeyError:
             return "<span style='color: red;'>NOT AVAILABLE</span>"
     display_actions.short_description = _("actions")

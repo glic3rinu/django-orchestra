@@ -2,6 +2,8 @@ from django.conf import settings as django_settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core import services
+
 from . import settings
 
 
@@ -23,3 +25,6 @@ class Account(models.Model):
     def name(self):
         self._cached_name = getattr(self, '_cached_name', self.user.username)
         return self._cached_name
+
+
+services.register(Account, menu=False)

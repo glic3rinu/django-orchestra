@@ -25,7 +25,7 @@ class ServiceMonitor(ServiceBackend):
         try:
             # TODO replace
             #return MonitorData.objects.filter(content_object=obj).latest().date
-            ct = ContentType.objects.get(app_label=obj._meta.app_label, model=obj._meta.model_name)
+            ct = ContentType.objects.get_for_model(type(obj))
             return MonitorData.objects.filter(content_type=ct, object_id=obj.pk).latest().date
         except MonitorData.DoesNotExist:
             return self.get_current_date() - datetime.timedelta(days=1)

@@ -96,6 +96,7 @@ def resource_inline_factory(resources):
         verbose_name_plural = _("resources")
         form = ResourceForm
         formset = ResourceInlineFormSet
+        can_delete = False
         
         class Media:
             css = {

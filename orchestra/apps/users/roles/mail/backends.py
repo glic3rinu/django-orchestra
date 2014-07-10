@@ -137,7 +137,7 @@ class PostfixAddressBackend(ServiceController):
 class AutoresponseBackend(ServiceController):
     verbose_name = _("Mail autoresponse")
     model = 'mail.Autoresponse'
-    
+
 
 class MailDisk(ServiceMonitor):
     model = 'email.Mailbox'

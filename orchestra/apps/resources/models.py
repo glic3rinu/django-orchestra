@@ -103,7 +103,7 @@ class ResourceData(models.Model):
     object_id = models.PositiveIntegerField()
     used = models.PositiveIntegerField(null=True)
     last_update = models.DateTimeField(null=True)
-    allocated = models.PositiveIntegerField(null=True)
+    allocated = models.PositiveIntegerField(null=True, blank=True)
     
     content_object = GenericForeignKey()
     

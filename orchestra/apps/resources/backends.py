@@ -12,6 +12,7 @@ class ServiceMonitor(ServiceBackend):
     DISK = 'disk'
     MEMORY = 'memory'
     CPU = 'cpu'
+    # TODO UNITS
     
     actions = ('monitor', 'resource_exceeded', 'resource_recovery')
     

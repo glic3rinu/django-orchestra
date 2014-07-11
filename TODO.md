@@ -51,6 +51,9 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * create custom field that returns backend python objects
 
 * Timezone awareness on monitoring system (reading server-side logs with different TZ than orchestra) maybe a settings value? (use UTC internally, timezone.localtime() when interacting with servers)
-* Resource metric: KB MB B?
+* Resource metric: KB MB B? RESOURCE UNIT!! forms and serializers
 
 * EMAIL backend operations which contain stderr messages (because under certain failures status code is still 0)
+
+
+* Settings dictionary like DRF2 in order to better override large settings like WEBSITES_APPLICATIONS.etc

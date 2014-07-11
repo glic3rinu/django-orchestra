@@ -1,13 +1,16 @@
 import datetime
 
 from django.db import models
+from django.db.models.loading import get_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core import validators
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
 from orchestra.models.fields import MultiSelectField
+from orchestra.models.utils import get_model_field_path
 from orchestra.utils.apps import autodiscover
 
 from .backends import ServiceMonitor
@@ -119,11 +122,13 @@ class ResourceData(models.Model):
     
     @classmethod
     def get_or_create(cls, obj, resource):
+        ct = ContentType.objects.get_for_model(type(obj))
         try:
-            return cls.objects.get(content_object=obj, resource=resource)
-        except cls.DoesNotExists:
+            return cls.objects.get(content_type=ct, object_id=obj.pk,
+                                   resource=resource)
+        except cls.DoesNotExist:
             return cls.objects.create(content_object=obj, resource=resource,
-                                      allocated=resource.defalt_allocation)
+                                      allocated=resource.default_allocation)
     
     def get_used(self):
         resource = self.resource
@@ -131,8 +136,19 @@ class ResourceData(models.Model):
         result = 0
         has_result = False
         for monitor in resource.monitors:
-            dataset = MonitorData.objects.filter(monitor=monitor,
-                    content_type=self.content_type, object_id=self.object_id)
+            resource_model = self.content_type.model_class()
+            monitor_model = get_model(ServiceMonitor.get_backend(monitor).model)
+            if resource_model == monitor_model:
+                dataset = MonitorData.objects.filter(monitor=monitor,
+                        content_type=self.content_type_id, object_id=self.object_id)
+            else:
+                path = get_model_field_path(monitor_model, resource_model)
+                fields = '__'.join(path)
+                objects = monitor_model.objects.filter(**{fields: self.object_id})
+                pks = objects.values_list('id', flat=True)
+                ct = ContentType.objects.get_for_model(monitor_model)
+                dataset = MonitorData.objects.filter(monitor=monitor,
+                        content_type=ct, object_id__in=pks)
             if resource.period == resource.MONTHLY_AVG:
                 try:
                     last = dataset.latest()
@@ -143,17 +159,18 @@ class ResourceData(models.Model):
                                  tzinfo=timezone.utc)
                 total = (epoch-last.date).total_seconds()
                 dataset = dataset.filter(date__year=today.year,
-                                                 date__month=today.month)
+                                         date__month=today.month)
                 for data in dataset:
                     slot = (previous-data.date).total_seconds()
                     result += data.value * slot/total
             elif resource.period == resource.MONTHLY_SUM:
-                data = dataset.filter(date__year=today.year,
-                                      date__month=today.month)
-                value = data.aggregate(models.Sum('value'))['value__sum']
-                if value:
+                data = dataset.filter(date__year=today.year, date__month=today.month)
+                # FIXME Aggregation of 0s returns None! django bug?
+                # value = data.aggregate(models.Sum('value'))['value__sum']
+                values = data.values_list('value', flat=True)
+                if values:
                     has_result = True
-                    result += value
+                    result += sum(values)
             elif resource.period == resource.LAST:
                 try:
                     result += dataset.latest().value

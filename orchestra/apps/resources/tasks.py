@@ -1,9 +1,11 @@
 from celery import shared_task
+from django.db.models.loading import get_model
 from django.utils import timezone
+
 from orchestra.apps.orchestration.models import BackendOperation as Operation
 
 from .backends import ServiceMonitor
-from .models import MonitorData
+from .models import ResourceData, Resource
 
 
 @shared_task(name='resources.Monitor')
@@ -13,7 +15,7 @@ def monitor(resource_id):
     # Execute monitors
     for monitor_name in resource.monitors:
         backend = ServiceMonitor.get_backend(monitor_name)
-        model = backend.model
+        model = get_model(*backend.model.split('.'))
         operations = []
         # Execute monitor
         for obj in model.objects.all():
@@ -22,18 +24,18 @@ def monitor(resource_id):
     
     # Update used resources and trigger resource exceeded and revovery
     operations = []
-    model = resource.model
+    model = resource.content_type.model_class()
     for obj in model.objects.all():
-        data = MonitorData.get_or_create(obj, resource)
+        data = ResourceData.get_or_create(obj, resource)
         current = data.get_used()
         if not resource.disable_trigger:
             if data.used < data.allocated and current > data.allocated:
-                op = Operation.create(backend, data.content_object, Operation.EXCEED)
+                op = Operation.create(backend, obj, Operation.EXCEED)
                 operations.append(op)
-            elif res.used > res.allocated and current < res.allocated:
-                op = Operation.create(backend, data.content_object, Operation.RECOVERY)
+            elif data.used > data.allocated and current < data.allocated:
+                op = Operation.create(backend, obj, Operation.RECOVERY)
                 operation.append(op)
-        data.used = current
-        data.las_update = timezone.now()
+        data.used = current or 0
+        data.last_update = timezone.now()
         data.save()
     Operation.execute(operations)

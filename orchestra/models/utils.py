@@ -47,3 +47,25 @@ def get_field_value(obj, field_name):
             rel = getattr(rel.get(), name)
     return rel
 
+
+def get_model_field_path(origin, target):
+    """ BFS search on model relaion fields """
+    mqueue = []
+    mqueue.append([origin])
+    pqueue = [[]]
+    while mqueue:
+        model = mqueue.pop(0)
+        path = pqueue.pop(0)
+        if len(model) > 4:
+            raise RuntimeError('maximum recursion depth exceeded while looking for %s" % target')
+        node = model[-1]
+        if node == target:
+            return path
+        for field in node._meta.fields:
+            if field.rel:
+                new_model = list(model)
+                new_model.append(field.rel.to)
+                mqueue.append(new_model)
+                new_path = list(path)
+                new_path.append(field.name)
+                pqueue.append(new_path)

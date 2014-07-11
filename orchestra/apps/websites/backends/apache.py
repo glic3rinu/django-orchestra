@@ -184,10 +184,11 @@ class Apache2Traffic(ServiceMonitor):
     
     def monitor(self, site):
         context = self.get_context(site)
-        self.append("""
+        self.append("""{
             awk 'BEGIN {
                 ini = "%(last_date)s"
                 end = "%(current_date)s"
+                sum = 0
                 
                 months["Jan"] = "01";
                 months["Feb"] = "02";
@@ -212,16 +213,10 @@ class Apache2Traffic(ServiceMonitor):
                 second = substr(date, 19, 2)
                 line_date = year month day hour minute second
                 if ( line_date > ini && line_date < end)
-                    if ( $10 == "" )
-                        sum += $9
-                    else
-                        sum += $10
+                    sum += $NF
             } END {
-                if ( sum )
-                    print sum
-                else
-                    print 0
-            }' %(log_file)s | xargs echo %(object_id)s """ % context)
+                print sum
+            }' %(log_file)s || echo 0; } | xargs echo %(object_id)s """ % context)
     
     def get_context(self, site):
         return {

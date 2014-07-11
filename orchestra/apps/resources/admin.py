@@ -63,13 +63,16 @@ class ResourceAdmin(ExtendedModelAdmin):
 
 
 class ResourceDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'resource', 'used', 'allocated', 'last_update',) # TODO content_object
+    list_display = ('id', 'resource', 'used', 'allocated', 'last_update', 'content_type') # TODO content_object
     list_filter = ('resource',)
 
 
 class MonitorDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'monitor', 'date', 'value') # TODO content_object
+    list_display = ('id', 'monitor', 'date', 'value', 'ct', 'object_id') # TODO content_object
     list_filter = ('monitor',)
+    
+    def ct(self, i):
+        return i.content_type_id
 
 
 admin.site.register(Resource, ResourceAdmin)

@@ -26,7 +26,7 @@ class ListCreationForm(CleanAddressMixin, forms.ModelForm):
             help_text=_("Enter the same password as above, for verification."))
     
     def __init__(self, *args, **kwargs):
-        super(ListAdminForm, self).__init__(*args, **kwargs)
+        super(ListCreationForm, self).__init__(*args, **kwargs)
         self.fields['password1'].validators.append(validate_password)
     
     def clean_password2(self):
@@ -38,7 +38,7 @@ class ListCreationForm(CleanAddressMixin, forms.ModelForm):
         return password2
     
     def save(self, commit=True):
-        obj = super(ListAdminForm, self).save(commit=commit)
+        obj = super(ListCreationForm, self).save(commit=commit)
         obj.set_password(self.cleaned_data["password1"])
         return obj
 

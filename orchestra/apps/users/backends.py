@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
@@ -49,13 +50,62 @@ class SystemUserDisk(ServiceMonitor):
     
     def monitor(self, user):
         context = self.get_context(user)
-        self.append("du -s %(home)s | {\n"
-                    "   read value\n"
-                    "   echo '%(username)s' $value\n"
-                    "}" % context)
+        self.append("du -s %(home)s | xargs echo %(object_id)s" % context)
     
-    def process(self, output):
-        # TODO transaction
-        for line in output.readlines():
-            username, value = line.strip().slpit()
-            History.store(object_id=user_id, value=value)
+    def get_context(self, user):
+        context = SystemUserBackend().get_context(user)
+        context['object_id'] = user.pk
+        return context
+
+
+class FTPTraffic(ServiceMonitor):
+    model = 'users.User'
+    resource = ServiceMonitor.TRAFFIC
+    verbose_name = _('FTP traffic')
+    
+    def monitor(self, user):
+        context = self.get_context(user)
+        self.append("""
+            grep "UPLOAD\|DOWNLOAD" %(log_file)s | grep " \\[%(username)s\\] " | awk '
+                BEGIN {
+                    ini = "%(last_date)s"
+                    end = "%(current_date)s"
+                    
+                    months["Jan"] = "01"
+                    months["Feb"] = "02"
+                    months["Mar"] = "03"
+                    months["Apr"] = "04"
+                    months["May"] = "05"
+                    months["Jun"] = "06"
+                    months["Jul"] = "07"
+                    months["Aug"] = "08"
+                    months["Sep"] = "09"
+                    months["Oct"] = "10"
+                    months["Nov"] = "11"
+                    months["Dec"] = "12"
+                } {
+                    # log: Fri Jul 11 13:23:17 2014
+                    split($4, t, ":")
+                    # line_date = year month day hour minute second
+                    line_date = $5 months[$2] $3 t[1] t[2] t[3]
+                    if ( line_date > ini && line_date < end)
+                        split($0, l, "\\", ")
+                        split(l[3], b, " ")
+                        sum += b[1]
+                } END {
+                    if ( sum )
+                        print sum
+                    else
+                        print 0
+                }
+            ' | xargs echo %(object_id)s """ % context)
+    
+    def get_context(self, user):
+        return {
+            'log_file': settings.USERS_FTP_LOG_PATH,
+            'last_date': timezone.localtime(self.get_last_date(user)).strftime("%Y%m%d%H%M%S"),
+            'current_date': timezone.localtime(self.get_current_date()).strftime("%Y%m%d%H%M%S"),
+            'object_id': user.pk,
+            'username': user.username,
+        }
+    

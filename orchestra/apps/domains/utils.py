@@ -1,8 +1,8 @@
-import datetime
+from django.utils import timezone
 
 
 def generate_zone_serial():
-    today = datetime.date.today()
+    today = timezone.now()
     return int("%.4d%.2d%.2d%.2d" % (today.year, today.month, today.day, 0))
 
 

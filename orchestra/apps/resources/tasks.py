@@ -1,5 +1,5 @@
 from celery import shared_task
-
+from django.utils import timezone
 from orchestra.apps.orchestration.models import BackendOperation as Operation
 
 from .backends import ServiceMonitor
@@ -26,13 +26,14 @@ def monitor(resource_id):
     for obj in model.objects.all():
         data = MonitorData.get_or_create(obj, resource)
         current = data.get_used()
-        if data.used < data.allocated and current > data.allocated:
-            op = Operation.create(backend, data.content_object, Operation.EXCEED)
-            operations.append(op)
-        elif res.used > res.allocated and current < res.allocated:
-            op = Operation.create(backend, data.content_object, Operation.RECOVERY)
-            operation.append(op)
+        if not resource.disable_trigger:
+            if data.used < data.allocated and current > data.allocated:
+                op = Operation.create(backend, data.content_object, Operation.EXCEED)
+                operations.append(op)
+            elif res.used > res.allocated and current < res.allocated:
+                op = Operation.create(backend, data.content_object, Operation.RECOVERY)
+                operation.append(op)
         data.used = current
-        data.las_update = datetime.now()
+        data.las_update = timezone.now()
         data.save()
     Operation.execute(operations)

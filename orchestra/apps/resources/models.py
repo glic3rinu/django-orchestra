@@ -36,22 +36,27 @@ class Resource(models.Model):
     verbose_name = models.CharField(_("verbose name"), max_length=256, unique=True)
     content_type = models.ForeignKey(ContentType,
             help_text=_("Model where this resource will be hooked"))
-    period = models.CharField(_("period"), max_length=16, choices=PERIODS, default=LAST,
-            help_text=_("Operation used for aggregating this resource monitored data."))
+    period = models.CharField(_("period"), max_length=16, choices=PERIODS,
+            default=LAST,
+            help_text=_("Operation used for aggregating this resource monitored"
+                        "data."))
     ondemand = models.BooleanField(_("on demand"), default=False,
             help_text=_("If enabled the resource will not be pre-allocated, "
                         "but allocated under the application demand"))
     default_allocation = models.PositiveIntegerField(_("default allocation"),
+            null=True, blank=True,
             help_text=_("Default allocation value used when this is not an "
-                        "on demand resource"),
-            null=True, blank=True)
+                        "on demand resource"))
     is_active = models.BooleanField(_("is active"), default=True)
     disable_trigger = models.BooleanField(_("disable trigger"), default=False,
-            help_text=_("Disables monitor's resource exeeded and recovery triggers"))
+            help_text=_("Disables monitors exeeded and recovery triggers"))
     crontab = models.ForeignKey(CrontabSchedule, verbose_name=_("crontab"),
-            help_text=_("Crontab for periodic execution"))
-    monitors = MultiSelectField(_("monitors"), max_length=256,
-            choices=ServiceMonitor.get_choices())
+            null=True, blank=True,
+            help_text=_("Crontab for periodic execution. "
+                        "Leave it empty to disable periodic monitoring"))
+    monitors = MultiSelectField(_("monitors"), max_length=256, blank=True,
+            choices=ServiceMonitor.get_choices(),
+            help_text=_("Monitor backends used for monitoring this resource."))
     
     def __unicode__(self):
         return self.name
@@ -83,7 +88,8 @@ class Resource(models.Model):
     def group_by_content_type(cls):
         prev = None
         group = []
-        for resource in cls.objects.filter(is_active=True).order_by('content_type'):
+        resources = cls.objects.filter(is_active=True).order_by('content_type')
+        for resource in resources:
             ct = resource.content_type
             if prev != ct:
                 if group:
@@ -121,7 +127,7 @@ class ResourceData(models.Model):
     
     def get_used(self):
         resource = self.resource
-        today = datetime.date.today()
+        today = timezone.now()
         result = 0
         has_result = False
         for monitor in resource.monitors:
@@ -133,7 +139,8 @@ class ResourceData(models.Model):
                 except MonitorData.DoesNotExist:
                     continue
                 has_result = True
-                epoch = datetime(year=today.year, month=today.month, day=1)
+                epoch = datetime(year=today.year, month=today.month, day=1,
+                                 tzinfo=timezone.utc)
                 total = (epoch-last.date).total_seconds()
                 dataset = dataset.filter(date__year=today.year,
                                                  date__month=today.month)
@@ -154,7 +161,8 @@ class ResourceData(models.Model):
                     continue
                 has_result = True
             else:
-                raise NotImplementedError("%s support not implemented" % self.period)
+                msg = "%s support not implemented" % self.period
+                raise NotImplementedError(msg)
         return result if has_result else None
 
 

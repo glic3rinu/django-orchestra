@@ -6,6 +6,7 @@ from django.utils.timesince import timesince as django_timesince
 from django.utils.timezone import is_aware, utc
 
 
+# TODO deprecate in favour of celery timesince
 def timesince(d, now=None, reversed=False):
     """ Hack to provide second precision under 2 minutes """
     if not now:

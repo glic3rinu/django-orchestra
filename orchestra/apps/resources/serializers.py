@@ -24,6 +24,7 @@ class ResourceSerializer(serializers.ModelSerializer):
 # Monkey-patching section
 
 if not running_syncdb():
+    # TODO why this is even loaded during syncdb?
     for resources in Resource.group_by_content_type():
         model = resources[0].content_type.model_class()
         router.insert(model, 'resources', ResourceSerializer, required=False, many=True)
@@ -54,7 +55,7 @@ if not running_syncdb():
         
         old_metadata = viewset.metadata
         def metadata(self, request, resources=resources):
-            """ Display resource configuration """
+            """ Provides available resources description """
             ret = old_metadata(self, request)
             ret['available_resources'] = [
                 {

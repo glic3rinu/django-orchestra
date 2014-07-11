@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 
 from orchestra.apps.orchestration import ServiceBackend
 from orchestra.utils.functional import cached
@@ -17,14 +18,14 @@ class ServiceMonitor(ServiceBackend):
     @classmethod
     def get_backends(cls):
         """ filter monitor classes """
-        return [plugin for plugin in cls.plugins if ServiceMonitor in plugin.__mro__]
+        for backend in cls.plugins:
+            if backend != ServiceMonitor and ServiceMonitor in backend.__mro__:
+                yield backend
     
     @cached
     def get_last_date(self, obj):
         from .models import MonitorData
         try:
-            # TODO replace
-            #return MonitorData.objects.filter(content_object=obj).latest().date
             ct = ContentType.objects.get_for_model(type(obj))
             return MonitorData.objects.filter(content_type=ct, object_id=obj.pk).latest().date
         except MonitorData.DoesNotExist:
@@ -32,7 +33,7 @@ class ServiceMonitor(ServiceBackend):
     
     @cached
     def get_current_date(self):
-        return datetime.datetime.now()
+        return timezone.now()
     
     def store(self, log):
         """ object_id value """

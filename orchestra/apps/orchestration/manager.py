@@ -10,9 +10,9 @@ from .helpers import send_report
 
 def as_task(execute):
     def wrapper(*args, **kwargs):
-        with db.transaction.commit_manually():
-            log = execute(*args, **kwargs)
-            db.transaction.commit()
+#        with db.transaction.commit_manually():
+        log = execute(*args, **kwargs)
+#            db.transaction.commit()
         if log.state != log.SUCCESS:
             send_report(execute, args, log)
         return log

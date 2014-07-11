@@ -1,18 +1,13 @@
-import datetime
-
-from django.db import models
-from django.db.models.loading import get_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core import validators
-from django.utils import timezone
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
 from orchestra.models.fields import MultiSelectField
-from orchestra.models.utils import get_model_field_path
-from orchestra.utils.apps import autodiscover
 
+from . import helpers
 from .backends import ServiceMonitor
 
 
@@ -131,56 +126,7 @@ class ResourceData(models.Model):
                                       allocated=resource.default_allocation)
     
     def get_used(self):
-        resource = self.resource
-        today = timezone.now()
-        result = 0
-        has_result = False
-        for monitor in resource.monitors:
-            resource_model = self.content_type.model_class()
-            monitor_model = get_model(ServiceMonitor.get_backend(monitor).model)
-            if resource_model == monitor_model:
-                dataset = MonitorData.objects.filter(monitor=monitor,
-                        content_type=self.content_type_id, object_id=self.object_id)
-            else:
-                path = get_model_field_path(monitor_model, resource_model)
-                fields = '__'.join(path)
-                objects = monitor_model.objects.filter(**{fields: self.object_id})
-                pks = objects.values_list('id', flat=True)
-                ct = ContentType.objects.get_for_model(monitor_model)
-                dataset = MonitorData.objects.filter(monitor=monitor,
-                        content_type=ct, object_id__in=pks)
-            if resource.period == resource.MONTHLY_AVG:
-                try:
-                    last = dataset.latest()
-                except MonitorData.DoesNotExist:
-                    continue
-                has_result = True
-                epoch = datetime(year=today.year, month=today.month, day=1,
-                                 tzinfo=timezone.utc)
-                total = (epoch-last.date).total_seconds()
-                dataset = dataset.filter(date__year=today.year,
-                                         date__month=today.month)
-                for data in dataset:
-                    slot = (previous-data.date).total_seconds()
-                    result += data.value * slot/total
-            elif resource.period == resource.MONTHLY_SUM:
-                data = dataset.filter(date__year=today.year, date__month=today.month)
-                # FIXME Aggregation of 0s returns None! django bug?
-                # value = data.aggregate(models.Sum('value'))['value__sum']
-                values = data.values_list('value', flat=True)
-                if values:
-                    has_result = True
-                    result += sum(values)
-            elif resource.period == resource.LAST:
-                try:
-                    result += dataset.latest().value
-                except MonitorData.DoesNotExist:
-                    continue
-                has_result = True
-            else:
-                msg = "%s support not implemented" % self.period
-                raise NotImplementedError(msg)
-        return result if has_result else None
+        return helpers.get_used(self)
 
 
 class MonitorData(models.Model):

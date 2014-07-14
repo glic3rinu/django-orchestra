@@ -2,9 +2,9 @@ import datetime
 
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from orchestra.apps.orchestration import ServiceBackend
-from orchestra.utils.functional import cached
 
 
 class ServiceMonitor(ServiceBackend):
@@ -23,18 +23,29 @@ class ServiceMonitor(ServiceBackend):
             if backend != ServiceMonitor and ServiceMonitor in backend.__mro__:
                 yield backend
     
-    @cached
-    def get_last_date(self, obj):
+    @cached_property
+    def current_date(self):
+        return timezone.now()
+    
+    @cached_property
+    def content_type(self):
+        app_label, model = self.model.split('.')
+        model = model.lower()
+        return ContentType.objects.get(app_label=app_label, model=model)
+    
+    def get_last_data(self, object_id):
         from .models import MonitorData
         try:
-            ct = ContentType.objects.get_for_model(type(obj))
-            return MonitorData.objects.filter(content_type=ct, object_id=obj.pk).latest().date
+            return MonitorData.objects.filter(content_type=self.content_type,
+                                              object_id=object_id).latest()
         except MonitorData.DoesNotExist:
-            return self.get_current_date() - datetime.timedelta(days=1)
-    
-    @cached
-    def get_current_date(self):
-        return timezone.now()
+            return None
+        
+    def get_last_date(self, object_id):
+        data = self.get_last_data(object_id)
+        if data is None:
+            return self.current_date - datetime.timedelta(days=1)
+        return data.date
     
     def store(self, log):
         """ object_id value """
@@ -46,7 +57,7 @@ class ServiceMonitor(ServiceBackend):
             line = line.strip()
             object_id, value = line.split()
             MonitorData.objects.create(monitor=name, object_id=object_id,
-                    content_type=ct, value=value, date=self.get_current_date())
+                    content_type=ct, value=value, date=self.current_date)
     
     def execute(self, server):
         log = super(ServiceMonitor, self).execute(server)

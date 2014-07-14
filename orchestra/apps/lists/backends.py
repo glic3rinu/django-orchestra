@@ -29,10 +29,12 @@ class MailmanTraffic(ServiceMonitor):
             "echo %(object_id)s $(( ${SIZE}*${SUBSCRIBERS} ))" % context)
     
     def get_context(self, mail_list):
+        last_date = timezone.localtime(self.get_last_date(mail_list.pk))
+        current_date = timezone.localtime(self.current_date)
         return {
             'mailman_log': settings.LISTS_MAILMAN_POST_LOG_PATH,
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
-            'last_date': timezone.localtime(self.get_last_date(mail_list)).strftime("%b %d %H:%M:%S"),
-            'current_date': timezone.localtime(self.get_current_date()).strftime("%b %d %H:%M:%S"),
+            'last_date': last_date.strftime("%b %d %H:%M:%S"),
+            'current_date': current_date.strftime("%b %d %H:%M:%S"),
         }

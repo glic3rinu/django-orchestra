@@ -13,14 +13,14 @@ from . import settings
 
 def BashSSH(backend, log, server, cmds):
     from .models import BackendLog
-    script = '\n\n'.join(['set -e'] + cmds + ['exit 0'])
+    script = '\n\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
     log.script = script
     log.save()
     
     try:
-        # In order to avoid "Argument list too long" we while generate first a
-        # script file, then scp the escript and safely execute in remote
+        # Avoid "Argument list too long" on large scripts by genereting a file
+        # and scping it to the remote server
         digest = hashlib.md5(script).hexdigest()
         path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_PATH, digest)
         with open(path, 'w') as script_file:

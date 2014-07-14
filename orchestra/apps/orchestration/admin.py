@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
+from djcelery.humanize import naturaldate
 
 from orchestra.admin.html import monospace_format
 from orchestra.admin.utils import link
@@ -30,7 +31,7 @@ class RouteAdmin(admin.ModelAdmin):
     
     def display_model(self, route):
         try:
-            return route.backend_class().model
+            return escape(route.backend_class().model)
         except KeyError:
             return "<span style='color: red;'>NOT AVAILABLE</span>"
     display_model.short_description = _("model")
@@ -61,7 +62,9 @@ class BackendOperationInline(admin.TabularInline):
         try:
             return link('instance')(self, operation)
         except:
-            return _("deleted %s %s") % (operation.content_type, operation.object_id)
+            return _("deleted {0} {1}").format(
+                escape(operation.content_type), escape(operation.object_id)
+            )
     instance_link.allow_tags = True
     instance_link.short_description = _("Instance")
     
@@ -71,8 +74,8 @@ class BackendOperationInline(admin.TabularInline):
 
 class BackendLogAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'backend', 'server_link', 'display_state', 'exit_code', 'created',
-        'execution_time',
+        'id', 'backend', 'server_link', 'display_state', 'exit_code',
+        'display_created', 'execution_time',
     )
     list_display_links = ('id', 'backend')
     list_filter = ('state', 'backend')
@@ -80,14 +83,10 @@ class BackendLogAdmin(admin.ModelAdmin):
     inlines = [BackendOperationInline]
     fields = [
         'backend', 'server', 'state', 'mono_script', 'mono_stdout', 'mono_stderr',
-        'mono_traceback', 'exit_code', 'task_id', 'created', 'last_update',
-        'execution_time'
+        'mono_traceback', 'exit_code', 'task_id', 'display_created',
+        'display_last_update', 'execution_time'
     ]
-    readonly_fields = [
-        'backend', 'server', 'state', 'mono_script', 'mono_stdout', 'mono_stderr',
-        'mono_traceback', 'exit_code', 'task_id', 'created', 'last_update',
-        'execution_time'
-    ]
+    readonly_fields = fields
     
     def server_link(self, log):
         url = reverse('admin:orchestration_server_change', args=(log.server.pk,))
@@ -117,6 +116,20 @@ class BackendLogAdmin(admin.ModelAdmin):
     def mono_traceback(self, log):
         return monospace_format(escape(log.traceback))
     mono_traceback.short_description = _("traceback")
+    
+    def display_last_update(self, log):
+        return '<div title="{0}">{1}</div>'.format(
+            escape(str(log.last_update)), escape(naturaldate(log.last_update)),
+        )
+    display_last_update.short_description = _("last update")
+    display_last_update.allow_tags = True
+    
+    def display_created(self, log):
+        return '<div title="{0}">{1}</div>'.format(
+            escape(str(log.created)), escape(naturaldate(log.created)),
+        )
+    display_created.short_description = _("created")
+    display_created.allow_tags = True
     
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """

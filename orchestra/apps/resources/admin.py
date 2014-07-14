@@ -1,7 +1,9 @@
 from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
 from django.utils.functional import cached_property
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
+from djcelery.humanize import naturaldate
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
@@ -100,6 +102,8 @@ def resource_inline_factory(resources):
         form = ResourceForm
         formset = ResourceInlineFormSet
         can_delete = False
+        fields = ('verbose_name', 'used', 'display_last_update', 'allocated',)
+        readonly_fields = ('used', 'display_last_update',)
         
         class Media:
             css = {
@@ -109,6 +113,13 @@ def resource_inline_factory(resources):
         def has_add_permission(self, *args, **kwargs):
             """ Hidde add another """
             return False
+        
+        def display_last_update(self, log):
+            return '<div title="{0}">{1}</div>'.format(
+                escape(str(log.last_update)), escape(naturaldate(log.last_update)),
+            )
+        display_last_update.short_description = _("last update")
+        display_last_update.allow_tags = True
     
     return ResourceInline
 

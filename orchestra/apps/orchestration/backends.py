@@ -31,7 +31,7 @@ class ServiceBackend(object):
     
     def __unicode__(self):
         return type(self).__name__
-
+    
     def __str__(self):
         return unicode(self)
     

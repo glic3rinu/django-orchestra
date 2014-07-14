@@ -219,9 +219,11 @@ class Apache2Traffic(ServiceMonitor):
             }' %(log_file)s || echo 0; } | xargs echo %(object_id)s """ % context)
     
     def get_context(self, site):
+        last_date = timezone.localtime(self.get_last_date(site.pk))
+        current_date = timezone.localtime(self.current_date)
         return {
             'log_file': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
-            'last_date': timezone.localtime(self.get_last_date(site)).strftime("%Y%m%d%H%M%S"),
-            'current_date': timezone.localtime(self.get_current_date()).strftime("%Y%m%d%H%M%S"),
+            'last_date': last_date.strftime("%Y%m%d%H%M%S"),
+            'current_date': current_date.strftime("%Y%m%d%H%M%S"),
             'object_id': site.pk,
         }

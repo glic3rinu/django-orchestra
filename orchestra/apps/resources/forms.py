@@ -12,15 +12,17 @@ class ResourceForm(forms.ModelForm):
     used = forms.IntegerField(label=_("Used"), widget=ShowTextWidget(),
             required=False)
     allocated = forms.IntegerField(label=_("Allocated"))
+    unit = forms.CharField(label=_("Unit"), widget=ShowTextWidget(), required=False)
     
     class Meta:
-        fields = ('verbose_name', 'used', 'last_update', 'allocated',)
+        fields = ('verbose_name', 'used', 'last_update', 'allocated', 'unit')
     
     def __init__(self, *args, **kwargs):
         self.resource = kwargs.pop('resource', None)
         super(ResourceForm, self).__init__(*args, **kwargs)
         if self.resource:
             self.fields['verbose_name'].initial = self.resource.verbose_name
+            self.fields['unit'].initial = self.resource.unit
             if self.resource.ondemand:
                 self.fields['allocated'].required = False
                 self.fields['allocated'].widget = ReadOnlyWidget(None, '')

@@ -78,6 +78,7 @@ INSTALLED_APPS = (
     'orchestra.apps.issues',
     'orchestra.apps.prices',
     'orchestra.apps.orders',
+    'orchestra.apps.miscellaneous',
     
     # Third-party apps
     'django_extensions',
@@ -139,7 +140,8 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.contacts.models.Contact',
             'orchestra.apps.users.models.User',
             'orchestra.apps.orders.models.Order',
-            'orchestra.apps.prices.models.Price',
+            'orchestra.apps.orders.models.Service',
+            'orchestra.apps.prices.models.Pack',
         ),
         'collapsible': True,
     }),
@@ -170,11 +172,13 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'databases/database': 'database.png',
     'databases/databaseuser': 'postgresql.png',
     'vps/vps': 'TuxBox.png',
+    'miscellaneous/miscellaneous': 'Misc-Misc-Box-icon.png',
     # Accounts
     'accounts/account': 'Face-monkey.png',
     'contacts/contact': 'contact.png',
     'orders/order': 'basket.png',
-    'prices/price': 'price.png',
+    'orders/service': 'price.png',
+    'prices/pack': 'pack.png',
     # Administration
     'users/user': 'Mr-potato.png',
     'djcelery/taskstate': 'taskstate.png',

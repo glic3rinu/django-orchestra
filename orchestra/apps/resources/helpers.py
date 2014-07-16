@@ -9,7 +9,7 @@ from orchestra.models.utils import get_model_field_path
 from .backends import ServiceMonitor
 
 
-def get_used_resource(data):
+def compute_resource_usage(data):
     """ Computes MonitorData.used based on related monitors """
     MonitorData = type(data)
     resource = data.resource
@@ -65,4 +65,4 @@ def get_used_resource(data):
             msg = "%s support not implemented" % data.period
             raise NotImplementedError(msg)
         
-    return result if has_result else None
+    return result/resource.scale if has_result else None

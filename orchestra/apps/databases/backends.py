@@ -74,5 +74,34 @@ class MySQLPermissionBackend(ServiceController):
 
 class MysqlDisk(ServiceMonitor):
     model = 'database.Database'
-    resource = ServiceMonitor.DISK
     verbose_name = _("MySQL disk")
+    
+    def exceeded(self, db):
+        context = self.get_context(obj)
+        self.append("mysql -e '"
+            "UPDATE db SET Insert_priv=\"N\", Create_priv=\"N\""
+            "   WHERE Db=\"%(db_name)s\";'" % context
+        )
+    
+    def recovery(self, db):
+        context = self.get_context(obj)
+        self.append("mysql -e '"
+            "UPDATE db SET Insert_priv=\"Y\", Create_priv=\"Y\""
+            "   WHERE Db=\"%(db_name)s\";'" % context
+        )
+    
+    def monitor(self, db):
+        context = self.get_context(obj)
+        self.append(
+            "echo %(db_id)s $(mysql -B -e '"
+            "   SELECT sum( data_length + index_length ) \"Size\"\n"
+            "      FROM information_schema.TABLES\n"
+            "      WHERE table_schema=\"gisp\"\n"
+            "      GROUP BY table_schema;' | tail -n 1)" % context
+        )
+    
+    def get_context(self, db):
+        return {
+            'db_name': db.name,
+            'db_id': db.pk,
+        }

@@ -130,4 +130,6 @@ class ServiceController(ServiceBackend):
     @classmethod
     def get_backends(cls):
         """ filter controller classes """
-        return [ plugin for plugin in cls.plugins if ServiceController in plugin.__mro__ ]
+        return [
+            plugin for plugin in cls.plugins if ServiceController in plugin.__mro__
+        ]

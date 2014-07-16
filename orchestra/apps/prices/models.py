@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core import services
+
 from . import settings
 
 
@@ -16,27 +18,18 @@ class Pack(models.Model):
         return self.pack
 
 
-class Price(models.Model):
-    description = models.CharField(_("description"), max_length=256, unique=True)
-    service = models.ForeignKey(ContentType, verbose_name=_("service"))
-    expression = models.CharField(_("match"), max_length=256)
-    tax = models.IntegerField(_("tax"), choices=settings.PRICES_TAXES,
-            default=settings.PRICES_DEFAUL_TAX)
-    active = models.BooleanField(_("is active"), default=True)
-    
-    def __unicode__(self):
-        return self.description
-
-
 class Rate(models.Model):
-    price = models.ForeignKey('prices.Price', verbose_name=_("price"))
+    service = models.ForeignKey('orders.Service', verbose_name=_("service"))
     pack = models.CharField(_("pack"), max_length=128, blank=True,
             choices=(('', _("default")),) + settings.PRICES_PACKS)
     quantity = models.PositiveIntegerField(_("quantity"), null=True, blank=True)
-    value = models.DecimalField(_("price"), max_digits=12, decimal_places=2)
+    value = models.DecimalField(_("value"), max_digits=12, decimal_places=2)
     
     class Meta:
-        unique_together = ('price', 'pack', 'quantity')
+        unique_together = ('service', 'pack', 'quantity')
     
     def __unicode__(self):
-        return self.price
+        return "{}-{}".format(str(self.value), self.quantity)
+
+
+services.register(Pack, menu=False)

@@ -7,7 +7,7 @@ class OpenVZTraffic(ServiceMonitor):
     model = 'vps.VPS'
     resource = ServiceMonitor.TRAFFIC
     
-    def process(self, line, obj):
+    def process(self, line):
         """ diff with last stored value """
         object_id, value = line.split()
         last = self.get_last_data(object_id)

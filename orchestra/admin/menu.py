@@ -53,11 +53,13 @@ def get_accounts():
             users.append(items.MenuItem(_("Tokens"), tokens))
         accounts.append(items.MenuItem(_("Users"), url, children=users))
     if isinstalled('orchestra.apps.prices'):
-        url = reverse('admin:prices_price_changelist')
-        accounts.append(items.MenuItem(_("Prices"), url))
+        url = reverse('admin:prices_pack_changelist')
+        accounts.append(items.MenuItem(_("Packs"), url))
     if isinstalled('orchestra.apps.orders'):
         url = reverse('admin:orders_order_changelist')
         accounts.append(items.MenuItem(_("Orders"), url))
+        url = reverse('admin:orders_service_changelist')
+        accounts.append(items.MenuItem(_("Services"), url))
     return accounts
 
 
@@ -76,6 +78,8 @@ def get_administration_models():
         administration_models.append('orchestra.apps.issues.*')
     if isinstalled('orchestra.apps.resources'):
         administration_models.append('orchestra.apps.resources.*')
+    if isinstalled('orchestra.apps.miscellaneous'):
+        administration_models.append('orchestra.apps.miscellaneous.models.MiscService')
     return administration_models
 
 

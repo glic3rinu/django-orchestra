@@ -7,7 +7,7 @@ from djcelery.humanize import naturaldate
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
-from orchestra.admin.utils import insertattr, get_modeladmin
+from orchestra.admin.utils import insertattr, get_modeladmin, link
 from orchestra.core import services
 from orchestra.utils import running_syncdb
 
@@ -17,7 +17,7 @@ from .models import Resource, ResourceData, MonitorData
 
 class ResourceAdmin(ExtendedModelAdmin):
     list_display = (
-        'name', 'verbose_name', 'content_type', 'period', 'ondemand',
+        'id', 'name', 'verbose_name', 'content_type', 'period', 'ondemand',
         'default_allocation', 'disable_trigger', 'crontab',
     )
     list_filter = (UsedContentTypeFilter, 'period', 'ondemand', 'disable_trigger')
@@ -26,8 +26,8 @@ class ResourceAdmin(ExtendedModelAdmin):
             'fields': ('name', 'content_type', 'period'),
         }),
         (_("Configuration"), {
-            'fields': ('verbose_name', 'default_allocation', 'ondemand',
-                       'disable_trigger', 'is_active'),
+            'fields': ('verbose_name', 'unit', 'scale', 'ondemand',
+                       'default_allocation', 'disable_trigger', 'is_active'),
         }),
         (_("Monitoring"), {
             'fields': ('monitors', 'crontab'),
@@ -65,16 +65,27 @@ class ResourceAdmin(ExtendedModelAdmin):
 
 
 class ResourceDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'resource', 'used', 'allocated', 'last_update', 'content_type') # TODO content_object
+    list_display = (
+        'id', 'resource', 'used', 'allocated', 'last_update', 'content_object_link'
+    )
     list_filter = ('resource',)
+    readonly_fields = ('content_object_link',)
+    
+    def content_object_link(self, data):
+        return link('content_object')(self, data)
+    content_object_link.allow_tags = True
+    content_object_link.short_description = _("Content object")
 
 
 class MonitorDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'monitor', 'date', 'value', 'ct', 'object_id') # TODO content_object
+    list_display = ('id', 'monitor', 'date', 'value', 'content_object_link')
     list_filter = ('monitor',)
+    readonly_fields = ('content_object_link',)
     
-    def ct(self, i):
-        return i.content_type_id
+    def content_object_link(self, data):
+        return link('content_object')(self, data)
+    content_object_link.allow_tags = True
+    content_object_link.short_description = _("Content object")
 
 
 admin.site.register(Resource, ResourceAdmin)
@@ -102,8 +113,10 @@ def resource_inline_factory(resources):
         form = ResourceForm
         formset = ResourceInlineFormSet
         can_delete = False
-        fields = ('verbose_name', 'used', 'display_last_update', 'allocated',)
-        readonly_fields = ('used', 'display_last_update',)
+        fields = (
+            'verbose_name', 'used', 'display_last_update', 'allocated', 'unit'
+        )
+        readonly_fields = ('used', 'display_last_update')
         
         class Media:
             css = {
@@ -114,9 +127,9 @@ def resource_inline_factory(resources):
             """ Hidde add another """
             return False
         
-        def display_last_update(self, log):
+        def display_last_update(self, data):
             return '<div title="{0}">{1}</div>'.format(
-                escape(str(log.last_update)), escape(naturaldate(log.last_update)),
+                escape(str(data.last_update)), escape(naturaldate(data.last_update)),
             )
         display_last_update.short_description = _("last update")
         display_last_update.allow_tags = True

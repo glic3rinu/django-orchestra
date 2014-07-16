@@ -14,7 +14,7 @@ class ServiceMonitor(ServiceBackend):
     CPU = 'cpu'
     # TODO UNITS
     
-    actions = ('monitor', 'resource_exceeded', 'resource_recovery')
+    actions = ('monitor', 'exceeded', 'recovery')
     
     @classmethod
     def get_backends(cls):
@@ -47,15 +47,19 @@ class ServiceMonitor(ServiceBackend):
             return self.current_date - datetime.timedelta(days=1)
         return data.date
     
+    def process(self, line):
+        """ line -> object_id, value """
+        return line.split()
+    
     def store(self, log):
-        """ object_id value """
+        """ stores montirod values from stdout """
         from .models import MonitorData
         name = self.get_name()
         app_label, model_name = self.model.split('.')
         ct = ContentType.objects.get(app_label=app_label, model=model_name.lower())
         for line in log.stdout.splitlines():
             line = line.strip()
-            object_id, value = line.split()
+            object_id, value = self.process(line)
             MonitorData.objects.create(monitor=name, object_id=object_id,
                     content_type=ct, value=value, date=self.current_date)
     

@@ -26,14 +26,14 @@ class Resource(models.Model):
         (MONTHLY_AVG, _("Monthly Average")),
     )
     
-    name = models.CharField(_("name"), max_length=32, unique=True,
+    name = models.CharField(_("name"), max_length=32,
             help_text=_('Required. 32 characters or fewer. Lowercase letters, '
                         'digits and hyphen only.'),
             validators=[validators.RegexValidator(r'^[a-z0-9_\-]+$',
                         _('Enter a valid name.'), 'invalid')])
-    verbose_name = models.CharField(_("verbose name"), max_length=256, unique=True)
+    verbose_name = models.CharField(_("verbose name"), max_length=256)
     content_type = models.ForeignKey(ContentType,
-            help_text=_("Model where this resource will be hooked"))
+            help_text=_("Model where this resource will be hooked."))
     period = models.CharField(_("period"), max_length=16, choices=PERIODS,
             default=LAST,
             help_text=_("Operation used for aggregating this resource monitored"
@@ -45,7 +45,12 @@ class Resource(models.Model):
             null=True, blank=True,
             help_text=_("Default allocation value used when this is not an "
                         "on demand resource"))
-    is_active = models.BooleanField(_("is active"), default=True)
+    unit = models.CharField(_("unit"), max_length=16,
+            help_text=_("The unit in which this resource is measured. "
+                   "For example GB, KB or subscribers"))
+    scale = models.PositiveIntegerField(_("scale"),
+            help_text=_("Scale in which this resource monitoring resoults should "
+                        "be prorcessed to match with unit."))
     disable_trigger = models.BooleanField(_("disable trigger"), default=False,
             help_text=_("Disables monitors exeeded and recovery triggers"))
     crontab = models.ForeignKey(CrontabSchedule, verbose_name=_("crontab"),
@@ -55,9 +60,16 @@ class Resource(models.Model):
     monitors = MultiSelectField(_("monitors"), max_length=256, blank=True,
             choices=ServiceMonitor.get_choices(),
             help_text=_("Monitor backends used for monitoring this resource."))
+    is_active = models.BooleanField(_("is active"), default=True)
+    
+    class Meta:
+        unique_together = (
+            ('name', 'content_type'),
+            ('verbose_name', 'content_type')
+        )
     
     def __unicode__(self):
-        return self.name
+        return "{}-{}".format(str(self.content_type), self.name)
     
     def save(self, *args, **kwargs):
         super(Resource, self).save(*args, **kwargs)
@@ -126,7 +138,7 @@ class ResourceData(models.Model):
                                       allocated=resource.default_allocation)
     
     def get_used(self):
-        return helpers.get_used(self)
+        return helpers.compute_resource_usage(self)
 
 
 class MonitorData(models.Model):
@@ -135,8 +147,8 @@ class MonitorData(models.Model):
             choices=ServiceMonitor.get_choices())
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    date = models.DateTimeField(auto_now_add=True)
-    value = models.PositiveIntegerField()
+    date = models.DateTimeField(_("date"), auto_now_add=True)
+    value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     
     content_object = GenericForeignKey()
     

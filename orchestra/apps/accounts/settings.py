@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
     ('INDIVIDUAL', _("Individual")),
     ('ASSOCIATION', _("Association")),
+    ('CUSTOMER', _("Customer")),
     ('COMPANY', _("Company")),
     ('PUBLICBODY', _("Public body")),
 ))

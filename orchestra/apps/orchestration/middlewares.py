@@ -4,6 +4,7 @@ from threading import local
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.http.response import HttpResponseServerError
+
 from orchestra.utils.python import OrderedSet
 
 from .backends import ServiceBackend
@@ -12,12 +13,12 @@ from .models import BackendLog
 from .models import BackendOperation as Operation
 
 
-@receiver(post_save)
+@receiver(post_save, dispatch_uid='orchestration.post_save_collector')
 def post_save_collector(sender, *args, **kwargs):
     if sender != BackendLog:
         OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
-@receiver(pre_delete)
+@receiver(pre_delete, dispatch_uid='orchestration.pre_delete_collector')
 def pre_delete_collector(sender, *args, **kwargs):
     if sender != BackendLog:
         OperationsMiddleware.collect(Operation.DELETE, **kwargs)

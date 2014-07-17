@@ -43,7 +43,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
-#    'orchestra.apps.contacts.middlewares.ContractMiddleware',
+    'orchestra.apps.orders.middlewares.OrderMiddleware',
     'orchestra.apps.orchestration.middlewares.OperationsMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -178,7 +178,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'contacts/contact': 'contact.png',
     'orders/order': 'basket.png',
     'orders/service': 'price.png',
-    'prices/pack': 'pack.png',
+    'prices/pack': 'Dialog-accept.png',
     # Administration
     'users/user': 'Mr-potato.png',
     'djcelery/taskstate': 'taskstate.png',

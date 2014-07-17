@@ -50,7 +50,9 @@ class DomainInline(admin.TabularInline):
 
 class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin):
     fields = ('name', 'account')
-    list_display = ('structured_name', 'is_top', 'websites', 'account_link')
+    list_display = (
+        'structured_name', 'display_is_top', 'websites', 'account_link'
+    )
     inlines = [RecordInline, DomainInline]
     list_filter = [TopDomainListFilter]
     change_readonly_fields = ('name',)
@@ -59,17 +61,17 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
     form = DomainAdminForm
     
     def structured_name(self, domain):
-        if not self.is_top(domain):
+        if not domain.is_top:
             return '&nbsp;'*4 + domain.name
         return domain.name
     structured_name.short_description = _("name")
     structured_name.allow_tags = True
     structured_name.admin_order_field = 'structured_name'
     
-    def is_top(self, domain):
-        return not bool(domain.top)
-    is_top.boolean = True
-    is_top.admin_order_field = 'top'
+    def display_is_top(self, domain):
+        return domain.is_top
+    display_is_top.boolean = True
+    display_is_top.admin_order_field = 'top'
     
     def websites(self, domain):
         if apps.isinstalled('orchestra.apps.websites'):

@@ -1,6 +1,9 @@
 class Service(object):
     _registry = {}
     
+    def __contains__(self, key):
+        return key in self._registry
+    
     def register(self, model, **kwargs):
         if model in self._registry:
             raise KeyError("%s already registered" % str(model))

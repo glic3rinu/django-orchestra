@@ -143,8 +143,27 @@ class Service(models.Model):
     def __unicode__(self):
         return self.description
 
+    @classmethod
+    def get_services(cls, instance, **kwargs):
+        cache = kwargs.get('cache', {})
+        ct = ContentType.objects.get_for_model(type(instance))
+        try:
+            return cache[ct]
+        except KeyError:
+            cache[ct] = cls.objects.filter(model=ct, is_active=True)
+            return cache[ct]
+    
+    def matches(self, instance):
+        safe_locals = {
+            'instance': instance
+        }
+        return eval(self.match, safe_locals)
+
 
 class Order(models.Model):
+    SAVE = 'SAVE'
+    DELETE = 'DELETE'
+    
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='orders')
     content_type = models.ForeignKey(ContentType)
@@ -161,7 +180,46 @@ class Order(models.Model):
     content_object = generic.GenericForeignKey()
     
     def __unicode__(self):
-        return self.service
+        return str(self.service)
+    
+    def update(self):
+        instance = self.content_object
+        if self.service.metric:
+            metric = self.service.get_metric(instance)
+            self.store_metric(instance, metric)
+        description = "{}: {}".format(self.service.description, str(instance))
+        if self.description != description:
+            self.description = description
+            self.save()
+    
+    @classmethod
+    def process_candidates(cls, candidates):
+        cache = {}
+        for candidate in candidates:
+            instance = candidate.instance
+            if candidate.action == cls.DELETE:
+                cls.objects.filter_for_object(instance).cancel()
+            else:
+                for service in Service.get_services(instance, cache=cache):
+                    print cache
+                    if not instance.pk:
+                        if service.matches(instance):
+                            order = cls.objects.create(content_object=instance,
+                                    account_id=instance.account_id, service=service)
+                            order.update()
+                    else:
+                        ct = ContentType.objects.get_for_model(instance)
+                        orders = cls.objects.filter(content_type=ct, service=service,
+                                object_id=instance.pk)
+                        if service.matches(instance):
+                            if not orders:
+                                order = cls.objects.create(content_object=instance,
+                                        service=service, account_id=instance.account_id)
+                            else:
+                                order = orders.get()
+                            order.update()
+                        elif orders:
+                            orders.get().cancel()
 
 
 class MetricStorage(models.Model):

@@ -37,10 +37,10 @@ class ResourceAdmin(ExtendedModelAdmin):
     
     def add_view(self, request, **kwargs):
         """ Warning user if the node is not fully configured """
-        if request.method == 'GET':
+        if request.method == 'POST':
             messages.warning(request, _(
-                "Restarting orchestra and celery is required to fully apply changes. "
-                "Remember that allocated values will be applied when objects are saved"
+                "Restarting orchestra and celerybeat is required to fully apply changes. "
+                "Remember that new allocated values will be applied when objects are saved."
             ))
         return super(ResourceAdmin, self).add_view(request, **kwargs)
     

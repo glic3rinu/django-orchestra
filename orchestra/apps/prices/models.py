@@ -15,7 +15,7 @@ class Pack(models.Model):
             default=settings.PRICES_DEFAULT_PACK)
     
     def __unicode__(self):
-        return self.pack
+        return self.name
 
 
 class Rate(models.Model):

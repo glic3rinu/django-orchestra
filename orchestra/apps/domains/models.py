@@ -1,11 +1,11 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
 from orchestra.core.validators import (validate_ipv4_address, validate_ipv6_address,
     validate_hostname, validate_ascii)
-from orchestra.utils.functional import cached
 
 from . import settings, validators, utils
 
@@ -22,10 +22,13 @@ class Domain(models.Model):
     def __unicode__(self):
         return self.name
     
-    @property
-    @cached
+    @cached_property
     def origin(self):
         return self.top or self
+    
+    @cached_property
+    def is_top(self):
+        return not bool(self.top)
     
     def get_records(self):
         """ proxy method, needed for input validation """

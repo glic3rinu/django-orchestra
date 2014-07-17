@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.models.fields import NullableCharField
 from orchestra.utils.apps import autodiscover
-from orchestra.utils.functional import cached
 
 from . import settings, manager
 from .backends import ServiceBackend
@@ -56,8 +55,8 @@ class BackendLog(models.Model):
     server = models.ForeignKey(Server, verbose_name=_("server"),
             related_name='execution_logs')
     script = models.TextField(_("script"))
-    stdout = models.TextField()
-    stderr = models.TextField()
+    stdout = models.TextField(_("stdout"))
+    stderr = models.TextField(_("stdin"))
     traceback = models.TextField(_("traceback"))
     exit_code = models.IntegerField(_("exit code"), null=True)
     task_id = models.CharField(_("task ID"), max_length=36, unique=True, null=True,
@@ -149,34 +148,30 @@ class Route(models.Model):
 #            raise ValidationError(msg % (self.backend, self.method)
     
     @classmethod
-    @cached
-    def get_routing_table(cls):
-        table = {}
-        for route in cls.objects.filter(is_active=True):
-            for action in route.backend_class().get_actions():
-                key = (route.backend, action)
-                try:
-                    table[key].append(route)
-                except KeyError:
-                    table[key] = [route]
-        return table
-    
-    @classmethod
-    def get_servers(cls, operation):
-        table = cls.get_routing_table()
+    def get_servers(cls, operation, **kwargs):
+        cache = kwargs.get('cache', {})
         servers = []
-        key = (operation.backend.get_name(), operation.action)
+        backend = operation.backend
+        key = (backend.get_name(), operation.action)
         try:
-            routes = table[key]
+            routes = cache[key]
         except KeyError:
-            return servers
-        safe_locals = {
-            'instance': operation.instance
-        }
+            cache[key] = []
+            for route in cls.objects.filter(is_active=True, backend=backend.get_name()):
+                for action in backend.get_actions():
+                    _key = (route.backend, action)
+                    cache[_key] = [route]
+            routes = cache[key]
         for route in routes:
-            if eval(route.match, safe_locals):
+            if route.matches(operation.instance):
                 servers.append(route.host)
         return servers
+    
+    def matches(self, instance):
+        safe_locals = {
+            'instance': instance
+        }
+        return eval(self.match, safe_locals)
     
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)

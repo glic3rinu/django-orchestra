@@ -35,8 +35,10 @@ def execute(operations):
     router = import_class(settings.ORCHESTRATION_ROUTER)
     # Generate scripts per server+backend
     scripts = {}
+    cache = {}
     for operation in operations:
-        servers = router.get_servers(operation)
+        servers = router.get_servers(operation, cache=cache)
+        print cache
         for server in servers:
             key = (server, operation.backend)
             if key not in scripts:

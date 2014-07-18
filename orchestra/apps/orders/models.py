@@ -1,9 +1,15 @@
 from django.db import models
+from django.db.models import Q
+from django.db.models.signals import pre_delete, post_delete, post_save
+from django.dispatch import receiver
+from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from . import settings
+from .helpers import search_for_related
 
 
 class Service(models.Model):
@@ -31,6 +37,7 @@ class Service(models.Model):
     model = models.ForeignKey(ContentType, verbose_name=_("model"))
     match = models.CharField(_("match"), max_length=256)
     is_active = models.BooleanField(_("is active"), default=True)
+    # TODO class based Service definition (like ServiceBackend)
     # Billing
     billing_period = models.CharField(_("billing period"), max_length=16,
             help_text=_("Renewal period for recurring invoicing"),
@@ -145,6 +152,7 @@ class Service(models.Model):
 
     @classmethod
     def get_services(cls, instance, **kwargs):
+        # TODO get per-request cache from thread local
         cache = kwargs.get('cache', {})
         ct = ContentType.objects.get_for_model(type(instance))
         try:
@@ -155,9 +163,21 @@ class Service(models.Model):
     
     def matches(self, instance):
         safe_locals = {
-            'instance': instance
+            instance._meta.model_name: instance
         }
         return eval(self.match, safe_locals)
+
+
+class OrderQuerySet(models.QuerySet):
+    def by_object(self, obj, *args, **kwargs):
+        ct = ContentType.objects.get_for_model(obj)
+        return self.filter(object_id=obj.pk, content_type=ct)
+    
+    def active(self, *args, **kwargs):
+        """ return active orders """
+        return self.filter(
+            Q(cancelled_on__isnull=True) | Q(cancelled_on__gt=timezone.now())
+        ).filter(*args, **kwargs)
 
 
 class Order(models.Model):
@@ -178,7 +198,8 @@ class Order(models.Model):
     description = models.TextField(_("description"), blank=True)
     
     content_object = generic.GenericForeignKey()
-    
+    objects = OrderQuerySet.as_manager()
+
     def __unicode__(self):
         return str(self.service)
     
@@ -193,33 +214,23 @@ class Order(models.Model):
             self.save()
     
     @classmethod
-    def process_candidates(cls, candidates):
-        cache = {}
-        for candidate in candidates:
-            instance = candidate.instance
-            if candidate.action == cls.DELETE:
-                cls.objects.filter_for_object(instance).cancel()
-            else:
-                for service in Service.get_services(instance, cache=cache):
-                    print cache
-                    if not instance.pk:
-                        if service.matches(instance):
-                            order = cls.objects.create(content_object=instance,
-                                    account_id=instance.account_id, service=service)
-                            order.update()
-                    else:
-                        ct = ContentType.objects.get_for_model(instance)
-                        orders = cls.objects.filter(content_type=ct, service=service,
-                                object_id=instance.pk)
-                        if service.matches(instance):
-                            if not orders:
-                                order = cls.objects.create(content_object=instance,
-                                        service=service, account_id=instance.account_id)
-                            else:
-                                order = orders.get()
-                            order.update()
-                        elif orders:
-                            orders.get().cancel()
+    def update_orders(cls, instance):
+        for service in Service.get_services(instance):
+            orders = Order.objects.by_object(instance, service=service).active()
+            if service.matches(instance):
+                if not orders:
+                    account_id = getattr(instance, 'account_id', instance.pk)
+                    order = cls.objects.create(content_object=instance,
+                            service=service, account_id=account_id)
+                else:
+                    order = orders.get()
+                order.update()
+            elif orders:
+                orders.get().cancel()
+    
+    def cancel(self):
+        self.cancelled_on = timezone.now()
+        self.save()
 
 
 class MetricStorage(models.Model):
@@ -229,3 +240,31 @@ class MetricStorage(models.Model):
     
     def __unicode__(self):
         return self.order
+
+
+
+@receiver(pre_delete, dispatch_uid="orders.cancel_orders")
+def cancel_orders(sender, **kwargs):
+    if not sender in [MetricStorage, LogEntry, Order, Service]:
+        instance = kwargs['instance']
+        for order in Order.objects.by_object(instance).active():
+            order.cancel()
+
+
+@receiver(post_delete, dispatch_uid="orders.update_orders_on_delete")
+def update_orders_on_delete(sender, **kwargs):
+    if not sender in [MetricStorage, LogEntry, Order, Service]:
+        instance = kwargs['instance']
+        related = search_for_related(instance)
+        if related:
+            Order.update_orders(related)
+
+
+@receiver(post_save, dispatch_uid="orders.update_orders")
+def update_orders(sender, **kwargs):
+    if not sender in [MetricStorage, LogEntry, Order, Service]:
+        instance = kwargs['instance']
+        Order.update_orders(instance)
+        related = search_for_related(instance)
+        if related:
+            Order.update_orders(related)

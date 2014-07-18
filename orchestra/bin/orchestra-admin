@@ -128,7 +128,7 @@ function install_requirements () {
          python-cracklib"
     
     PIP="django==1.6.1 \
-         django-celery-email==1.0.3 \
+         django-celery-email==1.0.4 \
          django-fluent-dashboard==0.3.5 \
          https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
          IPy==0.81 \

@@ -47,7 +47,7 @@ class ResourceAdmin(ExtendedModelAdmin):
     def save_model(self, request, obj, form, change):
         super(ResourceAdmin, self).save_model(request, obj, form, change)
         model = obj.content_type.model_class()
-        modeladmin = get_modeladmin(model)
+        modeladmin = type(get_modeladmin(model))
         resources = obj.content_type.resource_set.filter(is_active=True)
         inlines = []
         for inline in modeladmin.inlines:

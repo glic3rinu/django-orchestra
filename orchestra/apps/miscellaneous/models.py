@@ -7,6 +7,9 @@ from orchestra.core import services
 class MiscService(models.Model):
     name = models.CharField(_("name"), max_length=256)
     description = models.TextField(blank=True)
+    has_amount = models.BooleanField(default=False,
+            help_text=_("Designates whether this service has <tt>amount</tt> "
+                        "property or not."))
     is_active = models.BooleanField(default=True,
             help_text=_("Whether new instances of this service can be created "
                         "or not. Unselect this instead of deleting services."))

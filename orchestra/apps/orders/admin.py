@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
 from .models import Service, Order, MetricStorage
@@ -36,7 +37,7 @@ class ServiceAdmin(admin.ModelAdmin):
         return super(ServiceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(AccountAdminMixin, admin.ModelAdmin):
     pass
 
 

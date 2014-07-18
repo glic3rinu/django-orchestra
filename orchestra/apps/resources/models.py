@@ -161,7 +161,17 @@ class MonitorData(models.Model):
 
 
 def create_resource_relation():
+    class ResourceHandler(object):
+        """ account.resources.web """
+        def __getattr__(self, attr):
+            return self.obj.resource_set.get(resource__name=attr)
+        
+        def __get__(self, obj, cls):
+            self.obj = obj
+            return self
+    
     relation = GenericRelation('resources.ResourceData')
     for resources in Resource.group_by_content_type():
         model = resources[0].content_type.model_class()
-        model.add_to_class('resources', relation)
+        model.add_to_class('resource_set', relation)
+        model.resources = ResourceHandler()

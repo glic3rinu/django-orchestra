@@ -33,10 +33,10 @@ class RoleAdmin(object):
             return False
     
     def get_user(self, request, object_id):
-        modeladmin = get_modeladmin(User)
-        user = modeladmin.get_object(request, unquote(object_id))
-        opts = self.model._meta
-        if user is None:
+        try:
+            user = User.objects.get(pk=unquote(object_id))
+        except User.DoesNotExist:
+            opts = self.model._meta
             raise Http404(
                 _('%(name)s object with primary key %(key)r does not exist.') %
                 {'name': force_text(opts.verbose_name), 'key': escape(object_id)}
@@ -53,7 +53,7 @@ class RoleAdmin(object):
             obj = getattr(user, self.name)
         form_class = self.form if self.form else role_form_factory(self)
         form = form_class(instance=obj)
-        opts = modeladmin.model._meta
+        opts = User._meta
         app_label = opts.app_label
         title = _("Add %s for user %s" % (self.name, user))
         action = _("Create")

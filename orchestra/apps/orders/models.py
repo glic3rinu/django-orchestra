@@ -149,12 +149,12 @@ class Service(models.Model):
     
     def __unicode__(self):
         return self.description
-
+    
     @classmethod
     def get_services(cls, instance, **kwargs):
         # TODO get per-request cache from thread local
         cache = kwargs.get('cache', {})
-        ct = ContentType.objects.get_for_model(type(instance))
+        ct = ContentType.objects.get_for_model(instance)
         try:
             return cache[ct]
         except KeyError:
@@ -166,6 +166,12 @@ class Service(models.Model):
             instance._meta.model_name: instance
         }
         return eval(self.match, safe_locals)
+    
+    def get_metric(self, instance):
+        safe_locals = {
+            instance._meta.model_name: instance
+        }
+        return eval(self.metric, safe_locals)
 
 
 class OrderQuerySet(models.QuerySet):
@@ -188,7 +194,7 @@ class Order(models.Model):
             related_name='orders')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField(null=True)
-    service = models.ForeignKey(Service, verbose_name=_("price"),
+    service = models.ForeignKey(Service, verbose_name=_("service"),
             related_name='orders')
     registered_on = models.DateTimeField(_("registered on"), auto_now_add=True)
     cancelled_on = models.DateTimeField(_("cancelled on"), null=True, blank=True)
@@ -207,7 +213,7 @@ class Order(models.Model):
         instance = self.content_object
         if self.service.metric:
             metric = self.service.get_metric(instance)
-            self.store_metric(instance, metric)
+            MetricStorage.store(self, metric)
         description = "{}: {}".format(self.service.description, str(instance))
         if self.description != description:
             self.description = description
@@ -236,10 +242,23 @@ class Order(models.Model):
 class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"))
     value = models.BigIntegerField(_("value"))
-    date = models.DateTimeField(_("date"))
+    date = models.DateTimeField(_("date"), auto_now_add=True)
+    
+    class Meta:
+        get_latest_by = 'date'
     
     def __unicode__(self):
-        return self.order
+        return unicode(self.order)
+    
+    @classmethod
+    def store(cls, order, value):
+        try:
+            metric = cls.objects.filter(order=order).latest()
+        except cls.DoesNotExist:
+            cls.objects.create(order=order, value=value)
+        else:
+            if metric.value != value:
+                cls.objects.create(order=order, value=value)
 
 
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")

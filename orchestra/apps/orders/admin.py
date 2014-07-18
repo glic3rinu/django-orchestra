@@ -38,11 +38,13 @@ class ServiceAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(AccountAdminMixin, admin.ModelAdmin):
-    pass
+    list_display = ('id', 'service', 'account_link', 'cancelled_on')
+    list_filter = ('service',)
 
 
 class MetricStorageAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('order', 'value', 'date')
+    list_filter = ('order__service',)
 
 
 admin.site.register(Service, ServiceAdmin)

@@ -242,7 +242,6 @@ class MetricStorage(models.Model):
         return self.order
 
 
-
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
     if not sender in [MetricStorage, LogEntry, Order, Service]:
@@ -251,20 +250,14 @@ def cancel_orders(sender, **kwargs):
             order.cancel()
 
 
-@receiver(post_delete, dispatch_uid="orders.update_orders_on_delete")
-def update_orders_on_delete(sender, **kwargs):
-    if not sender in [MetricStorage, LogEntry, Order, Service]:
-        instance = kwargs['instance']
-        related = search_for_related(instance)
-        if related:
-            Order.update_orders(related)
-
-
 @receiver(post_save, dispatch_uid="orders.update_orders")
+@receiver(post_delete, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):
     if not sender in [MetricStorage, LogEntry, Order, Service]:
         instance = kwargs['instance']
-        Order.update_orders(instance)
+        if instance.pk:
+            # post_save
+            Order.update_orders(instance)
         related = search_for_related(instance)
         if related:
             Order.update_orders(related)

@@ -125,7 +125,7 @@ class Route(models.Model):
     Defines the routing that determine in which server a backend is executed
     """
     backend = models.CharField(_("backend"), max_length=256,
-            choices=ServiceBackend.get_choices())
+            choices=ServiceBackend.get_plugin_choices())
     host = models.ForeignKey(Server, verbose_name=_("host"))
     match = models.CharField(_("match"), max_length=256, blank=True, default='True',
             help_text=_("Python expression used for selecting the targe host, "

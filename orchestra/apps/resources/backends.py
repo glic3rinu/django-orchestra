@@ -31,7 +31,7 @@ class ServiceMonitor(ServiceBackend):
     def content_type(self):
         app_label, model = self.model.split('.')
         model = model.lower()
-        return ContentType.objects.get(app_label=app_label, model=model)
+        return ContentType.objects.get_by_natural_key(app_label, model)
     
     def get_last_data(self, object_id):
         from .models import MonitorData
@@ -56,7 +56,7 @@ class ServiceMonitor(ServiceBackend):
         from .models import MonitorData
         name = self.get_name()
         app_label, model_name = self.model.split('.')
-        ct = ContentType.objects.get(app_label=app_label, model=model_name.lower())
+        ct = ContentType.objects.get_by_natural_key(app_label, model_name.lower())
         for line in log.stdout.splitlines():
             line = line.strip()
             object_id, value = self.process(line)

@@ -58,7 +58,7 @@ class Resource(models.Model):
             help_text=_("Crontab for periodic execution. "
                         "Leave it empty to disable periodic monitoring"))
     monitors = MultiSelectField(_("monitors"), max_length=256, blank=True,
-            choices=ServiceMonitor.get_choices(),
+            choices=ServiceMonitor.get_plugin_choices(),
             help_text=_("Monitor backends used for monitoring this resource."))
     is_active = models.BooleanField(_("is active"), default=True)
     
@@ -144,7 +144,7 @@ class ResourceData(models.Model):
 class MonitorData(models.Model):
     """ Stores monitored data """
     monitor = models.CharField(_("monitor"), max_length=256,
-            choices=ServiceMonitor.get_choices())
+            choices=ServiceMonitor.get_plugin_choices())
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     date = models.DateTimeField(_("date"), auto_now_add=True)

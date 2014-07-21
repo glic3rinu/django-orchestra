@@ -8,7 +8,7 @@ from orchestra.utils import plugins
 from . import methods
 
 
-class ServiceBackend(object):
+class ServiceBackend(plugins.Plugin):
     """
     Service management backend base class
     
@@ -16,7 +16,6 @@ class ServiceBackend(object):
     be conviniently supported. Each backend generates the configuration for all
     the changes of all modified objects, reloading the daemon just once.
     """
-    verbose_name = None
     model = None
     related_models = () # ((model, accessor__attribute),)
     script_method = methods.BashSSH
@@ -65,28 +64,11 @@ class ServiceBackend(object):
     
     @classmethod
     def get_backends(cls):
-        return cls.plugins
+        return cls.get_plugins()
     
     @classmethod
     def get_backend(cls, name):
-        for backend in ServiceBackend.get_backends():
-            if backend.get_name() == name:
-                return backend
-        raise KeyError('This backend is not registered')
-    
-    @classmethod
-    def get_choices(cls):
-        backends = cls.get_backends()
-        choices = []
-        for b in backends:
-            # don't evaluate b.verbose_name ugettext_lazy
-            verbose = getattr(b.verbose_name, '_proxy____args', [b.verbose_name])
-            if verbose[0]:
-                verbose = b.verbose_name
-            else:
-                verbose = b.get_name()
-            choices.append((b.get_name(), verbose))
-        return sorted(choices, key=lambda e: e[0])
+        return cls.get_plugin(name)
     
     def get_banner(self):
         time = timezone.now().strftime("%h %d, %Y %I:%M:%S")

@@ -61,7 +61,7 @@ class AccountAdmin(ExtendedModelAdmin):
                 messages.warning(request, 'This account is disabled.')
         context = {
             'services': sorted(
-                [ model._meta for model in services.get().keys() ],
+                [ model._meta for model in services.get() ],
                 key=lambda i: i.verbose_name_plural.lower()
             )
         }

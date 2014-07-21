@@ -5,11 +5,20 @@ from django.dispatch import receiver
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import ValidationError
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core import caches
+from orchestra.utils.apps import autodiscover
+
 from . import settings
+from .handlers import ServiceHandler
 from .helpers import search_for_related
+
+
+autodiscover('handlers')
 
 
 class Service(models.Model):
@@ -34,10 +43,12 @@ class Service(models.Model):
     MATCH_PRICE = 'MATCH_PRICE'
     
     description = models.CharField(_("description"), max_length=256, unique=True)
-    model = models.ForeignKey(ContentType, verbose_name=_("model"))
-    match = models.CharField(_("match"), max_length=256)
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
+    match = models.CharField(_("match"), max_length=256, blank=True)
+    handler = models.CharField(_("handler"), max_length=256, blank=True,
+            help_text=_("Handler used to process this Service."),
+            choices=ServiceHandler.get_plugin_choices())
     is_active = models.BooleanField(_("is active"), default=True)
-    # TODO class based Service definition (like ServiceBackend)
     # Billing
     billing_period = models.CharField(_("billing period"), max_length=16,
             help_text=_("Renewal period for recurring invoicing"),
@@ -105,21 +116,22 @@ class Service(models.Model):
                 (REFOUND, _("Refound")),
             ),
             default=DISCOUNT)
-    on_disable = models.CharField(_("on disable"), max_length=16,
-            help_text=_("Defines the behaviour of this service when disabled"),
-            choices=(
-                (NOTHING, _("Nothing")),
-                (DISCOUNT, _("Discount")),
-                (REFOUND, _("Refound")),
-            ),
-            default=DISCOUNT)
-    on_register = models.CharField(_("on register"), max_length=16,
-            help_text=_("Defines the behaviour of this service on registration"),
-            choices=(
-                (NOTHING, _("Nothing")),
-                (DISCOUNT, _("Discount (fixed BP)")),
-            ),
-            default=DISCOUNT)
+    # TODO remove, orders are not disabled (they are cancelled user.is_active)
+#    on_disable = models.CharField(_("on disable"), max_length=16,
+#            help_text=_("Defines the behaviour of this service when disabled"),
+#            choices=(
+#                (NOTHING, _("Nothing")),
+#                (DISCOUNT, _("Discount")),
+#                (REFOUND, _("Refound")),
+#            ),
+#            default=DISCOUNT)
+#    on_register = models.CharField(_("on register"), max_length=16,
+#            help_text=_("Defines the behaviour of this service on registration"),
+#            choices=(
+#                (NOTHING, _("Nothing")),
+#                (DISCOUNT, _("Discount (fixed BP)")),
+#            ),
+#            default=DISCOUNT)
     payment_style = models.CharField(_("payment style"), max_length=16,
             help_text=_("Designates whether this service should be paid after "
                         "consumtion (postpay/on demand) or prepaid"),
@@ -151,27 +163,38 @@ class Service(models.Model):
         return self.description
     
     @classmethod
-    def get_services(cls, instance, **kwargs):
-        # TODO get per-request cache from thread local
-        cache = kwargs.get('cache', {})
+    def get_services(cls, instance):
+        cache = caches.get_request_cache()
         ct = ContentType.objects.get_for_model(instance)
+        services = cache.get(ct)
+        if services is None:
+            services = cls.objects.filter(content_type=ct, is_active=True)
+            cache.set(ct, services)
+        return services
+    
+    @cached_property
+    def proxy(self):
+        if self.handler:
+            return ServiceHandler.get_plugin(self.handler)(self)
+        return ServiceHandler(self)
+    
+    def clean(self):
+        content_type = self.proxy.get_content_type()
+        if self.content_type != content_type:
+            msg =_("Content type must be equal to '%s'." % str(content_type))
+            raise ValidationError(msg)
+        if not self.match:
+            msg =_("Match should be provided")
+            raise ValidationError(msg)
         try:
-            return cache[ct]
-        except KeyError:
-            cache[ct] = cls.objects.filter(model=ct, is_active=True)
-            return cache[ct]
-    
-    def matches(self, instance):
-        safe_locals = {
-            instance._meta.model_name: instance
-        }
-        return eval(self.match, safe_locals)
-    
-    def get_metric(self, instance):
-        safe_locals = {
-            instance._meta.model_name: instance
-        }
-        return eval(self.metric, safe_locals)
+            obj = content_type.model_class().objects.all()[0]
+        except IndexError:
+            pass
+        else:
+            try:
+                self.proxy.matches(obj)
+            except Exception as e:
+                raise ValidationError(_(str(e)))
 
 
 class OrderQuerySet(models.QuerySet):
@@ -242,10 +265,11 @@ class Order(models.Model):
 class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"))
     value = models.BigIntegerField(_("value"))
-    date = models.DateTimeField(_("date"), auto_now_add=True)
+    created_on = models.DateTimeField(_("created on"), auto_now_add=True)
+    updated_on = models.DateTimeField(_("updated on"), auto_now=True)
     
     class Meta:
-        get_latest_by = 'date'
+        get_latest_by = 'created_on'
     
     def __unicode__(self):
         return unicode(self.order)
@@ -259,24 +283,29 @@ class MetricStorage(models.Model):
         else:
             if metric.value != value:
                 cls.objects.create(order=order, value=value)
+            else:
+                metric.save()
 
 
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
-    if not sender in [MetricStorage, LogEntry, Order, Service]:
-        instance = kwargs['instance']
-        for order in Order.objects.by_object(instance).active():
-            order.cancel()
+    if (not sender in [MetricStorage, LogEntry, Order, Service] and
+        not Service in sender.__mro__):
+            instance = kwargs['instance']
+            for order in Order.objects.by_object(instance).active():
+                order.cancel()
 
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
 @receiver(post_delete, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):
-    if not sender in [MetricStorage, LogEntry, Order, Service]:
-        instance = kwargs['instance']
-        if instance.pk:
-            # post_save
-            Order.update_orders(instance)
-        related = search_for_related(instance)
-        if related:
-            Order.update_orders(related)
+    if (not sender in [MetricStorage, LogEntry, Order, Service] and
+        not Service in sender.__mro__):
+            instance = kwargs['instance']
+            print kwargs
+            if instance.pk:
+                # post_save
+                Order.update_orders(instance)
+            related = search_for_related(instance)
+            if related:
+                Order.update_orders(related)

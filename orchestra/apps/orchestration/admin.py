@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from djcelery.humanize import naturaldate
 
 from orchestra.admin.html import monospace_format
-from orchestra.admin.utils import link
+from orchestra.admin.utils import admin_link
 
 from .models import Server, Route, BackendLog, BackendOperation
 
@@ -60,7 +60,7 @@ class BackendOperationInline(admin.TabularInline):
     
     def instance_link(self, operation):
         try:
-            return link('instance')(self, operation)
+            return admin_link('instance')(self, operation)
         except:
             return _("deleted {0} {1}").format(
                 escape(operation.content_type), escape(operation.object_id)
@@ -88,11 +88,7 @@ class BackendLogAdmin(admin.ModelAdmin):
     ]
     readonly_fields = fields
     
-    def server_link(self, log):
-        url = reverse('admin:orchestration_server_change', args=(log.server.pk,))
-        return '<a href="%s">%s</a>' % (url, log.server.name)
-    server_link.short_description = _("server")
-    server_link.allow_tags = True
+    server_link = admin_link('server')
     
     def display_state(self, log):
         color = STATE_COLORS.get(log.state, 'grey')

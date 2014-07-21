@@ -12,13 +12,19 @@ class ServiceHandler(plugins.Plugin):
     def __init__(self, service):
         self.service = service
     
+    def __getattr__(self, attr):
+        return getattr(self.service, attr)
+    
     @classmethod
     def get_plugin_choices(cls):
         choices = super(ServiceHandler, cls).get_plugin_choices()
         return [('', _("Default"))] + choices
     
-    def __getattr__(self, attr):
-        return getattr(self.service, attr)
+    def get_content_type(self):
+        if not self.model:
+            return self.content_type
+        app_label, model = self.model.split('.')
+        return ContentType.objects.get_by_natural_key(app_label, model.lower())
     
     def matches(self, instance):
         safe_locals = {
@@ -27,13 +33,8 @@ class ServiceHandler(plugins.Plugin):
         return eval(self.match, safe_locals)
     
     def get_metric(self, instance):
-        safe_locals = {
-            instance._meta.model_name: instance
-        }
-        return eval(self.metric, safe_locals)
-    
-    def get_content_type(self):
-        if not self.model:
-            return self.content_type
-        app_label, model = self.model.split('.')
-        return ContentType.objects.get_by_natural_key(app_label, model.lower())
+        if self.metric:
+            safe_locals = {
+                instance._meta.model_name: instance
+            }
+            return eval(self.metric, safe_locals)

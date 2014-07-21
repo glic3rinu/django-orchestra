@@ -12,7 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin#, ChangeViewActions
-from orchestra.admin.utils import (link, colored, wrap_admin_view, display_timesince)
+from orchestra.admin.utils import (admin_link, colored, wrap_admin_view,
+    display_timesince)
 from orchestra.apps.contacts import settings as contacts_settings
 
 from .actions import (reject_tickets, resolve_tickets, take_tickets, close_tickets,
@@ -107,8 +108,8 @@ class TicketInline(admin.TabularInline):
     extra = 0
     max_num = 0
     
-    creator_link = link('creator')
-    owner_link = link('owner')
+    creator_link = admin_link('creator')
+    owner_link = admin_link('owner')
     
     def ticket_id(self, instance):
         return '<b>%s</b>' % link()(self, instance)
@@ -198,9 +199,9 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
             'issues/js/ticket-admin.js',
         )
     
-    display_creator = link('creator')
-    display_queue = link('queue')
-    display_owner = link('owner')
+    display_creator = admin_link('creator')
+    display_queue = admin_link('queue')
+    display_owner = admin_link('owner')
     
     def display_summary(self, ticket):
         context = {
@@ -212,7 +213,7 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
         if msg:
             context.update({
                 'updated': display_timesince(msg.created_on),
-                'updater': link('author')(self, msg) if msg.author else msg.author_name,
+                'updater': admin_link('author')(self, msg) if msg.author else msg.author_name,
             })
             context['updated'] = '. Updated by %(updater)s about %(updated)s' % context
         return '<h4>Added by %(creator)s about %(created)s%(updated)s</h4>' % context

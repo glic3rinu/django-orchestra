@@ -27,7 +27,10 @@ if not running_syncdb():
     # TODO why this is even loaded during syncdb?
     for resources in Resource.group_by_content_type():
         model = resources[0].content_type.model_class()
-        router.insert(model, 'resources', ResourceSerializer, required=False, many=True)
+        try:
+            router.insert(model, 'resources', ResourceSerializer, required=False, many=True)
+        except KeyError:
+            continue
         
         def validate_resources(self, attrs, source, _resources=resources):
             """ Creates missing resources """

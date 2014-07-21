@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import link
+from orchestra.admin.utils import admin_link
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 
 from .forms import ListCreationForm, ListChangeForm
@@ -47,7 +47,7 @@ class ListAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     add_form = ListCreationForm
     filter_by_account_fields = ['address_domain']
     
-    address_domain_link = link('address_domain', order='address_domain__name')
+    address_domain_link = admin_link('address_domain', order='address_domain__name')
     
     def get_urls(self):
         useradmin = UserAdmin(List, self.admin_site)

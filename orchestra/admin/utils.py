@@ -62,15 +62,15 @@ def wrap_admin_view(modeladmin, view):
 def set_default_filter(queryarg, request, value):
     """ set default filters for changelist_view """
     if queryarg not in request.GET:
-        q = request.GET.copy()
+        request_copy = request.GET.copy()
         if callable(value):
             value = value(request)
-        q[queryarg] = value
-        request.GET = q
+        request_copy[queryarg] = value
+        request.GET = request_copy
         request.META['QUERY_STRING'] = request.GET.urlencode()
 
 
-def link(*args, **kwargs):
+def admin_link(*args, **kwargs):
     """ utility function for creating admin links """
     field = args[0] if args else ''
     order = kwargs.pop('order', field)
@@ -88,7 +88,7 @@ def link(*args, **kwargs):
             extra = 'onclick="return showAddAnotherPopup(this);"'
         return '<a href="%s" %s>%s</a>' % (url, extra, obj)
     display_link.allow_tags = True
-    display_link.short_description = _(field)
+    display_link.short_description = _(field.replace('_', ' '))
     display_link.admin_order_field = order
     return display_link
 

@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import link
+from orchestra.admin.utils import admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.apps.accounts.widgets import account_related_field_widget_factory
 
@@ -35,7 +35,7 @@ class ContentInline(AccountAdminMixin, admin.TabularInline):
     readonly_fields = ('webapp_link', 'webapp_type')
     filter_by_account_fields = ['webapp']
     
-    webapp_link = link('webapp', popup=True)
+    webapp_link = admin_link('webapp', popup=True)
     webapp_link.short_description = _("Web App")
     
     def webapp_type(self, content):

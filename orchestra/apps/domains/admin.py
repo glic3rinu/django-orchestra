@@ -8,7 +8,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin
-from orchestra.admin.utils import wrap_admin_view, link
+from orchestra.admin.utils import wrap_admin_view, admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
@@ -41,7 +41,7 @@ class DomainInline(admin.TabularInline):
     extra = 0
     verbose_name_plural = _("Subdomains")
     
-    domain_link = link()
+    domain_link = admin_link()
     domain_link.short_description = _("Name")
     
     def has_add_permission(self, *args, **kwargs):

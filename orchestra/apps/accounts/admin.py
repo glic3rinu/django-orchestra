@@ -8,7 +8,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import wrap_admin_view, link
+from orchestra.admin.utils import wrap_admin_view, admin_link
 from orchestra.core import services
 
 from .filters import HasMainUserListFilter
@@ -42,7 +42,7 @@ class AccountAdmin(ExtendedModelAdmin):
     add_form = AccountCreationForm
     form = AccountChangeForm
     
-    user_link = link('user', order='user__username')
+    user_link = admin_link('user', order='user__username')
     
     def name(self, account):
         return account.name

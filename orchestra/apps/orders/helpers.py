@@ -31,7 +31,7 @@ def search_for_related(origin, max_depth=2):
             if hasattr(node, 'account') or isinstance(node, Account):
                 return node
         for related in related_iterator(node):
-            if related not in models:
+            if related and related not in models:
                 new_models = list(models)
                 new_models.append(related)
                 queue.append(new_models)

@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import link
+from orchestra.admin.utils import admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 
 from .forms import (DatabaseUserChangeForm, DatabaseUserCreationForm,
@@ -21,7 +21,7 @@ class UserInline(admin.TabularInline):
     readonly_fields = ('user_link',)
     extra = 0
     
-    user_link = link('user')
+    user_link = admin_link('user')
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -38,7 +38,7 @@ class PermissionInline(AccountAdminMixin, admin.TabularInline):
     extra = 0
     filter_by_account_fields = ['database']
     
-    database_link = link('database', popup=True)
+    database_link = admin_link('database', popup=True)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """

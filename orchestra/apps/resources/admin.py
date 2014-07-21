@@ -7,7 +7,7 @@ from djcelery.humanize import naturaldate
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
-from orchestra.admin.utils import insertattr, get_modeladmin, link
+from orchestra.admin.utils import insertattr, get_modeladmin, admin_link
 from orchestra.core import services
 from orchestra.utils import running_syncdb
 
@@ -71,10 +71,7 @@ class ResourceDataAdmin(admin.ModelAdmin):
     list_filter = ('resource',)
     readonly_fields = ('content_object_link',)
     
-    def content_object_link(self, data):
-        return link('content_object')(self, data)
-    content_object_link.allow_tags = True
-    content_object_link.short_description = _("Content object")
+    content_object_link = admin_link('content_object')
 
 
 class MonitorDataAdmin(admin.ModelAdmin):
@@ -82,10 +79,7 @@ class MonitorDataAdmin(admin.ModelAdmin):
     list_filter = ('monitor',)
     readonly_fields = ('content_object_link',)
     
-    def content_object_link(self, data):
-        return link('content_object')(self, data)
-    content_object_link.allow_tags = True
-    content_object_link.short_description = _("Content object")
+    content_object_link = admin_link('content_object')
 
 
 admin.site.register(Resource, ResourceAdmin)

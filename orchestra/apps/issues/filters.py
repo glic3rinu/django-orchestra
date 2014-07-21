@@ -1,4 +1,5 @@
 from django.contrib.admin import SimpleListFilter
+from django.utils.translation import ugettext_lazy as _
 
 from .models import Ticket
 
@@ -10,13 +11,19 @@ class MyTicketsListFilter(SimpleListFilter):
     
     def lookups(self, request, model_admin):
         return (
-            ('True', 'My Tickets'),
-            ('False', 'All'),
+            ('True', _("My Tickets")),
+            ('False', _("All")),
         )
     
     def queryset(self, request, queryset):
         if self.value() == 'True':
             return queryset.involved_by(request.user)
+    
+    def choices(self, cl):
+        """ Remove default All """
+        choices = iter(super(MyTicketsListFilter, self).choices(cl))
+        choices.next()
+        return choices
 
 
 class TicketStateListFilter(SimpleListFilter):
@@ -25,14 +32,14 @@ class TicketStateListFilter(SimpleListFilter):
     
     def lookups(self, request, model_admin):
         return (
-            ('OPEN', "Open"),
-            (Ticket.NEW, "New"),
-            (Ticket.IN_PROGRESS, "In Progress"),
-            (Ticket.RESOLVED, "Resolved"),
-            (Ticket.FEEDBACK, "Feedback"),
-            (Ticket.REJECTED, "Rejected"),
-            (Ticket.CLOSED, "Closed"),
-            ('False', 'All'),
+            ('OPEN', _("Open")),
+            (Ticket.NEW, _("New")),
+            (Ticket.IN_PROGRESS, _("In Progress")),
+            (Ticket.RESOLVED, _("Resolved")),
+            (Ticket.FEEDBACK, _("Feedback")),
+            (Ticket.REJECTED, _("Rejected")),
+            (Ticket.CLOSED, _("Closed")),
+            ('False', _("All")),
         )
     
     def queryset(self, request, queryset):
@@ -41,3 +48,10 @@ class TicketStateListFilter(SimpleListFilter):
         elif self.value() == 'False':
             return queryset
         return queryset.filter(state=self.value())
+    
+    def choices(self, cl):
+        """ Remove default All """
+        choices = iter(super(TicketStateListFilter, self).choices(cl))
+        choices.next()
+        return choices
+

@@ -94,6 +94,8 @@ class LinkHeaderRouter(DefaultRouter):
         for _prefix, viewset, __ in self.registry:
             if _prefix == prefix_or_model or viewset.model == prefix_or_model:
                 return viewset
+        msg = "%s does not have a regiestered viewset" % prefix_or_model
+        raise KeyError(msg)
         
     def insert(self, prefix_or_model, name, field, **kwargs):
         """ Dynamically add new fields to an existing serializer """

@@ -45,8 +45,10 @@ class Service(models.Model):
     description = models.CharField(_("description"), max_length=256, unique=True)
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
     match = models.CharField(_("match"), max_length=256, blank=True)
-    handler = models.CharField(_("handler"), max_length=256, blank=True,
-            help_text=_("Handler used to process this Service."),
+    handler_type = models.CharField(_("handler"), max_length=256, blank=True,
+            help_text=_("Handler used for processing this Service. A handler "
+                        "enables customized behaviour far beyond what options "
+                        "here allow to."),
             choices=ServiceHandler.get_plugin_choices())
     is_active = models.BooleanField(_("is active"), default=True)
     # Billing
@@ -172,14 +174,16 @@ class Service(models.Model):
             cache.set(ct, services)
         return services
     
+    # FIXME some times caching is nasty, do we really have to? make get_plugin more efficient?
     @cached_property
-    def proxy(self):
-        if self.handler:
-            return ServiceHandler.get_plugin(self.handler)(self)
+    def handler(self):
+        """ Accessor of this service handler instance """
+        if self.handler_type:
+            return ServiceHandler.get_plugin(self.handler_type)(self)
         return ServiceHandler(self)
     
     def clean(self):
-        content_type = self.proxy.get_content_type()
+        content_type = self.handler.get_content_type()
         if self.content_type != content_type:
             msg =_("Content type must be equal to '%s'." % str(content_type))
             raise ValidationError(msg)
@@ -191,22 +195,30 @@ class Service(models.Model):
         except IndexError:
             pass
         else:
-            try:
-                self.proxy.matches(obj)
-            except Exception as e:
-                raise ValidationError(_(str(e)))
+            for attr in ['matches', 'get_metric']:
+                try:
+                    getattr(self.handler, attr)(obj)
+                except Exception as exception:
+                    name = type(exception).__name__
+                    message = exception.message
+                    msg = "{0} {1}: {2}".format(attr, name, message)
+                    raise ValidationError(msg)
 
 
 class OrderQuerySet(models.QuerySet):
-    def by_object(self, obj, *args, **kwargs):
+    def by_object(self, obj, **kwargs):
         ct = ContentType.objects.get_for_model(obj)
-        return self.filter(object_id=obj.pk, content_type=ct)
+        return self.filter(object_id=obj.pk, content_type=ct, **kwargs)
     
-    def active(self, *args, **kwargs):
+    def active(self, **kwargs):
         """ return active orders """
         return self.filter(
             Q(cancelled_on__isnull=True) | Q(cancelled_on__gt=timezone.now())
-        ).filter(*args, **kwargs)
+        ).filter(**kwargs)
+    
+    def inactive(self, **kwargs):
+        """ return inactive orders """
+        return self.filter(cancelled_on__lt=timezone.now(), **kwargs)
 
 
 class Order(models.Model):
@@ -234,10 +246,12 @@ class Order(models.Model):
     
     def update(self):
         instance = self.content_object
-        if self.service.metric:
-            metric = self.service.get_metric(instance)
-            MetricStorage.store(self, metric)
-        description = "{}: {}".format(self.service.description, str(instance))
+        handler = self.service.handler
+        if handler.metric:
+            metric = handler.get_metric(instance)
+            if metric is not None:
+                MetricStorage.store(self, metric)
+        description = "{}: {}".format(handler.description, str(instance))
         if self.description != description:
             self.description = description
             self.save()
@@ -246,7 +260,7 @@ class Order(models.Model):
     def update_orders(cls, instance):
         for service in Service.get_services(instance):
             orders = Order.objects.by_object(instance, service=service).active()
-            if service.matches(instance):
+            if service.handler.matches(instance):
                 if not orders:
                     account_id = getattr(instance, 'account_id', instance.pk)
                     order = cls.objects.create(content_object=instance,
@@ -289,23 +303,20 @@ class MetricStorage(models.Model):
 
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
-    if (not sender in [MetricStorage, LogEntry, Order, Service] and
-        not Service in sender.__mro__):
-            instance = kwargs['instance']
-            for order in Order.objects.by_object(instance).active():
-                order.cancel()
+    if sender not in [MetricStorage, LogEntry, Order, Service]:
+        instance = kwargs['instance']
+        for order in Order.objects.by_object(instance).active():
+            order.cancel()
 
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
 @receiver(post_delete, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):
-    if (not sender in [MetricStorage, LogEntry, Order, Service] and
-        not Service in sender.__mro__):
-            instance = kwargs['instance']
-            print kwargs
-            if instance.pk:
-                # post_save
-                Order.update_orders(instance)
-            related = search_for_related(instance)
-            if related:
-                Order.update_orders(related)
+    if sender not in [MetricStorage, LogEntry, Order, Service]:
+        instance = kwargs['instance']
+        if instance.pk:
+            # post_save
+            Order.update_orders(instance)
+        related = search_for_related(instance)
+        if related:
+            Order.update_orders(related)

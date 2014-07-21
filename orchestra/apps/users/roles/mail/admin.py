@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import insertattr, link
+from orchestra.admin.utils import insertattr, admin_link
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 from orchestra.apps.domains.forms import DomainIterator
 from orchestra.apps.users.roles.admin import RoleAdmin
@@ -79,7 +79,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_by_account_fields = ['domain']
     filter_horizontal = ['mailboxes']
     
-    domain_link = link('domain', order='domain__name')
+    domain_link = admin_link('domain', order='domain__name')
     
     def email_link(self, address):
         link = self.domain_link(address)

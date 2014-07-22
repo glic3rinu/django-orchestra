@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
 from orchestra.models.fields import MultiSelectField
+from orchestra.utils.functional import cached
 
 from . import helpers
 from .backends import ServiceMonitor
@@ -164,15 +165,17 @@ def create_resource_relation():
     class ResourceHandler(object):
         """ account.resources.web """
         def __getattr__(self, attr):
-            """ get or create ResourceData """
+            """ get or build ResourceData """
             try:
-                return self.obj.resource_set.get(resource__name=attr)
+                data = self.obj.resource_set.get(resource__name=attr)
             except ResourceData.DoesNotExist:
                 model = self.obj._meta.model_name
                 resource = Resource.objects.get(content_type__model=model,
                         name=attr, is_active=True)
-                return ResourceData.objects.create(content_object=self.obj,
-                        resource=resource)
+                data = ResourceData(content_object=self.obj, resource=resource)
+            print data.resource_id, data.content_type_id, data.object_id
+            setattr(self, attr, data)
+            return data
         
         def __get__(self, obj, cls):
             self.obj = obj

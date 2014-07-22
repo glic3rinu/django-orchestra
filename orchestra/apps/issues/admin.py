@@ -12,8 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin#, ChangeViewActions
-from orchestra.admin.utils import (admin_link, colored, wrap_admin_view,
-    display_timesince)
+from orchestra.admin.utils import admin_link, colored, wrap_admin_view, admin_date
 from orchestra.apps.contacts import settings as contacts_settings
 
 from .actions import (reject_tickets, resolve_tickets, take_tickets, close_tickets,
@@ -110,6 +109,8 @@ class TicketInline(admin.TabularInline):
     
     creator_link = admin_link('creator')
     owner_link = admin_link('owner')
+    created = admin_link('created_on')
+    last_modified = admin_link('last_modified_on')
     
     def ticket_id(self, instance):
         return '<b>%s</b>' % link()(self, instance)
@@ -123,12 +124,6 @@ class TicketInline(admin.TabularInline):
     def colored_priority(self, instance):
         return colored('priority', PRIORITY_COLORS, bold=False)(instance)
     colored_priority.short_description = _("Priority")
-    
-    def created(self, instance):
-        return display_timesince(instance.created_on)
-    
-    def last_modified(self, instance):
-        return display_timesince(instance.last_modified_on)
 
 
 class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeViewActions, 
@@ -327,7 +322,7 @@ class QueueAdmin(admin.ModelAdmin):
         }
     
     def num_tickets(self, queue):
-        num = queue.tickets.count()
+        num = queue.tickets__count
         url = reverse('admin:issues_ticket_changelist')
         url += '?my_tickets=False&queue=%i' % queue.pk
         return '<a href="%s">%d</a>' % (url, num)

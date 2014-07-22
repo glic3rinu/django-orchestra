@@ -2,11 +2,12 @@ from django import forms
 from django.db import models
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeListDefaultFilter
 from orchestra.admin.filters import UsedContentTypeFilter
-from orchestra.admin.utils import admin_link
+from orchestra.admin.utils import admin_link, admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
@@ -49,9 +50,9 @@ class ServiceAdmin(admin.ModelAdmin):
         return super(ServiceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
     
     def num_orders(self, service):
-        num = service.orders.count()
+        num = service.orders__count
         url = reverse('admin:orders_order_changelist')
-        url += '?service=%i' % service.pk
+        url += '?service=%i&is_active=True' % service.pk
         return '<a href="%s">%d</a>' % (url, num)
     num_orders.short_description = _("Orders")
     num_orders.admin_order_field = 'orders__count'
@@ -59,20 +60,36 @@ class ServiceAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         qs = super(ServiceAdmin, self).get_queryset(request)
-        qs = qs.annotate(models.Count('orders'))
+        # Count active orders
+        qs = qs.extra(select={
+            'orders__count': (
+                "SELECT COUNT(*) "
+                "FROM orders_order "
+                "WHERE orders_order.service_id = orders_service.id AND ("
+                "      orders_order.cancelled_on IS NULL OR"
+                "      orders_order.cancelled_on > '%s' "
+                ")" % timezone.now()
+            )
+        })
         return qs
 
 
 class OrderAdmin(AccountAdminMixin, ChangeListDefaultFilter, admin.ModelAdmin):
     list_display = (
-        'id', 'service', 'account_link', 'content_object_link', 'cancelled_on'
+        'id', 'service', 'account_link', 'content_object_link',
+        'display_registered_on', 'display_cancelled_on'
     )
+    list_display_link = ('id', 'service')
     list_filter = (ActiveOrderListFilter, 'service',)
+    date_hierarchy = 'registered_on'
     default_changelist_filters = (
         ('is_active', 'True'),
     )
     
     content_object_link = admin_link('content_object')
+    display_registered_on = admin_date('registered_on')
+    display_cancelled_on = admin_date('cancelled_on')
+
 
 class MetricStorageAdmin(admin.ModelAdmin):
     list_display = ('order', 'value', 'created_on', 'updated_on')

@@ -14,7 +14,7 @@ class MiscServiceAdmin(admin.ModelAdmin):
     
     def num_instances(self, misc):
         """ return num slivers as a link to slivers changelist view """
-        num = misc.instances.count()
+        num = misc.instances__count
         url = reverse('admin:miscellaneous_miscellaneous_changelist')
         url += '?service={}'.format(misc.pk)
         return mark_safe('<a href="{0}">{1}</a>'.format(url, num))

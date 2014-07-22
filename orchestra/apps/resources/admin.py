@@ -1,13 +1,11 @@
 from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
 from django.utils.functional import cached_property
-from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
-from djcelery.humanize import naturaldate
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
-from orchestra.admin.utils import insertattr, get_modeladmin, admin_link
+from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date
 from orchestra.core import services
 from orchestra.utils import running_syncdb
 
@@ -91,13 +89,17 @@ admin.site.register(MonitorData, MonitorDataAdmin)
 
 def resource_inline_factory(resources):
     class ResourceInlineFormSet(generic.BaseGenericInlineFormSet):
-        def total_form_count(self):
+        def total_form_count(self, resources=resources):
             return len(resources)
         
         @cached_property
-        def forms(self):
+        def forms(self, resources=resources):
             forms = []
-            for i, resource in enumerate(resources):
+            resources_copy = list(resources)
+            for i, data in enumerate(self.queryset):
+                forms.append(self._construct_form(i, resource=data.resource))
+                resources_copy.remove(data.resource)
+            for i, resource in enumerate(resources_copy, len(self.queryset)):
                 forms.append(self._construct_form(i, resource=resource))
             return forms
     
@@ -117,16 +119,11 @@ def resource_inline_factory(resources):
                 'all': ('orchestra/css/hide-inline-id.css',)
             }
         
+        display_last_update = admin_date('last_update', default=_("Never"))
+        
         def has_add_permission(self, *args, **kwargs):
             """ Hidde add another """
             return False
-        
-        def display_last_update(self, data):
-            return '<div title="{0}">{1}</div>'.format(
-                escape(str(data.last_update)), escape(naturaldate(data.last_update)),
-            )
-        display_last_update.short_description = _("last update")
-        display_last_update.allow_tags = True
     
     return ResourceInline
 

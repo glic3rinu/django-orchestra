@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.models.utils import get_field_value
-from orchestra.utils.time import timesince, timeuntil
+from orchestra.utils.humanize import naturaldate
 
 
 def get_modeladmin(model, import_module=True):
@@ -78,7 +78,7 @@ def admin_link(*args, **kwargs):
     
     def display_link(self, instance):
         obj = getattr(instance, field, instance)
-        if not getattr(obj, 'pk', False):
+        if not getattr(obj, 'pk', None):
             return '---'
         opts = obj._meta
         view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
@@ -95,7 +95,7 @@ def admin_link(*args, **kwargs):
 
 def colored(field_name, colours, description='', verbose=False, bold=True):
     """ returns a method that will render obj with colored html """
-    def colored_field(obj, field=field_name, colors=colours, verbose=verbose):
+    def colored_field(modeladmin, obj, field=field_name, colors=colours, verbose=verbose):
         value = escape(get_field_value(obj, field))
         color = colors.get(value, "black")
         if verbose:
@@ -113,22 +113,40 @@ def colored(field_name, colours, description='', verbose=False, bold=True):
     return colored_field
 
 
-def display_timesince(date, double=False):
-    """ 
-    Format date for messages create_on: show a relative time
-    with contextual helper to show fulltime format.
-    """
-    if not date:
-        return 'Never'
-    date_rel = timesince(date)
-    if not double:
-        date_rel = date_rel.split(',')[0]  
-    date_rel += ' ago'
-    date_abs = date.strftime("%Y-%m-%d %H:%M:%S %Z")
-    return mark_safe("<span title='%s'>%s</span>" % (date_abs, date_rel))
+#def display_timesince(date, double=False):
+#    """ 
+#    Format date for messages create_on: show a relative time
+#    with contextual helper to show fulltime format.
+#    """
+#    if not date:
+#        return 'Never'
+#    date_rel = timesince(date)
+#    if not double:
+#        date_rel = date_rel.split(',')[0]  
+#    date_rel += ' ago'
+#    date_abs = date.strftime("%Y-%m-%d %H:%M:%S %Z")
+#    return mark_safe("<span title='%s'>%s</span>" % (date_abs, date_rel))
 
 
-def display_timeuntil(date):
-    date_rel = timeuntil(date) + ' left'
-    date_abs = date.strftime("%Y-%m-%d %H:%M:%S %Z")
-    return mark_safe("<span title='%s'>%s</span>" % (date_abs, date_rel))
+def admin_date(field, **kwargs):
+    """ utility function for creating admin dates """
+    default = kwargs.pop('default', '')
+    order = kwargs.pop('order', field)
+    
+    def display_date(self, instance):
+        value = get_field_value(instance, field)
+        if not value:
+            return default
+        return '<div title="{0}">{1}</div>'.format(
+            escape(str(value)), escape(naturaldate(value)),
+        )
+    display_date.short_description = _(field.replace('_', ' '))
+    display_date.admin_order_field = order
+    display_date.allow_tags = True
+    return display_date
+
+
+#def display_timeuntil(date):
+#    date_rel = timeuntil(date) + ' left'
+#    date_abs = date.strftime("%Y-%m-%d %H:%M:%S %Z")
+#    return mark_safe("<span title='%s'>%s</span>" % (date_abs, date_rel))

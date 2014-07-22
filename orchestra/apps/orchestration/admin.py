@@ -2,10 +2,9 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
-from djcelery.humanize import naturaldate
 
 from orchestra.admin.html import monospace_format
-from orchestra.admin.utils import admin_link
+from orchestra.admin.utils import admin_link, admin_date, colored
 
 from .models import Server, Route, BackendLog, BackendOperation
 
@@ -89,13 +88,9 @@ class BackendLogAdmin(admin.ModelAdmin):
     readonly_fields = fields
     
     server_link = admin_link('server')
-    
-    def display_state(self, log):
-        color = STATE_COLORS.get(log.state, 'grey')
-        return '<span style="color: %s;">%s</span>' % (color, log.state)
-    display_state.short_description = _("state")
-    display_state.allow_tags = True
-    display_state.admin_order_field = 'state'
+    display_last_update = admin_date('last_update')
+    display_created = admin_date('created')
+    display_state = colored('state', STATE_COLORS)
     
     def mono_script(self, log):
         return monospace_format(escape(log.script))
@@ -112,20 +107,6 @@ class BackendLogAdmin(admin.ModelAdmin):
     def mono_traceback(self, log):
         return monospace_format(escape(log.traceback))
     mono_traceback.short_description = _("traceback")
-    
-    def display_last_update(self, log):
-        return '<div title="{0}">{1}</div>'.format(
-            escape(str(log.last_update)), escape(naturaldate(log.last_update)),
-        )
-    display_last_update.short_description = _("last update")
-    display_last_update.allow_tags = True
-    
-    def display_created(self, log):
-        return '<div title="{0}">{1}</div>'.format(
-            escape(str(log.created)), escape(naturaldate(log.created)),
-        )
-    display_created.short_description = _("created")
-    display_created.allow_tags = True
     
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """

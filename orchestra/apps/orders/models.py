@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import caches
+from orchestra.core import caches, services
 from orchestra.utils.apps import autodiscover
 
 from . import settings
@@ -195,14 +195,22 @@ class Service(models.Model):
         except IndexError:
             pass
         else:
-            for attr in ['matches', 'get_metric']:
-                try:
-                    getattr(self.handler, attr)(obj)
-                except Exception as exception:
-                    name = type(exception).__name__
-                    message = exception.message
-                    msg = "{0} {1}: {2}".format(attr, name, message)
-                    raise ValidationError(msg)
+            attr = None
+            try:
+                bool(self.handler.matches(obj))
+            except Exception as exception:
+                attr = "Matches"
+            try:
+                metric = self.handler.get_metric(obj)
+                if metric is not None:
+                    int(metric)
+            except Exception as exception:
+                attr = "Get metric"
+            if attr is not None:
+                name = type(exception).__name__
+                message = exception.message
+                msg = "{0} {1}: {2}".format(attr, name, message)
+                raise ValidationError(msg)
 
 
 class OrderQuerySet(models.QuerySet):
@@ -222,9 +230,6 @@ class OrderQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
-    SAVE = 'SAVE'
-    DELETE = 'DELETE'
-    
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='orders')
     content_type = models.ForeignKey(ContentType)
@@ -303,14 +308,14 @@ class MetricStorage(models.Model):
 
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
-    if sender not in [MetricStorage, LogEntry, Order, Service]:
+    if sender in services:
         instance = kwargs['instance']
         for order in Order.objects.by_object(instance).active():
             order.cancel()
 
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
-@receiver(post_delete, dispatch_uid="orders.update_orders")
+@receiver(post_delete, dispatch_uid="orders.update_orders_post_delete")
 def update_orders(sender, **kwargs):
     if sender not in [MetricStorage, LogEntry, Order, Service]:
         instance = kwargs['instance']

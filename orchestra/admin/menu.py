@@ -38,49 +38,71 @@ def get_services():
     return sorted(result, key=lambda i: i.title)
 
 
-def get_accounts():
-    accounts = [
+def get_account_items():
+    childrens = [
         items.MenuItem(_("Accounts"), reverse('admin:accounts_account_changelist'))
     ]
     if isinstalled('orchestra.apps.contacts'):
         url = reverse('admin:contacts_contact_changelist')
-        accounts.append(items.MenuItem(_("Contacts"), url))
+        childrens.append(items.MenuItem(_("Contacts"), url))
     if isinstalled('orchestra.apps.users'):
         url = reverse('admin:users_user_changelist')
         users = [items.MenuItem(_("Users"), url)]
         if isinstalled('rest_framework.authtoken'):
             tokens = reverse('admin:authtoken_token_changelist')
             users.append(items.MenuItem(_("Tokens"), tokens))
-        accounts.append(items.MenuItem(_("Users"), url, children=users))
+        childrens.append(items.MenuItem(_("Users"), url, children=users))
     if isinstalled('orchestra.apps.prices'):
         url = reverse('admin:prices_pack_changelist')
-        accounts.append(items.MenuItem(_("Packs"), url))
+        childrens.append(items.MenuItem(_("Packs"), url))
     if isinstalled('orchestra.apps.orders'):
         url = reverse('admin:orders_order_changelist')
-        accounts.append(items.MenuItem(_("Orders"), url))
-    return accounts
-
-
-def get_administration():
-    administration = []
-    return administration
-
-
-def get_administration_models():
-    administration_models = []
-    if isinstalled('orchestra.apps.orchestration'):
-        administration_models.append('orchestra.apps.orchestration.*')
-    if isinstalled('djcelery'):
-        administration_models.append('djcelery.*')
+        childrens.append(items.MenuItem(_("Orders"), url))
     if isinstalled('orchestra.apps.issues'):
-        administration_models.append('orchestra.apps.issues.*')
-    if isinstalled('orchestra.apps.resources'):
-        administration_models.append('orchestra.apps.resources.*')
-    if isinstalled('orchestra.apps.miscellaneous'):
-        administration_models.append('orchestra.apps.miscellaneous.models.MiscService')
+        url = reverse('admin:issues_ticket_changelist')
+        childrens.append(items.MenuItem(_("Tickets"), url))
+    return childrens
+
+
+def get_administration_items():
+    childrens = []
     if isinstalled('orchestra.apps.orders'):
-        administration_models.append('orchestra.apps.orders.models.Service')
-    return administration_models
+        url = reverse('admin:orders_service_changelist')
+        childrens.append(items.MenuItem(_("Services"), url))
+    if isinstalled('orchestra.apps.orchestration'):
+        route = reverse('admin:orchestration_route_changelist')
+        backendlog = reverse('admin:orchestration_backendlog_changelist')
+        server = reverse('admin:orchestration_server_changelist')
+        childrens.append(items.MenuItem(_("Orchestration"), route, children=[
+            items.MenuItem(_("Routes"), route),
+            items.MenuItem(_("Backend logs"), backendlog),
+            items.MenuItem(_("Servers"), server),
+        ]))
+    if isinstalled('orchestra.apps.resources'):
+        resource = reverse('admin:resources_resource_changelist')
+        data = reverse('admin:resources_resourcedata_changelist')
+        monitor = reverse('admin:resources_monitordata_changelist')
+        childrens.append(items.MenuItem(_("Resources"), resource, children=[
+            items.MenuItem(_("Resources"), resource),
+            items.MenuItem(_("Data"), data),
+            items.MenuItem(_("Monitoring"), monitor),
+        ]))
+    if isinstalled('orchestra.apps.miscellaneous'):
+        url = reverse('admin:miscellaneous_miscservice_changelist')
+        childrens.append(items.MenuItem(_("Miscellaneous"), url))
+    if isinstalled('orchestra.apps.issues'):
+        url = reverse('admin:issues_queue_changelist')
+        childrens.append(items.MenuItem(_("Issue queues"), url))
+    if isinstalled('djcelery'):
+        task = reverse('admin:djcelery_taskstate_changelist')
+        periodic = reverse('admin:djcelery_periodictask_changelist')
+        worker = reverse('admin:djcelery_workerstate_changelist')
+        childrens.append(items.MenuItem(_("Celery"), task, children=[
+            items.MenuItem(_("Tasks"), task),
+            items.MenuItem(_("Periodic tasks"), periodic),
+            items.MenuItem(_("Workers"), worker),
+        ]))
+    return childrens
 
 
 class OrchestraMenu(Menu):
@@ -99,12 +121,11 @@ class OrchestraMenu(Menu):
             items.MenuItem(
                 _("Accounts"),
                 reverse('admin:accounts_account_changelist'),
-                children=get_accounts()
+                children=get_account_items()
             ),
-            items.AppList(
+            items.MenuItem(
                 _("Administration"),
-                models=get_administration_models(),
-                children=get_administration()
+                children=get_administration_items()
             ),
             items.MenuItem("API", api_link(context))
         ]

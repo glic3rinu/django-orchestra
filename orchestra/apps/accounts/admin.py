@@ -60,8 +60,9 @@ class AccountAdmin(ExtendedModelAdmin):
             if not account.is_active:
                 messages.warning(request, 'This account is disabled.')
         context = {
+            # TODO not services but everythin (payments, bills, etc)
             'services': sorted(
-                [ model._meta for model in services.get() ],
+                [ model._meta for model in services.get() if model is not Account ],
                 key=lambda i: i.verbose_name_plural.lower()
             )
         }

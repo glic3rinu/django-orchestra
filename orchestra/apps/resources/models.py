@@ -173,7 +173,6 @@ def create_resource_relation():
                 resource = Resource.objects.get(content_type__model=model,
                         name=attr, is_active=True)
                 data = ResourceData(content_object=self.obj, resource=resource)
-            print data.resource_id, data.content_type_id, data.object_id
             setattr(self, attr, data)
             return data
         

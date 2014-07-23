@@ -76,7 +76,8 @@ def admin_link(*args, **kwargs):
     order = kwargs.pop('order', field)
     popup = kwargs.pop('popup', False)
     
-    def display_link(self, instance):
+    def display_link(*args):
+        instance = args[-1]
         obj = getattr(instance, field, instance)
         if not getattr(obj, 'pk', None):
             return '---'
@@ -95,7 +96,7 @@ def admin_link(*args, **kwargs):
 
 def colored(field_name, colours, description='', verbose=False, bold=True):
     """ returns a method that will render obj with colored html """
-    def colored_field(modeladmin, obj, field=field_name, colors=colours, verbose=verbose):
+    def colored_field(obj, field=field_name, colors=colours, verbose=verbose):
         value = escape(get_field_value(obj, field))
         color = colors.get(value, "black")
         if verbose:
@@ -133,11 +134,12 @@ def admin_date(field, **kwargs):
     default = kwargs.pop('default', '')
     order = kwargs.pop('order', field)
     
-    def display_date(self, instance):
+    def display_date(*args):
+        instance = args[-1]
         value = get_field_value(instance, field)
         if not value:
             return default
-        return '<div title="{0}">{1}</div>'.format(
+        return '<span title="{0}">{1}</span>'.format(
             escape(str(value)), escape(naturaldate(value)),
         )
     display_date.short_description = _(field.replace('_', ' '))

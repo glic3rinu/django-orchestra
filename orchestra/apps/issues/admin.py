@@ -55,8 +55,8 @@ class MessageReadOnlyInline(admin.TabularInline):
     def content_html(self, msg):
         context = {
             'number': msg.number,
-            'time': display_timesince(msg.created_on),
-            'author': link('author')(self, msg) if msg.author else msg.author_name,
+            'time': admin_date('created_on')(msg),
+            'author': admin_link('author')(msg) if msg.author else msg.author_name,
         }
         summary = _("#%(number)i Updated by %(author)s about %(time)s") % context
         header = '<strong style="color:#666;">%s</strong><hr />' % summary
@@ -113,7 +113,7 @@ class TicketInline(admin.TabularInline):
     last_modified = admin_link('last_modified_on')
     
     def ticket_id(self, instance):
-        return '<b>%s</b>' % link()(self, instance)
+        return '<b>%s</b>' % admin_link()(instance)
     ticket_id.short_description = '#'
     ticket_id.allow_tags = True
     
@@ -197,17 +197,18 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     display_creator = admin_link('creator')
     display_queue = admin_link('queue')
     display_owner = admin_link('owner')
+    last_modified = admin_date('last_modified_on')
     
     def display_summary(self, ticket):
         context = {
-            'creator': link('creator')(self, ticket) if ticket.creator else ticket.creator_name,
-            'created': display_timesince(ticket.created_on),
+            'creator': admin_link('creator')(self, ticket) if ticket.creator else ticket.creator_name,
+            'created': admin_date('created_on')(ticket),
             'updated': '',
         }
         msg = ticket.messages.last()
         if msg:
             context.update({
-                'updated': display_timesince(msg.created_on),
+                'updated': admin_date('created_on')(msg),
                 'updater': admin_link('author')(self, msg) if msg.author else msg.author_name,
             })
             context['updated'] = '. Updated by %(updater)s about %(updated)s' % context
@@ -244,10 +245,6 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     bold_subject.allow_tags = True
     bold_subject.short_description = _("Subject")
     bold_subject.admin_order_field = 'subject'
-    
-    def last_modified(self, instance):
-        return display_timesince(instance.last_modified_on)
-    last_modified.admin_order_field = 'last_modified_on'
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """

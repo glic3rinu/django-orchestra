@@ -58,8 +58,6 @@ def get_accounts():
     if isinstalled('orchestra.apps.orders'):
         url = reverse('admin:orders_order_changelist')
         accounts.append(items.MenuItem(_("Orders"), url))
-        url = reverse('admin:orders_service_changelist')
-        accounts.append(items.MenuItem(_("Services"), url))
     return accounts
 
 
@@ -80,6 +78,8 @@ def get_administration_models():
         administration_models.append('orchestra.apps.resources.*')
     if isinstalled('orchestra.apps.miscellaneous'):
         administration_models.append('orchestra.apps.miscellaneous.models.MiscService')
+    if isinstalled('orchestra.apps.orders'):
+        administration_models.append('orchestra.apps.orders.models.Service')
     return administration_models
 
 

@@ -143,7 +143,8 @@ function install_requirements () {
          paramiko==1.12.1 \
          Pygments==1.6 \
          django-filter==0.7 \
-         passlib==1.6.2"
+         passlib==1.6.2 \
+         jsonfield==0.9.22"
     
     if $testing; then
         APT="${APT} \

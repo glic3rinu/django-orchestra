@@ -62,3 +62,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * DOCUMENT: orchestration.middleware: we need to know when an operation starts and ends in order to perform bulk server updates and also to wait for related objects to be saved (base object is saved first and then related)
             orders.signales: we perform changes right away because data model state can change under monitoring and other periodik task, and we should keep orders consistency under any situation.
                              dependency collector with max_recursion that matches the number of dots on service.match and service.metric
+                             
+
+* Be consistent with dates: name_on, created ? 

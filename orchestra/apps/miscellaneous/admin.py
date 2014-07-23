@@ -32,7 +32,7 @@ class MiscellaneousAdmin(AccountAdminMixin, admin.ModelAdmin):
     def get_fields(self, request, obj=None):
         if obj is None:
             return ('service', 'account', 'description', 'amount', 'is_active')
-        if not obj.service.has_amount:
+        elif not obj.service.has_amount:
             return ('service', 'account_link', 'description', 'is_active')
         return ('service', 'account_link', 'description', 'amount', 'is_active')
 

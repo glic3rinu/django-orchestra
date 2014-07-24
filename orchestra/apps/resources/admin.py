@@ -15,8 +15,8 @@ from .models import Resource, ResourceData, MonitorData
 
 class ResourceAdmin(ExtendedModelAdmin):
     list_display = (
-        'id', 'name', 'verbose_name', 'content_type', 'period', 'ondemand',
-        'default_allocation', 'disable_trigger', 'crontab',
+        'id', 'verbose_name', 'content_type', 'period', 'ondemand',
+        'default_allocation', 'unit', 'disable_trigger', 'crontab',
     )
     list_filter = (UsedContentTypeFilter, 'period', 'ondemand', 'disable_trigger')
     fieldsets = (

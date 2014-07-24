@@ -12,6 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.models.utils import get_field_value
 from orchestra.utils.humanize import naturaldate
 
+from .decorators import admin_field
+
 
 def get_modeladmin(model, import_module=True):
     """ returns the modeladmin registred for model """
@@ -44,7 +46,9 @@ def insertattr(model, name, value, weight=0):
         weights = {}
         if hasattr(modeladmin, 'weights') and name in modeladmin.weights:
             weights = modeladmin.weights.get(name)
-        inserted_attrs[name] = [ (attr, weights.get(attr, 0)) for attr in getattr(modeladmin, name) ]
+        inserted_attrs[name] = [
+            (attr, weights.get(attr, 0)) for attr in getattr(modeladmin, name)
+        ]
     
     inserted_attrs[name].append((value, weight))
     inserted_attrs[name].sort(key=lambda a: a[1])
@@ -70,85 +74,40 @@ def set_default_filter(queryarg, request, value):
         request.META['QUERY_STRING'] = request.GET.urlencode()
 
 
+@admin_field
 def admin_link(*args, **kwargs):
-    """ utility function for creating admin links """
-    field = args[0] if args else ''
-    order = kwargs.pop('order', field)
-    popup = kwargs.pop('popup', False)
-    
-    def display_link(*args):
-        instance = args[-1]
-        obj = getattr(instance, field, instance)
-        if not getattr(obj, 'pk', None):
-            return '---'
-        opts = obj._meta
-        view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
-        url = reverse(view_name, args=(obj.pk,))
-        extra = ''
-        if popup:
-            extra = 'onclick="return showAddAnotherPopup(this);"'
-        return '<a href="%s" %s>%s</a>' % (url, extra, obj)
-    display_link.allow_tags = True
-    display_link.short_description = _(field.replace('_', ' '))
-    display_link.admin_order_field = order
-    return display_link
+    instance = args[-1]
+    obj = get_field_value(instance, kwargs['field'])
+    if not getattr(obj, 'pk', None):
+        return '---'
+    opts = obj._meta
+    view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
+    url = reverse(view_name, args=(obj.pk,))
+    extra = ''
+    if kwargs['popup']:
+        extra = 'onclick="return showAddAnotherPopup(this);"'
+    return '<a href="%s" %s>%s</a>' % (url, extra, obj)
 
 
-def colored(field_name, colours, description='', verbose=False, bold=True):
-    """ returns a method that will render obj with colored html """
-    def colored_field(obj, field=field_name, colors=colours, verbose=verbose):
-        value = escape(get_field_value(obj, field))
-        color = colors.get(value, "black")
-        if verbose:
-            # Get the human-readable value of a choice field
-            value = getattr(obj, 'get_%s_display' % field)()
-        colored_value = '<span style="color: %s;">%s</span>' % (color, value)
-        if bold:
-            colored_value = '<b>%s</b>' % colored_value
-        return mark_safe(colored_value)
-    if not description:
-        description = field_name.split('__').pop().replace('_', ' ').capitalize()
-    colored_field.short_description = description
-    colored_field.allow_tags = True
-    colored_field.admin_order_field = field_name
-    return colored_field
+@admin_field
+def admin_colored(*args, **kwargs):
+    instance = args[-1]
+    field = kwargs['field']
+    value = escape(get_field_value(instance, field))
+    color = kwargs.get('colors', {}).get(value, 'black')
+    value = getattr(instance, 'get_%s_display' % field)().upper()
+    colored_value = '<span style="color: %s;">%s</span>' % (color, value)
+    if kwargs.get('bold', True):
+        colored_value = '<b>%s</b>' % colored_value
+    return mark_safe(colored_value)
 
 
-#def display_timesince(date, double=False):
-#    """ 
-#    Format date for messages create_on: show a relative time
-#    with contextual helper to show fulltime format.
-#    """
-#    if not date:
-#        return 'Never'
-#    date_rel = timesince(date)
-#    if not double:
-#        date_rel = date_rel.split(',')[0]  
-#    date_rel += ' ago'
-#    date_abs = date.strftime("%Y-%m-%d %H:%M:%S %Z")
-#    return mark_safe("<span title='%s'>%s</span>" % (date_abs, date_rel))
-
-
-def admin_date(field, **kwargs):
-    """ utility function for creating admin dates """
-    default = kwargs.pop('default', '')
-    order = kwargs.pop('order', field)
-    
-    def display_date(*args):
-        instance = args[-1]
-        value = get_field_value(instance, field)
-        if not value:
-            return default
-        return '<span title="{0}">{1}</span>'.format(
-            escape(str(value)), escape(naturaldate(value)),
-        )
-    display_date.short_description = _(field.replace('_', ' '))
-    display_date.admin_order_field = order
-    display_date.allow_tags = True
-    return display_date
-
-
-#def display_timeuntil(date):
-#    date_rel = timeuntil(date) + ' left'
-#    date_abs = date.strftime("%Y-%m-%d %H:%M:%S %Z")
-#    return mark_safe("<span title='%s'>%s</span>" % (date_abs, date_rel))
+@admin_field
+def admin_date(*args, **kwargs):
+    instance = args[-1]
+    value = get_field_value(instance, kwargs['field'])
+    if not value:
+        return kwargs.get('default', '')
+    return '<span title="{0}">{1}</span>'.format(
+        escape(str(value)), escape(naturaldate(value)),
+    )

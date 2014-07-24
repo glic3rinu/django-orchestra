@@ -15,8 +15,8 @@
    width="48"
    version="1.0"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="TuxBox.svg"
-   inkscape:export-filename="/home/glic3rinu/orchestra/django-orchestra/orchestra/static/orchestra/icons/Pack.png"
+   sodipodi:docname="Pack.svg"
+   inkscape:export-filename="/home/glic3/orchestra/django-orchestra/orchestra/static/orchestra/icons/Pack.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <svg:metadata
@@ -45,7 +45,7 @@
      id="namedview50"
      showgrid="false"
      inkscape:zoom="4.9166667"
-     inkscape:cx="75.979939"
+     inkscape:cx="75.97994"
      inkscape:cy="-22.905943"
      inkscape:window-x="0"
      inkscape:window-y="27"
@@ -3780,19 +3780,6 @@
        y1="7.9757"
        x2="15.464"
        y2="45.042" />
-    <svg:filter
-       color-interpolation-filters="sRGB"
-       id="filter3974-4"
-       height="2.5622675"
-       y="-0.78113377"
-       width="1.1420243"
-       x="-0.071012162"
-       inkscape:collect="always">
-      <svg:feGaussianBlur
-         id="feGaussianBlur3976-3"
-         stdDeviation="0.97641723"
-         inkscape:collect="always" />
-    </svg:filter>
     <svg:linearGradient
        gradientTransform="translate(0.01860128,-4.0163098)"
        gradientUnits="userSpaceOnUse"
@@ -4294,7 +4281,7 @@
      id="path3273" />
   <svg:g
      id="g3888"
-     transform="matrix(0.7674386,0,0,0.7674386,-7.6813433,9.7817236)">
+     transform="matrix(0.67441404,0,0,0.67441404,-1.7640493,12.799498)">
     <svg:g
        transform="matrix(0.91489252,0,0,0.91489252,30.720532,5.6526667)"
        id="layer2">

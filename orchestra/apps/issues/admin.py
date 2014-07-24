@@ -12,7 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin#, ChangeViewActions
-from orchestra.admin.utils import admin_link, colored, wrap_admin_view, admin_date
+from orchestra.admin.utils import (admin_link, admin_colored, wrap_admin_view,
+        admin_date)
 from orchestra.apps.contacts import settings as contacts_settings
 
 from .actions import (reject_tickets, resolve_tickets, take_tickets, close_tickets,
@@ -111,19 +112,13 @@ class TicketInline(admin.TabularInline):
     owner_link = admin_link('owner')
     created = admin_link('created_on')
     last_modified = admin_link('last_modified_on')
+    colored_state = admin_colored('state', colors=STATE_COLORS, bold=False)
+    colored_priority = admin_colored('priority', colors=PRIORITY_COLORS, bold=False)
     
     def ticket_id(self, instance):
         return '<b>%s</b>' % admin_link()(instance)
     ticket_id.short_description = '#'
     ticket_id.allow_tags = True
-    
-    def colored_state(self, instance):
-        return colored('state', STATE_COLORS, bold=False)(instance)
-    colored_state.short_description = _("State")
-    
-    def colored_priority(self, instance):
-        return colored('priority', PRIORITY_COLORS, bold=False)(instance)
-    colored_priority.short_description = _("Priority")
 
 
 class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeViewActions, 
@@ -198,6 +193,8 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     display_queue = admin_link('queue')
     display_owner = admin_link('owner')
     last_modified = admin_date('last_modified_on')
+    display_state = admin_colored('state', colors=STATE_COLORS, bold=False)
+    display_priority = admin_colored('priority', colors=PRIORITY_COLORS, bold=False)
     
     def display_summary(self, ticket):
         context = {
@@ -215,18 +212,6 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
         return '<h4>Added by %(creator)s about %(created)s%(updated)s</h4>' % context
     display_summary.short_description = 'Summary'
     display_summary.allow_tags = True
-    
-    def display_priority(self, ticket):
-        """ State colored for change_form """
-        return colored('priority', PRIORITY_COLORS, bold=False, verbose=True)(ticket)
-    display_priority.short_description = _("Priority")
-    display_priority.admin_order_field = 'priority'
-    
-    def display_state(self, ticket):
-        """ State colored for change_form """
-        return colored('state', STATE_COLORS, bold=False, verbose=True)(ticket)
-    display_state.short_description = _("State")
-    display_state.admin_order_field = 'state'
     
     def unbold_id(self, ticket):
         """ Unbold id if ticket is read """

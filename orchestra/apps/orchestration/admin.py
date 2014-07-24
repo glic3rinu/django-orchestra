@@ -4,7 +4,7 @@ from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.html import monospace_format
-from orchestra.admin.utils import admin_link, admin_date, colored
+from orchestra.admin.utils import admin_link, admin_date, admin_colored
 
 from .models import Server, Route, BackendLog, BackendOperation
 
@@ -90,7 +90,7 @@ class BackendLogAdmin(admin.ModelAdmin):
     server_link = admin_link('server')
     display_last_update = admin_date('last_update')
     display_created = admin_date('created')
-    display_state = colored('state', STATE_COLORS)
+    display_state = admin_colored('state', colors=STATE_COLORS)
     
     def mono_script(self, log):
         return monospace_format(escape(log.script))

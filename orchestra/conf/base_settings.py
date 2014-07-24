@@ -179,7 +179,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'miscellaneous/miscellaneous': 'applications-other.png',
     # Accounts
     'accounts/account': 'Face-monkey.png',
-    'contacts/contact': 'contact.png',
+    'contacts/contact': 'contact_book.png',
     'orders/order': 'basket.png',
     'orders/service': 'price.png',
     'prices/pack': 'Pack.png',

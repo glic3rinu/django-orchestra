@@ -12,6 +12,7 @@ class PaymentSource(models.Model):
     method = models.CharField(_("method"), max_length=32,
             choices=PaymentMethod.get_plugin_choices())
     data = JSONField(_("data"))
+    is_active = models.BooleanField(_("is active"), default=True)
 
 
 class Transaction(models.Model):
@@ -22,14 +23,15 @@ class Transaction(models.Model):
     LOCKED = 'LOCKED'
     DISCARTED = 'DISCARTED'
     STATES = (
-        (WAITTING_PROCESSING, _("Waitting for processing")),
-        (WAITTING_CONFIRMATION, _("Waitting for confirmation")),
+        (WAITTING_PROCESSING, _("Waitting processing")),
+        (WAITTING_CONFIRMATION, _("Waitting confirmation")),
         (CONFIRMED, _("Confirmed")),
         (REJECTED, _("Rejected")),
         (LOCKED, _("Locked")),
         (DISCARTED, _("Discarted")),
     )
     
+    # TODO account fk?
     bill = models.ForeignKey('bills.bill', verbose_name=_("bill"),
             related_name='transactions')
     method = models.CharField(_("payment method"), max_length=32,
@@ -42,3 +44,6 @@ class Transaction(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
     related = models.ForeignKey('self', null=True, blank=True)
+    
+    def __unicode__(self):
+        return "Transaction {}".format(self.id)

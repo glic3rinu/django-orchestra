@@ -65,3 +65,5 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
                              
 
 * Be consistent with dates: name_on, created ? 
+
+* backend logs with hal logo

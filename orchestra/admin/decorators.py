@@ -8,6 +8,7 @@ from django.utils.encoding import force_text
 
 
 def admin_field(method):
+    """ Wraps a function to be used as a ModelAdmin method field """
     def admin_field_wrapper(*args, **kwargs):
         """ utility function for creating admin links """
         kwargs['field'] = args[0] if args else ''

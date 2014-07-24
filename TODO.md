@@ -64,6 +64,11 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
                              dependency collector with max_recursion that matches the number of dots on service.match and service.metric
                              
 
-* Be consistent with dates: name_on, created ? 
+* Be consistent with dates:
+    * created_on date
+    * created_at datetime
+
+at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
+
 
 * backend logs with hal logo

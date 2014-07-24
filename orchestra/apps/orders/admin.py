@@ -11,6 +11,7 @@ from orchestra.admin.utils import admin_link, admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
+from .actions import BillSelectedOrders
 from .filters import ActiveOrderListFilter
 from .models import Service, Order, MetricStorage
 
@@ -81,6 +82,7 @@ class OrderAdmin(AccountAdminMixin, ChangeListDefaultFilter, admin.ModelAdmin):
     )
     list_display_link = ('id', 'service')
     list_filter = (ActiveOrderListFilter, 'service',)
+    actions = (BillSelectedOrders(),)
     date_hierarchy = 'registered_on'
     default_changelist_filters = (
         ('is_active', 'True'),

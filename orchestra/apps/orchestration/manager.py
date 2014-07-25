@@ -38,11 +38,11 @@ def execute(operations):
     cache = {}
     for operation in operations:
         servers = router.get_servers(operation, cache=cache)
-        print cache
         for server in servers:
             key = (server, operation.backend)
             if key not in scripts:
                 scripts[key] = (operation.backend(), [operation])
+                scripts[key][0].prepare()
             else:
                 scripts[key][1].append(operation)
             method = getattr(scripts[key][0], operation.action)

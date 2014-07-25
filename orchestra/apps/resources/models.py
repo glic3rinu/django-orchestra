@@ -129,10 +129,10 @@ class ResourceData(models.Model):
         ct = ContentType.objects.get_for_model(type(obj))
         try:
             return cls.objects.get(content_type=ct, object_id=obj.pk,
-                                   resource=resource)
+                    resource=resource)
         except cls.DoesNotExist:
             return cls.objects.create(content_object=obj, resource=resource,
-                                      allocated=resource.default_allocation)
+                    allocated=resource.default_allocation)
     
     def get_used(self):
         return helpers.compute_resource_usage(self)
@@ -173,6 +173,7 @@ def create_resource_relation():
             return data
         
         def __get__(self, obj, cls):
+            """ proxy handled object """
             self.obj = obj
             return self
     

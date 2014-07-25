@@ -81,8 +81,8 @@ class BackendLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'last_update'
     inlines = [BackendOperationInline]
     fields = [
-        'backend', 'server', 'state', 'mono_script', 'mono_stdout', 'mono_stderr',
-        'mono_traceback', 'exit_code', 'task_id', 'display_created',
+        'backend', 'server_link', 'state', 'mono_script', 'mono_stdout',
+        'mono_stderr', 'mono_traceback', 'exit_code', 'task_id', 'display_created',
         'display_last_update', 'execution_time'
     ]
     readonly_fields = fields

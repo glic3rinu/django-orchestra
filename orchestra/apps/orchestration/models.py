@@ -60,7 +60,7 @@ class BackendLog(models.Model):
     traceback = models.TextField(_("traceback"))
     exit_code = models.IntegerField(_("exit code"), null=True)
     task_id = models.CharField(_("task ID"), max_length=36, unique=True, null=True,
-            help_text="Celery task ID")
+            help_text="Celery task ID when used as execution backend")
     created = models.DateTimeField(_("created"), auto_now_add=True)
     last_update = models.DateTimeField(_("last update"), auto_now=True)
     

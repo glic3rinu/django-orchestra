@@ -25,8 +25,8 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 if not running_syncdb():
     # TODO why this is even loaded during syncdb?
-    for resources in Resource.group_by_content_type():
-        model = resources[0].content_type.model_class()
+    for ct, resources in Resource.objects.group_by('content_type'):
+        model = ct.model_class()
         try:
             router.insert(model, 'resources', ResourceSerializer, required=False, many=True)
         except KeyError:

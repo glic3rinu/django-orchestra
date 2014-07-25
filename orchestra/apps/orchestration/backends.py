@@ -97,6 +97,10 @@ class ServiceBackend(plugins.Plugin):
         else:
             self.cmds[-1][1].append(cmd)
     
+    def prepare(self):
+        """ hook for executing something at the beging """
+        pass
+    
     def commit(self):
         """
         apply the configuration, usually reloading a service 

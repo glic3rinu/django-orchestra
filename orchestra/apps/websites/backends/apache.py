@@ -1,3 +1,4 @@
+import textwrap
 import os
 
 from django.template import Template, Context
@@ -182,48 +183,57 @@ class Apache2Traffic(ServiceMonitor):
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Apache 2 Traffic")
     
+    def prepare(self):
+        current_date = timezone.localtime(self.current_date)
+        current_date = current_date.strftime("%Y%m%d%H%M%S")
+        self.append(textwrap.dedent("""
+            function monitor () {
+                OBJECT_ID=$1
+                INI_DATE=$2
+                LOG_FILE="$3"
+                {
+                    awk -v ini="${INI_DATE}" '
+                    BEGIN {
+                        end = "%s"
+                        sum = 0
+                        months["Jan"] = "01";
+                        months["Feb"] = "02";
+                        months["Mar"] = "03";
+                        months["Apr"] = "04";
+                        months["May"] = "05";
+                        months["Jun"] = "06";
+                        months["Jul"] = "07";
+                        months["Aug"] = "08";
+                        months["Sep"] = "09";
+                        months["Oct"] = "10";
+                        months["Nov"] = "11";
+                        months["Dec"] = "12";
+                    } {
+                        # date = [11/Jul/2014:13:50:41
+                        date = substr($4, 2)
+                        year = substr(date, 8, 4)
+                        month = months[substr(date, 4, 3)];
+                        day = substr(date, 1, 2)
+                        hour = substr(date, 13, 2)
+                        minute = substr(date, 16, 2)
+                        second = substr(date, 19, 2)
+                        line_date = year month day hour minute second
+                        if ( line_date > ini && line_date < end)
+                            sum += $NF
+                    } END {
+                        print sum
+                    }' "${LOG_FILE}" || echo 0
+                } | xargs echo ${OBJECT_ID}
+            }""" % current_date))
+    
     def monitor(self, site):
         context = self.get_context(site)
-        self.append("""{
-            awk 'BEGIN {
-                ini = "%(last_date)s"
-                end = "%(current_date)s"
-                sum = 0
-                
-                months["Jan"] = "01";
-                months["Feb"] = "02";
-                months["Mar"] = "03";
-                months["Apr"] = "04";
-                months["May"] = "05";
-                months["Jun"] = "06";
-                months["Jul"] = "07";
-                months["Aug"] = "08";
-                months["Sep"] = "09";
-                months["Oct"] = "10";
-                months["Nov"] = "11";
-                months["Dec"] = "12";
-            } {
-                # date = [11/Jul/2014:13:50:41
-                date = substr($4, 2)
-                year = substr(date, 8, 4)
-                month = months[substr(date, 4, 3)];
-                day = substr(date, 1, 2)
-                hour = substr(date, 13, 2)
-                minute = substr(date, 16, 2)
-                second = substr(date, 19, 2)
-                line_date = year month day hour minute second
-                if ( line_date > ini && line_date < end)
-                    sum += $NF
-            } END {
-                print sum
-            }' %(log_file)s || echo 0; } | xargs echo %(object_id)s """ % context)
+        self.append('monitor %(object_id)i %(last_date)s "%(log_file)s"' % context)
     
     def get_context(self, site):
         last_date = timezone.localtime(self.get_last_date(site.pk))
-        current_date = timezone.localtime(self.current_date)
         return {
             'log_file': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
             'last_date': last_date.strftime("%Y%m%d%H%M%S"),
-            'current_date': current_date.strftime("%Y%m%d%H%M%S"),
             'object_id': site.pk,
         }

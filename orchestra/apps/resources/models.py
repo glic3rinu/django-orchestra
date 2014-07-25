@@ -5,11 +5,15 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
-from orchestra.models.fields import MultiSelectField
+from orchestra.models import queryset, fields
 from orchestra.utils.functional import cached
 
 from . import helpers
 from .backends import ServiceMonitor
+
+
+class ResourceQuerySet(models.QuerySet):
+    group_by = queryset.group_by
 
 
 class Resource(models.Model):
@@ -58,10 +62,12 @@ class Resource(models.Model):
             null=True, blank=True,
             help_text=_("Crontab for periodic execution. "
                         "Leave it empty to disable periodic monitoring"))
-    monitors = MultiSelectField(_("monitors"), max_length=256, blank=True,
+    monitors = fields.MultiSelectField(_("monitors"), max_length=256, blank=True,
             choices=ServiceMonitor.get_plugin_choices(),
             help_text=_("Monitor backends used for monitoring this resource."))
     is_active = models.BooleanField(_("is active"), default=True)
+    
+    objects = ResourceQuerySet.as_manager()
     
     class Meta:
         unique_together = (
@@ -80,8 +86,12 @@ class Resource(models.Model):
             task = PeriodicTask.objects.get(name=name)
         except PeriodicTask.DoesNotExist:
             if self.is_active:
-                PeriodicTask.objects.create(name=name, task='resources.Monitor',
-                                            args=[self.pk], crontab=self.crontab)
+                PeriodicTask.objects.create(
+                    name=name,
+                    task='resources.Monitor',
+                    args=[self.pk],
+                    crontab=self.crontab
+                )
         else:
             if not self.is_active:
                 task.delete()
@@ -92,25 +102,11 @@ class Resource(models.Model):
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
         name = 'monitor.%s' % str(self)
-        PeriodicTask.objects.filter(name=name, task='resources.Monitor',
-                                    args=[self.pk]).delete()
-    
-    @classmethod
-    def group_by_content_type(cls):
-        prev = None
-        group = []
-        resources = cls.objects.filter(is_active=True).order_by('content_type')
-        for resource in resources:
-            ct = resource.content_type
-            if prev != ct:
-                if group:
-                    yield group
-                group = [resource]
-            else:
-                group.append(resource)
-            prev = ct
-        if group:
-            yield group
+        PeriodicTask.objects.filter(
+            name=name,
+            task='resources.Monitor',
+            args=[self.pk]
+        ).delete()
 
 
 class ResourceData(models.Model):
@@ -181,7 +177,7 @@ def create_resource_relation():
             return self
     
     relation = GenericRelation('resources.ResourceData')
-    for resources in Resource.group_by_content_type():
-        model = resources[0].content_type.model_class()
+    for ct, resources in Resource.objects.group_by('content_type'):
+        model = ct.model_class()
         model.add_to_class('resource_set', relation)
         model.resources = ResourceHandler()

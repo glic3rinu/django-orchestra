@@ -11,11 +11,11 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import caches, services
+from orchestra.models import queryset
 from orchestra.utils.apps import autodiscover
 
-from . import settings
+from . import settings, helpers
 from .handlers import ServiceHandler
-from .helpers import search_for_related
 
 
 autodiscover('handlers')
@@ -175,7 +175,7 @@ class Service(models.Model):
         return services
     
     # FIXME some times caching is nasty, do we really have to? make get_plugin more efficient?
-    @cached_property
+    # @cached_property
     def handler(self):
         """ Accessor of this service handler instance """
         if self.handler_type:
@@ -214,6 +214,19 @@ class Service(models.Model):
 
 
 class OrderQuerySet(models.QuerySet):
+    group_by = queryset.group_by
+    
+    def bill(self, **options):
+        for account, services in self.group_by('account_id', 'service_id'):
+            bill_lines = []
+            for service, orders in services:
+                lines = helpers.create_bill_lines(service, orders, **options)
+                bill_lines.extend(lines)
+            helpers.create_bills(account, bill_lines)
+    
+    def get_related(self):
+        pass
+    
     def by_object(self, obj, **kwargs):
         ct = ContentType.objects.get_for_model(obj)
         return self.filter(object_id=obj.pk, content_type=ct, **kwargs)
@@ -245,7 +258,7 @@ class Order(models.Model):
     
     content_object = generic.GenericForeignKey()
     objects = OrderQuerySet.as_manager()
-
+    
     def __unicode__(self):
         return str(self.service)
     
@@ -322,6 +335,6 @@ def update_orders(sender, **kwargs):
         if instance.pk:
             # post_save
             Order.update_orders(instance)
-        related = search_for_related(instance)
+        related = helpers.get_related_objects(instance)
         if related:
             Order.update_orders(related)

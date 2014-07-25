@@ -3,7 +3,7 @@ import inspect
 from orchestra.apps.accounts.models import Account
 
 
-def search_for_related(origin, max_depth=2):
+def get_related_objects(origin, max_depth=2):
     """
     Introspects origin object and return the first related service object
     

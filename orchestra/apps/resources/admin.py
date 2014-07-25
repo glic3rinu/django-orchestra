@@ -129,7 +129,7 @@ def resource_inline_factory(resources):
 
 if not running_syncdb():
     # not run during syncdb
-    for resources in Resource.group_by_content_type():
+    for ct, resources in Resource.objects.group_by('content_type'):
         inline = resource_inline_factory(resources)
-        model = resources[0].content_type.model_class()
+        model = ct.model_class()
         insertattr(model, 'inlines', inline)

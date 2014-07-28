@@ -24,20 +24,20 @@ class Apache2Backend(ServiceController):
         extra_conf += self.get_security(site)
         context['extra_conf'] = extra_conf
         
-        apache_conf = Template(
-            "# {{ banner }}\n"
-            "<VirtualHost *:{{ site.port }}>\n"
-            "    ServerName {{ site.domains.all|first }}\n"
-            "{% if site.domains.all|slice:\"1:\" %}"
-            "    ServerAlias {{ site.domains.all|slice:\"1:\"|join:' ' }}\n"
-            "{% endif %}"
-            "    CustomLog {{ logs }} common\n"
-            "    SuexecUserGroup {{ user }} {{ group }}\n"
-            "{% for line in extra_conf.splitlines %}"
-            "    {{ line | safe }}\n"
-            "{% endfor %}"
-            "</VirtualHost>\n"
-        )
+        apache_conf = Template(textwrap.dedent("""\
+            # {{ banner }}
+            <VirtualHost *:{{ site.port }}>
+                ServerName {{ site.domains.all|first }}
+            {% if site.domains.all|slice:"1:" %}
+                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}
+            {% endif %}
+                CustomLog {{ logs }} common
+                SuexecUserGroup {{ user }} {{ group }}
+            {% for line in extra_conf.splitlines %}"
+                {{ line | safe }}
+            {% endfor %}
+            </VirtualHost>"""
+        ))
         apache_conf = apache_conf.render(Context(context))
         apache_conf += self.get_protections(site)
         context['apache_conf'] = apache_conf

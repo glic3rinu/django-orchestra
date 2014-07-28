@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
+from orchestra.core import accounts
 
 from . import settings
 
@@ -32,4 +32,4 @@ class Rate(models.Model):
         return "{}-{}".format(str(self.value), self.quantity)
 
 
-services.register(Pack, menu=False)
+accounts.register(Pack)

@@ -3,11 +3,28 @@
 
 
 {% block object-tools-items %}
+
+
     {% for service in services %}
         <li>
             <a href="{% url service|admin_urlname:'changelist' %}?account={{ original.pk }}" class="historylink">{{ service.verbose_name_plural|capfirst }}</a>
         </li>
     {% endfor %}
+
+</ul>
+
+<h5 style="visibility:hidden; margin: 1.5em 1.5em 0;">Account</h5>
+<ul class="object-tools">
+    {% for account in accounts %}
+        <li>
+            <a href="{% url account|admin_urlname:'changelist' %}?account={{ original.pk }}" class="historylink">{{ account.verbose_name_plural|capfirst }}</a>
+        </li>
+    {% endfor %}
+</ul>
+</p>
+<h5 style="visibility:hidden; margin: 1.5em 1.5em 0;">a</h5>
+
+<ul class="object-tools">
 <li>
     <a href="disable/" class="historylink">{% trans "Disable" %}</a>
 </li>
@@ -15,6 +32,6 @@
     {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
     <a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a>
 </li>
-{% if has_absolute_url %}<li><a href="{{ absolute_url }}" class="viewsitelink">{% trans "View on site" %}</a></li>{% endif%}
+
 {% endblock %}
 

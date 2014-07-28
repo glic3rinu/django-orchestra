@@ -30,10 +30,10 @@ class MailmanTraffic(ServiceMonitor):
                 MAILMAN_LOG="$4"
                 
                 SUBSCRIBERS=$(list_members ${LIST_NAME} | wc -l)
-                SIZE=$(grep ' post to ${LIST_NAME} ' "${MAILMAN_LOG}" \
-                       | awk '\"$LAST_DATE\"<=$0 && $0<=\"%s\"' \
-                       | sed 's/.*size=\([0-9]*\).*/\\1/' \
-                       | tr '\\n' '+' \
+                SIZE=$(grep ' post to ${LIST_NAME} ' "${MAILMAN_LOG}" \\
+                       | awk '"$LAST_DATE"<=$0 && $0<="%s"' \\
+                       | sed 's/.*size=\([0-9]*\).*/\\1/' \\
+                       | tr '\\n' '+' \\
                        | xargs -i echo {} )
                 echo ${OBJECT_ID} $(( ${SIZE}*${SUBSCRIBERS} ))
             }""" % current_date))

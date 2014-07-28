@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import caches, services
+from orchestra.core import caches, services, accounts
 from orchestra.models import queryset
 from orchestra.utils.apps import autodiscover
 
@@ -175,7 +175,8 @@ class Service(models.Model):
         return services
     
     # FIXME some times caching is nasty, do we really have to? make get_plugin more efficient?
-    # @cached_property
+    # @property
+    @cached_property
     def handler(self):
         """ Accessor of this service handler instance """
         if self.handler_type:
@@ -338,3 +339,6 @@ def update_orders(sender, **kwargs):
         related = helpers.get_related_objects(instance)
         if related:
             Order.update_orders(related)
+
+
+accounts.register(Order)

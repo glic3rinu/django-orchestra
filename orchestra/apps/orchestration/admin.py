@@ -71,6 +71,13 @@ class BackendOperationInline(admin.TabularInline):
         return False
 
 
+def display_mono(field):
+    def display(self, log):
+        return monospace_format(escape(getattr(log, field)))
+    display.short_description = _(field)
+    return display
+
+
 class BackendLogAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'backend', 'server_link', 'display_state', 'exit_code',
@@ -91,22 +98,10 @@ class BackendLogAdmin(admin.ModelAdmin):
     display_last_update = admin_date('last_update')
     display_created = admin_date('created')
     display_state = admin_colored('state', colors=STATE_COLORS)
-    
-    def mono_script(self, log):
-        return monospace_format(escape(log.script))
-    mono_script.short_description = _("script")
-    
-    def mono_stdout(self, log):
-        return monospace_format(escape(log.stdout))
-    mono_stdout.short_description = _("stdout")
-    
-    def mono_stderr(self, log):
-        return monospace_format(escape(log.stderr))
-    mono_stderr.short_description = _("stderr")
-    
-    def mono_traceback(self, log):
-        return monospace_format(escape(log.traceback))
-    mono_traceback.short_description = _("traceback")
+    mono_script = display_mono('script')
+    mono_stdout = display_mono('stdout')
+    mono_stderr = display_mono('stderr')
+    mono_traceback = display_mono('traceback')
     
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """

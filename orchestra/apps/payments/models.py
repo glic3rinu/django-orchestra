@@ -1,6 +1,10 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
+
+from orchestra.core import accounts
 
 from . import settings
 from .methods import PaymentMethod
@@ -13,6 +17,25 @@ class PaymentSource(models.Model):
             choices=PaymentMethod.get_plugin_choices())
     data = JSONField(_("data"))
     is_active = models.BooleanField(_("is active"), default=True)
+    
+    def __unicode__(self):
+        return self.label or str(self.account)
+    
+    @cached_property
+    def label(self):
+        try:
+            plugin = PaymentMethod.get_plugin(self.method)()
+        except KeyError:
+            return None
+        return plugin.get_label(self.data)
+    
+    @cached_property
+    def number(self):
+        try:
+            plugin = PaymentMethod.get_plugin(self.method)()
+        except KeyError:
+            return None
+        return plugin.get_number(self.data)
 
 
 class Transaction(models.Model):
@@ -34,8 +57,8 @@ class Transaction(models.Model):
     # TODO account fk?
     bill = models.ForeignKey('bills.bill', verbose_name=_("bill"),
             related_name='transactions')
-    method = models.CharField(_("payment method"), max_length=32,
-            choices=PaymentMethod.get_plugin_choices())
+    source = models.ForeignKey(PaymentSource, verbose_name=_("source"),
+            related_name='transactions')
     state = models.CharField(_("state"), max_length=32, choices=STATES,
             default=WAITTING_PROCESSING)
     data = JSONField(_("data"))
@@ -47,3 +70,7 @@ class Transaction(models.Model):
     
     def __unicode__(self):
         return "Transaction {}".format(self.id)
+
+
+accounts.register(PaymentSource)
+accounts.register(Transaction)

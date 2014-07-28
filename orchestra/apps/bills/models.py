@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core import accounts
+
 from . import settings
 
 
@@ -87,6 +89,10 @@ class Bill(models.Model):
         self.ident = '{prefix}{year}{number}'.format(
                 prefix=prefix, year=year, number=number)
     
+    def close(self):
+        self.status = self.CLOSED
+        self.save()
+    
     def save(self, *args, **kwargs):
         if not self.bill_type:
             self.bill_type = type(self).get_type()
@@ -146,3 +152,5 @@ class BillLine(BaseBillLine):
     amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
             related_name='amendment_lines', null=True, blank=True)
 
+
+accounts.register(Bill)

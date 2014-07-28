@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import wrap_admin_view, admin_link
-from orchestra.core import services
+from orchestra.core import services, accounts
 
 from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm, AccountChangeForm
@@ -60,9 +60,12 @@ class AccountAdmin(ExtendedModelAdmin):
             if not account.is_active:
                 messages.warning(request, 'This account is disabled.')
         context = {
-            # TODO not services but everythin (payments, bills, etc)
             'services': sorted(
                 [ model._meta for model in services.get() if model is not Account ],
+                key=lambda i: i.verbose_name_plural.lower()
+            ),
+            'accounts': sorted(
+                [ model._meta for model in accounts.get() if model is not Account ],
                 key=lambda i: i.verbose_name_plural.lower()
             )
         }
@@ -83,8 +86,9 @@ class AccountAdmin(ExtendedModelAdmin):
     def get_queryset(self, request):
         """ Select related for performance """
         # TODO move invoicecontact to contacts
+        qs = super(AccountAdmin, self).get_queryset(request)
         related = ('user', 'invoicecontact')
-        return super(AccountAdmin, self).get_queryset(request).select_related(*related)
+        return qs.select_related(*related)
 
 
 admin.site.register(Account, AccountAdmin)

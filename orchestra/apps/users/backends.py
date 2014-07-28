@@ -21,7 +21,7 @@ class SystemUserBackend(ServiceController):
                 if [[ $( id %(username)s ) ]]; then
                    usermod --password '%(password)s' %(username)s
                 else
-                   useradd %(username)s --password '%(password)s' \
+                   useradd %(username)s --password '%(password)s' \\
                          --shell /bin/false
                 fi
                 mkdir -p %(home)s
@@ -74,8 +74,8 @@ class FTPTraffic(ServiceMonitor):
                 INI_DATE=$2
                 USERNAME="$3"
                 LOG_FILE="$4"
-                grep "UPLOAD\|DOWNLOAD" "${LOG_FILE}" \
-                    | grep " \\[${USERNAME}\\] " \
+                grep "UPLOAD\|DOWNLOAD" "${LOG_FILE}" \\
+                    | grep " \\[${USERNAME}\\] " \\
                     | awk -v ini="${INI_DATE}" '
                         BEGIN {
                             end = "%s"

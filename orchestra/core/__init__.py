@@ -1,5 +1,6 @@
-class Service(object):
-    _registry = {}
+class Register(object):
+    def __init__(self):
+        self._registry = {}
     
     def __contains__(self, key):
         return key in self._registry
@@ -18,4 +19,6 @@ class Service(object):
         return self._registry
 
 
-services = Service()
+services = Register()
+# TODO rename to something else
+accounts = Register()

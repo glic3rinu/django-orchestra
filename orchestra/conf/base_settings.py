@@ -144,6 +144,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.orders.models.Order',
             'orchestra.apps.prices.models.Pack',
             'orchestra.apps.bills.models.Bill',
+#            'orchestra.apps.payments.models.PaymentSource',
             'orchestra.apps.payments.models.Transaction',
             'orchestra.apps.issues.models.Ticket',
         ),
@@ -184,6 +185,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'orders/service': 'price.png',
     'prices/pack': 'Pack.png',
     'bills/bill': 'invoice.png',
+    'payments/paymentsource': 'card_in_use.png',
     'payments/transaction': 'transaction.png',
     'issues/ticket': 'Ticket_star.png',
     # Administration

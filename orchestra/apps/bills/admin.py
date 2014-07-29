@@ -12,9 +12,16 @@ from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, Budget,
 
 class BillLineInline(admin.TabularInline):
     model = BillLine
+    fields = (
+        'description', 'initial_date', 'final_date', 'price', 'amount', 'tax'
+    )
+
 
 class BudgetLineInline(admin.TabularInline):
     model = Budget
+    fields = (
+        'description', 'initial_date', 'final_date', 'price', 'amount', 'tax'
+    )
 
 
 class BillAdmin(AccountAdminMixin, admin.ModelAdmin):

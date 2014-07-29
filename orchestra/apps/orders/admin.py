@@ -88,7 +88,7 @@ class OrderAdmin(AccountAdminMixin, ChangeListDefaultFilter, admin.ModelAdmin):
         ('is_active', 'True'),
     )
     
-    content_object_link = admin_link('content_object')
+    content_object_link = admin_link('content_object', order=False)
     display_registered_on = admin_date('registered_on')
     display_cancelled_on = admin_date('cancelled_on')
 

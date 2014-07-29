@@ -89,7 +89,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     
     def display_mailboxes(self, address):
         boxes = []
-        for mailbox in address.mailboxes():
+        for mailbox in address.mailboxes.all():
             user = mailbox.user
             url = reverse('admin:users_user_mailbox_change', args=(user.pk,))
             boxes.append('<a href="%s">%s</a>' % (url, user.username))

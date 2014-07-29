@@ -186,7 +186,7 @@ class Service(models.Model):
     def clean(self):
         content_type = self.handler.get_content_type()
         if self.content_type != content_type:
-            msg =_("Content type must be equal to '%s'." % str(content_type))
+            msg =_("Content type must be equal to '%s'.") % str(content_type)
             raise ValidationError(msg)
         if not self.match:
             msg =_("Match should be provided")

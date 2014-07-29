@@ -63,13 +63,13 @@ def wrap_admin_view(modeladmin, view):
     return update_wrapper(wrapper, view)
 
 
-def set_default_filter(queryarg, request, value):
+def set_url_query(request, key, value):
     """ set default filters for changelist_view """
-    if queryarg not in request.GET:
+    if key not in request.GET:
         request_copy = request.GET.copy()
         if callable(value):
             value = value(request)
-        request_copy[queryarg] = value
+        request_copy[key] = value
         request.GET = request_copy
         request.META['QUERY_STRING'] = request.GET.urlencode()
 

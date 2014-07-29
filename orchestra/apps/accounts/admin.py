@@ -5,10 +5,11 @@ from django.contrib.admin.util import unquote
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
+from django.utils.six.moves.urllib.parse import parse_qsl
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import wrap_admin_view, admin_link
+from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query
 from orchestra.core import services, accounts
 
 from .filters import HasMainUserListFilter
@@ -129,6 +130,8 @@ class AccountAdminMixin(object):
     """ Provide basic account support to ModelAdmin and AdminInline classes """
     readonly_fields = ('account_link',)
     filter_by_account_fields = []
+    change_list_template = 'admin/accounts/account/change_list.html'
+    change_form_template = 'admin/accounts/account/change_form.html'
     
     def account_link(self, instance):
         account = instance.account if instance.pk else self.account
@@ -161,6 +164,48 @@ class AccountAdminMixin(object):
                 # Filter related object by account
                 formfield.queryset = formfield.queryset.filter(account=self.account)
         return formfield
+    
+    def get_account_from_preserve_filters(self, request):
+        preserved_filters = self.get_preserved_filters(request)
+        preserved_filters = dict(parse_qsl(preserved_filters))
+        cl_filters = preserved_filters.get('_changelist_filters')
+        if cl_filters:
+            return dict(parse_qsl(cl_filters)).get('account')
+    
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        account_id = self.get_account_from_preserve_filters(request)
+        verb = 'change' if object_id else 'add'
+        if not object_id:
+            if account_id:
+                # Preselect account
+                set_url_query(request, 'account', account_id)
+        context = {
+            'from_account': bool(account_id),
+            'account': not account_id or Account.objects.get(pk=account_id),
+            'account_opts': Account._meta,
+        }
+        context.update(extra_context or {})
+        return super(AccountAdminMixin, self).changeform_view(request,
+                object_id=object_id, form_url=form_url, extra_context=context)
+    
+    def changelist_view(self, request, extra_context=None):
+        account_id = request.GET.get('account')
+        context = {
+            'from_account': False
+        }
+        if account_id:
+            opts = self.model._meta
+            account = Account.objects.get(pk=account_id)
+            context = {
+                'from_account': True,
+                'title': _("Select %s to change for %s") % (
+                    opts.verbose_name, account.name),
+                'account': not account_id or Account.objects.get(pk=account_id),
+                'account_opts': Account._meta,
+            }
+        context.update(extra_context or {})
+        return super(AccountAdminMixin, self).changelist_view(request,
+                extra_context=context)
 
 
 class SelectAccountAdminMixin(AccountAdminMixin):
@@ -196,14 +241,21 @@ class SelectAccountAdminMixin(AccountAdminMixin):
     def add_view(self, request, form_url='', extra_context=None):
         """ Redirects to select account view if required """
         if request.user.is_superuser:
-            if 'account' in request.GET or Account.objects.count() == 1:
+            from_account_id = self.get_account_from_preserve_filters(request)
+            if from_account_id:
+                set_url_query(request, 'account', from_account_id)
+            account_id = request.GET.get('account')
+            if account_id or Account.objects.count() == 1:
                 kwargs = {}
-                if 'account' in request.GET:
-                    kwargs = dict(pk=request.GET['account'])
+                if account_id:
+                    kwargs = dict(pk=account_id)
                 self.account = Account.objects.get(**kwargs)
                 opts = self.model._meta
                 context = {
-                    'title': _("Add %s for %s") % (opts.verbose_name, self.account.name)
+                    'title': _("Add %s for %s") % (opts.verbose_name, self.account.name),
+                    'from_account': bool(from_account_id),
+                    'account': self.account,
+                    'account_opts': Account._meta,
                 }
                 context.update(extra_context or {})
                 return super(AccountAdminMixin, self).add_view(request,

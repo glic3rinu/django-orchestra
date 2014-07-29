@@ -1,0 +1,32 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+{% if from_account %}
+&rsaquo; <a href="{% url 'admin:app_list' app_label=account_opts.app_label %}">{{ account_opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url account_opts|admin_urlname:'changelist' %}">{{ account_opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; <a href="{% url account_opts|admin_urlname:'change' account.pk|admin_urlquote %}">{{ account|truncatewords:"18" }}</a>
+{% else %}
+&rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
+{% endif %}
+&rsaquo; {{ cl.opts.verbose_name_plural|capfirst }}
+</div>
+{% endblock %}
+
+
+{% block object-tools-items %}
+{% if from_account %}
+<li>
+    <a href="./" class="historylink">{% trans 'Show all' %}</a>
+</li>
+{% endif %}
+<li>
+  {% url cl.opts|admin_urlname:'add' as add_url %}
+  <a href="{% add_preserved_filters add_url is_popup to_field %}" class="addlink">
+    {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+  </a>
+</li>
+{% endblock %}

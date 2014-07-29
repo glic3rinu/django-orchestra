@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_text
@@ -20,9 +22,13 @@ class ShowTextWidget(forms.Widget):
         else:
             final_value = '<br/>'.join(value.split('\n'))
         if self.warning:
-            final_value = u'<ul class="messagelist"><li class="warning">%s</li></ul>' %(final_value)
+            final_value = (
+                u'<ul class="messagelist"><li class="warning">%s</li></ul>'
+                % final_value)
         if self.hidden:
-            final_value = u'%s<input type="hidden" name="%s" value="%s"/>' % (final_value, name, value)
+            final_value = (
+                u'%s<input type="hidden" name="%s" value="%s"/>'
+                % (final_value, name, value))
         return mark_safe(final_value)
     
     def _has_changed(self, initial, data):
@@ -44,3 +50,16 @@ class ReadOnlyWidget(forms.Widget):
     
     def value_from_datadict(self, data, files, name):
         return self.original_value
+
+
+def paddingCheckboxSelectMultiple(padding):
+    """ Ugly hack to render this widget nicely on Django admin """
+    widget = forms.CheckboxSelectMultiple()
+    old_render = widget.render
+    def render(self, *args, **kwargs):
+        value = old_render(self, *args, **kwargs)
+        value = re.sub(r'^<ul id=(.*)>',
+                r'<ul id=\1 style="padding-left:%ipx">' % padding, value, 1)
+        return mark_safe(value)
+    widget.render = render
+    return widget

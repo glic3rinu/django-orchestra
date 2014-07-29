@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.forms.models import BaseInlineFormSet
 
-from .utils import set_default_filter
+from .utils import set_url_query
 
 
 class ExtendedModelAdmin(admin.ModelAdmin):
@@ -55,9 +55,9 @@ class ChangeListDefaultFilter(object):
     def changelist_view(self, request, extra_context=None):
         """ Default filter as 'my_nodes=True' """
         defaults = []
-        for queryarg, value in self.default_changelist_filters:
-             set_default_filter(queryarg, request, value)
-             defaults.append(queryarg)
+        for key, value in self.default_changelist_filters:
+             set_url_query(request, key, value)
+             defaults.append(key)
         # hack response cl context in order to hook default filter awaearness into search_form.html template
         response = super(ChangeListDefaultFilter, self).changelist_view(request, extra_context=extra_context)
         if hasattr(response, 'context_data') and 'cl' in response.context_data:

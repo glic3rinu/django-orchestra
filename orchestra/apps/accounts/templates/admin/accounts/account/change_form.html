@@ -2,18 +2,34 @@
 {% load i18n admin_urls admin_static admin_modify %}
 
 
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+{% if from_account %}
+&rsaquo; <a href="{% url 'admin:app_list' app_label=account_opts.app_label %}">{{ account_opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url account_opts|admin_urlname:'changelist' %}">{{ account_opts.verbose_name_plural|capfirst }}</a>
+&rsaquo; <a href="{% url account_opts|admin_urlname:'change' account.pk|admin_urlquote %}">{{ account|truncatewords:"18" }}</a>
+&rsaquo; {% if has_change_permission %}<a href="{% url opts|admin_urlname:'changelist' %}?account={{ account.pk }}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+{% else %}
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; {% if has_change_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+{% endif %}
+&rsaquo; {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+</div>
+{% endblock %}
+
+
 {% block object-tools-items %}
-
-
+{% if services %}
     {% for service in services %}
         <li>
             <a href="{% url service|admin_urlname:'changelist' %}?account={{ original.pk }}" class="historylink">{{ service.verbose_name_plural|capfirst }}</a>
         </li>
     {% endfor %}
-
 </ul>
-
 <h5 style="visibility:hidden; margin: 1.5em 1.5em 0;">Account</h5>
+{% endif %}
+{% if accounts %}
 <ul class="object-tools">
     {% for account in accounts %}
         <li>
@@ -21,10 +37,9 @@
         </li>
     {% endfor %}
 </ul>
-</p>
 <h5 style="visibility:hidden; margin: 1.5em 1.5em 0;">a</h5>
-
 <ul class="object-tools">
+{% endif %}
 <li>
     <a href="disable/" class="historylink">{% trans "Disable" %}</a>
 </li>
@@ -32,6 +47,5 @@
     {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
     <a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a>
 </li>
-
 {% endblock %}
 

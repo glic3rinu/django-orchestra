@@ -13,7 +13,7 @@ from rest_framework import serializers
 from orchestra.utils import plugins
 
 from . import settings
-from .forms import BankTransferForm, CreditCardForm
+from .forms import DirectDebitForm, CreditCardForm
 
 
 class PaymentMethod(plugins.Plugin):
@@ -37,7 +37,7 @@ class PaymentMethod(plugins.Plugin):
         return data[self.number_field]
 
 
-class BankTransferSerializer(serializers.Serializer):
+class DirectDebitSerializer(serializers.Serializer):
     iban = serializers.CharField(label='IBAN', validators=[IBANValidator()],
             min_length=min(IBAN_COUNTRY_CODE_LENGTH.values()), max_length=34)
     name = serializers.CharField(label=_("Name"), max_length=128)
@@ -47,12 +47,12 @@ class CreditCardSerializer(serializers.Serializer):
     pass
 
 
-class BankTransfer(PaymentMethod):
-    verbose_name = _("Bank transfer")
+class DirectDebit(PaymentMethod):
+    verbose_name = _("Direct debit")
     label_field = 'name'
     number_field = 'iban'
-    form = BankTransferForm
-    serializer = BankTransferSerializer
+    form = DirectDebitForm
+    serializer = DirectDebitSerializer
     
     def _process_transactions(self, transactions):
         for transaction in transactions:

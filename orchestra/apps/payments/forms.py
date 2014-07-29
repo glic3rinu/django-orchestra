@@ -24,7 +24,7 @@ class PaymentSourceDataForm(forms.ModelForm):
         return super(PaymentSourceDataForm, self).save(commit=commit)
 
 
-class BankTransferForm(PaymentSourceDataForm):
+class DirectDebitForm(PaymentSourceDataForm):
     iban = IBANFormField(label='IBAN',
             widget=forms.TextInput(attrs={'size': '50'}))
     name = forms.CharField(max_length=128, label=_("Name"),

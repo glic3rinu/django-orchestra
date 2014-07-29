@@ -31,6 +31,7 @@ USE_TZ = True
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = '/static/'
 
+MEDIA_URL = '/media/'
 
 ALLOWED_HOSTS = '*'
 

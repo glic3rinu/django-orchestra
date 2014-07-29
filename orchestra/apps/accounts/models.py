@@ -1,5 +1,6 @@
-from django.conf import settings as django_settings
+from django.conf import settings as djsettings
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
@@ -8,9 +9,10 @@ from . import settings
 
 
 class Account(models.Model):
-    user = models.OneToOneField(django_settings.AUTH_USER_MODEL, related_name='accounts')
-    type = models.CharField(_("type"), max_length=32, choices=settings.ACCOUNTS_TYPES,
-            default=settings.ACCOUNTS_DEFAULT_TYPE)
+    user = models.OneToOneField(djsettings.AUTH_USER_MODEL,
+            verbose_name=_("user"), related_name='accounts')
+    type = models.CharField(_("type"), choices=settings.ACCOUNTS_TYPES,
+            max_length=32, default=settings.ACCOUNTS_DEFAULT_TYPE)
     language = models.CharField(_("language"), max_length=2,
             choices=settings.ACCOUNTS_LANGUAGES,
             default=settings.ACCOUNTS_DEFAULT_LANGUAGE)
@@ -21,10 +23,9 @@ class Account(models.Model):
     def __unicode__(self):
         return self.name
     
-    @property
+    @cached_property
     def name(self):
-        self._cached_name = getattr(self, '_cached_name', self.user.username)
-        return self._cached_name
+        return self.user.username
 
 
 services.register(Account, menu=False)

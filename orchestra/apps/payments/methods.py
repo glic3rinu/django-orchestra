@@ -1,8 +1,10 @@
-import random
-import string
+import os
+import lxml.builder
 from lxml import etree
 from lxml.builder import E
+from StringIO import StringIO
 
+from django.conf import settings as djsettings
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django_iban.validators import IBANValidator, IBAN_COUNTRY_CODE_LENGTH
@@ -52,28 +54,28 @@ class BankTransfer(PaymentMethod):
     form = BankTransferForm
     serializer = BankTransferSerializer
     
-    def set_id(self):
-        size=6
-        chars=string.ascii_uppercase + string.digits
-        self.payment_id =  ''.join(random.choice(chars) for _ in range(size))
-    
     def _process_transactions(self, transactions):
         for transaction in transactions:
-            account = transaction.account
-            data = transaction.data
-            transaction.info = self.payment_id
+            self.object.transactions.add(transaction)
+            # TODO transaction.account
+            account = transaction.bill.account
+            # FIXME
+            data = account.payment_sources.first().data
             transaction.state = transaction.WAITTING_CONFIRMATION
             transaction.save()
             yield E.DrctDbtTxInf(                           # Direct Debit Transaction Info
                 E.PmtId(                                    # Payment Id
                     E.EndToEndId(str(transaction.id))       # Payment Id/End to End
                 ),
-                E.InstdAmt(transaction.amount, Ccy="EUR"),  # Instructed Amount
+                E.InstdAmt(                                 # Instructed Amount
+                    str(transaction.amount),
+                    Ccy=transaction.currency.upper()
+                ),
                 E.DrctDbtTx(                                # Direct Debit Transaction
                     E.MndtRltdInf(                          # Mandate Related Info
                         E.MndtId(str(account.id)),          # Mandate Id
                         E.DtOfSgntr(                        # Date of Signature
-                            account.registered_on.strfrm("%Y-%m-%d")
+                            account.register_date.strftime("%Y-%m-%d")
                         )
                     )
                 ),
@@ -95,17 +97,24 @@ class BankTransfer(PaymentMethod):
             )
     
     def process(self, transactions):
-        self.set_id()
+        from .models import PaymentProcess
+        self.object = PaymentProcess.objects.create()
         creditor_name = settings.PAYMENTS_DD_CREDITOR_NAME
         creditor_iban = settings.PAYMENTS_DD_CREDITOR_IBAN
         creditor_bic = settings.PAYMENTS_DD_CREDITOR_BIC
         creditor_at02_id = settings.PAYMENTS_DD_CREDITOR_AT02_ID
         now = timezone.now()
         total = str(sum([transaction.amount for transaction in transactions]))
-        sepa = E.Document(
+        sepa = lxml.builder.ElementMaker(
+             nsmap = {
+                 'xsi': "http://www.w3.org/2001/XMLSchema-instance",
+                 None: "urn:iso:std:iso:20022:tech:xsd:pain.008.001.02",
+             }
+        )
+        sepa = sepa.Document(
             E.CstmrDrctDbtInitn(
                 E.GrpHdr(                                   # Group Header
-                    E.MsgId(self.payment_id),               # Message Id
+                    E.MsgId(str(self.object.id)),         # Message Id
                     E.CreDtTm(now.strftime("%Y-%m-%dT%H:%M:%S")), # Creation Date Time
                     E.NbOfTxs(str(len(transactions))),      # Number of Transactions
                     E.CtrlSum(total),                       # Control Sum
@@ -114,14 +123,14 @@ class BankTransfer(PaymentMethod):
                         E.Id(                               # Identification
                             E.OrgId(                        # Organisation Id
                                 E.Othr(
-                                    E.Id(creditor_at_02)
+                                    E.Id(creditor_at02_id)
                                 )
                             )
                         )
                     )
                 ),
                 E.PmtInf(                                   # Payment Info
-                    E.PmtInfId(self.payment_id),            # Payment Id
+                    E.PmtInfId(str(self.object.id)),        # Payment Id
                     E.PmtMtd("DD"),                         # Payment Method
                     E.NbOfTxs(str(len(transactions))),      # Number of Transactions
                     E.CtrlSum(total),                       # Control Sum
@@ -134,7 +143,7 @@ class BankTransfer(PaymentMethod):
                         ),
                         E.SeqTp("RCUR")                     # Sequence Type
                     ),
-                    E.ReqdColltnDt(now.strfrm("%Y-%m-%d")), # Requested Collection Date
+                    E.ReqdColltnDt(now.strftime("%Y-%m-%d")), # Requested Collection Date
                     E.Cdtr(                                 # Creditor
                         E.Nm(creditor_name)
                     ),
@@ -150,19 +159,24 @@ class BankTransfer(PaymentMethod):
                     ),
                 *list(self._process_transactions(transactions))   # Transactions
                 )
-            ), {
-                'xmlns': "urn:iso:std:iso:20022:tech:xsd:pain.008.001.02",
-                'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance"
-            }
+            )
         )
         # http://www.iso20022.org/documents/messages/1_0_version/pain/schemas/pain.008.001.02.zip
-        schema = etree.parse('pain.008.001.02.xsd')
+        path = os.path.dirname(os.path.realpath(__file__))
+        xsd_path = os.path.join(path, 'pain.008.001.02.xsd')
+        schema_doc = etree.parse(xsd_path)
+        schema = etree.XMLSchema(schema_doc)
+        sepa = etree.parse(StringIO(etree.tostring(sepa)))
         schema.assertValid(sepa)
-        # TODO where to save this shit?
-        # TODO new model? Payment with batch support, How this relates to transaction?
-        # TODO positive only amount ?
-        # TODO what with negative amounts? what are amendments?
-        return etree.tostring(page, pretty_print=True, xml_declaration=True)
+        base_path = self.object.file.field.upload_to or djsettings.MEDIA_ROOT
+        file_name = 'payment-process-%i.xml' % self.object.id
+        file_path = os.path.join(base_path, file_name)
+        sepa.write(file_path,
+                   pretty_print=True,
+                   xml_declaration=True,
+                   encoding='UTF-8')
+        self.object.file = file_name
+        self.object.save()
 
 
 class CreditCard(PaymentMethod):

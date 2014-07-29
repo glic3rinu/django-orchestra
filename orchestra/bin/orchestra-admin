@@ -125,7 +125,9 @@ function install_requirements () {
          rabbitmq-server \
          python-dev \
          bind9utils \
-         python-cracklib"
+         python-cracklib \
+         libxml2-dev \
+         libxslt1-dev"
     
     PIP="django==1.6.1 \
          django-celery-email==1.0.4 \
@@ -144,7 +146,8 @@ function install_requirements () {
          Pygments==1.6 \
          django-filter==0.7 \
          passlib==1.6.2 \
-         jsonfield==0.9.22"
+         jsonfield==0.9.22 \
+         lxml==3.3.5"
     
     if $testing; then
         APT="${APT} \

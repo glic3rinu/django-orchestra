@@ -10,6 +10,7 @@ from rest_framework import serializers
 
 from orchestra.utils import plugins
 
+from . import settings
 from .forms import BankTransferForm, CreditCardForm
 
 
@@ -93,7 +94,7 @@ class BankTransfer(PaymentMethod):
                 ),
             )
     
-    def process(self, transactions)
+    def process(self, transactions):
         self.set_id()
         creditor_name = settings.PAYMENTS_DD_CREDITOR_NAME
         creditor_iban = settings.PAYMENTS_DD_CREDITOR_IBAN
@@ -159,6 +160,8 @@ class BankTransfer(PaymentMethod):
         schema.assertValid(sepa)
         # TODO where to save this shit?
         # TODO new model? Payment with batch support, How this relates to transaction?
+        # TODO positive only amount ?
+        # TODO what with negative amounts? what are amendments?
         return etree.tostring(page, pretty_print=True, xml_declaration=True)
 
 

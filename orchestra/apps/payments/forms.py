@@ -1,46 +1,40 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from django_iban.forms import IBANFormField
 
 
-class PaymentSourceDataForm(forms.ModelForm):
-    class Meta:
-        exclude = ('data', 'method')
+# TODO this is for the billing phase
+class TransactionCreationForm(forms.ModelForm):
+#    transaction_link = forms.CharField()
+#    account_link = forms.CharField()
+#    bill_link = forms.CharField()
+    source = forms.ChoiceField(required=False)
+#    exclude = forms.BooleanField(required=False)
+    
+#    class Meta:
+#        model = Bill ?
     
     def __init__(self, *args, **kwargs):
-        super(PaymentSourceDataForm, self).__init__(*args, **kwargs)
-        instance = kwargs.get('instance')
-        if instance:
-            for field in self.declared_fields:
-                initial = self.fields[field].initial
-                self.fields[field].initial = instance.data.get(field, initial)
+        super(SourceSelectionForm, self).__init__(*args, **kwargs)
+        bill = kwargs.get('instance')
+        if bill:
+            sources = bill.account.payment_sources.filter(is_active=True)
+            choices = []
+            for source in sources:
+                if bill.ammount < 0:
+                    if source.method_class().allow_recharge:
+                        choices.append((source.method, source.method_display()))
+                else:
+                    choices.append((source.method, source.method_display()))
+            self.fields['source'].choices = choices
     
-    def save(self, commit=True):
-        plugin = self.plugin
-        self.instance.method = plugin.get_plugin_name()
-        self.instance.data = {
-            field: self.cleaned_data[field] for field in self.declared_fields
-        }
-        return super(PaymentSourceDataForm, self).save(commit=commit)
+#    def clean(self):
+#        cleaned_data = super(SourceSelectionForm, self).clean()
+#        method = cleaned_data.get("method")
+#        exclude = cleaned_data.get("exclude")
+#        if not method and not exclude:
+#            raise forms.ValidationError(_("A transaction should be explicitly "
+#                    "excluded when no payment source is available."))
 
 
-class DirectDebitForm(PaymentSourceDataForm):
-    iban = IBANFormField(label='IBAN',
-            widget=forms.TextInput(attrs={'size': '50'}))
-    name = forms.CharField(max_length=128, label=_("Name"),
-            widget=forms.TextInput(attrs={'size': '50'}))
-
-
-class CreditCardForm(PaymentSourceDataForm):
-    label = forms.CharField(max_length=128, label=_("Label"),
-            help_text=_("Use a name such as \"Jo's Visa\" to remember which "
-                        "card it is."))
-    first_name = forms.CharField(max_length=128)
-    last_name = forms.CharField(max_length=128)
-    address = forms.CharField(max_length=128)
-    zip = forms.CharField(max_length=128)
-    city = forms.CharField(max_length=128)
-    country = forms.CharField(max_length=128)
-    card_number = forms.CharField(max_length=128)
-    expiration_date = forms.CharField(max_length=128)
-    security_code = forms.CharField(max_length=128)
+class ProcessTransactionForm(forms.ModelForm):
+    pass

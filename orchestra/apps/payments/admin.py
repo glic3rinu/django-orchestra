@@ -6,7 +6,7 @@ from orchestra.admin.utils import admin_colored, admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from .actions import process_transactions
-from .methods import DirectDebit
+from .methods import BankTransfer
 from .models import PaymentSource, Transaction, PaymentProcess
 
 
@@ -35,7 +35,7 @@ class TransactionAdmin(admin.ModelAdmin):
 class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = ('label', 'method', 'number', 'account_link', 'is_active')
     list_filter = ('method', 'is_active')
-    form = DirectDebit().get_form()
+    form = BankTransfer().get_form()
     # TODO select payment source method
 
 
@@ -51,13 +51,21 @@ class PaymentProcessAdmin(admin.ModelAdmin):
     file_url.admin_order_field = 'file'
     
     def display_transactions(self, process):
-        links = []
-        for transaction in process.transactions.all():
-            url = reverse('admin:payments_transaction_change', args=(transaction.pk,))
-            links.append(
-                '<a href="%s">%s</a>' % (url, str(transaction))
-            )
-        return '<br>'.join(links)
+        ids = []
+        lines = []
+        counter = 0
+        tx_ids = process.transactions.order_by('id').values_list('id', flat=True)
+        for tx_id in tx_ids:
+            ids.append(str(tx_id))
+            counter += 1
+            if counter > 10:
+                counter = 0
+                lines.append(','.join(ids))
+                ids = []
+        lines.append(','.join(ids))
+        url = reverse('admin:payments_transaction_changelist')
+        url += '?processes=%i' % process.id
+        return '<a href="%s">%s</a>' % (url, '<br>'.join(lines))
     display_transactions.short_description = _("Transactions")
     display_transactions.allow_tags = True
 

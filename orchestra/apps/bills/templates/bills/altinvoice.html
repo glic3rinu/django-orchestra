@@ -1,0 +1,309 @@
+<style>
+
+body {
+    max-width: 1048px;
+    margin: 60 auto !important;
+    float: none !important;
+    font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;
+}
+
+#logo {
+    float: left;
+    font-size: 25;
+    font-weight: bold;
+    color: grey;
+    border-bottom: 5px solid grey;
+    margin: 38px;
+    margin-left: 60px;
+    padding: 5px;
+}
+
+#bill-number {
+    float: right;
+    margin-top: 80px;
+    text-align: right;
+    font-size: 25;
+    font-weight: bold;
+    color: grey;
+}
+
+#bill-number .value {
+    font-size: 40;
+    color: #B23;
+    font-weight: normal;
+}
+
+hr {
+    margin-top: 20px;
+    color: #ccc;
+    margin-bottom: 0px;
+}
+
+
+#bill-summary > * {
+    float: right;
+    border-style: solid;
+    border-width: thin;
+    border-color: grey;
+    padding: 10px;
+    text-align: center;
+    font-size: large;
+    width: 130px;
+}
+
+#bill-summary .title {
+    color: black;
+    font-size: small;
+    font-weight: bold;
+    position: relative;
+    top: -7px;
+}
+
+#bill-summary #total, #total .title{
+    background-color: #B23;
+    color: white;
+    font-weight: bold;
+}
+
+
+#seller-details, #buyer-details {
+    margin: 20px;
+}
+
+#buyer-details {
+    margin-left: 60px;
+}
+
+
+#lines > * {
+    float: left;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+}
+
+#lines .title {
+    font-weight: bold;
+    border-bottom: 2px solid grey;
+    color: #B23;
+}
+
+#lines .value {
+    border-bottom: 1px solid grey;
+}
+
+#lines .column-id {
+    width: 5%;
+    text-align: right;
+}
+
+#lines .column-description {
+    width: 55%;
+    text-align: left;
+}
+
+#lines .column-quantity {
+    width: 20%;
+}
+
+#lines .column-rate {
+    width: 10%;
+}
+
+#lines .column-subtotal {
+    width: 10%;
+    text-align: right;
+}
+
+
+#totals {
+    padding-top: 100px;
+}
+
+#totals > * {
+    text-align: right;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+
+#totals .column-title {
+    font-weight: bold;
+    color: #B23;
+    width: 85%;
+    float: left;
+}
+
+#totals .column-value {
+    width: 15%;
+    float: left;
+}
+
+#totals .subtotal {
+    border-bottom: 1px solid grey;
+    font-weight: normal;
+}
+
+
+#totals .tax {
+    border-bottom: 2px solid grey;
+    font-weight: normal;
+}
+
+
+
+#pagination {
+    color: #B23;
+    font-weight: bold;
+}
+
+#footer .title {
+    color: #B23;
+    font-weight: bold;
+}
+
+#footer > * > * {
+    margin: 10px;
+    color: #666;
+}
+
+#pagination {
+    margin-left: 20px;
+    clear: right;
+}
+
+#footer-column-1 {
+    float: left;
+    width: 48%;
+    margin: 10px;
+}
+
+#footer-column-2 {
+    float: right;
+    width: 48%;
+    margin: 10px;
+}
+
+
+
+</style>
+<body>
+    <div id="bill-number">
+            Invoice<br>
+            <div class="value">F20110232</div><br>
+    </div>
+    <div id="logo">
+        YOUR<br>
+        LOGO<br>
+        HERE<br>
+    </div>
+    <div id="seller-details">
+        <table>
+            <tr>
+                <td>
+                    <strong>Associacio Pangea - Coordinadora Comunicacio per a la Cooperacio</strong><br>
+                    ES2323233<br>
+                    <address>
+                    Pl eusebi guell 6-7, planta 0<br>
+                    08034 - Barcelona<br>
+                    Spain<br>
+                    </address>
+                    <br>
+                    93-803-21-32<br>
+                    <a href="mailto:sales@pangea.org">sales@pangea.org</a><br>
+                    <a href="http://www.pangea.org">www.pangea.org</a><br>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <hr>
+    <div id="bill-summary">
+        <div id="due-date">
+            <span class="title">DUE DATE</span><br>
+            <psan class="value">Nov 21, 2011</span>
+        </div>
+        <div id="total">
+            <span class="title">TOTAL</span><br>
+            <psan class="value">122,03 &euro;</span>
+        </div>
+        <div id="bill-date">
+            <span class="title">INVOICE DATE</span><br>
+            <psan class="value">Oct 20, 2012</span>
+        </div>
+    </div>
+    <div id="buyer-details">
+        <address>
+        <strong>Aadults</strong><br>
+        ES01939933<br>
+        Carrer nnoseque, 0<br>
+        08034 - Barcelona<br>
+        Spain<br>
+        </address>
+    </div>
+
+    <div id="lines">
+        <span class="title column-id">id</span>
+        <span class="title column-description">description</span>
+        <span class="title column-quantity">hrs/qty</span>
+        <span class="title column-rate">rate/price</span>
+        <span class="title column-subtotal">subtotal</span>
+        <br>
+        <span class="value column-id">1</span>
+        <span class="value column-description">Hola que passa</span>
+        <span class="value column-quantity">1</span>
+        <span class="value column-rate">1 &euro;</span>
+        <span class="value column-subtotal">111 &euro;</span>
+        <br>
+        <span class="value column-id">1</span>
+        <span class="value column-description">Merda pura</span>
+        <span class="value column-quantity">1</span>
+        <span class="value column-rate">1 &euro;</span>
+        <span class="value column-subtotal">111 &euro;</span>
+        <br>
+        <span class="value column-id">1</span>
+        <span class="value column-description">I tu que et passa</span>
+        <span class="value column-quantity">1</span>
+        <span class="value column-rate">1 &euro;</span>
+        <span class="value column-subtotal">111 &euro;</span>
+        <br>
+        <span class="value column-id">1</span>
+        <span class="value column-description">Joder hostia puta</span>
+        <span class="value column-quantity">1</span>
+        <span class="value column-rate">1 &euro;</span>
+        <span class="value column-subtotal">111 &euro;</span>
+        <br>
+    </div>
+    <div id="totals">
+        <span class="subtotal column-title">subtotal</span>
+        <span class="subtotal column-value">33,03 &euro;</span>
+        <br>
+        <span class="tax column-title">tax</span>
+        <span class="tax column-value">33,03 &euro;</span>
+        <br>
+        <span class="total column-title">total</span>
+        <span class="total column-value">33,03 &euro;</span>
+        <br>
+    </div>
+    <div id="footer">
+        <div id="pagination">
+            Page 1 of 1
+        </div>
+        <div id="footer-column-1">
+            <div id="comments">
+                <span class="title">COMMENTS</span> The comments should be here. The comments should be here. The comments should be here. The comments should be here.
+            </div>
+        </div>
+        <div id="footer-column-2">
+            <div id="payment">
+                <span class="title">PAYMENT</span> You can pay our invoice by bank transfer
+                llkdskdlsdk The comments should be here. The comments should be here. The comments should be here. The comments should be here.
+            </div>
+            <div id="questions">
+                <span class="title">QUESTIONS</span> If you have any question about your bill, please
+                feel free to contact us at your convinience. We will reply as soon as we get
+                your message.
+            </div>
+        </div>
+    </div>
+</body>
+

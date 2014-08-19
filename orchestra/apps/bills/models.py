@@ -1,7 +1,10 @@
 from django.db import models
+from django.template import loader, Context
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.apps.accounts.models import Account
 from orchestra.core import accounts
 
 from . import settings
@@ -12,7 +15,7 @@ class BillManager(models.Manager):
         queryset = super(BillManager, self).get_queryset()
         if self.model != Bill:
             bill_type = self.model.get_type()
-            queryset = queryset.filter(bill_type=bill_type)
+            queryset = queryset.filter(type=bill_type)
         return queryset
 
 
@@ -44,7 +47,7 @@ class Bill(models.Model):
             blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
              related_name='%(class)s')
-    bill_type = models.CharField(_("type"), max_length=16, choices=TYPES)
+    type = models.CharField(_("type"), max_length=16, choices=TYPES)
     status = models.CharField(_("status"), max_length=16, choices=STATUSES,
             default=OPEN)
     created_on = models.DateTimeField(_("created on"), auto_now_add=True)
@@ -61,13 +64,25 @@ class Bill(models.Model):
     def __unicode__(self):
         return self.ident
     
+    @cached_property
+    def seller(self):
+        return Account.get_main().invoicecontact
+    
+    @cached_property
+    def buyer(self):
+        return self.account.invoicecontact
+    
+    @property
+    def lines(self):
+        return self.billlines
+    
     @classmethod
     def get_type(cls):
         return cls.__name__.upper()
     
     def set_ident(self):
         cls = type(self)
-        bill_type = self.bill_type or cls.get_type()
+        bill_type = self.type or cls.get_type()
         if bill_type == 'BILL':
             raise TypeError("get_new_ident() can not be used on a Bill class")
         # Bill number resets every natural year
@@ -91,11 +106,31 @@ class Bill(models.Model):
     
     def close(self):
         self.status = self.CLOSED
+        self.html = self.render()
         self.save()
     
+    def render(self):
+        context = Context({
+            'bill': self,
+            'lines': self.lines.all(),
+            'seller': self.seller,
+            'buyer': self.buyer,
+            'seller_info': {
+                'phone': settings.BILLS_SELLER_PHONE,
+                'website': settings.BILLS_SELLER_WEBSITE,
+                'email': settings.BILLS_SELLER_EMAIL,
+            },
+            'currency': settings.BILLS_CURRENCY,
+        })
+        template = getattr(settings, 'BILLS_%s_TEMPLATE' % self.get_type())
+        bill_template = loader.get_template(template)
+        html = bill_template.render(context)
+        html = html.replace('-pageskip-', '<pdf:nextpage />')
+        return html
+    
     def save(self, *args, **kwargs):
-        if not self.bill_type:
-            self.bill_type = type(self).get_type()
+        if not self.type:
+            self.type = type(self).get_type()
         if not self.ident or (self.ident.startswith('O') and self.status != self.OPEN):
             self.set_ident()
         super(Bill, self).save(*args, **kwargs)
@@ -124,6 +159,10 @@ class AmendmentFee(Bill):
 class Budget(Bill):
     class Meta:
         proxy = True
+    
+    @property
+    def lines(self):
+        return self.budgetlines
 
 
 class BaseBillLine(models.Model):
@@ -145,7 +184,7 @@ class BudgetLine(BaseBillLine):
 
 
 class BillLine(BaseBillLine):
-    order_id = models.PositiveIntegerField(blank=True)
+    order_id = models.PositiveIntegerField(blank=True, null=True)
     order_last_bill_date = models.DateTimeField(null=True)
     order_billed_until = models.DateTimeField(null=True)
     auto = models.BooleanField(default=False)

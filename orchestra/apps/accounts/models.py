@@ -26,6 +26,10 @@ class Account(models.Model):
     @cached_property
     def name(self):
         return self.user.username
+    
+    @classmethod
+    def get_main(cls):
+        return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
 
 
 services.register(Account, menu=False)

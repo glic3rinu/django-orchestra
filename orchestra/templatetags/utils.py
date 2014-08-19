@@ -44,4 +44,3 @@ def size(value, length):
 @register.filter(name='is_checkbox')
 def is_checkbox(field):
     return isinstance(field.field.widget, CheckboxInput)
-

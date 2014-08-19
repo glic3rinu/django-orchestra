@@ -30,6 +30,10 @@ class TransactionAdmin(admin.ModelAdmin):
     bill_link = admin_link('bill')
     account_link = admin_link('bill__account')
     display_state = admin_colored('state', colors=STATE_COLORS)
+    
+    def get_queryset(self, request):
+        qs = super(TransactionAdmin, self).get_queryset(request)
+        return qs.select_related('source', 'bill__account__user')
 
 
 class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
@@ -54,7 +58,8 @@ class PaymentProcessAdmin(admin.ModelAdmin):
         ids = []
         lines = []
         counter = 0
-        tx_ids = process.transactions.order_by('id').values_list('id', flat=True)
+        # Because of values_list this query doesn't benefit from prefetch_related
+        tx_ids = process.transactions.values_list('id', flat=True)
         for tx_id in tx_ids:
             ids.append(str(tx_id))
             counter += 1

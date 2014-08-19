@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.shortcuts import redirect
 from django.utils import importlib
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -72,6 +73,19 @@ def set_url_query(request, key, value):
         request_copy[key] = value
         request.GET = request_copy
         request.META['QUERY_STRING'] = request.GET.urlencode()
+
+
+def action_to_view(action, modeladmin):
+    """ Converts modeladmin action to view function """
+    def action_view(request, object_id=1, modeladmin=modeladmin, action=action):
+        queryset = modeladmin.model.objects.filter(pk=object_id)
+        response = action(modeladmin, request, queryset)
+        if not response:
+            opts = modeladmin.model._meta
+            url = 'admin:%s_%s_change' % (opts.app_label, opts.module_name)
+            return redirect(url, object_id)
+        return response
+    return action_view
 
 
 @admin_field

@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls utils %}
+
+
+{% block object-tools-items %}
+{% for item in object_tools_items %}
+    <li><a href="{{ item.url_name }}/" class="{{ item.css_class }}" title="{{ item.description }}">{{ item.verbose_name }}</a></li>
+{% endfor %}
+{{ block.super }}
+{% endblock %}

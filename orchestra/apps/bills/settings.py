@@ -14,7 +14,7 @@ BILLS_AMENDMENT_FEE_IDENT_PREFIX = getattr(settings, 'BILLS_AMENDMENT_FEE_IDENT_
 BILLS_BUDGET_IDENT_PREFIX = getattr(settings, 'BILLS_BUDGET_IDENT_PREFIX', 'Q')
 
 
-BILLS_INVOICE_TEMPLATE = getattr(settings, 'BILLS_INVOICE_TEMPLATE', 'bills/invoice.html')
+BILLS_INVOICE_TEMPLATE = getattr(settings, 'BILLS_INVOICE_TEMPLATE', 'bills/microspective.html')
 
 
 BILLS_CURRENCY = getattr(settings, 'BILLS_CURRENCY', 'euro')

@@ -1,0 +1,125 @@
+{% extends 'bills/microspective.html' %}
+{% block head %}
+<style type="text/css">
+    {% with color="#809708" %}
+    {% include 'bills/microspective.css' %}
+    {% endwith %}
+
+#buyer-details {
+    clear: left;
+    margin-top: 40px;
+    margin-left: 54%;
+    margin-bottom: 40px;
+}
+
+.column-1 {
+    float: left;
+    font-size: 30;
+    font-weight: bold;
+    text-align: right;
+    color: #666;
+    width: 40%;
+    margin: 10px;
+}
+
+
+#number-date {
+    font-size: large;
+}
+
+#number-value {
+    font-size: 30;
+    color: #809708;
+}
+
+.column-2 {
+    float: right;
+    padding: 15px;
+    margin: 10px;
+    width: 44%;
+    font-size: large;
+}
+
+#amount {
+    color: white;
+    background-color: #809708;
+}
+
+#amount-value {
+    font-size: 30;
+    font-weight: bold;
+}
+
+
+#date {
+    clear: left;
+    clear: right;
+    margin-top: 0px;
+    padding-top: 0px;
+    font-weight: bold;
+}
+
+#text {
+    clear: left;
+    clear: right;
+    text-align: right;
+    margin: 240px 10px 50px 10px;
+    font-weight: bold;
+    color: #666;
+}
+
+#text strong {
+    color: #809708;
+}
+
+hr {
+    margin-top: 20px;
+    border: 2px solid #809708;
+    clear: left;
+}
+
+
+
+</style>
+{% endblock %}
+
+{% block summary %}
+<div style="position: relative; margin-top: 150px;">
+<hr>
+</div>
+
+<div id="buyer-details">
+    <span class="name">Aadults</span><br>
+    ES01939933<br>
+    Carrer nnoseque, 0<br>
+    08034 - Barcelona<br>
+    Spain<br>
+</div>
+
+<div id="number" class="column-1">
+    <span id="number-title">Membership Fee</span><br>
+    <span id="number-value">Q20110232</span><br>
+    <span id="number-date">Nov, 2011</span><br>
+</div>
+
+<div id="amount" class="column-2">
+    <span id="amount-value">1232,00 &euro;</span><br>
+    <span id="amount-note">To pay before Oct 20, 2011<br>
+        on 213.232.322.232.332<br>
+    </span>
+</div>
+
+<div id="date" class="column-2">
+from Apr 1, 2010 to Apr 1, 2011
+</div>
+{% endblock %}
+{% block content %}
+<div id="text">
+<strong>Con vuestras cuotas</strong>, ademas de obtener conexion y multitud de servicios, estais<br>
+    Con vuestras cuotas, ademas de obtener conexion y multitud de servicios,<br>
+        Con vuestras cuotas, ademas de obtener conexion <br>
+            Con vuestras cuotas, ademas de obtener <br>
+</div>
+{% endblock %}
+{% block pagination %}<hr>{% endblock %}
+

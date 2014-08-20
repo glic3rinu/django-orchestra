@@ -1,0 +1,247 @@
+body {
+    max-width: 650px;
+    margin: 40 auto !important;
+    float: none !important;
+    font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;
+}
+
+a {
+    font-size: 100%;
+    text-decoration: none;
+    vertical-align: baseline;
+    margin: 0;
+    padding: 0;
+    color: #666;
+}
+
+a:hover {
+    color: {{ color }};
+    text-decoration: underline;
+}
+
+#logo {
+    float: left;
+    font-weight: bold;
+    color: {{ color }};
+    margin: 1px 10px 15px 60px;
+    padding: 1px;
+}
+
+#bill-number {
+    float: right;
+    text-align: right;
+    font-size: 20;
+    font-weight: bold;
+    color: grey;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+#bill-number .value {
+    font-size: 30;
+    color: {{ color }};
+    font-weight: normal;
+}
+
+#pagination {
+    font-size: small;
+}
+
+/* SUMMARY */
+
+#bill-summary > * {
+    float: right;
+    border: 1px solid grey;
+    padding: 7px;
+    text-align: center;
+    font-size: large;
+    width: 100px;
+}
+
+#bill-summary hr {
+    padding: 0;
+    margin-top: 20px;
+    color: #ccc;
+    margin-bottom: -1px;
+    float: none;
+    width: 100%;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid grey;
+}
+
+#bill-summary .title {
+    color: {{ color }};
+    font-size: x-small;
+    font-weight: bold;
+    position: relative;
+    top: -6px;
+}
+
+#bill-summary #total, #total .title {
+    background-color: {{ color }};
+    color: white;
+    font-weight: bold;
+}
+
+#bill-summary #due-date, #bill-date, #total {
+    border-bottom: 2px solid grey;
+    height: 32px;
+}
+
+#bill-summary #due-date {
+    border-right: 2px solid grey;
+    font-size: medium;
+}
+
+#bill-summary #bill-date {
+    border-left: 2px solid grey;
+    font-size: medium;
+}
+
+
+/* DETAILS */
+
+#seller-details, #buyer-details {
+    margin: 40px;
+}
+
+#seller-details p {
+    margin-top: 5px;
+}
+
+#seller-details .name {
+    font-weight: bold;
+    color: {{ color }};
+}
+
+#seller-details .contact {
+    float: left;
+    font-style: italic;
+    font-size: small;
+    color: #666;
+}
+
+#buyer-details {
+    margin: 30px 40px 30px 60px;
+    font-size: 15;
+}
+
+#buyer-details .name {
+    font-weight: bold;
+}
+
+
+/* LINES */
+
+#lines > * {
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+    padding-left: 10px;
+    float: left;
+    padding: 5px;
+    text-align: center;
+    font-size: small;
+}
+
+#lines .title {
+    font-weight: bold;
+    border-bottom: 2px solid #CCC;
+    color: {{ color }};
+}
+
+#lines .value {
+    border-bottom: 1px solid #CCC;
+}
+
+#lines .column-id {
+    width: 5%;
+    text-align: right;
+}
+
+#lines .column-description {
+    width: 55%;
+    text-align: left;
+}
+
+#lines .column-quantity {
+    width: 20%;
+}
+
+#lines .column-rate {
+    width: 10%;
+}
+
+#lines .column-subtotal {
+    width: 10%;
+    text-align: right;
+}
+
+
+/* TOTALS */
+
+#totals {
+    padding-top: 100px;
+}
+
+#totals > * {
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+    padding: 5px;
+    padding-left: 10px;
+    text-align: right;
+    font-size: small;
+}
+
+#totals .column-title {
+    font-weight: bold;
+    color: {{ color }};
+    width: 86%;
+    float: left;
+}
+
+#totals .column-value {
+    width: 14%;
+    float: left;
+}
+
+#totals .subtotal {
+    border-bottom: 1px solid #CCC;
+    font-weight: normal;
+}
+
+#totals .tax {
+    border-bottom: 2px solid #CCC;
+    font-weight: normal;
+}
+
+#totals .total {
+    font-weight: bold;
+}
+
+
+/*  FOOTER */
+
+#footer .title {
+    color: {{ color }};
+    font-weight: bold;
+}
+
+#footer > * > * {
+    margin: 5px;
+    color: #666;
+    font-size: small;
+}
+
+
+#footer-column-1 {
+    float: left;
+    width: 48%;
+}
+
+#footer-column-2 {
+    float: right;
+    width: 48%;
+}

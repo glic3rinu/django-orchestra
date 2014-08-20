@@ -1,3 +1,7 @@
+from django.http import HttpResponse
+
+
 def generate_bill(modeladmin, request, queryset):
-    for bill in queryset:
-        bill.close()
+    bill = queryset.get()
+    bill.close()
+    return HttpResponse(bill.html)

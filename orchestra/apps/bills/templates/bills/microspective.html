@@ -1,0 +1,145 @@
+{% extends 'bills/base.html' %}
+
+{% block head %}
+<style type="text/css">
+    {% with color="#B23" %}
+    {% include 'bills/microspective.css' %}
+    {% endwith %}
+</style>
+{% endblock %}
+
+{% block body %}
+{% block header %}
+<div id="logo">
+    {% block logo %}
+    <div style="border-bottom:5px solid grey; color:grey; font-size:30;">
+    YOUR<br>
+    LOGO<br>
+    HERE<br>
+    </div>
+    {% endblock %}
+</div>
+<div id="seller-details">
+    <div claas="address">
+        <span class="name">Associacio Pangea -<br>
+        Coordinadora Comunicacio per a la Cooperacio</span>
+    </div>
+    <div class="contact">
+        <p>Pl. Eusebi Guell 6-7, planta 0<br>
+        08034 - Barcelona<br>
+        Spain<br>
+        </p>
+        <p><a href="tel:93-803-21-32">93-803-21-32</a><br>
+        <a href="mailto:sales@pangea.org">sales@pangea.org</a><br>
+        <a href="http://www.pangea.org">www.pangea.org</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block summary %}
+<div id="bill-number">
+        Invoice<br>
+        <span class="value">F20110232</span><br>
+        <span id="pagination">Page 1 of 1</span>
+</div>
+<div id="bill-summary">
+    <hr>
+    <div id="due-date">
+        <span class="title">DUE DATE</span><br>
+        <psan class="value">Nov 21, 2011</span>
+    </div>
+    <div id="total">
+        <span class="title">TOTAL</span><br>
+        <psan class="value">122,03 &euro;</span>
+    </div>
+    <div id="bill-date">
+        <span class="title">INVOICE DATE</span><br>
+        <psan class="value">Oct 20, 2012</span>
+    </div>
+</div>
+<div id="buyer-details">
+    <span class="name">Aadults</span><br>
+    ES01939933<br>
+    Carrer nnoseque, 0<br>
+    08034 - Barcelona<br>
+    Spain<br>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="lines">
+    <span class="title column-id">id</span>
+    <span class="title column-description">description</span>
+    <span class="title column-quantity">hrs/qty</span>
+    <span class="title column-rate">rate/price</span>
+    <span class="title column-subtotal">subtotal</span>
+    <br>
+    <span class="value column-id">
+        1<br>
+        &nbsp;</span>
+    <span class="value column-description">
+        Hola que passa<br>
+        nosquevols</span>
+    <span class="value column-quantity">
+        1<br>
+        &nbsp;</span>
+    <span class="value column-rate">
+        1,00 &euro;<br>
+        &nbsp;</span>
+    <span class="value column-subtotal">
+        111,00 &euro;<br>
+        -10,00 &euro;</span>
+    <br>
+    <span class="value column-id">1</span>
+    <span class="value column-description">Merda pura</span>
+    <span class="value column-quantity">1</span>
+    <span class="value column-rate">1,00 &euro;</span>
+    <span class="value column-subtotal">111,00 &euro;</span>
+    <br>
+    <span class="value column-id">1</span>
+    <span class="value column-description">I tu que et passa</span>
+    <span class="value column-quantity">1</span>
+    <span class="value column-rate">1,00 &euro;</span>
+    <span class="value column-subtotal">111,00 &euro;</span>
+    <br>
+    <span class="value column-id">1</span>
+    <span class="value column-description">Joder hostia puta</span>
+    <span class="value column-quantity">1</span>
+    <span class="value column-rate">1,00 &euro;</span>
+    <span class="value column-subtotal">111,00 &euro;</span>
+    <br>
+</div>
+<div id="totals">
+    <span class="subtotal column-title">subtotal</span>
+    <span class="subtotal column-value">33,03 &euro;</span>
+    <br>
+    <span class="tax column-title">tax</span>
+    <span class="tax column-value">33,03 &euro;</span>
+    <br>
+    <span class="total column-title">total</span>
+    <span class="total column-value">33,03 &euro;</span>
+    <br>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div id="footer">
+    <div id="footer-column-1">
+        <div id="comments">
+            <span class="title">COMMENTS</span> The comments should be here. The comments should be here. The comments should be here. The comments should be here.
+        </div>
+    </div>
+    <div id="footer-column-2">
+        <div id="payment">
+            <span class="title">PAYMENT</span> You can pay our invoice by bank transfer
+            llkdskdlsdk The comments should be here. The comments should be here.
+        </div>
+        <div id="questions">
+            <span class="title">QUESTIONS</span> If you have any question about your bill, please
+            feel free to contact us at your convinience. We will reply as soon as we get
+            your message.
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% endblock %}

@@ -1,7 +1,7 @@
 # Roadmap
 
 
-### 1.0a1 Milestone (first alpha release on May '14)
+### 1.0a1 Milestone (first alpha release on Sep '14)
 
 1. [x] Automated deployment of the development environment
 2. [x] Automated installation and upgrading
@@ -25,7 +25,7 @@
 1. [ ] Initial documentation
 
 
-### 1.0b1 Milestone (first beta release on Jul '14)
+### 1.0b1 Milestone (first beta release on Nov '14)
 
 1. [x] Resource monitoring
 1. [ ] Orders
@@ -36,7 +36,7 @@
 1. [ ] Full documentation
 
 
-### 1.0 Milestone (first stable release on Dec '14)
+### 1.0 Milestone (first stable release on Feb '15)
 
 1. [ ] Stabilize data model, internal APIs and REST API
 1. [ ] Integration with third-party service providers, e.g. Gandi

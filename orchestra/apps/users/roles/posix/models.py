@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from .. import roles
+
 from . import settings
 
 
@@ -14,3 +16,6 @@ class POSIX(models.Model):
     
     def __unicode__(self):
         return str(self.user)
+
+
+roles.register('posix', POSIX)

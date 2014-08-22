@@ -10,8 +10,8 @@ from orchestra.core import services
 class User(auth.AbstractBaseUser):
     username = models.CharField(_("username"), max_length=64, unique=True,
             help_text=_("Required. 30 characters or fewer. Letters, digits and "
-                        "@/./+/-/_ only."),
-            validators=[validators.RegexValidator(r'^[\w.@+-]+$',
+                        "./-/_ only."),
+            validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='users', null=True)

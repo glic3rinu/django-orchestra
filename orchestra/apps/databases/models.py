@@ -15,7 +15,8 @@ class Database(models.Model):
     
     name = models.CharField(_("name"), max_length=128,
             validators=[validators.validate_name])
-    users = models.ManyToManyField('databases.DatabaseUser', verbose_name=_("users"),
+    users = models.ManyToManyField('databases.DatabaseUser',
+            verbose_name=_("users"),
            through='databases.Role', related_name='users')
     type = models.CharField(_("type"), max_length=32,
             choices=settings.DATABASES_TYPE_CHOICES,

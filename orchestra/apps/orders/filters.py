@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class ActiveOrderListFilter(SimpleListFilter):
     """ Filter tickets by created_by according to request.user """
-    title = 'Orders'
+    title = _("Orders")
     parameter_name = 'is_active'
     
     def lookups(self, request, model_admin):

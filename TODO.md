@@ -73,3 +73,6 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
 * backend logs with hal logo
 * Use logs for storing monitored values
 * set_password orchestration method?
+
+
+* make account_link to autoreplace account on change view.

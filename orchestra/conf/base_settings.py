@@ -68,9 +68,10 @@ INSTALLED_APPS = (
     'orchestra.apps.orchestration',
     'orchestra.apps.domains',
     'orchestra.apps.users',
-    'orchestra.apps.users.roles.mail',
+#    'orchestra.apps.users.roles.mail',
     'orchestra.apps.users.roles.jabber',
     'orchestra.apps.users.roles.posix',
+    'orchestra.apps.mails',
     'orchestra.apps.lists',
     'orchestra.apps.webapps',
     'orchestra.apps.websites',
@@ -168,8 +169,9 @@ FLUENT_DASHBOARD_APP_GROUPS = (
 FLUENT_DASHBOARD_APP_ICONS = {
     # Services
     'webs/web': 'web.png',
-    'mail/mailbox': 'email.png',
     'mail/address': 'X-office-address-book.png',
+    'mails/mailbox': 'email.png',
+    'mails/address': 'X-office-address-book.png',
     'lists/list': 'email-alter.png',
     'domains/domain': 'domain.png',
     'multitenance/tenant': 'apps.png',

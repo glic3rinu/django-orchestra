@@ -45,6 +45,7 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
     form = UserChangeForm
     roles = []
     ordering = ('-id',)
+    change_form_template = 'admin/users/user/change_form.html'
     
     def display_is_main(self, instance):
         return instance.is_main

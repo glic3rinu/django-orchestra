@@ -7,6 +7,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
 
+from .. import roles
+
 from . import validators, settings
 
 
@@ -76,7 +78,8 @@ class Address(models.Model):
     domain = models.ForeignKey(settings.EMAILS_DOMAIN_MODEL,
             verbose_name=_("domain"),
             related_name='addresses')
-    mailboxes = models.ManyToManyField('mail.Mailbox', verbose_name=_("mailboxes"),
+    mailboxes = models.ManyToManyField('mail.Mailbox',
+            verbose_name=_("mailboxes"),
             related_name='addresses', blank=True)
     forward = models.CharField(_("forward"), max_length=256, blank=True,
             validators=[validators.validate_forward])
@@ -108,3 +111,4 @@ class Autoresponse(models.Model):
 
 
 services.register(Address)
+roles.register('mailbox', Mailbox)

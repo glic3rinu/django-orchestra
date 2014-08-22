@@ -15,62 +15,23 @@ class Mailbox(models.Model):
             help_text=_("Required. 30 characters or fewer. Letters, digits and "
                         "@/./+/-/_ only."),
             validators=[RegexValidator(r'^[\w.@+-]+$',
-                        _("Enter a valid username."), 'invalid')])
+                        _("Enter a valid mailbox name."), 'invalid')])
+    account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
+            related_name='mailboxes')
     use_custom_filtering = models.BooleanField(_("Use custom filtering"),
             default=False)
     custom_filtering = models.TextField(_("filtering"), blank=True,
             validators=[validators.validate_sieve],
             help_text=_("Arbitrary email filtering in sieve language."))
+#    addresses = models.ManyToManyField('mails.Address',
+#            verbose_name=_("addresses"),
+#            related_name='mailboxes', blank=True)
     
     class Meta:
         verbose_name_plural = _("mailboxes")
     
     def __unicode__(self):
-        return self.user.username
-    
-#    def get_addresses(self):
-#        regex = r'(^|\s)+%s(\s|$)+' % self.user.username
-#        return Address.objects.filter(destination__regex=regex)
-#    
-#    def delete(self, *args, **kwargs):
-#        """ Update related addresses """
-#        regex = re.compile(r'(^|\s)+(\s*%s)(\s|$)+' % self.user.username)
-#        super(Mailbox, self).delete(*args, **kwargs)
-#        for address in self.get_addresses():
-#            address.destination = regex.sub(r'\3', address.destination).strip()
-#            if not address.destination:
-#                address.delete()
-#            else:
-#                address.save()
-
-
-#class Address(models.Model):
-#    name = models.CharField(_("name"), max_length=64,
-#            validators=[validators.validate_emailname])
-#    domain = models.ForeignKey(settings.EMAILS_DOMAIN_MODEL,
-#            verbose_name=_("domain"),
-#            related_name='addresses')
-#    destination = models.CharField(_("destination"), max_length=256,
-#            validators=[validators.validate_destination],
-#            help_text=_("Space separated mailbox names or email addresses"))
-#    account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
-#            related_name='addresses')
-#    
-#    class Meta:
-#        verbose_name_plural = _("addresses")
-#        unique_together = ('name', 'domain')
-#    
-#    def __unicode__(self):
-#        return self.email
-#    
-#    @property
-#    def email(self):
-#        return "%s@%s" % (self.name, self.domain)
-#    
-#    def get_mailboxes(self):
-#        for dest in self.destination.split():
-#            if '@' not in dest:
-#                yield Mailbox.objects.select_related('user').get(user__username=dest)
+        return self.name
 
 
 class Address(models.Model):
@@ -79,7 +40,8 @@ class Address(models.Model):
     domain = models.ForeignKey(settings.EMAILS_DOMAIN_MODEL,
             verbose_name=_("domain"),
             related_name='addresses')
-    mailboxes = models.ManyToManyField('mail.Mailbox', verbose_name=_("mailboxes"),
+    mailboxes = models.ManyToManyField(Mailbox,
+            verbose_name=_("mailboxes"),
             related_name='addresses', blank=True)
     forward = models.CharField(_("forward"), max_length=256, blank=True,
             validators=[validators.validate_forward])
@@ -110,4 +72,5 @@ class Autoresponse(models.Model):
         return self.address
 
 
+services.register(Mailbox)
 services.register(Address)

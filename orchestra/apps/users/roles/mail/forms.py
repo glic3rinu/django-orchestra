@@ -36,7 +36,7 @@ class MailRoleAdminForm(RoleAdminBaseForm):
 #            value += '<li><a href="%s">%s</a></li>' % (url, name)
 #        value = '<ul>%s</ul>' % value
 #        return mark_safe('<div style="padding-left: 100px;">%s</div>' % value)
-
+    
     def addresses(self, mailbox):
         account = mailbox.user.account
         add_url = reverse('admin:mail_address_add')

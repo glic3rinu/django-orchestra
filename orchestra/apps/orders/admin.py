@@ -91,6 +91,11 @@ class OrderAdmin(AccountAdminMixin, ChangeListDefaultFilter, admin.ModelAdmin):
     content_object_link = admin_link('content_object', order=False)
     display_registered_on = admin_date('registered_on')
     display_cancelled_on = admin_date('cancelled_on')
+    
+    def get_queryset(self, request):
+        qs = super(OrderAdmin, self).get_queryset(request)
+        return qs.select_related('service').prefetch_related('content_object')
+
 
 
 class MetricStorageAdmin(admin.ModelAdmin):

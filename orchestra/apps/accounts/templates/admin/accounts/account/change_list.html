@@ -20,6 +20,9 @@
 {% block object-tools-items %}
 {% if from_account %}
 <li>
+    <a href="{% url account_opts|admin_urlname:'change' account.pk|admin_urlquote %}" class="historylink">{{ account|truncatewords:"18" }}</a>
+</li>
+<li>
     <a href="./" class="historylink">{% trans 'Show all' %}</a>
 </li>
 {% endif %}

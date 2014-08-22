@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>{% block title %}Invoice - I20110223{% endblock %}</title>
+    <title>{% block title %}{{ bill.get_type_display }} - {{ bill.number }}{% endblock %}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     {% block head %}{% endblock %}
 </head>

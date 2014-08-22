@@ -1,3 +1,5 @@
+import inspect
+
 from django.db import models
 from django.template import loader, Context
 from django.utils import timezone
@@ -43,7 +45,7 @@ class Bill(models.Model):
         ('BUDGET', _("Budget")),
     )
     
-    ident = models.CharField(_("identifier"), max_length=16, unique=True,
+    number = models.CharField(_("number"), max_length=16, unique=True,
             blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
              related_name='%(class)s')
@@ -62,7 +64,7 @@ class Bill(models.Model):
     objects = BillManager()
     
     def __unicode__(self):
-        return self.ident
+        return self.number
     
     @cached_property
     def seller(self):
@@ -77,31 +79,34 @@ class Bill(models.Model):
         return self.billlines
     
     @classmethod
-    def get_type(cls):
+    def get_class_type(cls):
         return cls.__name__.upper()
     
-    def set_ident(self):
+    def get_type(self):
+        return self.type or self.get_class_type()
+    
+    def set_number(self):
         cls = type(self)
-        bill_type = self.type or cls.get_type()
+        bill_type = self.get_type()
         if bill_type == 'BILL':
-            raise TypeError("get_new_ident() can not be used on a Bill class")
+            raise TypeError("get_new_number() can not be used on a Bill class")
         # Bill number resets every natural year
         year = timezone.now().strftime("%Y")
         bills = cls.objects.filter(created_on__year=year)
-        number_length = settings.BILLS_IDENT_NUMBER_LENGTH
-        prefix = getattr(settings, 'BILLS_%s_IDENT_PREFIX' % bill_type)
+        number_length = settings.BILLS_NUMBER_LENGTH
+        prefix = getattr(settings, 'BILLS_%s_NUMBER_PREFIX' % bill_type)
         if self.status == self.OPEN:
             prefix = 'O{}'.format(prefix)
             bills = bills.filter(status=self.OPEN)
-            num_bills = bills.order_by('-ident').first() or 0
+            num_bills = bills.order_by('-number').first() or 0
             if num_bills is not 0:
-                num_bills = int(num_bills.ident[-number_length:])
+                num_bills = int(num_bills.number[-number_length:])
         else:
             bills = bills.exclude(status=self.OPEN)
             num_bills = bills.count()
         zeros = (number_length - len(str(num_bills))) * '0'
         number = zeros + str(num_bills + 1)
-        self.ident = '{prefix}{year}{number}'.format(
+        self.number = '{prefix}{year}{number}'.format(
                 prefix=prefix, year=year, number=number)
     
     def close(self):
@@ -130,9 +135,9 @@ class Bill(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.type:
-            self.type = type(self).get_type()
-        if not self.ident or (self.ident.startswith('O') and self.status != self.OPEN):
-            self.set_ident()
+            self.type = self.get_type()
+        if not self.number or (self.number.startswith('O') and self.status != self.OPEN):
+            self.set_number()
         super(Bill, self).save(*args, **kwargs)
 
 
@@ -177,6 +182,14 @@ class BaseBillLine(models.Model):
     
     class Meta:
         abstract = True
+    
+    def __unicode__(self):
+        return "#%i" % self.number
+    
+    @property
+    def number(self):
+        lines = type(self).objects.filter(bill=self.bill_id)
+        return lines.filter(id__lte=self.id).order_by('id').count()
 
 
 class BudgetLine(BaseBillLine):

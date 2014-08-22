@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -17,6 +18,21 @@ class BillLineInline(admin.TabularInline):
     fields = (
         'description', 'initial_date', 'final_date', 'price', 'amount', 'tax'
     )
+    
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.status != Bill.OPEN:
+            return self.fields
+        return super(BillLineInline, self).get_readonly_fields(request, obj=obj)
+    
+    def has_add_permission(self, request):
+        if request.__bill__ and request.__bill__.status != Bill.OPEN:
+            return False
+        return super(BillLineInline, self).has_add_permission(request)
+    
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.status != Bill.OPEN:
+            return False
+        return super(BillLineInline, self).has_delete_permission(request, obj=obj)
 
 
 class BudgetLineInline(admin.TabularInline):
@@ -28,15 +44,25 @@ class BudgetLineInline(admin.TabularInline):
 
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'ident', 'status', 'type_link', 'account_link', 'created_on_display'
+        'number', 'status', 'type_link', 'account_link', 'created_on_display'
     )
     list_filter = (BillTypeListFilter, 'status',)
+    add_fields = ('account', 'type', 'status', 'due_on', 'comments')
+    fieldsets = (
+        (None, {
+            'fields': ('number', 'account_link', 'type', 'status', 'due_on',
+                       'comments'),
+        }),
+        (_("Raw"), {
+            'classes': ('collapse',),
+            'fields': ('html',),
+        }),
+    )
     change_view_actions = [generate_bill]
-    change_readonly_fields = ('account', 'type', 'status')
-    readonly_fields = ('ident',)
+    change_readonly_fields = ('account_link', 'type', 'status')
+    readonly_fields = ('number',)
     inlines = [BillLineInline]
     
-    account_link = admin_link('account')
     created_on_display = admin_date('created_on')
     
     def type_link(self, bill):
@@ -47,11 +73,27 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     type_link.short_description = _("type")
     type_link.admin_order_field = 'type'
     
+    def get_readonly_fields(self, request, obj=None):
+        fields = super(BillAdmin, self).get_readonly_fields(request, obj=obj)
+        if obj and obj.status != Bill.OPEN:
+            fields += self.add_fields
+        return fields
+    
     def get_inline_instances(self, request, obj=None):
         if self.model is Budget:
             self.inlines = [BudgetLineInline]
+        # Make parent object available for inline.has_add_permission()
+        request.__bill__ = obj
         return super(BillAdmin, self).get_inline_instances(request, obj=obj)
-
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'comments':
+            kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 4})
+        if db_field.name == 'html':
+            kwargs['widget'] = forms.Textarea(attrs={'cols': 150, 'rows': 20})
+        return super(BillAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+    
 
 admin.site.register(Bill, BillAdmin)
 admin.site.register(Invoice, BillAdmin)

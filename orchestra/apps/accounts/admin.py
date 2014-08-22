@@ -42,6 +42,7 @@ class AccountAdmin(ExtendedModelAdmin):
     search_fields = ('users__username',)
     add_form = AccountCreationForm
     form = AccountChangeForm
+    change_form_template = 'admin/accounts/account/change_form.html'
     
     user_link = admin_link('user', order='user__username')
     

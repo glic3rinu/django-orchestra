@@ -12,12 +12,13 @@
 2. [x] [Orchestra-orm](https://github.com/glic3rinu/orchestra-orm) a Python library for easily interacting with the REST API
 3. [x] Service orchestration framework
 4. [ ] Data model, input validation, admin and REST interfaces, permissions, unit and functional tests, service management, migration scripts and some documentation of:
-  1. [ ] Web applications and FTP accounts
+  1. [x] Web applications
+  2. [ ] FTP accounts
   2. [ ] Databases 
   1. [ ] Mail accounts, aliases, forwards
-  1. [ ] DNS
+  1. [x] DNS
   1. [ ] Mailing lists
-1. [ ] Contact management and service contraction
+1. [x] Contact management and service contraction
 1. [ ] Object level permissions system
 1. [ ] Unittests of all the logic
 2. [ ] Functional tests of all Admin and REST interations
@@ -26,12 +27,12 @@
 
 ### 1.0b1 Milestone (first beta release on Jul '14)
 
-1. [ ] Resource monitoring
+1. [x] Resource monitoring
 1. [ ] Orders
 2. [ ] Pricing
 3. [ ] Billing
-1. [ ] Payment gateways
-2. [ ] Scheduling of service cancellations
+1. [ ] Payment methods
+2. [ ] Scheduling of service cancellations and deactivations
 1. [ ] Full documentation
 
 
@@ -41,3 +42,4 @@
 1. [ ] Integration with third-party service providers, e.g. Gandi
 1. [ ] Support for additional services like VPS
 2. [ ] Issue tracking system
+3. [ ] Translation to Spanish and Catalan

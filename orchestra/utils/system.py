@@ -53,13 +53,16 @@ def run(command, display=True, error_codes=[0], silent=True, stdin=''):
     
     p = subprocess.Popen(command, shell=True, executable='/bin/bash',
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+    p.stdin.write(stdin)
+    p.stdin.close()
+    
     make_async(p.stdout)
     make_async(p.stderr)
     
     stdout = str()
     stderr = str()
-    p.stdin.write(stdin)
-    p.stdin.close()
+    
     # Async reading of stdout and sterr
     while True:
         # Wait for data to become available 

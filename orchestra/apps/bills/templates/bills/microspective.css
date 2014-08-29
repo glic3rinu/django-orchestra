@@ -231,6 +231,17 @@ a:hover {
 
 /*  FOOTER */
 
+.wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -4em;
+}
+
+#footer, .push {
+    height: 4em;
+}
+
 #footer .title {
     color: {{ color }};
     font-weight: bold;
@@ -241,7 +252,6 @@ a:hover {
     color: #666;
     font-size: small;
 }
-
 
 #footer-column-1 {
     float: left;

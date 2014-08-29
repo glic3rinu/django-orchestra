@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block body %}
+<div class="wrapper">
 {% block header %}
 <div id="logo">
     {% block logo %}
@@ -83,6 +84,7 @@
     {% endfor %}
 </div>
 <div id="totals">
+    <br>&nbsp;<br>
     <span class="subtotal column-title">subtotal</span>
     <span class="subtotal column-value">{{ bill.subtotal }} &{{ currency.lower }};</span>
     <br>
@@ -96,6 +98,8 @@
 {% endblock %}
 
 {% block footer %}
+<div class="push"></div>
+</div>
 <div id="footer">
     <div id="footer-column-1">
         <div id="comments">
@@ -117,3 +121,6 @@
 </div>
 {% endblock %}
 {% endblock %}
+
+
+

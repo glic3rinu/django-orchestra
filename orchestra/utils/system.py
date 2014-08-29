@@ -46,21 +46,20 @@ def read_async(fd):
             return ''
 
 
-def run(command, display=True, error_codes=[0], silent=True):
+def run(command, display=True, error_codes=[0], silent=True, stdin=''):
     """ Subprocess wrapper for running commands """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)
-    out_stream = subprocess.PIPE
-    err_stream = subprocess.PIPE
     
     p = subprocess.Popen(command, shell=True, executable='/bin/bash',
-            stdout=out_stream, stderr=err_stream)
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     make_async(p.stdout)
     make_async(p.stderr)
     
     stdout = str()
     stderr = str()
-    
+    p.stdin.write(stdin)
+    p.stdin.close()
     # Async reading of stdout and sterr
     while True:
         # Wait for data to become available 

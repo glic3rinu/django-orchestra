@@ -12,7 +12,7 @@
 {% block header %}
 <div id="logo">
     {% block logo %}
-    <div style="border-bottom:5px solid grey; color:grey; font-size:30;">
+    <div style="border-bottom:5px solid grey; color:grey; font-size:30; margin-right: 20px;">
     YOUR<br>
     LOGO<br>
     HERE<br>
@@ -76,8 +76,8 @@
     {% for line in bill.lines.all %}
     <span class="value column-id">{{ line.id }}</span>
     <span class="value column-description">{{ line.description }}</span>
-    <span class="value column-quantity">{{ line.amount }}</span>
-    <span class="value column-rate">{{ line.rate }}</span>
+    <span class="value column-quantity">{{ line.amount|default:"&nbsp;" }}</span>
+    <span class="value column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
     <span class="value column-subtotal">{{ line.price }} &{{ currency.lower }};</span>
     <br>
     {% endfor %}

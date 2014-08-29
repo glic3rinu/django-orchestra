@@ -1,5 +1,6 @@
 body {
-    max-width: 650px;
+/*    max-width: 650px;*/
+    max-width: 800px;
     margin: 40 auto !important;
     float: none !important;
     font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;
@@ -48,14 +49,20 @@ a:hover {
 }
 
 /* SUMMARY */
+#bill-summary {
+    clear: right;
+}
 
 #bill-summary > * {
     float: right;
     border: 1px solid grey;
-    padding: 7px;
+    padding: 7px 12px 7px 12px;
     text-align: center;
     font-size: large;
     width: 100px;
+    overflow: hidden;
+    white-space: nowrap;
+
 }
 
 #bill-summary hr {
@@ -161,12 +168,12 @@ a:hover {
 }
 
 #lines .column-description {
-    width: 55%;
+    width: 65%;
     text-align: left;
 }
 
 #lines .column-quantity {
-    width: 20%;
+    width: 10%;
 }
 
 #lines .column-rate {

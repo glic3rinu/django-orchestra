@@ -127,7 +127,9 @@ function install_requirements () {
          bind9utils \
          python-cracklib \
          libxml2-dev \
-         libxslt1-dev"
+         libxslt1-dev \
+         wkhtmltopdf \
+         xvfb"
     
     PIP="django==1.6.1 \
          django-celery-email==1.0.4 \
@@ -151,8 +153,7 @@ function install_requirements () {
     
     if $testing; then
         APT="${APT} \
-            iceweasel \
-            xvfb"
+            iceweasel"
         PIP="${PIP} \
             selenium \
             xvfbwrapper"

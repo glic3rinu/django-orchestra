@@ -282,6 +282,9 @@ class Order(models.Model):
             if service.handler.matches(instance):
                 if not orders:
                     account_id = getattr(instance, 'account_id', instance.pk)
+                    if account_id is None:
+                        # New account workaround -> user.account_id == None
+                        continue
                     order = cls.objects.create(content_object=instance,
                             service=service, account_id=account_id)
                 else:

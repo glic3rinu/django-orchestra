@@ -6,7 +6,7 @@ from orchestra.admin.utils import admin_colored, admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from .actions import process_transactions
-from .methods import BankTransfer
+from .methods import SEPADirectDebit
 from .models import PaymentSource, Transaction, PaymentProcess
 
 
@@ -39,7 +39,7 @@ class TransactionAdmin(admin.ModelAdmin):
 class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = ('label', 'method', 'number', 'account_link', 'is_active')
     list_filter = ('method', 'is_active')
-    form = BankTransfer().get_form()
+    form = SEPADirectDebit().get_form()
     # TODO select payment source method
 
 

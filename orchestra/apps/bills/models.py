@@ -16,7 +16,7 @@ class BillManager(models.Manager):
     def get_queryset(self):
         queryset = super(BillManager, self).get_queryset()
         if self.model != Bill:
-            bill_type = self.model.get_type()
+            bill_type = self.model.get_class_type()
             queryset = queryset.filter(type=bill_type)
         return queryset
 
@@ -127,7 +127,8 @@ class Bill(models.Model):
             },
             'currency': settings.BILLS_CURRENCY,
         })
-        template = getattr(settings, 'BILLS_%s_TEMPLATE' % self.get_type())
+        template = getattr(settings, 'BILLS_%s_TEMPLATE' % self.get_type(),
+                settings.BILLS_DEFAULT_TEMPLATE)
         bill_template = loader.get_template(template)
         html = bill_template.render(context)
         html = html.replace('-pageskip-', '<pdf:nextpage />')

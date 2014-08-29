@@ -15,26 +15,26 @@ from .. import settings
 from .options import PaymentSourceDataForm, PaymentMethod
 
 
-class BankTransferForm(PaymentSourceDataForm):
+class SEPADirectDebitForm(PaymentSourceDataForm):
     iban = IBANFormField(label='IBAN',
             widget=forms.TextInput(attrs={'size': '50'}))
     name = forms.CharField(max_length=128, label=_("Name"),
             widget=forms.TextInput(attrs={'size': '50'}))
 
 
-class BankTransferSerializer(serializers.Serializer):
+class SEPADirectDebitSerializer(serializers.Serializer):
     iban = serializers.CharField(label='IBAN', validators=[IBANValidator()],
             min_length=min(IBAN_COUNTRY_CODE_LENGTH.values()), max_length=34)
     name = serializers.CharField(label=_("Name"), max_length=128)
 
 
-class BankTransfer(PaymentMethod):
-    verbose_name = _("Bank transfer")
+class SEPADirectDebit(PaymentMethod):
+    verbose_name = _("Direct Debit")
     label_field = 'name'
     number_field = 'iban'
     process_credit = True
-    form = BankTransferForm
-    serializer = BankTransferSerializer
+    form = SEPADirectDebitForm
+    serializer = SEPADirectDebitSerializer
     
     def process(self, transactions):
         debts = []

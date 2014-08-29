@@ -28,9 +28,6 @@ class Command(BaseCommand):
             email = options.get('email')
             username = options.get('username')
             password = options.get('password')
-            user = User.objects.create_superuser(username, email, password, account=account,
-                    is_main=True)
-            account = Account.objects.create(user=user)
-            user.account = account
-            user.save()
-
+            account = Account.objects.create()
+            user = User.objects.create_superuser(username, email, password,
+                    account=account, is_main=True)

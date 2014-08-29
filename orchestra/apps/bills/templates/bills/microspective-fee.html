@@ -36,6 +36,7 @@
     float: right;
     padding: 15px;
     margin: 10px;
+    margin-top: 0px;
     width: 44%;
     font-size: large;
 }
@@ -84,7 +85,7 @@ hr {
 {% endblock %}
 
 {% block summary %}
-<div style="position: relative; margin-top: 150px;">
+<div style="position: relative; margin-top: 140px;">
 <hr>
 </div>
 
@@ -121,5 +122,8 @@ from Apr 1, 2010 to Apr 1, 2011
             Con vuestras cuotas, ademas de obtener <br>
 </div>
 {% endblock %}
-{% block pagination %}<hr>{% endblock %}
+{% block footer %}
+<hr>
+{{ block.super }}
+{% endblock %}
 

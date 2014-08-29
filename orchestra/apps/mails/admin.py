@@ -70,7 +70,8 @@ class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
         add_url += '?account=%d&mailboxes=%s' % (account.pk, mailbox.pk)
         img = '<img src="/static/admin/img/icon_addlink.gif" width="10" height="10" alt="Add Another">'
         onclick = 'onclick="return showAddAnotherPopup(this);"'
-        add_link = '<a href="%s" %s>%s Add address</a>' % (add_url, onclick, img)
+        add_link = '<a href="{add_url}" {onclick}>{img} Add address</a>'.format(
+                add_url=add_url, onclick=onclick, img=img)
         value = '%s<br><br>' % add_link
         for pk, name, domain in mailbox.addresses.values_list('pk', 'name', 'domain__name'):
             url = reverse('admin:mails_address_change', args=(pk,))

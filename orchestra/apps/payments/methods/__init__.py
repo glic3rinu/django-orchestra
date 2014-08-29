@@ -1,3 +1,3 @@
 from .creditcard import CreditCard
-from .banktransfer import BankTransfer
+from .sepadirectdebit import SEPADirectDebit
 from .options import PaymentMethod, PaymentSourceDataForm

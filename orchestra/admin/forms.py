@@ -12,7 +12,7 @@ class AdminFormMixin(object):
         adminform = AdminForm(self, fieldsets, prepopulated_fields)
         template = Template(
             '{% for fieldset in adminform %}'
-            '{% include "admin/includes/fieldset.html" %}'
+            '   {% include "admin/includes/fieldset.html" %}'
             '{% endfor %}'
         )
         return template.render(Context({'adminform': adminform}))

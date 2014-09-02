@@ -65,7 +65,7 @@ class BillSelectedOrders(object):
     def confirmation(self, request):
         form = BillSelectConfirmationForm(initial=self.options)
         if request.POST:
-            bills = Order.bill(queryset, commit=True, **self.options)
+            bills = self.queryset.bill(commit=True, **self.options)
             if not bills:
                 msg = _("Selected orders do not have pending billing")
                 self.modeladmin.message_user(request, msg, messages.WARNING)

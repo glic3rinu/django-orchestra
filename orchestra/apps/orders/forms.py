@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.admin import widgets
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -9,7 +10,7 @@ from .models import Order
 
 class BillSelectedOptionsForm(AdminFormMixin, forms.Form):
     billing_point = forms.DateField(initial=timezone.now,
-            label=_("Billing point"),
+            label=_("Billing point"), widget=widgets.AdminDateWidget,
             help_text=_("Date you want to bill selected orders"))
     fixed_point = forms.BooleanField(initial=False, required=False,
             label=_("fixed point"),

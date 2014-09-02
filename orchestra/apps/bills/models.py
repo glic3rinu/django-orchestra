@@ -172,14 +172,15 @@ class Budget(Bill):
 
 
 class BaseBillLine(models.Model):
+    """ Base model for bill item representation """
     bill = models.ForeignKey(Bill, verbose_name=_("bill"),
             related_name='%(class)ss')
-    description = models.CharField(max_length=256)
+    description = models.CharField(_("description"), max_length=256)
     initial_date = models.DateTimeField()
     final_date = models.DateTimeField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
-    amount = models.IntegerField()
-    tax = models.DecimalField(max_digits=12, decimal_places=2)
+    amount = models.DecimalField(_("amount"), max_digits=12, decimal_places=2)
+    tax = models.DecimalField(_("tax"), max_digits=12, decimal_places=2)
     
     class Meta:
         abstract = True
@@ -204,6 +205,15 @@ class BillLine(BaseBillLine):
     auto = models.BooleanField(default=False)
     amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
             related_name='amendment_lines', null=True, blank=True)
+
+
+class SubBillLine(models.Model):
+    """ Subline used for describing an item discount """
+    bill_line = models.ForeignKey(BillLine, verbose_name=_("bill line"),
+            related_name='sublines')
+    description = models.CharField(_("description"), max_length=256)
+    total = models.DecimalField(max_digits=12, decimal_places=2)
+    # TODO type ? Volume and Compensation
 
 
 accounts.register(Bill)

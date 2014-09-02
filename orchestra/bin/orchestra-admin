@@ -149,7 +149,8 @@ function install_requirements () {
          django-filter==0.7 \
          passlib==1.6.2 \
          jsonfield==0.9.22 \
-         lxml==3.3.5"
+         lxml==3.3.5 \
+         python-dateutil==2.2"
     
     if $testing; then
         APT="${APT} \

@@ -22,7 +22,7 @@ autodiscover('handlers')
 
 
 class Service(models.Model):
-    NEVER = 'NEVER'
+    NEVER = ''
     MONTHLY = 'MONTHLY'
     ANUAL = 'ANUAL'
     TEN_DAYS = 'TEN_DAYS'
@@ -36,6 +36,7 @@ class Service(models.Model):
     NOTHING = 'NOTHING'
     DISCOUNT = 'DISCOUNT'
     REFOUND = 'REFOUND'
+    COMPENSATE = 'COMPENSATE'
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
     BEST_PRICE = 'BEST_PRICE'
@@ -59,7 +60,7 @@ class Service(models.Model):
                 (MONTHLY, _("Monthly billing")),
                 (ANUAL, _("Anual billing")),
             ),
-            default=ANUAL)
+            default=ANUAL, blank=True)
     billing_point = models.CharField(_("billing point"), max_length=16,
             help_text=_("Reference point for calculating the renewal date "
                         "on recurring invoices"),
@@ -75,7 +76,7 @@ class Service(models.Model):
                 (TEN_DAYS, _("Ten days")),
                 (ONE_MONTH, _("One month")),
             ),
-            default=ONE_MONTH)
+            default=ONE_MONTH, blank=True)
     is_fee = models.BooleanField(_("is fee"), default=False,
             help_text=_("Designates whether this service should be billed as "
                         " membership fee or not"))
@@ -115,7 +116,8 @@ class Service(models.Model):
             choices=(
                 (NOTHING, _("Nothing")),
                 (DISCOUNT, _("Discount")),
-                (REFOUND, _("Refound")),
+                (COMPENSATE, _("Discount and compensate")),
+                (REFOUND, _("Discount, compensate and refound")),
             ),
             default=DISCOUNT)
     # TODO remove, orders are not disabled (they are cancelled user.is_active)
@@ -159,7 +161,7 @@ class Service(models.Model):
                 (ONE_MONTH, _("One month")),
                 (ALWAYS, _("Always refound")),
             ),
-            default=ONE_MONTH)
+            default=NEVER)
     
     def __unicode__(self):
         return self.description
@@ -212,6 +214,13 @@ class Service(models.Model):
                 message = exception.message
                 msg = "{0} {1}: {2}".format(attr, name, message)
                 raise ValidationError(msg)
+    
+    def get_nominal_price(self, order):
+        """ returns the price of an item """
+        
+    
+    def get_price(self, order, amount='TODO'):
+        pass
 
 
 class OrderQuerySet(models.QuerySet):

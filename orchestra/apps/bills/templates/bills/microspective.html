@@ -10,6 +10,7 @@
 
 {% block body %}
 <div class="wrapper">
+<div class="content">
 {% block header %}
 <div id="logo">
     {% block logo %}
@@ -40,7 +41,6 @@
 <div id="bill-number">
         {{ bill.get_type_display }}<br>
         <span class="value">{{ bill.number }}</span><br>
-        <span id="pagination">Page 1 of 1</span>
 </div>
 <div id="bill-summary">
     <hr>
@@ -74,13 +74,23 @@
     <span class="title column-rate">rate/price</span>
     <span class="title column-subtotal">subtotal</span>
     <br>
-    {% for line in bill.lines.all %}
-    <span class="value column-id">{{ line.id }}</span>
-    <span class="value column-description">{{ line.description }}</span>
-    <span class="value column-quantity">{{ line.amount|default:"&nbsp;" }}</span>
-    <span class="value column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
-    <span class="value column-subtotal">{{ line.total }} &{{ currency.lower }};</span>
+    {% for line in lines %}
+    {% with sublines=line.sublines.all %}
+    <span class="{% if not sublines %}last {% endif %}column-id">{{ line.id }}</span>
+    <span class="{% if not sublines %}last {% endif %}column-description">{{ line.description }}</span>
+    <span class="{% if not sublines %}last {% endif %}column-quantity">{{ line.amount|default:"&nbsp;" }}</span>
+    <span class="{% if not sublines %}last {% endif %}column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
+    <span class="{% if not sublines %}last {% endif %}column-subtotal">{{ line.total }} &{{ currency.lower }};</span>
     <br>
+        {% for subline in sublines %}
+            <span class="{% if forloop.last %}last {% endif %}subline column-id">&nbsp;</span>
+            <span class="{% if forloop.last %}last {% endif %}subline column-description">{{ subline.description }}</span>
+            <span class="{% if forloop.last %}last {% endif %}subline column-quantity">&nbsp;</span>
+            <span class="{% if forloop.last %}last {% endif %}subline column-rate">&nbsp;</span>
+            <span class="{% if forloop.last %}last {% endif %}subline column-subtotal">{{ subline.total }} &{{ currency.lower }};</span>
+            <br>
+        {% endfor %}
+    {% endwith %}
     {% endfor %}
 </div>
 <div id="totals">
@@ -100,9 +110,8 @@
 {% endblock %}
 
 {% block footer %}
-<div class="push"></div>
 </div>
-<div id="footer">
+<div class="footer">
     <div id="footer-column-1">
         <div id="comments">
             {% if bill.comments %}
@@ -112,7 +121,15 @@
     </div>
     <div id="footer-column-2">
         <div id="payment">
-            <span class="title">PAYMENT</span> {{ bill.payment.message }}
+            <span class="title">PAYMENT</span>
+                {% if bill.payment.message %}
+                    {{ bill.payment.message }}
+                {% else %}
+                    You can pay our invoice by bank transfer. <br>
+                    Please make sure to state your name and the invoice number.
+                    Our bank account number is <br>
+                    <strong>000-000-000-000 (Orchestra)</strong>
+                {% endif %}
         </div>
         <div id="questions">
             <span class="title">QUESTIONS</span> If you have any question about your bill, please
@@ -120,6 +137,7 @@
             your message.
         </div>
     </div>
+</div>
 </div>
 {% endblock %}
 {% endblock %}

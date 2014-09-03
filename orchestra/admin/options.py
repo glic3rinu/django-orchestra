@@ -1,9 +1,8 @@
 from django import forms
 from django.conf.urls import patterns, url
 from django.contrib import admin
+from django.contrib.admin.utils import unquote
 from django.forms.models import BaseInlineFormSet
-
-from orchestra.utils.functional import cached
 
 from .utils import set_url_query, action_to_view
 
@@ -59,12 +58,11 @@ class ChangeViewActionsMixin(object):
                 url('^(\d+)/%s/$' % action.url_name,
                     admin_site.admin_view(action),
                     name='%s_%s_%s' % (opts.app_label,
-                                       opts.module_name,
+                                       opts.model_name,
                                        action.url_name)))
         return new_urls + urls
     
-    @cached
-    def get_change_view_actions(self):
+    def get_change_view_actions(self, obj=None):
         views = []
         for action in self.change_view_actions:
             if isinstance(action, basestring):
@@ -75,16 +73,18 @@ class ChangeViewActionsMixin(object):
                     view.url_name.capitalize().replace('_', ' '))
             view.css_class = getattr(action, 'css_class', 'historylink')
             view.description = getattr(action, 'description', '')
+            view.__name__ = action.__name__
             views.append(view)
         return views
     
-    def change_view(self, *args, **kwargs):
+    def change_view(self, request, object_id, **kwargs):
+        obj = self.get_object(request, unquote(object_id))
         if not 'extra_context' in kwargs:
             kwargs['extra_context'] = {}
         kwargs['extra_context']['object_tools_items'] = [
-            action.__dict__ for action in self.get_change_view_actions()
+            action.__dict__ for action in self.get_change_view_actions(obj)
         ]
-        return super(ChangeViewActionsMixin, self).change_view(*args, **kwargs)
+        return super(ChangeViewActionsMixin, self).change_view(request, object_id, **kwargs)
 
 
 class ChangeAddFieldsMixin(object):

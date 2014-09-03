@@ -236,7 +236,8 @@ class OrderQuerySet(models.QuerySet):
     def bill(self, **options):
         bills = []
         bill_backend = Order.get_bill_backend()
-        for account, services in self.group_by('account', 'service'):
+        qs = self.select_related('account', 'service')
+        for account, services in qs.group_by('account', 'service'):
             bill_lines = []
             for service, orders in services:
                 lines = service.handler.create_bill_lines(orders, **options)
@@ -350,6 +351,11 @@ class MetricStorage(models.Model):
                 cls.objects.create(order=order, value=value)
             else:
                 metric.save()
+    
+    @classmethod
+    def get(cls, order, ini, end):
+        # TODO
+        pass
 
 
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")

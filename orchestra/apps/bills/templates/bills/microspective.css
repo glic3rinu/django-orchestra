@@ -1,7 +1,8 @@
 body {
 /*    max-width: 650px;*/
-    max-width: 800px;
+    max-width: 670px;
     margin: 40 auto !important;
+/*    margin-bottom: 30 !important;*/
     float: none !important;
     font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;
 }
@@ -34,7 +35,7 @@ a:hover {
     font-size: 20;
     font-weight: bold;
     color: grey;
-    margin-top: 15px;
+    margin-top: 30px;
     margin-bottom: 10px;
 }
 
@@ -44,11 +45,9 @@ a:hover {
     font-weight: normal;
 }
 
-#pagination {
-    font-size: small;
-}
 
 /* SUMMARY */
+
 #bill-summary {
     clear: right;
 }
@@ -113,6 +112,10 @@ a:hover {
     margin: 40px;
 }
 
+#seller-details {
+    margin-top: 0px;
+}
+
 #seller-details p {
     margin-top: 5px;
 }
@@ -158,8 +161,12 @@ a:hover {
     color: {{ color }};
 }
 
-#lines .value {
+#lines .last {
     border-bottom: 1px solid #CCC;
+}
+
+#lines .subline {
+    padding-top: 0px;
 }
 
 #lines .column-id {
@@ -230,27 +237,32 @@ a:hover {
 
 
 /*  FOOTER */
+.content {
+    display: table-row;  /* height is dynamic, and will expand... */
+    height: 100%;        /* ...as content is added (won't scroll) */
+}
 
 .wrapper {
-    min-height: 100%;
-    height: auto !important;
+    display: table;
     height: 100%;
-    margin: 0 auto -4em;
+    width: 100%;
 }
 
-#footer, .push {
-    height: 4em;
+.footer {
+    display: table-row;
 }
 
-#footer .title {
+.footer .title {
     color: {{ color }};
     font-weight: bold;
 }
 
-#footer > * > * {
+.footer > * > * {
     margin: 5px;
+    margin-bottom: 8px;
     color: #666;
     font-size: small;
+    text-align: justify;
 }
 
 #footer-column-1 {
@@ -261,4 +273,8 @@ a:hover {
 #footer-column-2 {
     float: right;
     width: 48%;
+}
+
+#questions {
+    margin-bottom: 0px;
 }

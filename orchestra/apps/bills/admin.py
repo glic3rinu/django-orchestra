@@ -1,7 +1,9 @@
 from django import forms
 from django.contrib import admin
+#from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
+#from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -9,7 +11,7 @@ from orchestra.admin.utils import admin_link, admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from . import settings
-from .actions import generate_bill
+from .actions import render_bills, download_bills, view_bill, close_bills
 from .filters import BillTypeListFilter
 from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, Budget,
         BillLine, BudgetLine)
@@ -66,7 +68,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('html',),
         }),
     )
-    change_view_actions = [generate_bill]
+    actions = [render_bills, download_bills, close_bills]
+    change_view_actions = [render_bills, view_bill, download_bills]
     change_readonly_fields = ('account_link', 'type', 'status')
     readonly_fields = ('number', 'display_total')
     inlines = [BillLineInline]
@@ -97,6 +100,13 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             fields += self.add_fields
         return fields
     
+    def get_change_view_actions(self, obj=None):
+        actions = super(BillAdmin, self).get_change_view_actions(obj)
+        if obj and not obj.html:
+            actions = [action for action in actions
+                if action.__name__ not in ('view_bill', 'download_bills')]
+        return actions
+    
     def get_inline_instances(self, request, obj=None):
         if self.model is Budget:
             self.inlines = [BudgetLineInline]
@@ -112,11 +122,19 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             kwargs['widget'] = forms.Textarea(attrs={'cols': 150, 'rows': 20})
         return super(BillAdmin, self).formfield_for_dbfield(db_field, **kwargs)
         
-    def queryset(self, request):
-        qs = super(BillAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(BillAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('billlines'))
         qs = qs.prefetch_related('billlines', 'billlines__sublines')
         return qs
+
+#    def change_view(self, request, object_id, **kwargs):
+#        opts = self.model._meta
+#        if opts.module_name == 'bill':
+#            obj = self.get_object(request, unquote(object_id))
+#            return redirect(
+#                reverse('admin:bills_%s_change' % obj.type.lower(), args=[obj.pk]))
+#        return super(BillAdmin, self).change_view(request, object_id, **kwargs)
 
 
 admin.site.register(Bill, BillAdmin)

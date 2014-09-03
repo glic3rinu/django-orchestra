@@ -118,7 +118,7 @@ class Bill(models.Model):
     def render(self):
         context = Context({
             'bill': self,
-            'lines': self.lines.all(),
+            'lines': self.lines.all().prefetch_related('sublines'),
             'seller': self.seller,
             'buyer': self.buyer,
             'seller_info': {
@@ -145,7 +145,7 @@ class Bill(models.Model):
     @cached
     def get_subtotals(self):
         subtotals = {}
-        for line in self.lines.all():
+        for line in self.lines.all().prefetch_related('sublines'):
             subtotal, taxes = subtotals.get(line.tax, (0, 0))
             subtotal += line.total
             for subline in line.sublines.all():
@@ -155,6 +155,7 @@ class Bill(models.Model):
     
     @cached
     def get_total(self):
+        # TODO self.total = self.get_total on self.save()
         total = 0
         for tax, subtotal in self.get_subtotals().iteritems():
             subtotal, taxes = subtotal

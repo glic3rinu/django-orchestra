@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.accounts.models import Account
 from orchestra.core import accounts
+from orchestra.utils.functional import cached
 
 from . import settings
 
@@ -140,6 +141,25 @@ class Bill(models.Model):
         if not self.number or (self.number.startswith('O') and self.status != self.OPEN):
             self.set_number()
         super(Bill, self).save(*args, **kwargs)
+    
+    @cached
+    def get_subtotals(self):
+        subtotals = {}
+        for line in self.lines.all():
+            subtotal, taxes = subtotals.get(line.tax, (0, 0))
+            subtotal += line.total
+            for subline in line.sublines.all():
+                subtotal += subline.total
+            subtotals[line.tax] = (subtotal, (line.tax/100)*subtotal)
+        return subtotals
+    
+    @cached
+    def get_total(self):
+        total = 0
+        for tax, subtotal in self.get_subtotals().iteritems():
+            subtotal, taxes = subtotal
+            total += subtotal + taxes
+        return total
 
 
 class Invoice(Bill):
@@ -176,11 +196,11 @@ class BaseBillLine(models.Model):
     bill = models.ForeignKey(Bill, verbose_name=_("bill"),
             related_name='%(class)ss')
     description = models.CharField(_("description"), max_length=256)
-    initial_date = models.DateTimeField()
-    final_date = models.DateTimeField()
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    rate = models.DecimalField(_("rate"), blank=True, null=True,
+            max_digits=12, decimal_places=2)
     amount = models.DecimalField(_("amount"), max_digits=12, decimal_places=2)
-    tax = models.DecimalField(_("tax"), max_digits=12, decimal_places=2)
+    total = models.DecimalField(_("total"), max_digits=12, decimal_places=2)
+    tax = models.PositiveIntegerField(_("tax"))
     
     class Meta:
         abstract = True
@@ -188,7 +208,7 @@ class BaseBillLine(models.Model):
     def __unicode__(self):
         return "#%i" % self.number
     
-    @property
+    @cached_property
     def number(self):
         lines = type(self).objects.filter(bill=self.bill_id)
         return lines.filter(id__lte=self.id).order_by('id').count()
@@ -207,7 +227,7 @@ class BillLine(BaseBillLine):
             related_name='amendment_lines', null=True, blank=True)
 
 
-class SubBillLine(models.Model):
+class BillSubline(models.Model):
     """ Subline used for describing an item discount """
     bill_line = models.ForeignKey(BillLine, verbose_name=_("bill line"),
             related_name='sublines')

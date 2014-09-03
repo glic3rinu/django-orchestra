@@ -70,7 +70,7 @@ class BillSelectedOrders(object):
                 msg = _("Selected orders do not have pending billing")
                 self.modeladmin.message_user(request, msg, messages.WARNING)
             else:
-                ids = ','.join([bill.id for bill in bills])
+                ids = ','.join([str(bill.id) for bill in bills])
                 url = reverse('admin:bills_bill_changelist')
                 context = {
                     'url': url + '?id=%s' % ids,

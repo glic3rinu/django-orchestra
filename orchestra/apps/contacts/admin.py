@@ -97,7 +97,7 @@ class ContactInline(InvoiceContactInline):
 
 def has_invoice(account):
     try:
-        account.invoicecontact.get()
+        account.invoicecontact
     except InvoiceContact.DoesNotExist:
         return False
     return True

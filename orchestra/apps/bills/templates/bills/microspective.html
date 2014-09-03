@@ -50,7 +50,7 @@
     </div>
     <div id="total">
         <span class="title">TOTAL</span><br>
-        <psan class="value">{{ bill.total }} &{{ currency.lower }};</span>
+        <psan class="value">{{ bill.get_total }} &{{ currency.lower }};</span>
     </div>
     <div id="bill-date">
         <span class="title">{{ bill.get_type_display.upper }} DATE</span><br>
@@ -79,20 +79,22 @@
     <span class="value column-description">{{ line.description }}</span>
     <span class="value column-quantity">{{ line.amount|default:"&nbsp;" }}</span>
     <span class="value column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
-    <span class="value column-subtotal">{{ line.price }} &{{ currency.lower }};</span>
+    <span class="value column-subtotal">{{ line.total }} &{{ currency.lower }};</span>
     <br>
     {% endfor %}
 </div>
 <div id="totals">
     <br>&nbsp;<br>
-    <span class="subtotal column-title">subtotal</span>
-    <span class="subtotal column-value">{{ bill.subtotal }} &{{ currency.lower }};</span>
-    <br>
-    <span class="tax column-title">tax</span>
-    <span class="tax column-value">{{ bill.taxes }} &{{ currency.lower }};</span>
-    <br>
+    {% for tax, subtotal in bill.get_subtotals.iteritems %}
+        <span class="subtotal column-title">subtotal {{ tax }}% VAT</span>
+        <span class="subtotal column-value">{{ subtotal | first }} &{{ currency.lower }};</span>
+        <br>
+        <span class="tax column-title">taxes {{ tax }}% VAT</span>
+        <span class="tax column-value">{{ subtotal | last }} &{{ currency.lower }};</span>
+        <br>
+    {% endfor %}
     <span class="total column-title">total</span>
-    <span class="total column-value">{{ bill.total }} &{{ currency.lower }};</span>
+    <span class="total column-value">{{ bill.get_total }} &{{ currency.lower }};</span>
     <br>
 </div>
 {% endblock %}

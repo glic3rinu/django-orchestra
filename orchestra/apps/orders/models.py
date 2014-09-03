@@ -84,7 +84,7 @@ class Service(models.Model):
     metric = models.CharField(_("metric"), max_length=256, blank=True,
             help_text=_("Metric used to compute the pricing rate. "
                         "Number of orders is used when left blank."))
-    tax = models.IntegerField(_("tax"), choices=settings.ORDERS_SERVICE_TAXES,
+    tax = models.PositiveIntegerField(_("tax"), choices=settings.ORDERS_SERVICE_TAXES,
             default=settings.ORDERS_SERVICE_DEFAUL_TAX)
     pricing_period = models.CharField(_("pricing period"), max_length=16,
             help_text=_("Period used for calculating the metric used on the "
@@ -163,6 +163,11 @@ class Service(models.Model):
             ),
             default=NEVER)
     
+    @property
+    def nominal_price(self):
+        # FIXME delete and make it a model field
+        return 10
+    
     def __unicode__(self):
         return self.description
     
@@ -215,24 +220,29 @@ class Service(models.Model):
                 msg = "{0} {1}: {2}".format(attr, name, message)
                 raise ValidationError(msg)
     
-    def get_nominal_price(self, order):
-        """ returns the price of an item """
-        
+    def get_pricing_period(self):
+        if self.pricing_period == self.BILLING_PERIOD:
+            return self.billing_period
+        return self.pricing_period
     
-    def get_price(self, order, amount='TODO'):
-        pass
+    def get_rate(self, order, metric):
+        # TODO implement
+        return 12
 
 
 class OrderQuerySet(models.QuerySet):
     group_by = queryset.group_by
     
     def bill(self, **options):
-        for account, services in self.group_by('account_id', 'service_id'):
+        bills = []
+        bill_backend = Order.get_bill_backend()
+        for account, services in self.group_by('account', 'service'):
             bill_lines = []
             for service, orders in services:
-                lines = helpers.create_bill_lines(service, orders, **options)
+                lines = service.handler.create_bill_lines(orders, **options)
                 bill_lines.extend(lines)
-            helpers.create_bills(account, bill_lines)
+            bills += bill_backend.create_bills(account, bill_lines)
+        return bills
     
     def get_related(self):
         pass
@@ -259,10 +269,10 @@ class Order(models.Model):
     object_id = models.PositiveIntegerField(null=True)
     service = models.ForeignKey(Service, verbose_name=_("service"),
             related_name='orders')
-    registered_on = models.DateTimeField(_("registered on"), auto_now_add=True)
-    cancelled_on = models.DateTimeField(_("cancelled on"), null=True, blank=True)
-    billed_on = models.DateTimeField(_("billed on"), null=True, blank=True)
-    billed_until = models.DateTimeField(_("billed until"), null=True, blank=True)
+    registered_on = models.DateField(_("registered on"), auto_now_add=True)
+    cancelled_on = models.DateField(_("cancelled on"), null=True, blank=True)
+    billed_on = models.DateField(_("billed on"), null=True, blank=True)
+    billed_until = models.DateField(_("billed until"), null=True, blank=True)
     ignore = models.BooleanField(_("ignore"), default=False)
     description = models.TextField(_("description"), blank=True)
     
@@ -302,16 +312,26 @@ class Order(models.Model):
             elif orders:
                 orders.get().cancel()
     
+    @classmethod
+    def get_bill_backend(cls):
+        # TODO
+        from .backends import BillsBackend
+        return BillsBackend()
+    
     def cancel(self):
         self.cancelled_on = timezone.now()
         self.save()
+    
+    def get_metric(self, ini, end):
+        # TODO implement
+        return 10
 
 
 class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"))
     value = models.BigIntegerField(_("value"))
-    created_on = models.DateTimeField(_("created on"), auto_now_add=True)
-    updated_on = models.DateTimeField(_("updated on"), auto_now=True)
+    created_on = models.DateField(_("created on"), auto_now_add=True)
+    updated_on = models.DateField(_("updated on"), auto_now=True)
     
     class Meta:
         get_latest_by = 'created_on'

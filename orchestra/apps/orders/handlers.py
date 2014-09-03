@@ -1,6 +1,7 @@
 import calendar
+import datetime
 
-from dateutil.relativedelta import relativedelta
+from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils import timezone
@@ -8,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.utils import plugins
 
+from . import settings
 from .helpers import get_register_or_cancel_events, get_register_or_renew_events
 
 
@@ -52,55 +54,59 @@ class ServiceHandler(plugins.Plugin):
             return eval(self.metric, safe_locals)
     
     def get_billing_point(self, order, bp=None, **options):
-        not_cachable = self.billing_point is self.FIXED_DATE and options.get('fixed_point')
+        not_cachable = self.billing_point == self.FIXED_DATE and options.get('fixed_point')
         if not_cachable or bp is None:
             bp = options.get('billing_point', timezone.now().date())
             if not options.get('fixed_point'):
-                if self.billing_period is self.MONTHLY:
+                msg = ("Support for '%s' period and '%s' point is not implemented"
+                    % (self.get_billing_period_display(), self.get_billing_point_display()))
+                if self.billing_period == self.MONTHLY:
                     date = bp
-                    if self.payment_style is self.PREPAY:
-                        date += relativedelta(months=1)
-                    if self.billing_point is self.ON_REGISTER:
+                    if self.payment_style == self.PREPAY:
+                        date += relativedelta.relativedelta(months=1)
+                    if self.billing_point == self.ON_REGISTER:
                         day = order.registered_on.day
-                    elif self.billing_point is self.FIXED_DATE:
+                    elif self.billing_point == self.FIXED_DATE:
                         day = 1
+                    else:
+                        raise NotImplementedError(msg)
                     bp = datetime.datetime(year=date.year, month=date.month,
                             day=day, tzinfo=timezone.get_current_timezone())
-                elif self.billing_period is self.ANUAL:
-                    if self.billing_point is self.ON_REGISTER:
+                elif self.billing_period == self.ANUAL:
+                    if self.billing_point == self.ON_REGISTER:
                         month = order.registered_on.month
                         day = order.registered_on.day
-                    elif self.billing_point is self.FIXED_DATE:
+                    elif self.billing_point == self.FIXED_DATE:
                         month = settings.ORDERS_SERVICE_ANUAL_BILLING_MONTH
                         day = 1
+                    else:
+                        raise NotImplementedError(msg)
                     year = bp.year
-                    if self.payment_style is self.POSTPAY:
-                        year = bo.year - relativedelta(years=1)
+                    if self.payment_style == self.POSTPAY:
+                        year = bo.year - relativedelta.relativedelta(years=1)
                     if bp.month >= month:
                         year = bp.year + 1
                     bp = datetime.datetime(year=year, month=month, day=day,
                         tzinfo=timezone.get_current_timezone())
-                elif self.billing_period is self.NEVER:
+                elif self.billing_period == self.NEVER:
                     bp = order.registered_on
                 else:
-                    raise NotImplementedError(
-                        "Support for '%s' billing period and '%s' billing point is not implemented"
-                        % (self.display_billing_period(), self.display_billing_point())
-                    )
-        if self.on_cancel is not self.NOTHING and order.cancelled_on < bp:
+                    raise NotImplementedError(msg)
+        if self.on_cancel != self.NOTHING and order.cancelled_on and order.cancelled_on < bp:
             return order.cancelled_on
         return bp
     
     def get_pricing_size(self, ini, end):
         rdelta = relativedelta.relativedelta(end, ini)
-        if self.get_pricing_period() is self.MONTHLY:
+        if self.get_pricing_period() == self.MONTHLY:
             size = rdelta.months
-            days = calendar.monthrange(bp.year, bp.month)[1]
-            size += float(bp.day)/days
-        elif self.get_pricint_period() is self.ANUAL:
+            days = calendar.monthrange(end.year, end.month)[1]
+            size += float(rdelta.days)/days
+        elif self.get_pricing_period() == self.ANUAL:
             size = rdelta.years
-            size += float(rdelta.days)/365
-        elif self.get_pricing_period() is self.NEVER:
+            days = 366 if calendar.isleap(end.year) else 365
+            size += float((end-ini).days)/days
+        elif self.get_pricing_period() == self.NEVER:
             size = 1
         else:
             raise NotImplementedError
@@ -108,11 +114,11 @@ class ServiceHandler(plugins.Plugin):
     
     def get_pricing_slots(self, ini, end):
         period = self.get_pricing_period()
-        if period is self.MONTHLY:
-            rdelta = relativedelta(months=1)
-        elif period is self.ANUAL:
-            rdelta = relativedelta(years=1)
-        elif period is self.NEVER:
+        if period == self.MONTHLY:
+            rdelta = relativedelta.relativedelta(months=1)
+        elif period == self.ANUAL:
+            rdelta = relativedelta.relativedelta(years=1)
+        elif period == self.NEVER:
             yield ini, end
             raise StopIteration
         else:
@@ -125,51 +131,107 @@ class ServiceHandler(plugins.Plugin):
             yield ini, next
             ini = next
     
-    def create_line(self, order, price, size):
+    def get_price_with_orders(self, order, size, ini, end):
+        porders = self.orders.filter(account=order.account).filter(
+            Q(cancelled_on__isnull=True) | Q(cancelled_on__gt=ini)
+            ).filter(registered_on__lt=end)
+        price = 0
+        if self.orders_effect == self.REGISTER_OR_RENEW:
+            events = get_register_or_renew_events(porders, ini, end)
+        elif self.orders_effect == self.CONCURRENT:
+            events = get_register_or_cancel_events(porders, ini, end)
+        else:
+            raise NotImplementedError
+        for metric, ratio in events:
+            price += self.get_rate(order, metric) * size * ratio
+        return price
+    
+    def get_price_with_metric(self, order, size, ini, end):
+        metric = order.get_metric(ini, end)
+        price = self.get_rate(order, metric) * size
+        return price
+    
+    def create_line(self, order, price, size, ini, end):
         nominal_price = self.nominal_price * size
+        discounts = []
         if nominal_price > price:
-            discount = nominal_price-price
+            discounts.append(('volume', nominal_price-price))
+        # TODO Uncomment when prices are done
+#        elif nominal_price < price:
+#            raise ValueError("Something is wrong!")
+        return (order, nominal_price, size, ini, end, discounts)
     
     def create_bill_lines(self, orders, **options):
-        # Perform compensations on cancelled services
-        # TODO WTF to do with day 1 of each month.
-        if self.on_cancel in (Order.COMPENSATE, Order.REFOUND):
+        # For the "boundary conditions" just think that:
+        #   date(2011, 1, 1) is equivalent to datetime(2011, 1, 1, 0, 0, 0)
+        #   In most cases:
+        #       ini >= registered_date, end < registered_date
+        
+        # TODO Perform compensations on cancelled services
+        if self.on_cancel in (self.COMPENSATE, self.REFOUND):
+            pass
             # TODO compensations with commit=False, fuck commit or just fuck the transaction?
-            compensate(orders, **options)
+            # compensate(orders, **options)
             # TODO create discount per compensation
         bp = None
         lines = []
         for order in orders:
             bp = self.get_billing_point(order, bp=bp, **options)
             ini = order.billed_until or order.registered_on
-            if bp < ini:
+            if bp <= ini:
                 continue
             if not self.metric:
                 # Number of orders metric; bill line per order
-                porders = service.orders.filter(account=order.account).filter(
-                    Q(is_active=True) | Q(cancelled_on__gt=order.billed_until)
-                    ).filter(registered_on__lt=bp)
-                price = 0
                 size = self.get_pricing_size(ini, bp)
-                if self.orders_effect is self.REGISTER_OR_RENEW:
-                    events = get_register_or_renew_events(porders, ini, bp)
-                elif self.orders_effect is self.CONCURRENT:
-                    events = get_register_or_cancel_events(porders, ini, bp)
-                else:
-                    raise NotImplementedError
-                for metric, ratio in events:
-                    price += self.get_rate(metric, account) * size * ratio
-                lines += self.create_line(order, price, size)
+                price = self.get_price_with_orders(order, size, ini, bp)
+                lines.append(self.create_line(order, price, size, ini, bp))
             else:
                 # weighted metric; bill line per pricing period
                 for ini, end in self.get_pricing_slots(ini, bp):
-                    metric = order.get_metric(ini, end)
                     size = self.get_pricing_size(ini, end)
-                    price = self.get_rate(metric, account) * size
-                    lines += self.create_line(order, price, size)
+                    price = self.get_price_with_metric(order, size, ini, end)
+                    lines.append(self.create_line(order, price, size, ini, end))
+            order.billed_until = bp
+            order.save() # TODO if commit
         return lines
     
     def compensate(self, orders):
-        # num orders and weights
-        # Discounts
-        pass
+        # TODO this compensation is a bit hard to write it propertly
+        #      don't forget to think about weighted and num order prices.
+        # Greedy algorithm for maximizing discount (non-deterministic)
+        # Reduce and break orders in donors and receivers
+        donors = []
+        receivers = []
+        for order in orders:
+            if order.cancelled_on and order.billed_until > order.cancelled_on:
+                donors.append(order)
+            elif not order.cancelled_on or order.cancelled_on > order.billed_until:
+                receivers.append(order)
+        
+        # Assign weights to every donor-receiver combination
+        weights = []
+        for donor in donors:
+            for receiver in receivers:
+                if receiver.cancelled_on:
+                    if not receiver.cancelled_on or receiver.cancelled_on < donor.billed_until:
+                        end = receiver.cancelled_on
+                    else:
+                        end = donor.billed_until
+                else:
+                    end = donor.billed_until
+                ini = donor.billed_until or donor.registered_on
+                if donor.cancelled_on > ini:
+                    ini = donor.cancelled_on
+                weight = (end-ini).days
+                weights.append((weight, ini, end, donor, receiver))
+        
+        # Choose weightest pairs
+        choosen = []
+        weights.sort(key=lambda n: n[0])
+        for weight, ini, end, donor, receiver in weigths:
+            if donor not in choosen and receiver not in choosen:
+                choosen += [donor, receiver]
+                donor.billed_until = end
+                donor.save()
+                price = self.get_price()#TODO
+                receiver.__discount_per_compensation =None

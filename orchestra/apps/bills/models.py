@@ -54,7 +54,7 @@ class Bill(models.Model):
     status = models.CharField(_("status"), max_length=16, choices=STATUSES,
             default=OPEN)
     created_on = models.DateTimeField(_("created on"), auto_now_add=True)
-    due_on = models.DateTimeField(_("due on"), null=True, blank=True)
+    due_on = models.DateField(_("due on"), null=True, blank=True)
     last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
     #base = models.DecimalField(max_digits=12, decimal_places=2)
     #tax = models.DecimalField(max_digits=12, decimal_places=2)

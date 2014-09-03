@@ -78,9 +78,6 @@ hr {
     border: 2px solid #809708;
     clear: left;
 }
-
-
-
 </style>
 {% endblock %}
 
@@ -90,28 +87,28 @@ hr {
 </div>
 
 <div id="buyer-details">
-    <span class="name">Aadults</span><br>
-    ES01939933<br>
-    Carrer nnoseque, 0<br>
-    08034 - Barcelona<br>
-    Spain<br>
+    <span class="name">{{ buyer.name }}</span><br>
+    {{ buyer.vat }}<br>
+    {{ buyer.address }}<br>
+    {{ buyer.zipcode }} - {{ buyer.city }}<br>
+    {{ buyer.country }}<br>
 </div>
 
 <div id="number" class="column-1">
     <span id="number-title">Membership Fee</span><br>
-    <span id="number-value">Q20110232</span><br>
-    <span id="number-date">Nov, 2011</span><br>
+    <span id="number-value">{{ bill.number }}</span><br>
+    <span id="number-date">{{ bill.created_on | date }}</span><br>
 </div>
 
 <div id="amount" class="column-2">
-    <span id="amount-value">1232,00 &euro;</span><br>
-    <span id="amount-note">To pay before Oct 20, 2011<br>
+    <span id="amount-value">{{ bill.get_total }} &euro;</span><br>
+    <span id="amount-note">To pay before {{ bill.due_date }}<br>
         on 213.232.322.232.332<br>
     </span>
 </div>
 
 <div id="date" class="column-2">
-from Apr 1, 2010 to Apr 1, 2011
+From {{ bill.lines.get.description }}
 </div>
 {% endblock %}
 {% block content %}

@@ -144,7 +144,7 @@ class Service(models.Model):
                 (POSTPAY, _("Postpay (on demand)")),
             ),
             default=PREPAY)
-    trial_period = models.CharField(_("trial period"), max_length=16,
+    trial_period = models.CharField(_("trial period"), max_length=16, blank=True,
             help_text=_("Period in which no charge will be issued"),
             choices=(
                 (NEVER, _("No trial")),
@@ -161,7 +161,7 @@ class Service(models.Model):
                 (ONE_MONTH, _("One month")),
                 (ALWAYS, _("Always refound")),
             ),
-            default=NEVER)
+            default=NEVER, blank=True)
     
     @property
     def nominal_price(self):

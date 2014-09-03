@@ -6,26 +6,26 @@ from django.utils.translation import ungettext, ugettext as _
 
 def pluralize_year(n):
     return ungettext(
-        _('{ahead}{num:.1f} year{ago}'),
-        _('{ahead}{num:.1f} years{ago}'), n)
+        _('{num:.1f} year{ago}'),
+        _('{num:.1f} years{ago}'), n)
 
 
 def pluralize_month(n):
     return ungettext(
-        _('{ahead}{num:.1f} month{ago}'),
-        _('{ahead}{num:.1f} months{ago}'), n)
+        _('{num:.1f} month{ago}'),
+        _('{num:.1f} months{ago}'), n)
 
 
 def pluralize_week(n):
     return ungettext(
-        _('{ahead}{num:.1f} week{ago}'),
-        _('{ahead}{num:.1f} weeks {ago}'), n)
+        _('{num:.1f} week{ago}'),
+        _('{num:.1f} weeks {ago}'), n)
 
 
 def pluralize_day(n):
     return ungettext(
-        _('{ahead}{num:.1f} day{ago}'),
-        _('{ahead}{num:.1f} days{ago}'), n)
+        _('{num:.1f} day{ago}'),
+        _('{num:.1f} days{ago}'), n)
 
 
 OLDER_CHUNKS = (
@@ -57,10 +57,8 @@ def naturaldate(date, include_seconds=False):
     seconds = delta.seconds
     
     ago = ' ago'
-    ahead = ''
     if days < 0:
         ago = ''
-        ahead = 'in '
     days = abs(days)
     
     if days == 0:
@@ -68,22 +66,22 @@ def naturaldate(date, include_seconds=False):
             if minutes > 0:
                 minutes += float(seconds)/60
                 return ungettext(
-                    _('{ahead}{minutes:.1f} minute{ago}'),
-                    _('{ahead}{minutes:.1f} minutes{ago}'), minutes
-                ).format(minutes=minutes, ago=ago, ahead=ahead)
+                    _('{minutes:.1f} minute{ago}'),
+                    _('{minutes:.1f} minutes{ago}'), minutes
+                ).format(minutes=minutes, ago=ago)
             else:
                 if include_seconds and seconds:
                     return ungettext(
-                        _('{ahead}{seconds} second{ago}'),
-                        _('{ahead}{seconds} seconds{ago}'), seconds
-                    ).format(seconds=seconds, ago=ago, ahead=ahead)
+                        _('{seconds} second{ago}'),
+                        _('{seconds} seconds{ago}'), seconds
+                    ).format(seconds=seconds, ago=ago)
                 return _('just now')
         else:
             hours += float(minutes)/60
             return ungettext(
-                _('{ahead}{hours:.1f} hour{ago}'),
-                _('{ahead}{hours:.1f} hours{ago}'), hours
-            ).format(hours=hours, ago=ago, ahead=ahead)
+                _('{hours:.1f} hour{ago}'),
+                _('{hours:.1f} hours{ago}'), hours
+            ).format(hours=hours, ago=ago)
     
     if delta_midnight.days == 0:
         return _('yesterday at {time}').format(time=date.strftime('%H:%M'))
@@ -93,9 +91,9 @@ def naturaldate(date, include_seconds=False):
         if days < 7.0:
             count = days + float(hours)/24
             fmt = pluralize_day(count)
-            return fmt.format(num=count, ago=ago, ahead=ahead)
+            return fmt.format(num=count, ago=ago)
         if days >= chunk:
             count = (delta_midnight.days + 1) / chunk
             count = abs(count)
             fmt = pluralizefun(count)
-            return fmt.format(num=count, ago=ago, ahead=ahead)
+            return fmt.format(num=count, ago=ago)

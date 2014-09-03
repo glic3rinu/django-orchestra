@@ -1,10 +1,12 @@
 from django.contrib.admin import SimpleListFilter
+from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 
 class ActiveOrderListFilter(SimpleListFilter):
     """ Filter tickets by created_by according to request.user """
-    title = _("Orders")
+    title = _("is active")
     parameter_name = 'is_active'
     
     def lookups(self, request, model_admin):
@@ -26,3 +28,29 @@ class ActiveOrderListFilter(SimpleListFilter):
         choices = iter(super(ActiveOrderListFilter, self).choices(cl))
         choices.next()
         return choices
+
+
+class BilledOrderListFilter(SimpleListFilter):
+    """ Filter tickets by created_by according to request.user """
+    title = _("billed")
+    parameter_name = 'pending'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('to_date', _("To date")),
+            ('full', _("Full period")),
+            ('not', _("Not billed")),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'to_date':
+            return queryset.filter(billed_until__isnull=False,
+                    billed_until__gte=timezone.now())
+        elif self.value() == 'full':
+            raise NotImplementedError
+        elif self.value() == 'not':
+            return queryset.filter(
+                Q(billed_until__isnull=True) |
+                Q(billed_until__lt=timezone.now())
+            )
+        return queryset

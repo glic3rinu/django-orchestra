@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.contacts import settings as contacts_settings
+from orchestra.apps.contacts.models import Contact
 from orchestra.models.fields import MultiSelectField
 from orchestra.utils import send_email_template
 
@@ -14,7 +15,7 @@ class Queue(models.Model):
     name = models.CharField(_("name"), max_length=128, unique=True)
     default = models.BooleanField(_("default"), default=False)
     notify = MultiSelectField(_("notify"), max_length=256, blank=True,
-            choices=contacts_settings.CONTACTS_EMAIL_USAGES,
+            choices=Contact.EMAIL_USAGES,
             default=contacts_settings.CONTACTS_DEFAULT_EMAIL_USAGES,
             help_text=_("Contacts to notify by email"))
     

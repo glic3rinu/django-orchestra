@@ -29,7 +29,7 @@ class SEPADirectDebitSerializer(serializers.Serializer):
 
 
 class SEPADirectDebit(PaymentMethod):
-    verbose_name = _("Direct Debit")
+    verbose_name = _("SEPA Direct Debit")
     label_field = 'name'
     number_field = 'iban'
     process_credit = True
@@ -154,10 +154,9 @@ class SEPADirectDebit(PaymentMethod):
     def _get_debt_transactions(self, transactions):
         for transaction in transactions:
             self.object.transactions.add(transaction)
-            # TODO transaction.account
-            account = transaction.bill.account
-            # FIXME
-            data = account.payment_sources.first().data
+            account = transaction.account
+            # TODO
+            data = account.paymentsources.first().data
             transaction.state = transaction.WAITTING_CONFIRMATION
             transaction.save()
             yield E.DrctDbtTxInf(                           # Direct Debit Transaction Info
@@ -196,8 +195,7 @@ class SEPADirectDebit(PaymentMethod):
     def _get_credit_transactions(self, transactions):
         for transaction in transactions:
             self.object.transactions.add(transaction)
-            # TODO transaction.account
-            account = transaction.bill.account
+            account = transaction.account
             # FIXME
             data = account.payment_sources.first().data
             transaction.state = transaction.WAITTING_CONFIRMATION

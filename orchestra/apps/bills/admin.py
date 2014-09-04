@@ -11,7 +11,7 @@ from orchestra.admin.utils import admin_link, admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from . import settings
-from .actions import render_bills, download_bills, view_bill, close_bills
+from .actions import download_bills, view_bill, close_bills, send_bills
 from .filters import BillTypeListFilter
 from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, Budget,
         BillLine, BudgetLine)
@@ -51,6 +51,7 @@ class BudgetLineInline(admin.TabularInline):
     fields = ('description', 'rate', 'amount', 'tax', 'total')
 
 
+# TODO hide raw when status = oPen
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'number', 'status', 'type_link', 'account_link', 'created_on_display',
@@ -68,8 +69,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('html',),
         }),
     )
-    actions = [render_bills, download_bills, close_bills]
-    change_view_actions = [render_bills, view_bill, download_bills]
+    actions = [download_bills, close_bills, send_bills]
+    change_view_actions = [view_bill, download_bills, send_bills, close_bills]
     change_readonly_fields = ('account_link', 'type', 'status')
     readonly_fields = ('number', 'display_total')
     inlines = [BillLineInline]
@@ -82,7 +83,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     num_lines.short_description = _("lines")
     
     def display_total(self, bill):
-        return "%i &%s;" % (bill.get_total(), settings.BILLS_CURRENCY.lower())
+        return "%s &%s;" % (bill.get_total(), settings.BILLS_CURRENCY.lower())
     display_total.allow_tags = True
     display_total.short_description = _("total")
     
@@ -102,10 +103,15 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     
     def get_change_view_actions(self, obj=None):
         actions = super(BillAdmin, self).get_change_view_actions(obj)
-        if obj and not obj.html:
-            actions = [action for action in actions
-                if action.__name__ not in ('view_bill', 'download_bills')]
-        return actions
+        discard = []
+        if obj:
+            if obj.status != Bill.OPEN:
+                discard = ['close_bills']
+            if obj.status != Bill.CLOSED:
+                discard = ['send_bills']
+        if not discard:
+            return actions
+        return [action for action in actions if action.__name__ not in discard]
     
     def get_inline_instances(self, request, obj=None):
         if self.model is Budget:

@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.apps.accounts.models import Account
 from orchestra.core import accounts
 from orchestra.utils.functional import cached
+from orchestra.utils.html import html_to_pdf
 
 from . import settings
 
@@ -25,16 +26,16 @@ class BillManager(models.Manager):
 class Bill(models.Model):
     OPEN = 'OPEN'
     CLOSED = 'CLOSED'
-    SEND = 'SEND'
-    RETURNED = 'RETURNED'
+    SENT = 'SENT'
     PAID = 'PAID'
+    RETURNED = 'RETURNED'
     BAD_DEBT = 'BAD_DEBT'
     STATUSES = (
         (OPEN, _("Open")),
         (CLOSED, _("Closed")),
-        (SEND, _("Sent")),
-        (RETURNED, _("Returned")),
+        (SENT, _("Sent")),
         (PAID, _("Paid")),
+        (RETURNED, _("Returned")),
         (BAD_DEBT, _("Bad debt")),
     )
     
@@ -50,6 +51,9 @@ class Bill(models.Model):
             blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
              related_name='%(class)s')
+    payment_source = models.ForeignKey('payments.PaymentSource', null=True,
+            verbose_name=_("payment source"),
+            help_text=_("Optionally specify a payment source for this bill"))
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
     status = models.CharField(_("status"), max_length=16, choices=STATUSES,
             default=OPEN)
@@ -111,8 +115,26 @@ class Bill(models.Model):
                 prefix=prefix, year=year, number=number)
     
     def close(self):
-        self.status = self.CLOSED
         self.html = self.render()
+        self.status = self.CLOSED
+        self.save()
+    
+    def send(self):
+        from orchestra.apps.contacts.models import Contact
+        self.account.send_email(
+            template=settings.BILLS_EMAIL_NOTIFICATION_TEMPLATE,
+            context={
+                'bill': self,
+            },
+            contacts=(Contact.BILLING,),
+            attachments=[
+                ('%s.pdf' % self.number, html_to_pdf(self.html), 'application/pdf')
+            ]
+        )
+        self.transactions.create(
+            bill=self, source=self.payment_source, amount=self.get_total()
+        )
+        self.status = self.SENT
         self.save()
     
     def render(self):

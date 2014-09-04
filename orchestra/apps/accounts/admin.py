@@ -142,6 +142,12 @@ class AccountAdminMixin(object):
     account_link.allow_tags = True
     account_link.admin_order_field = 'account__user__username'
     
+    def get_readonly_fields(self, request, obj=None):
+        """ provide account for filter_by_account_fields """
+        if obj:
+            self.account = obj.account
+        return super(AccountAdminMixin, self).get_readonly_fields(request, obj=obj)
+    
     def get_queryset(self, request):
         """ Select related for performance """
         qs = super(AccountAdminMixin, self).get_queryset(request)
@@ -211,11 +217,6 @@ class AccountAdminMixin(object):
 
 class SelectAccountAdminMixin(AccountAdminMixin):
     """ Provides support for accounts on ModelAdmin """
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            self.account = obj.account
-        return super(AccountAdminMixin, self).get_readonly_fields(request, obj=obj)
-    
     def get_inline_instances(self, request, obj=None):
         inlines = super(AccountAdminMixin, self).get_inline_instances(request, obj=obj)
         if hasattr(self, 'account'):

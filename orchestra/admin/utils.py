@@ -1,4 +1,4 @@
-from functools import update_wrapper
+from functools import wraps
 
 from django.conf import settings
 from django.contrib import admin
@@ -59,9 +59,10 @@ def insertattr(model, name, value, weight=0):
 
 def wrap_admin_view(modeladmin, view):
     """ Add admin authentication to view """
+    @wraps(view)
     def wrapper(*args, **kwargs):
         return modeladmin.admin_site.admin_view(view)(*args, **kwargs)
-    return update_wrapper(wrapper, view)
+    return wrapper
 
 
 def set_url_query(request, key, value):
@@ -77,6 +78,7 @@ def set_url_query(request, key, value):
 
 def action_to_view(action, modeladmin):
     """ Converts modeladmin action to view function """
+    @wraps(action)
     def action_view(request, object_id=1, modeladmin=modeladmin, action=action):
         queryset = modeladmin.model.objects.filter(pk=object_id)
         response = action(modeladmin, request, queryset)

@@ -3,12 +3,11 @@ from rest_framework import serializers
 from orchestra.api.serializers import MultiSelectField
 from orchestra.apps.accounts.serializers import AccountSerializerMixin
 
-from . import settings
 from .models import Contact, InvoiceContact
 
 
 class ContactSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
-    email_usage = MultiSelectField(choices=settings.CONTACTS_EMAIL_USAGES)
+    email_usage = MultiSelectField(choices=Contact.EMAIL_USAGES)
     class Meta:
         model = Contact
         fields = (

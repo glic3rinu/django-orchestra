@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -12,7 +13,7 @@ from .models import PaymentSource, Transaction, PaymentProcess
 
 STATE_COLORS = {
     Transaction.WAITTING_PROCESSING: 'darkorange',
-    Transaction.WAITTING_CONFIRMATION: 'orange',
+    Transaction.WAITTING_CONFIRMATION: 'purple',
     Transaction.CONFIRMED: 'green',
     Transaction.REJECTED: 'red',
     Transaction.LOCKED: 'magenta',
@@ -20,14 +21,16 @@ STATE_COLORS = {
 }
 
 
-class TransactionAdmin(admin.ModelAdmin):
+class TransactionAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = (
-        'id', 'bill_link', 'account_link', 'source', 'display_state', 'amount'
+        'id', 'bill_link', 'account_link', 'source_link', 'display_state', 'amount'
     )
     list_filter = ('source__method', 'state')
     actions = (process_transactions,)
+    filter_by_account_fields = ['source']
     
     bill_link = admin_link('bill')
+    source_link = admin_link('source')
     account_link = admin_link('bill__account')
     display_state = admin_colored('state', colors=STATE_COLORS)
     
@@ -39,8 +42,13 @@ class TransactionAdmin(admin.ModelAdmin):
 class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = ('label', 'method', 'number', 'account_link', 'is_active')
     list_filter = ('method', 'is_active')
-    form = SEPADirectDebit().get_form()
-    # TODO select payment source method
+    
+    def get_form(self, request, obj=None, **kwargs):
+        if obj:
+            self.form = obj.method_class().get_form()
+        else:
+            self.form = forms.ModelForm
+        return super(PaymentSourceAdmin, self).get_form(request, obj=obj, **kwargs)
 
 
 class PaymentProcessAdmin(admin.ModelAdmin):

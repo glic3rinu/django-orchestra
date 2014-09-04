@@ -1,0 +1,2 @@
+{% if subject %}Bill {{ bill.number }}{% endif %}
+{% if message %}Find attached your invoice{% endif %}

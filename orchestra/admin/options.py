@@ -73,7 +73,6 @@ class ChangeViewActionsMixin(object):
                     view.url_name.capitalize().replace('_', ' '))
             view.css_class = getattr(action, 'css_class', 'historylink')
             view.description = getattr(action, 'description', '')
-            view.__name__ = action.__name__
             views.append(view)
         return views
     

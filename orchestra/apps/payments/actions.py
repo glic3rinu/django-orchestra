@@ -1,4 +1,4 @@
 def process_transactions(modeladmin, request, queryset):
-    from .methods import SEPADirectDebit
-    SEPADirectDebit().process(queryset)
-
+    for source, transactions in queryset.group_by('source'):
+        if source:
+            source.method_class().process(transactions)

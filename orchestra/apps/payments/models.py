@@ -5,37 +5,46 @@ from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
 from orchestra.core import accounts
+from orchestra.models.queryset import group_by
 
 from . import settings
 from .methods import PaymentMethod
 
 
+class PaymentSourcesQueryset(models.QuerySet):
+    def get_source(self):
+        # TODO
+        return self.filter(is_active=True).first()
+
+
 class PaymentSource(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
-            related_name='payment_sources')
+            related_name='paymentsources')
     method = models.CharField(_("method"), max_length=32,
             choices=PaymentMethod.get_plugin_choices())
     data = JSONField(_("data"))
     is_active = models.BooleanField(_("is active"), default=True)
     
+    objects = PaymentSourcesQueryset.as_manager()
+    
     def __unicode__(self):
-        return self.label or str(self.account)
+        return "%s (%s)" % (self.label, self.method_class.verbose_name)
+    
+    @cached_property
+    def method_class(self):
+        return PaymentMethod.get_plugin(self.method)
     
     @cached_property
     def label(self):
-        try:
-            plugin = PaymentMethod.get_plugin(self.method)()
-        except KeyError:
-            return None
-        return plugin.get_label(self.data)
+        return self.method_class().get_label(self.data)
     
     @cached_property
     def number(self):
-        try:
-            plugin = PaymentMethod.get_plugin(self.method)()
-        except KeyError:
-            return None
-        return plugin.get_number(self.data)
+        return self.method_class().get_number(self.data)
+
+
+class TransactionQuerySet(models.QuerySet):
+    group_by = group_by
 
 
 # TODO lock transaction in waiting confirmation
@@ -55,7 +64,8 @@ class Transaction(models.Model):
         (DISCARTED, _("Discarted")),
     )
     
-    # TODO account fk?
+    objects = TransactionQuerySet.as_manager()
+    
     bill = models.ForeignKey('bills.bill', verbose_name=_("bill"),
             related_name='transactions')
     source = models.ForeignKey(PaymentSource, null=True, blank=True,
@@ -66,10 +76,13 @@ class Transaction(models.Model):
     currency = models.CharField(max_length=10, default=settings.PAYMENT_CURRENCY)
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
-    related = models.ForeignKey('self', null=True, blank=True)
     
     def __unicode__(self):
         return "Transaction {}".format(self.id)
+    
+    @property
+    def account(self):
+        return self.bill.account
 
 
 # TODO rename to TransactionProcess or PaymentRequest TransactionRequest

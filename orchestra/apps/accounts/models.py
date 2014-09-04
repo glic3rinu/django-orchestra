@@ -4,6 +4,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
+from orchestra.utils import send_email_template
 
 from . import settings
 
@@ -30,6 +31,12 @@ class Account(models.Model):
     @classmethod
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
+    
+    def send_email(self, template, context, contacts=[], attachments=[], html=None):
+        contacts = self.contacts.filter(email_usages=contacts)
+        email_to = contacts.values_list('email', flat=True)
+        send_email_template(template, context, email_to, html=html,
+                attachments=attachments)
 
 
 services.register(Account, menu=False)

@@ -29,3 +29,8 @@ BILLS_SELLER_PHONE = getattr(settings, 'BILLS_SELLER_PHONE', '111-112-11-222')
 BILLS_SELLER_EMAIL = getattr(settings, 'BILLS_SELLER_EMAIL', 'sales@orchestra.lan')
 
 BILLS_SELLER_WEBSITE = getattr(settings, 'BILLS_SELLER_WEBSITE', 'www.orchestra.lan')
+
+
+
+BILLS_EMAIL_NOTIFICATION_TEMPLATE = getattr(settings, 'BILLS_EMAIL_NOTIFICATION_TEMPLATE', 
+    'bills/bill-notification.email')

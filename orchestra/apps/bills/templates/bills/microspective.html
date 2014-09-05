@@ -46,7 +46,7 @@
     <hr>
     <div id="due-date">
         <span class="title">DUE DATE</span><br>
-        <psan class="value">{{ bill.due_on|date }}</span>
+        <psan class="value">{{ bill.due_on | default:default_due_date | date }}</span>
     </div>
     <div id="total">
         <span class="title">TOTAL</span><br>
@@ -54,7 +54,7 @@
     </div>
     <div id="bill-date">
         <span class="title">{{ bill.get_type_display.upper }} DATE</span><br>
-        <psan class="value">{{ bill.created_on|date }}</span>
+        <psan class="value">{{ bill.closed_on | default:now | date }}</span>
     </div>
 </div>
 <div id="buyer-details">
@@ -122,13 +122,13 @@
     <div id="footer-column-2">
         <div id="payment">
             <span class="title">PAYMENT</span>
-                {% if bill.payment.message %}
-                    {{ bill.payment.message }}
+                {% if payment.message %}
+                    {{ payment.message | safe }}
                 {% else %}
                     You can pay our invoice by bank transfer. <br>
                     Please make sure to state your name and the invoice number.
                     Our bank account number is <br>
-                    <strong>000-000-000-000 (Orchestra)</strong>
+                    <strong>{{ seller_info.bank_account }}</strong>
                 {% endif %}
         </div>
         <div id="questions">

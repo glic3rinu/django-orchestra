@@ -62,8 +62,8 @@ def get_account_items():
     if isinstalled('orchestra.apps.payments'):
         url = reverse('admin:payments_transaction_changelist')
         childrens.append(items.MenuItem(_("Transactions"), url))
-        url = reverse('admin:payments_paymentprocess_changelist')
-        childrens.append(items.MenuItem(_("Payment processes"), url))
+        url = reverse('admin:payments_transactionprocess_changelist')
+        childrens.append(items.MenuItem(_("Transaction processes"), url))
         url = reverse('admin:payments_paymentsource_changelist')
         childrens.append(items.MenuItem(_("Payment sources"), url))
     if isinstalled('orchestra.apps.issues'):

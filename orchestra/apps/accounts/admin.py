@@ -104,6 +104,7 @@ class AccountListAdmin(AccountAdmin):
     ordering = ('user__username',)
     
     def select_account(self, instance):
+        # TODO get query string from request.META['QUERY_STRING'] to preserve filters
         context = {
             'url': '../?account=' + str(instance.pk),
             'name': instance.name
@@ -262,7 +263,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
                 context.update(extra_context or {})
                 return super(AccountAdminMixin, self).add_view(request,
                         form_url=form_url, extra_context=context)
-        return HttpResponseRedirect('./select-account/')
+        return HttpResponseRedirect('./select-account/?%s' % request.META['QUERY_STRING'])
     
     def save_model(self, request, obj, form, change):
         """

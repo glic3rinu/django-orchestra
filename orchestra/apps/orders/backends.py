@@ -1,5 +1,7 @@
 import datetime
 
+from django.utils.translation import ugettext_lazy as _
+
 from orchestra.apps.bills.models import Invoice, Fee, BillLine, BillSubline
 
 
@@ -15,9 +17,7 @@ class BillsBackend(object):
                         rate=service.nominal_price,
                         amount=size,
                         total=nominal_price, tax=0,
-                        description="{ini} to {end}".format(
-                            ini=ini.strftime("%b, %Y"),
-                            end=(end-datetime.timedelta(seconds=1)).strftime("%b, %Y")),
+                        description=self.format_period(ini, end),
                 )
                 self.create_sublines(line, discounts)
                 bills.append(fee)
@@ -28,9 +28,7 @@ class BillsBackend(object):
                     bills.append(invoice)
                 description = order.description 
                 if service.billing_period != service.NEVER:
-                    description += " {ini} to {end}".format(
-                        ini=ini.strftime("%b, %Y"),
-                        end=(end-datetime.timedelta(seconds=1)).strftime("%b, %Y"))
+                    description += " %s" % self.format_period(ini, end)
                 line = invoice.lines.create(
                     description=description,
                     rate=service.nominal_price,
@@ -40,6 +38,14 @@ class BillsBackend(object):
                 )
                 self.create_sublines(line, discounts)
         return bills
+    
+    def format_period(self, ini, end):
+        ini = ini=ini.strftime("%b, %Y")
+        end = (end-datetime.timedelta(seconds=1)).strftime("%b, %Y")
+        if ini == end:
+            return ini
+        return _("{ini} to {end}").format(ini=ini, end=end)
+    
     
     def create_sublines(self, line, discounts):
         for name, value in discounts:

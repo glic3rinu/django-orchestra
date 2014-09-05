@@ -51,13 +51,13 @@
     font-weight: bold;
 }
 
-
 #date {
     clear: left;
     clear: right;
     margin-top: 0px;
     padding-top: 0px;
     font-weight: bold;
+    color: #666;
 }
 
 #text {
@@ -97,13 +97,13 @@ hr {
 <div id="number" class="column-1">
     <span id="number-title">Membership Fee</span><br>
     <span id="number-value">{{ bill.number }}</span><br>
-    <span id="number-date">{{ bill.created_on | date }}</span><br>
+    <span id="number-date">{{ bill.closed_on | default:now | date }}</span><br>
 </div>
 
 <div id="amount" class="column-2">
     <span id="amount-value">{{ bill.get_total }} &euro;</span><br>
-    <span id="amount-note">To pay before {{ bill.due_date }}<br>
-        on 213.232.322.232.332<br>
+    <span id="amount-note">Due date {{ payment.due_date | default:default_due_date | date }}<br>
+    {% if not payment.message %}On {{ seller_info.bank_account }}{% endif %}<br>
     </span>
 </div>
 

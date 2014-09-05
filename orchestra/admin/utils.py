@@ -93,7 +93,10 @@ def action_to_view(action, modeladmin):
 @admin_field
 def admin_link(*args, **kwargs):
     instance = args[-1]
-    obj = get_field_value(instance, kwargs['field'])
+    if kwargs['field'] in ['id', 'pk', '__unicode__']:
+        obj = instance
+    else:
+        obj = get_field_value(instance, kwargs['field'])
     if not getattr(obj, 'pk', None):
         return '---'
     opts = obj._meta

@@ -1,3 +1,4 @@
+from dateutil import relativedelta
 from django import forms
 
 from orchestra.utils import plugins
@@ -9,6 +10,7 @@ class PaymentMethod(plugins.Plugin):
     process_credit = False
     form = None
     serializer = None
+    due_delta = relativedelta.relativedelta(months=1)
     
     __metaclass__ = plugins.PluginMount
     
@@ -25,6 +27,9 @@ class PaymentMethod(plugins.Plugin):
     
     def get_number(self, data):
         return data[self.number_field]
+    
+    def get_bill_message(self, source):
+        raise NotImplementedError
 
 
 class PaymentSourceDataForm(forms.ModelForm):

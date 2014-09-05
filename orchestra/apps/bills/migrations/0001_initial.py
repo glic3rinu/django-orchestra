@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('number', models.CharField(unique=True, max_length=16, verbose_name='number', blank=True)),
                 ('type', models.CharField(max_length=16, verbose_name='type', choices=[(b'INVOICE', 'Invoice'), (b'AMENDMENTINVOICE', 'Amendment invoice'), (b'FEE', 'Fee'), (b'AMENDMENTFEE', 'Amendment Fee'), (b'BUDGET', 'Budget')])),
-                ('status', models.CharField(default=b'OPEN', max_length=16, verbose_name='status', choices=[(b'OPEN', 'Open'), (b'CLOSED', 'Closed'), (b'SENT', 'Sent'), (b'PAID', 'Paid'), (b'RETURNED', 'Returned'), (b'BAD_DEBT', 'Bad debt')])),
+                ('status', models.CharField(default=b'OPEN', max_length=16, verbose_name='status', choices=[(b'OPEN', 'Open'), (b'CLOSED', 'Closed'), (b'SENT', 'Sent'), (b'PAID', 'Paid'), (b'BAD_DEBT', 'Bad debt')])),
                 ('created_on', models.DateTimeField(auto_now_add=True, verbose_name='created on')),
                 ('due_on', models.DateField(null=True, verbose_name='due on', blank=True)),
                 ('last_modified_on', models.DateTimeField(auto_now=True, verbose_name='last modified on')),

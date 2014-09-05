@@ -7,15 +7,14 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('payments', '__first__'),
         ('bills', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='bill',
-            name='payment_source',
-            field=models.ForeignKey(blank=True, to='payments.PaymentSource', help_text='Optionally specify a payment source for this bill', null=True, verbose_name='payment source'),
+            name='closed_on',
+            field=models.DateTimeField(null=True, verbose_name='closed on', blank=True),
             preserve_default=True,
         ),
     ]

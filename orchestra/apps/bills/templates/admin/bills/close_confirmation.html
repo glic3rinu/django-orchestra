@@ -8,9 +8,7 @@
 
 
 {% block breadcrumbs %}
-TODO
 {% endblock %}
-
 
 
 {% block content %}
@@ -20,7 +18,7 @@ TODO
     <form action="" method="post">{% csrf_token %}
     <div>
     <div style="margin:20px;">
-            {{ form.as_admin }}
+            {{ formset }}
     </div>
     {% for obj in queryset %}
     <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />

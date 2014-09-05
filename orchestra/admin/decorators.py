@@ -14,10 +14,10 @@ def admin_field(method):
         kwargs['field'] = args[0] if args else ''
         kwargs['order'] = kwargs.get('order', kwargs['field'])
         kwargs['popup'] = kwargs.get('popup', False)
-        kwargs['description'] = kwargs.get('description',
+        kwargs['short_description'] = kwargs.get('short_description',
                 kwargs['field'].split('__')[-1].replace('_', ' ').capitalize())
         admin_method = partial(method, **kwargs)
-        admin_method.short_description = kwargs['description']
+        admin_method.short_description = kwargs['short_description']
         admin_method.allow_tags = True
         admin_method.admin_order_field = kwargs['order']
         return admin_method

@@ -1,4 +1,5 @@
 import inspect
+from dateutil.relativedelta import relativedelta
 
 from django.db import models
 from django.template import loader, Context
@@ -28,14 +29,12 @@ class Bill(models.Model):
     CLOSED = 'CLOSED'
     SENT = 'SENT'
     PAID = 'PAID'
-    RETURNED = 'RETURNED'
     BAD_DEBT = 'BAD_DEBT'
     STATUSES = (
         (OPEN, _("Open")),
         (CLOSED, _("Closed")),
         (SENT, _("Sent")),
         (PAID, _("Paid")),
-        (RETURNED, _("Returned")),
         (BAD_DEBT, _("Bad debt")),
     )
     
@@ -51,13 +50,11 @@ class Bill(models.Model):
             blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
              related_name='%(class)s')
-    payment_source = models.ForeignKey('payments.PaymentSource', null=True,
-            verbose_name=_("payment source"),
-            help_text=_("Optionally specify a payment source for this bill"))
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
     status = models.CharField(_("status"), max_length=16, choices=STATUSES,
             default=OPEN)
     created_on = models.DateTimeField(_("created on"), auto_now_add=True)
+    closed_on = models.DateTimeField(_("closed on"), blank=True, null=True)
     due_on = models.DateField(_("due on"), null=True, blank=True)
     last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
     #base = models.DecimalField(max_digits=12, decimal_places=2)
@@ -95,27 +92,40 @@ class Bill(models.Model):
         bill_type = self.get_type()
         if bill_type == 'BILL':
             raise TypeError("get_new_number() can not be used on a Bill class")
-        # Bill number resets every natural year
-        year = timezone.now().strftime("%Y")
-        bills = cls.objects.filter(created_on__year=year)
-        number_length = settings.BILLS_NUMBER_LENGTH
         prefix = getattr(settings, 'BILLS_%s_NUMBER_PREFIX' % bill_type)
         if self.status == self.OPEN:
             prefix = 'O{}'.format(prefix)
-            bills = bills.filter(status=self.OPEN)
-            num_bills = bills.order_by('-number').first() or 0
-            if num_bills is not 0:
-                num_bills = int(num_bills.number[-number_length:])
+        bills = cls.objects.filter(number__regex=r'^%s[1-9]+' % prefix)
+        last_number = bills.order_by('-number').values_list('number', flat=True).first()
+        if last_number is None:
+            last_number = 0
         else:
-            bills = bills.exclude(status=self.OPEN)
-            num_bills = bills.count()
-        zeros = (number_length - len(str(num_bills))) * '0'
-        number = zeros + str(num_bills + 1)
+            last_number = int(last_number[len(prefix)+4:])
+        number = last_number + 1
+        year = timezone.now().strftime("%Y")
+        number_length = settings.BILLS_NUMBER_LENGTH
+        zeros = (number_length - len(str(number))) * '0'
+        number = zeros + str(number)
         self.number = '{prefix}{year}{number}'.format(
                 prefix=prefix, year=year, number=number)
     
-    def close(self):
-        self.html = self.render()
+    def get_due_date(self, payment=None):
+        now = timezone.now()
+        if payment:
+            return now + payment.get_due_delta()
+        return now + relativedelta(months=1)
+    
+    def close(self, payment=False):
+        assert self.status == self.OPEN, "Bill not in Open state"
+        if payment is False:
+            payment = self.account.paymentsources.get_default()
+        if not self.due_on:
+            self.due_on = self.get_due_date(payment=payment)
+        self.html = self.render(payment=payment)
+        self.transactions.create(
+            bill=self, source=payment, amount=self.get_total()
+        )
+        self.closed_on = timezone.now()
         self.status = self.CLOSED
         self.save()
     
@@ -131,13 +141,12 @@ class Bill(models.Model):
                 ('%s.pdf' % self.number, html_to_pdf(self.html), 'application/pdf')
             ]
         )
-        self.transactions.create(
-            bill=self, source=self.payment_source, amount=self.get_total()
-        )
         self.status = self.SENT
         self.save()
     
-    def render(self):
+    def render(self, payment=False):
+        if payment is False:
+            payment = self.account.paymentsources.get_default()
         context = Context({
             'bill': self,
             'lines': self.lines.all().prefetch_related('sublines'),
@@ -147,8 +156,12 @@ class Bill(models.Model):
                 'phone': settings.BILLS_SELLER_PHONE,
                 'website': settings.BILLS_SELLER_WEBSITE,
                 'email': settings.BILLS_SELLER_EMAIL,
+                'bank_account': settings.BILLS_SELLER_BANK_ACCOUNT,
             },
             'currency': settings.BILLS_CURRENCY,
+            'payment': payment and payment.get_bill_context(),
+            'default_due_date': self.get_due_date(payment=payment),
+            'now': timezone.now(),
         })
         template = getattr(settings, 'BILLS_%s_TEMPLATE' % self.get_type(),
                 settings.BILLS_DEFAULT_TEMPLATE)

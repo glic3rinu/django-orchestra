@@ -81,3 +81,8 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
 * Rename pack to plan ? one can have multiple plans?
 
 * transaction.process FK?
+
+* translations
+        from django.utils import translation
+        with translation.override('en'):
+* Plurals!

@@ -1,6 +1,7 @@
 import StringIO
 import zipfile
 
+from django.contrib import messages
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 
@@ -34,10 +35,29 @@ view_bill.verbose_name = _("View")
 view_bill.url_name = 'view'
 
 
+from django import forms
+from django.forms.models import BaseModelFormSet
+from django.forms.formsets import formset_factory
+from django.forms.models import modelformset_factory
+from django.shortcuts import render
+
+from .forms import SelectPaymentSourceForm
+
 def close_bills(modeladmin, request, queryset):
-    # TODO confirmation with payment source selection
-    for bill in queryset:
-        bill.close()
+    queryset = queryset.filter(status=queryset.model.OPEN)
+    if not queryset:
+        messages.warning(request, _("Selected bills should be in open state"))
+        return
+    SelectPaymentSourceFormSet = modelformset_factory(queryset.model, form=SelectPaymentSourceForm, extra=0)
+    if request.POST.get('action') == 'close_selected_bills':
+        formset = SelectPaymentSourceFormSet(request.POST, queryset=queryset)
+        if formset.is_valid():
+            for form in formset.forms:
+                form.save()
+            messages.success(request, _("Selected bills have been closed"))
+            return
+    formset = SelectPaymentSourceFormSet(queryset=queryset)
+    return render(request, 'admin/bills/close_confirmation.html', {'formset': formset})
 close_bills.verbose_name = _("Close")
 close_bills.url_name = 'close'
 

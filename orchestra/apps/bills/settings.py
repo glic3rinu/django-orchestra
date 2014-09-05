@@ -30,6 +30,7 @@ BILLS_SELLER_EMAIL = getattr(settings, 'BILLS_SELLER_EMAIL', 'sales@orchestra.la
 
 BILLS_SELLER_WEBSITE = getattr(settings, 'BILLS_SELLER_WEBSITE', 'www.orchestra.lan')
 
+BILLS_SELLER_BANK_ACCOUNT = getattr(settings, 'BILLS_SELLER_BANK_ACCOUNT', '0000 0000 00 00000000 (Orchestra Bank)')
 
 
 BILLS_EMAIL_NOTIFICATION_TEMPLATE = getattr(settings, 'BILLS_EMAIL_NOTIFICATION_TEMPLATE', 

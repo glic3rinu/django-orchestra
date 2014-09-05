@@ -1,0 +1,28 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n staticfiles admin_urls %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+{% endblock %}
+
+
+{% block breadcrumbs %}
+TODO
+{% endblock %}
+
+
+{% block content %}
+    <h1>Select a method for the new payment source</h1>
+    <form action="" method="post">{% csrf_token %}
+    <div>
+    <div style="margin:20px;">
+    <ul>
+    {% for name, verbose in methods %}
+        <li><a href="../?method={{ name }}&{{ request.META.QUERY_STRING }}">{{ verbose }}</<a></li>
+    {% endfor %}
+    </ul>
+    </div>
+{% endblock %}
+
+

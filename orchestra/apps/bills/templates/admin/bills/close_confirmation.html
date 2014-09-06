@@ -4,6 +4,7 @@
 {% block extrastyle %}
 {{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "orchestra/css/hide-inline-id.css" %}" />
 {% endblock %}
 
 
@@ -18,12 +19,16 @@
     <form action="" method="post">{% csrf_token %}
     <div>
     <div style="margin:20px;">
-            {{ formset }}
+
+        {{ formset.as_admin }}
+
+
     </div>
     {% for obj in queryset %}
     <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
     {% endfor %}
-    <input type="hidden" name="action" value="close_selected_bills"/>
+    <input type="hidden" name="action" value="{{ action_value }}"/>
+    <input type="hidden" name="post" value="yes"/>
     <input type="submit" value="{% trans "Yes, close bills" %}" />
     </div>
     </form>

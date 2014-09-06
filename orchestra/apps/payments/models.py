@@ -54,12 +54,19 @@ class PaymentSource(models.Model):
 
 class TransactionQuerySet(models.QuerySet):
     group_by = group_by
+    
+    def create(self, **kwargs):
+        source = kwargs.get('source')
+        if source is None or not hasattr(source.method_class, 'process'):
+            # Manual payments don't need processing
+            kwargs['state']=self.model.WAITTING_CONFIRMATION
+        return super(TransactionQuerySet, self).create(**kwargs)
 
 
 # TODO lock transaction in waiting confirmation
 class Transaction(models.Model):
-    WAITTING_PROCESSING = 'WAITTING_PROCESSING'
-    WAITTING_CONFIRMATION = 'WAITTING_CONFIRMATION'
+    WAITTING_PROCESSING = 'WAITTING_PROCESSING' # CREATED
+    WAITTING_CONFIRMATION = 'WAITTING_CONFIRMATION' # PROCESSED
     CONFIRMED = 'CONFIRMED'
     REJECTED = 'REJECTED'
     DISCARTED = 'DISCARTED'

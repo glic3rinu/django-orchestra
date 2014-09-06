@@ -2,10 +2,15 @@ import StringIO
 import zipfile
 
 from django.contrib import messages
+from django.contrib.admin import helpers
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin.forms import adminmodelformset_factory
 from orchestra.utils.html import html_to_pdf
+
+from .forms import SelectSourceForm
 
 
 def download_bills(modeladmin, request, queryset):
@@ -35,29 +40,33 @@ view_bill.verbose_name = _("View")
 view_bill.url_name = 'view'
 
 
-from django import forms
-from django.forms.models import BaseModelFormSet
-from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
-from django.shortcuts import render
-
-from .forms import SelectPaymentSourceForm
-
 def close_bills(modeladmin, request, queryset):
     queryset = queryset.filter(status=queryset.model.OPEN)
     if not queryset:
         messages.warning(request, _("Selected bills should be in open state"))
         return
-    SelectPaymentSourceFormSet = modelformset_factory(queryset.model, form=SelectPaymentSourceForm, extra=0)
-    if request.POST.get('action') == 'close_selected_bills':
-        formset = SelectPaymentSourceFormSet(request.POST, queryset=queryset)
+    SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm)
+    formset = SelectSourceFormSet(queryset=queryset)
+    if request.POST.get('post') == 'yes':
+        formset = SelectSourceFormSet(request.POST, request.FILES, queryset=queryset)
         if formset.is_valid():
             for form in formset.forms:
-                form.save()
+                source = form.cleaned_data['source']
+                form.instance.close(payment=source)
             messages.success(request, _("Selected bills have been closed"))
             return
-    formset = SelectPaymentSourceFormSet(queryset=queryset)
-    return render(request, 'admin/bills/close_confirmation.html', {'formset': formset})
+    opts = modeladmin.model._meta
+    context = {
+        'title': "Are you sure?",
+        'action_value': 'close_bills',
+        'deletable_objects': queryset,
+        'queryset': queryset,
+        'opts': opts,
+        'app_label': opts.app_label,
+        'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+        'formset': formset,
+    }
+    return render(request, 'admin/bills/close_confirmation.html', context)
 close_bills.verbose_name = _("Close")
 close_bills.url_name = 'close'
 

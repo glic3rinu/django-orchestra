@@ -82,6 +82,7 @@ class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
         opts = self.model._meta
         info = opts.app_label, opts.model_name
         select_urls = patterns("",
+            # TODO wrap for authentication
             url("/select-method/$",
                 self.select_method_view,
                 name='%s_%s_select_method' % info),

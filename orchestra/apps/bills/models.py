@@ -180,7 +180,7 @@ class Bill(models.Model):
     @cached
     def get_subtotals(self):
         subtotals = {}
-        for line in self.lines.all().prefetch_related('sublines'):
+        for line in self.lines.all():
             subtotal, taxes = subtotals.get(line.tax, (0, 0))
             subtotal += line.total
             for subline in line.sublines.all():

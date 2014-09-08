@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
+from orchestra.core import services, accounts
 from orchestra.utils.apps import isinstalled
 
 
@@ -28,47 +28,39 @@ def api_link(context):
 
 
 def get_services():
-    result = []
+    childrens = []
     for model, options in services.get().iteritems():
         if options.get('menu', True):
             opts = model._meta
             url = reverse('admin:{}_{}_changelist'.format(
                     opts.app_label, opts.model_name))
             name = capfirst(options.get('verbose_name_plural'))
-            result.append(items.MenuItem(name, url))
-    return sorted(result, key=lambda i: i.title)
+            childrens.append(items.MenuItem(name, url))
+    return sorted(childrens, key=lambda i: i.title)
 
 
-def get_account_items():
+def get_accounts():
     childrens = [
         items.MenuItem(_("Accounts"),
                        reverse('admin:accounts_account_changelist'))
     ]
-    if isinstalled('orchestra.apps.contacts'):
-        url = reverse('admin:contacts_contact_changelist')
-        childrens.append(items.MenuItem(_("Contacts"), url))
     if isinstalled('orchestra.apps.users'):
         url = reverse('admin:users_user_changelist')
         childrens.append(items.MenuItem(_("Users"), url))
-    if isinstalled('orchestra.apps.orders'):
-        url = reverse('admin:orders_plan_changelist')
-        childrens.append(items.MenuItem(_("Plans"), url))
-        url = reverse('admin:orders_order_changelist')
-        childrens.append(items.MenuItem(_("Orders"), url))
-    if isinstalled('orchestra.apps.bills'):
-        url = reverse('admin:bills_bill_changelist')
-        childrens.append(items.MenuItem(_("Bills"), url))
     if isinstalled('orchestra.apps.payments'):
-        url = reverse('admin:payments_transaction_changelist')
-        childrens.append(items.MenuItem(_("Transactions"), url))
         url = reverse('admin:payments_transactionprocess_changelist')
         childrens.append(items.MenuItem(_("Transaction processes"), url))
-        url = reverse('admin:payments_paymentsource_changelist')
-        childrens.append(items.MenuItem(_("Payment sources"), url))
     if isinstalled('orchestra.apps.issues'):
         url = reverse('admin:issues_ticket_changelist')
         childrens.append(items.MenuItem(_("Tickets"), url))
-    return childrens
+    for model, options in accounts.get().iteritems():
+        if options.get('menu', True):
+            opts = model._meta
+            url = reverse('admin:{}_{}_changelist'.format(
+                    opts.app_label, opts.model_name))
+            name = capfirst(options.get('verbose_name_plural'))
+            childrens.append(items.MenuItem(name, url))
+    return sorted(childrens, key=lambda i: i.title)
 
 
 def get_administration_items():
@@ -128,7 +120,7 @@ class OrchestraMenu(Menu):
             items.MenuItem(
                 _("Accounts"),
                 reverse('admin:accounts_account_changelist'),
-                children=get_account_items()
+                children=get_accounts()
             ),
             items.MenuItem(
                 _("Administration"),

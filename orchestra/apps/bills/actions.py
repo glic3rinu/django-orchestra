@@ -48,7 +48,7 @@ def close_bills(modeladmin, request, queryset):
     SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm,
             extra=0)
     formset = SelectSourceFormSet(queryset=queryset)
-    if request.POST.get('post') == 'yes':
+    if request.POST.get('post') == 'generic_confirmation':
         formset = SelectSourceFormSet(request.POST, request.FILES, queryset=queryset)
         if formset.is_valid():
             for form in formset.forms:
@@ -58,17 +58,19 @@ def close_bills(modeladmin, request, queryset):
             return
     opts = modeladmin.model._meta
     context = {
-        'title': "Are you sure?",
+        'title': _("Are you sure about closing the following bills?"),
+        'content_message': _("Once a bill is closed it can not be further modified.</p>"
+                             "<p>Please select a payment source for the selected bills"),
+        'action_name': 'Close bills',
         'action_value': 'close_bills',
-        'deletable_objects': queryset,
+        'display_objects': [],
         'queryset': queryset,
         'opts': opts,
         'app_label': opts.app_label,
         'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
         'formset': formset,
     }
-    # TODO use generic confirmation template
-    return render(request, 'admin/bills/close_confirmation.html', context)
+    return render(request, 'admin/orchestra/generic_confirmation.html', context)
 close_bills.verbose_name = _("Close")
 close_bills.url_name = 'close'
 

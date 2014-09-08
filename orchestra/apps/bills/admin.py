@@ -51,7 +51,6 @@ class BudgetLineInline(admin.TabularInline):
     fields = ('description', 'rate', 'amount', 'tax', 'total')
 
 
-# TODO hide raw when status = oPen
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'number', 'status', 'type_link', 'account_link', 'created_on_display',
@@ -83,9 +82,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     num_lines.short_description = _("lines")
     
     def display_total(self, bill):
-        return "%s &%s;" % (bill.get_total(), settings.BILLS_CURRENCY.lower())
+        return "%s &%s;" % (bill.total, settings.BILLS_CURRENCY.lower())
     display_total.allow_tags = True
     display_total.short_description = _("total")
+    display_total.admin_order_field = 'total'
     
     def type_link(self, bill):
         bill_type = bill.type.lower()
@@ -100,6 +100,12 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         if obj and obj.status != Bill.OPEN:
             fields += self.add_fields
         return fields
+    
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super(BillAdmin, self).get_fieldsets(request, obj=obj)
+        if obj and obj.status == obj.OPEN:
+            fieldsets = (fieldsets[0],)
+        return fieldsets
     
     def get_change_view_actions(self, obj=None):
         actions = super(BillAdmin, self).get_change_view_actions(obj)

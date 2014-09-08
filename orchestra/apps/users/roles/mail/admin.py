@@ -64,8 +64,7 @@ class AutoresponseInline(admin.StackedInline):
 #    def queryset(self, request):
 #        """ Select related for performance """
 #        qs = super(AddressAdmin, self).queryset(request)
-#        # TODO django 1.7 account__user is not needed
-#        return qs.select_related('domain', 'account__user')
+#        return qs.select_related('domain')
 
 
 class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
@@ -114,8 +113,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     def get_queryset(self, request):
         """ Select related for performance """
         qs = super(AddressAdmin, self).get_queryset(request)
-        # TODO django 1.7 account__user is not needed
-        return qs.select_related('domain', 'account__user')
+        return qs.select_related('domain')
 
 
 class MailRoleAdmin(RoleAdmin):

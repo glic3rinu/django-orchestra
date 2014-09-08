@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin.utils import admin_colored, admin_link
+from orchestra.admin.utils import admin_colored, admin_link, wrap_admin_view
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from .actions import process_transactions
@@ -82,9 +82,8 @@ class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
         opts = self.model._meta
         info = opts.app_label, opts.model_name
         select_urls = patterns("",
-            # TODO wrap for authentication
             url("/select-method/$",
-                self.select_method_view,
+                wrap_admin_view(self, self.select_method_view),
                 name='%s_%s_select_method' % info),
         )
         return select_urls + urls 

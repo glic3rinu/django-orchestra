@@ -57,10 +57,8 @@ class Bill(models.Model):
     closed_on = models.DateTimeField(_("closed on"), blank=True, null=True)
     due_on = models.DateField(_("due on"), null=True, blank=True)
     last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
-    #base = models.DecimalField(max_digits=12, decimal_places=2)
-    #tax = models.DecimalField(max_digits=12, decimal_places=2)
+    total = models.DecimalField(max_digits=12, decimal_places=2)
     comments = models.TextField(_("comments"), blank=True)
-    # TODO rename to HTML-agnostic term like.. RAW ?
     html = models.TextField(_("HTML"), blank=True)
     
     objects = BillManager()
@@ -121,10 +119,9 @@ class Bill(models.Model):
             payment = self.account.paymentsources.get_default()
         if not self.due_on:
             self.due_on = self.get_due_date(payment=payment)
+        self.total = self.get_total()
         self.html = self.render(payment=payment)
-        self.transactions.create(
-            bill=self, source=payment, amount=self.get_total()
-        )
+        self.transactions.create(bill=self, source=payment, amount=self.total)
         self.closed_on = timezone.now()
         self.status = self.CLOSED
         self.save()
@@ -173,6 +170,8 @@ class Bill(models.Model):
     def save(self, *args, **kwargs):
         if not self.type:
             self.type = self.get_type()
+        if self.status == self.OPEN:
+            self.total = self.get_total()
         if not self.number or (self.number.startswith('O') and self.status != self.OPEN):
             self.set_number()
         super(Bill, self).save(*args, **kwargs)
@@ -190,7 +189,6 @@ class Bill(models.Model):
     
     @cached
     def get_total(self):
-        # TODO self.total = self.get_total on self.save()
         total = 0
         for tax, subtotal in self.get_subtotals().iteritems():
             subtotal, taxes = subtotal

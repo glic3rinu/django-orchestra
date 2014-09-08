@@ -26,7 +26,7 @@ class SelectSourceForm(forms.ModelForm):
         bill = kwargs.get('instance')
         if bill:
             sources = bill.account.paymentsources.filter(is_active=True)
-            recharge = bool(bill.get_total() < 0)
+            recharge = bool(bill.total < 0)
             choices = [(None, '-----------')]
             for source in sources:
                 if not recharge or source.method_class().allow_recharge:

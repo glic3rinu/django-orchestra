@@ -36,45 +36,54 @@ def get_related_objects(origin, max_depth=2):
                 new_models.append(related)
                 queue.append(new_models)
 
-def get_register_or_cancel_events(porders, ini, end):
+def get_register_or_cancel_events(porders, order, ini, end):
     assert ini <= end, "ini > end"
     CANCEL = 'cancel'
     REGISTER = 'register'
     changes = {}
     counter = 0
-    for order in porders:
-        if order.cancelled_on:
-            cancel = order.cancelled_on
-            if order.billed_until and order.cancelled_on < order.billed_until:
-                cancel = order.billed_until
+    for num, porder in enumerate(porders.order_by('registered_on')):
+        if porder == order:
+            position = num
+        if porder.cancelled_on:
+            cancel = porder.cancelled_on
+            if porder.billed_until and porder.cancelled_on < porder.billed_until:
+                cancel = porder.billed_until
             if cancel > ini and cancel < end:
                 changes.setdefault(cancel, [])
-                changes[cancel].append(CANCEL)
-        if order.registered_on <= ini:
+                changes[cancel].append((CANCEL, num))
+        if porder.registered_on <= ini:
             counter += 1
-        elif order.registered_on < end:
-            changes.setdefault(order.registered_on, [])
-            changes[order.registered_on].append(REGISTER)
+        elif porder.registered_on < end:
+            changes.setdefault(porder.registered_on, [])
+            changes[porder.registered_on].append((REGISTER, num))
     pointer = ini
     total = float((end-ini).days)
     for date in sorted(changes.keys()):
-        yield counter, (date-pointer).days/total
-        for change in changes[date]:
+        yield counter, position, (date-pointer).days/total
+        for change, num in changes[date]:
             if change is CANCEL:
                 counter -= 1
+                if num < position:
+                    position -= 1
             else:
                 counter += 1
         pointer = date
-    yield counter, (end-pointer).days/total
+    yield counter, position, (end-pointer).days/total
 
 
-def get_register_or_renew_events(handler, porders, ini, end):
+def get_register_or_renew_events(handler, porders, order, ini, end):
     total = float((end-ini).days)
     for sini, send in handler.get_pricing_slots(ini, end):
         counter = 0
-        for order in porders:
-            if order.registered_on >= sini and order.registered_on < send:
+        position = 0
+        for porder in porders.order_by('registered_on'):
+            if porder == order:
+                position = abs(position)
+            elif position < 0:
+                position -= 1
+            if porder.registered_on >= sini and porder.registered_on < send:
                 counter += 1
-            elif order.billed_until > send or order.cancelled_on > send:
+            elif porder.billed_until > send or porder.cancelled_on > send:
                 counter += 1
-        yield counter, (send-sini)/total
+        yield counter, position, (send-sini)/total

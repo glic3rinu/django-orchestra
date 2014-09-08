@@ -15,7 +15,17 @@ from orchestra.utils.humanize import naturaldate
 
 from .actions import BillSelectedOrders
 from .filters import ActiveOrderListFilter, BilledOrderListFilter
-from .models import Service, Order, MetricStorage
+from .models import Plan, Rate, Service, Order, MetricStorage
+
+
+class PlanAdmin(AccountAdminMixin, admin.ModelAdmin):
+    list_display = ('name', 'account_link')
+    list_filter = ('name',)
+
+
+class RateInline(admin.TabularInline):
+    model = Rate
+    ordering = ('plan', 'quantity')
 
 
 class ServiceAdmin(admin.ModelAdmin):
@@ -38,9 +48,10 @@ class ServiceAdmin(admin.ModelAdmin):
             'classes': ('wide',),
             'fields': ('metric', 'pricing_period', 'rate_algorithm',
                        'orders_effect', 'on_cancel', 'payment_style',
-                       'trial_period', 'refound_period', 'tax')
+                       'trial_period', 'refound_period', 'tax', 'nominal_price')
         }),
     )
+    inlines = [RateInline]
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Improve performance of account field and filter by account """
@@ -117,6 +128,7 @@ class MetricStorageAdmin(admin.ModelAdmin):
     list_filter = ('order__service',)
 
 
+admin.site.register(Plan, PlanAdmin)
 admin.site.register(Service, ServiceAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(MetricStorage, MetricStorageAdmin)

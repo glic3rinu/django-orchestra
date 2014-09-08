@@ -50,10 +50,9 @@ def get_account_items():
     if isinstalled('orchestra.apps.users'):
         url = reverse('admin:users_user_changelist')
         childrens.append(items.MenuItem(_("Users"), url))
-    if isinstalled('orchestra.apps.prices'):
-        url = reverse('admin:prices_pack_changelist')
-        childrens.append(items.MenuItem(_("Packs"), url))
     if isinstalled('orchestra.apps.orders'):
+        url = reverse('admin:orders_plan_changelist')
+        childrens.append(items.MenuItem(_("Plans"), url))
         url = reverse('admin:orders_order_changelist')
         childrens.append(items.MenuItem(_("Orders"), url))
     if isinstalled('orchestra.apps.bills'):

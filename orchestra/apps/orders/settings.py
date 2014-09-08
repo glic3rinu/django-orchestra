@@ -16,3 +16,11 @@ ORDERS_SERVICE_ANUAL_BILLING_MONTH = getattr(settings, 'ORDERS_SERVICE_ANUAL_BIL
 
 ORDERS_BILLING_BACKEND = getattr(settings, 'ORDERS_BILLING_BACKEND',
         'orchestra.apps.orders.billing.BillsBackend')
+
+
+ORDERS_PLANS = getattr(settings, 'ORDERS_PLANS', (
+    ('basic', _("Basic")),
+    ('advanced', _("Advanced")),
+))
+
+ORDERS_DEFAULT_PLAN = getattr(settings, 'ORDERS_DEFAULT_PLAN', 'basic')

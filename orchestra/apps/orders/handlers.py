@@ -134,21 +134,21 @@ class ServiceHandler(plugins.Plugin):
     def get_price_with_orders(self, order, size, ini, end):
         porders = self.orders.filter(account=order.account).filter(
             Q(cancelled_on__isnull=True) | Q(cancelled_on__gt=ini)
-            ).filter(registered_on__lt=end)
+            ).filter(registered_on__lt=end).order_by('registered_on')
         price = 0
         if self.orders_effect == self.REGISTER_OR_RENEW:
-            events = get_register_or_renew_events(porders, ini, end)
+            events = get_register_or_renew_events(porders, order, ini, end)
         elif self.orders_effect == self.CONCURRENT:
-            events = get_register_or_cancel_events(porders, ini, end)
+            events = get_register_or_cancel_events(porders, order, ini, end)
         else:
             raise NotImplementedError
-        for metric, ratio in events:
-            price += self.get_rate(order, metric) * size * ratio
+        for metric, position, ratio in events:
+            price += self.get_price(order, metric, position=position) * size * ratio
         return price
     
     def get_price_with_metric(self, order, size, ini, end):
         metric = order.get_metric(ini, end)
-        price = self.get_rate(order, metric) * size
+        price = self.get_price(order, metric) * size
         return price
     
     def create_line(self, order, price, size, ini, end):

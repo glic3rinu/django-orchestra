@@ -15,8 +15,47 @@ from orchestra.models import queryset
 from orchestra.utils.apps import autodiscover
 from orchestra.utils.python import import_class
 
-from . import settings, helpers
+from . import helpers, settings, pricing
 from .handlers import ServiceHandler
+
+
+class Plan(models.Model):
+    account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
+            related_name='plans')
+    name = models.CharField(_("plan"), max_length=128,
+            choices=settings.ORDERS_PLANS,
+            default=settings.ORDERS_DEFAULT_PLAN)
+    
+    def __unicode__(self):
+        return self.name
+
+
+class RateQuerySet(models.QuerySet):
+    group_by = queryset.group_by
+    
+    def by_account(self, account):
+        # Default allways selected
+        qset = Q(plan__isnull=True)
+        for plan in account.plans.all():
+            qset |= Q(plan=plan)
+        return self.filter(qset)
+
+
+class Rate(models.Model):
+    service = models.ForeignKey('orders.Service', verbose_name=_("service"),
+            related_name='rates')
+    plan = models.CharField(_("plan"), max_length=128, blank=True,
+            choices=(('', _("Default")),) + settings.ORDERS_PLANS)
+    quantity = models.PositiveIntegerField(_("quantity"), null=True, blank=True)
+    value = models.DecimalField(_("value"), max_digits=12, decimal_places=2)
+    
+    objects = RateQuerySet.as_manager()
+    
+    class Meta:
+        unique_together = ('service', 'plan', 'quantity')
+    
+    def __unicode__(self):
+        return "{}-{}".format(str(self.value), self.quantity)
 
 
 autodiscover('handlers')
@@ -43,6 +82,10 @@ class Service(models.Model):
     BEST_PRICE = 'BEST_PRICE'
     PROGRESSIVE_PRICE = 'PROGRESSIVE_PRICE'
     MATCH_PRICE = 'MATCH_PRICE'
+    PRICING_METHODS = {
+        BEST_PRICE: pricing.best_price,
+        MATCH_PRICE: pricing.match_price,
+    }
     
     description = models.CharField(_("description"), max_length=256, unique=True)
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
@@ -85,6 +128,8 @@ class Service(models.Model):
     metric = models.CharField(_("metric"), max_length=256, blank=True,
             help_text=_("Metric used to compute the pricing rate. "
                         "Number of orders is used when left blank."))
+    nominal_price = models.DecimalField(_("nominal price"), max_digits=12,
+            decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"), choices=settings.ORDERS_SERVICE_TAXES,
             default=settings.ORDERS_SERVICE_DEFAUL_TAX)
     pricing_period = models.CharField(_("pricing period"), max_length=16,
@@ -99,8 +144,8 @@ class Service(models.Model):
     rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
             help_text=_("Algorithm used to interprete the rating table"),
             choices=(
-                (BEST_PRICE, _("Best price")),
-                (PROGRESSIVE_PRICE, _("Progressive price")),
+                (BEST_PRICE, _("Best progressive price")),
+                (PROGRESSIVE_PRICE, _("Conservative progressive price")),
                 (MATCH_PRICE, _("Match price")),
             ),
             default=BEST_PRICE)
@@ -121,22 +166,6 @@ class Service(models.Model):
                 (REFOUND, _("Discount, compensate and refound")),
             ),
             default=DISCOUNT)
-    # TODO remove, orders are not disabled (they are cancelled user.is_active)
-#    on_disable = models.CharField(_("on disable"), max_length=16,
-#            help_text=_("Defines the behaviour of this service when disabled"),
-#            choices=(
-#                (NOTHING, _("Nothing")),
-#                (DISCOUNT, _("Discount")),
-#                (REFOUND, _("Refound")),
-#            ),
-#            default=DISCOUNT)
-#    on_register = models.CharField(_("on register"), max_length=16,
-#            help_text=_("Defines the behaviour of this service on registration"),
-#            choices=(
-#                (NOTHING, _("Nothing")),
-#                (DISCOUNT, _("Discount (fixed BP)")),
-#            ),
-#            default=DISCOUNT)
     payment_style = models.CharField(_("payment style"), max_length=16,
             help_text=_("Designates whether this service should be paid after "
                         "consumtion (postpay/on demand) or prepaid"),
@@ -163,11 +192,6 @@ class Service(models.Model):
                 (ALWAYS, _("Always refound")),
             ),
             default=NEVER, blank=True)
-    
-    @property
-    def nominal_price(self):
-        # FIXME delete and make it a model field
-        return 10
     
     def __unicode__(self):
         return self.description
@@ -226,9 +250,36 @@ class Service(models.Model):
             return self.billing_period
         return self.pricing_period
     
-    def get_rate(self, order, metric):
-        # TODO implement
-        return 12
+    def get_price(self, order, metric, position=None):
+        """
+        if position is provided an specific price for that position is returned,
+        accumulated price is returned otherwise
+        """
+        rates = self.rates.by_account(order.account)
+        if not rates:
+            return self.nominal_price
+        rates = self.rate_method(rates, metric)
+        counter = 0
+        if position is None:
+            ant_counter = 0
+            accumulated = 0
+            for rate in self.get_rates(order.account, metric):
+                counter += rate['number']
+                if counter >= metric:
+                    counter = metric
+                    accumulated += (counter - ant_counter) * rate['price']
+                    return accumulated
+                ant_counter = counter
+                accumulated += rate['price'] * rate['number']
+        else:
+            for rate in self.get_rates(order.account, metric):
+                counter += rate['number']
+                if counter >= position:
+                    return rate['price']
+    
+    @property
+    def rate_method(self, *args, **kwargs):
+        return self.RATE_METHODS[self.rate_algorithm]
 
 
 class OrderQuerySet(models.QuerySet):
@@ -323,8 +374,7 @@ class Order(models.Model):
         self.save()
     
     def get_metric(self, ini, end):
-        # TODO implement
-        return 10
+        return MetricStorage.get(self, ini, end)
 
 
 class MetricStorage(models.Model):
@@ -353,8 +403,11 @@ class MetricStorage(models.Model):
     
     @classmethod
     def get(cls, order, ini, end):
-        # TODO
-        pass
+        try:
+            return cls.objects.filter(order=order, updated_on__lt=end,
+                    updated_on__gte=ini).latest('updated_on').value
+        except cls.DoesNotExist:
+            return 0
 
 
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")
@@ -379,3 +432,5 @@ def update_orders(sender, **kwargs):
 
 
 accounts.register(Order)
+accounts.register(Plan)
+services.register(Plan, menu=False)

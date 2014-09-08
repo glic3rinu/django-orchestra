@@ -1,11 +1,11 @@
 {% extends "admin/change_list.html" %}
-{% load i18n admin_urls %}
+{% load i18n admin_urls admin_list %}
 
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-{% if from_account %}
+{% if account %}
 &rsaquo; <a href="{% url 'admin:app_list' app_label=account_opts.app_label %}">{{ account_opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url account_opts|admin_urlname:'changelist' %}">{{ account_opts.verbose_name_plural|capfirst }}</a>
 &rsaquo; <a href="{% url account_opts|admin_urlname:'change' account.pk|admin_urlquote %}">{{ account|truncatewords:"18" }}</a>
@@ -18,18 +18,32 @@
 
 
 {% block object-tools-items %}
-{% if from_account %}
-<li>
-    <a href="{% url account_opts|admin_urlname:'change' account.pk|admin_urlquote %}" class="historylink">{{ account|truncatewords:"18" }}</a>
-</li>
-<li>
-    <a href="./" class="historylink">{% trans 'Show all' %}</a>
-</li>
-{% endif %}
 <li>
   {% url cl.opts|admin_urlname:'add' as add_url %}
   <a href="{% add_preserved_filters add_url is_popup to_field %}" class="addlink">
+    {% if all_selected %}
     {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+    {% else %}
+    {% blocktrans with cl.opts.verbose_name as name and account|truncatewords:"18" as account %}Add {{ account }} {{ name }}{% endblocktrans %}
+    {% endif %}
   </a>
 </li>
 {% endblock %}
+
+
+{% block filters %}
+  {% if cl.has_filters %}
+    <div id="changelist-filter">
+      <h2>{% trans 'Filter' %}</h2>
+      {% if account %}
+          <h3>{% trans 'By account' %}</h3>
+          <ul>
+            <li {% if not all_selected %}class="selected"{% endif %}><a href="?account={{ account.pk }}">{{ account|truncatewords:"18" }}</a></li>
+            <li {% if all_selected %}class="selected"{% endif %}><a href="?account={{ account.pk }}&all=True">All</a></li>
+          </ul>
+      {% endif %}
+      {% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
+

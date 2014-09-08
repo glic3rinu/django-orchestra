@@ -89,6 +89,4 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
-* Account link and "show all" button on the filters secction instead of object-tools
-
 * Create ProForma from orders orders.bill(proforma=True)

@@ -39,7 +39,7 @@
 
 {% block summary %}
 <div id="bill-number">
-        {{ bill.get_type_display }}<br>
+        {{ bill.get_type_display.capitalize }}<br>
         <span class="value">{{ bill.number }}</span><br>
 </div>
 <div id="bill-summary">
@@ -125,14 +125,14 @@
                 {% if payment.message %}
                     {{ payment.message | safe }}
                 {% else %}
-                    You can pay our invoice by bank transfer. <br>
-                    Please make sure to state your name and the invoice number.
+                    You can pay our {{ bill.get_type_display.lower }} by bank transfer. <br>
+                    Please make sure to state your name and the {{ bill.get_type_display.lower}} number.
                     Our bank account number is <br>
                     <strong>{{ seller_info.bank_account }}</strong>
                 {% endif %}
         </div>
         <div id="questions">
-            <span class="title">QUESTIONS</span> If you have any question about your bill, please
+            <span class="title">QUESTIONS</span> If you have any question about your {{ bill.get_type_display.lower}}, please
             feel free to contact us at your convinience. We will reply as soon as we get
             your message.
         </div>

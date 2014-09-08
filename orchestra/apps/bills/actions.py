@@ -45,7 +45,8 @@ def close_bills(modeladmin, request, queryset):
     if not queryset:
         messages.warning(request, _("Selected bills should be in open state"))
         return
-    SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm)
+    SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm,
+            extra=0)
     formset = SelectSourceFormSet(queryset=queryset)
     if request.POST.get('post') == 'yes':
         formset = SelectSourceFormSet(request.POST, request.FILES, queryset=queryset)
@@ -66,6 +67,7 @@ def close_bills(modeladmin, request, queryset):
         'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
         'formset': formset,
     }
+    # TODO use generic confirmation template
     return render(request, 'admin/bills/close_confirmation.html', context)
 close_bills.verbose_name = _("Close")
 close_bills.url_name = 'close'

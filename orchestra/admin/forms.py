@@ -37,8 +37,8 @@ class AdminFormSet(BaseModelFormSet):
         return template.render(Context({'inline_admin_formset': inline_admin_formset}))
 
 
-def adminmodelformset_factory(modeladmin, form):
-    formset = modelformset_factory(modeladmin.model, extra=0,
-            form=form, formset=AdminFormSet)
+def adminmodelformset_factory(modeladmin, form, formset=AdminFormSet, **kwargs):
+    formset = modelformset_factory(modeladmin.model, form=form, formset=formset,
+            **kwargs)
     formset.modeladmin = modeladmin
     return formset

@@ -198,19 +198,25 @@ class AccountAdminMixin(object):
     
     def changelist_view(self, request, extra_context=None):
         account_id = request.GET.get('account')
-        context = {
-            'from_account': False
-        }
+        context = {}
         if account_id:
             opts = self.model._meta
             account = Account.objects.get(pk=account_id)
             context = {
-                'from_account': True,
-                'title': _("Select %s to change for %s") % (
-                    opts.verbose_name, account.name),
                 'account': not account_id or Account.objects.get(pk=account_id),
                 'account_opts': Account._meta,
+                'all_selected': True,
             }
+            if not request.GET.get('all'):
+                context.update({
+                    'all_selected': False,
+                    'title': _("Select %s to change for %s") % (
+                        opts.verbose_name, account.name),
+                })
+            else:
+                request_copy = request.GET.copy()
+                request_copy.pop('account')
+                request.GET = request_copy
         context.update(extra_context or {})
         return super(AccountAdminMixin, self).changelist_view(request,
                 extra_context=context)

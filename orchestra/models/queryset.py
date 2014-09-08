@@ -1,3 +1,6 @@
+from .utils import get_field_value
+
+
 def group_by(qset, *fields, **kwargs):
     """ group_by iterator with support for multiple nested fields """
     ix = kwargs.get('ix', 0)
@@ -6,7 +9,11 @@ def group_by(qset, *fields, **kwargs):
     group = []
     first = True
     for obj in qset:
-        current = getattr(obj, fields[ix])
+        try:
+            current = get_field_value(obj, fields[ix])
+        except AttributeError:
+            # Intermediary relation does not exists
+            current = None
         if first or current == previous:
             group.append(obj)
         else:

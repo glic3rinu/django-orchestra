@@ -12,3 +12,7 @@ ORDERS_SERVICE_DEFAUL_TAX = getattr(settings, 'ORDERS_SERVICE_DFAULT_TAX', 0)
 
 
 ORDERS_SERVICE_ANUAL_BILLING_MONTH = getattr(settings, 'ORDERS_SERVICE_ANUAL_BILLING_MONTH', 4)
+
+
+ORDERS_BILLING_BACKEND = getattr(settings, 'ORDERS_BILLING_BACKEND',
+        'orchestra.apps.orders.billing.BillsBackend')

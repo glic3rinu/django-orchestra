@@ -13,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.core import caches, services, accounts
 from orchestra.models import queryset
 from orchestra.utils.apps import autodiscover
+from orchestra.utils.python import import_class
 
 from . import settings, helpers
 from .handlers import ServiceHandler
@@ -315,9 +316,7 @@ class Order(models.Model):
     
     @classmethod
     def get_bill_backend(cls):
-        # TODO
-        from .backends import BillsBackend
-        return BillsBackend()
+        return import_class(settings.ORDERS_BILLING_BACKEND)()
     
     def cancel(self):
         self.cancelled_on = timezone.now()

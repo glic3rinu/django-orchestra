@@ -8,8 +8,8 @@ from orchestra.apps.orchestration.models import Server, Route
 from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii
 from orchestra.utils.system import run
 
-from orchestra.apps.domains import settings, utils, backends
-from orchestra.apps.domains.models import Domain, Record
+from ... import settings, utils, backends
+from ...models import Domain, Record
 
 
 run = functools.partial(run, display=False)

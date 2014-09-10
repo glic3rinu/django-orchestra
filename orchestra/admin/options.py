@@ -62,7 +62,7 @@ class ChangeViewActionsMixin(object):
                                        action.url_name)))
         return new_urls + urls
     
-    def get_change_view_actions(self, obj=None):
+    def get_change_view_actions(self):
         views = []
         for action in self.change_view_actions:
             if isinstance(action, basestring):
@@ -77,11 +77,10 @@ class ChangeViewActionsMixin(object):
         return views
     
     def change_view(self, request, object_id, **kwargs):
-        obj = self.get_object(request, unquote(object_id))
         if not 'extra_context' in kwargs:
             kwargs['extra_context'] = {}
         kwargs['extra_context']['object_tools_items'] = [
-            action.__dict__ for action in self.get_change_view_actions(obj)
+            action.__dict__ for action in self.get_change_view_actions()
         ]
         return super(ChangeViewActionsMixin, self).change_view(request, object_id, **kwargs)
 

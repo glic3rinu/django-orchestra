@@ -13,7 +13,7 @@ from . import settings
 
 def BashSSH(backend, log, server, cmds):
     from .models import BackendLog
-    script = '\n\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
+    script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
     log.script = script
     log.save()

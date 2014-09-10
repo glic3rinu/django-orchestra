@@ -144,7 +144,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.contacts.models.Contact',
             'orchestra.apps.users.models.User',
             'orchestra.apps.orders.models.Order',
-            'orchestra.apps.orders.models.Pack',
+            'orchestra.apps.orders.models.Plan',
             'orchestra.apps.bills.models.Bill',
 #            'orchestra.apps.payments.models.PaymentSource',
             'orchestra.apps.payments.models.Transaction',

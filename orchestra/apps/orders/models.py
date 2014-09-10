@@ -1,5 +1,8 @@
+import sys
+
 from django.db import models
-from django.db.models import Q
+from django.db.migrations.recorder import MigrationRecorder
+from django.db.models import F, Q
 from django.db.models.signals import pre_delete, post_delete, post_save
 from django.dispatch import receiver
 from django.contrib.admin.models import LogEntry
@@ -35,7 +38,7 @@ class RateQuerySet(models.QuerySet):
     
     def by_account(self, account):
         # Default allways selected
-        qset = Q(plan__isnull=True)
+        qset = Q(plan='')
         for plan in account.plans.all():
             qset |= Q(plan=plan)
         return self.filter(qset)
@@ -47,7 +50,7 @@ class Rate(models.Model):
     plan = models.CharField(_("plan"), max_length=128, blank=True,
             choices=(('', _("Default")),) + settings.ORDERS_PLANS)
     quantity = models.PositiveIntegerField(_("quantity"), null=True, blank=True)
-    value = models.DecimalField(_("value"), max_digits=12, decimal_places=2)
+    price = models.DecimalField(_("price"), max_digits=12, decimal_places=2)
     
     objects = RateQuerySet.as_manager()
     
@@ -55,7 +58,7 @@ class Rate(models.Model):
         unique_together = ('service', 'plan', 'quantity')
     
     def __unicode__(self):
-        return "{}-{}".format(str(self.value), self.quantity)
+        return "{}-{}".format(str(self.price), self.quantity)
 
 
 autodiscover('handlers')
@@ -82,7 +85,7 @@ class Service(models.Model):
     BEST_PRICE = 'BEST_PRICE'
     PROGRESSIVE_PRICE = 'PROGRESSIVE_PRICE'
     MATCH_PRICE = 'MATCH_PRICE'
-    PRICING_METHODS = {
+    RATE_METHODS = {
         BEST_PRICE: pricing.best_price,
         MATCH_PRICE: pricing.match_price,
     }
@@ -255,30 +258,47 @@ class Service(models.Model):
         if position is provided an specific price for that position is returned,
         accumulated price is returned otherwise
         """
-        rates = self.rates.by_account(order.account)
-        if not rates:
-            return self.nominal_price
-        rates = self.rate_method(rates, metric)
+        rates = self.get_rates(order.account, metric)
         counter = 0
         if position is None:
             ant_counter = 0
             accumulated = 0
-            for rate in self.get_rates(order.account, metric):
-                counter += rate['number']
+            for rate in rates:
+                counter += rate['quantity']
                 if counter >= metric:
                     counter = metric
                     accumulated += (counter - ant_counter) * rate['price']
-                    return accumulated
+                    return float(accumulated)
                 ant_counter = counter
-                accumulated += rate['price'] * rate['number']
+                accumulated += rate['price'] * rate['quantity']
         else:
-            for rate in self.get_rates(order.account, metric):
-                counter += rate['number']
+            for rate in rates:
+                counter += rate['quantity']
                 if counter >= position:
-                    return rate['price']
+                    return float(rate['price'])
+    
+    
+    def get_rates(self, account, metric):
+        if not hasattr(self, '__cached_rates'):
+            self.__cached_rates = {}
+        if account.id in self.__cached_rates:
+            rates, cache = self.__cached_rates.get(account.id)
+        else:
+            rates = self.rates.by_account(account)
+            cache = {}
+            if not rates:
+                rates = [{
+                    'quantity': sys.maxint,
+                    'price': self.nominal_price,
+                }]
+                self.__cached_rates[account.id] = (rates, cache)
+                return rates
+            self.__cached_rates[account.id] = (rates, cache)
+        # Caching depends on the specific rating method
+        return self.rate_method(rates, metric, cache=cache)
     
     @property
-    def rate_method(self, *args, **kwargs):
+    def rate_method(self):
         return self.RATE_METHODS[self.rate_algorithm]
 
 
@@ -289,16 +309,26 @@ class OrderQuerySet(models.QuerySet):
         bills = []
         bill_backend = Order.get_bill_backend()
         qs = self.select_related('account', 'service')
+        commit = options.get('commit', True)
         for account, services in qs.group_by('account', 'service'):
             bill_lines = []
             for service, orders in services:
-                lines = service.handler.create_bill_lines(orders, **options)
+                lines = service.handler.generate_bill_lines(orders, **options)
                 bill_lines.extend(lines)
-            bills += bill_backend.create_bills(account, bill_lines)
+            if commit:
+                bills += bill_backend.create_bills(account, bill_lines)
+            else:
+                bills += [(account, bill_lines)]
         return bills
     
     def get_related(self):
-        pass
+        qs = self.exclude(cancelled_on__isnull=False,
+                billed_until__gte=F('cancelled_on')).distinct()
+        original_ids = self.values_list('id', flat=True)
+        return self.model.objects.exclude(id__in=original_ids).filter(
+            service__in=qs.values_list('service_id', flat=True),
+            account__in=qs.values_list('account_id', flat=True)
+        )
     
     def by_object(self, obj, **kwargs):
         ct = ContentType.objects.get_for_model(obj)
@@ -421,7 +451,10 @@ def cancel_orders(sender, **kwargs):
 @receiver(post_save, dispatch_uid="orders.update_orders")
 @receiver(post_delete, dispatch_uid="orders.update_orders_post_delete")
 def update_orders(sender, **kwargs):
-    if sender not in [MetricStorage, LogEntry, Order, Service]:
+    exclude = (
+        MetricStorage, LogEntry, Order, Service, ContentType, MigrationRecorder.Migration
+    )
+    if sender not in exclude:
         instance = kwargs['instance']
         if instance.pk:
             # post_save

@@ -90,6 +90,12 @@ def action_to_view(action, modeladmin):
     return action_view
 
 
+def admin_change_url(obj):
+    opts = obj._meta
+    view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
+    return reverse(view_name, args=(obj.pk,))
+
+
 @admin_field
 def admin_link(*args, **kwargs):
     instance = args[-1]
@@ -99,9 +105,7 @@ def admin_link(*args, **kwargs):
         obj = get_field_value(instance, kwargs['field'])
     if not getattr(obj, 'pk', None):
         return '---'
-    opts = obj._meta
-    view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
-    url = reverse(view_name, args=(obj.pk,))
+    url = admin_change_url(obj)
     extra = ''
     if kwargs['popup']:
         extra = 'onclick="return showAddAnotherPopup(this);"'
@@ -130,3 +134,12 @@ def admin_date(*args, **kwargs):
     return '<span title="{0}">{1}</span>'.format(
         escape(str(value)), escape(naturaldate(value)),
     )
+
+
+def get_object_from_url(modeladmin, request):
+    try:
+        object_id = int(request.path.split('/')[-3])
+    except ValueError:
+        return None
+    else:
+        return modeladmin.model.objects.get(pk=object_id)

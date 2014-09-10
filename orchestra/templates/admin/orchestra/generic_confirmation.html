@@ -1,0 +1,67 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "orchestra/css/hide-inline-id.css" %}" />
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">{{ app_label|capfirst|escape }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+{% if obj %}
+&rsaquo; <a href="{% url opts|admin_urlname:'change' obj.pk %}">{{ obj }}</a>
+&rsaquo; {{ action_name }}
+{% else %}
+&rsaquo; {{ action_name }} multiple objects
+{% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+  <div>
+    <div style="margin:20px;">
+    <p>{{ content_message | safe }}</p>
+    <ul>
+    {% for display_object in display_objects %}
+        <li> <a href="{% url 'admin:nodes_node_change' deletable_object.id %}">{{ deletable_object }} </a></li>
+    {% endfor %}
+    </ul>
+    <form action="" method="post">{% csrf_token %}
+    {% if form %}
+        <fieldset class="module aligned">
+        {% for field in form %}
+        <div class="form-row ">
+            <div >
+            {{ field.errors }}
+            {% if field|is_checkbox %}
+                {{ field }} <label for="{{ field.id_for_label }}" class="vCheckboxLabel">{{ field.label }}</label>
+            {% else %}
+                {{ field.label_tag }} {{ field }}
+            {% endif %}
+            <p class="help">{{ field.help_text|safe }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        </fieldset>
+    {% endif %}
+    {% if formset %}
+        {{ formset.as_admin }}
+    {% endif %}
+    
+    <div>
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_value }}" />
+    <input type="hidden" name="post" value="generic_confirmation" />
+    <input type="submit" value="{% trans "Yes, I'm sure" %}" />
+    </div>
+    </form>
+{% endblock %}
+

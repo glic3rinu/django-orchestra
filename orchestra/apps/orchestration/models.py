@@ -1,4 +1,5 @@
 from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -70,6 +71,9 @@ class BackendLog(models.Model):
     @property
     def execution_time(self):
         return (self.last_update-self.created).total_seconds()
+    
+    def backend_class(self):
+        return ServiceBackend.get_backend(self.backend)
 
 
 class BackendOperation(models.Model):
@@ -85,6 +89,7 @@ class BackendOperation(models.Model):
     action = models.CharField(_("action"), max_length=64)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
+    # TODO rename to content_object
     instance = generic.GenericForeignKey('content_type', 'object_id')
     
     class Meta:

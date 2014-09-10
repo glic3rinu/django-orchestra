@@ -57,7 +57,7 @@ class Bill(models.Model):
     closed_on = models.DateTimeField(_("closed on"), blank=True, null=True)
     due_on = models.DateField(_("due on"), null=True, blank=True)
     last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
-    total = models.DecimalField(max_digits=12, decimal_places=2)
+    total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     comments = models.TextField(_("comments"), blank=True)
     html = models.TextField(_("HTML"), blank=True)
     
@@ -170,24 +170,18 @@ class Bill(models.Model):
     def save(self, *args, **kwargs):
         if not self.type:
             self.type = self.get_type()
-        if self.status == self.OPEN:
-            self.total = self.get_total()
         if not self.number or (self.number.startswith('O') and self.status != self.OPEN):
             self.set_number()
         super(Bill, self).save(*args, **kwargs)
     
-    @cached
     def get_subtotals(self):
         subtotals = {}
         for line in self.lines.all():
             subtotal, taxes = subtotals.get(line.tax, (0, 0))
-            subtotal += line.total
-            for subline in line.sublines.all():
-                subtotal += subline.total
+            subtotal += line.get_total()
             subtotals[line.tax] = (subtotal, (line.tax/100)*subtotal)
         return subtotals
     
-    @cached
     def get_total(self):
         total = 0
         for tax, subtotal in self.get_subtotals().iteritems():
@@ -246,7 +240,7 @@ class BaseBillLine(models.Model):
     def number(self):
         lines = type(self).objects.filter(bill=self.bill_id)
         return lines.filter(id__lte=self.id).order_by('id').count()
-
+    
 
 class BudgetLine(BaseBillLine):
     pass
@@ -259,6 +253,20 @@ class BillLine(BaseBillLine):
     auto = models.BooleanField(default=False)
     amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
             related_name='amendment_lines', null=True, blank=True)
+    
+    def get_total(self):
+        """ Computes subline discounts """
+        subtotal = self.total
+        for subline in self.sublines.all():
+            subtotal += subline.total
+        return subtotal
+    
+    def save(self, *args, **kwargs):
+        # TODO cost of this shit
+        super(BillLine, self).save(*args, **kwargs)
+        if self.bill.status == self.bill.OPEN:
+            self.bill.total = self.bill.get_total()
+            self.bill.save()
 
 
 class BillSubline(models.Model):
@@ -268,6 +276,12 @@ class BillSubline(models.Model):
     description = models.CharField(_("description"), max_length=256)
     total = models.DecimalField(max_digits=12, decimal_places=2)
     # TODO type ? Volume and Compensation
-
+    
+    def save(self, *args, **kwargs):
+        # TODO cost of this shit
+        super(BillSubline, self).save(*args, **kwargs)
+        if self.line.bill.status == self.line.bill.OPEN:
+            self.line.bill.total = self.line.bill.get_total()
+            self.line.bill.save()
 
 accounts.register(Bill)

@@ -69,6 +69,10 @@ class BackendOperationInline(admin.TabularInline):
     
     def has_add_permission(self, *args, **kwargs):
         return False
+    
+    def get_queryset(self, request):
+        queryset = super(BackendOperationInline, self).get_queryset(request)
+        return queryset.prefetch_related('instance')
 
 
 def display_mono(field):
@@ -106,7 +110,7 @@ class BackendLogAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """
         qs = super(BackendLogAdmin, self).get_queryset(request)
-        return qs.select_related('server')
+        return qs.select_related('server').defer('script', 'stdout')
 
 
 class ServerAdmin(admin.ModelAdmin):

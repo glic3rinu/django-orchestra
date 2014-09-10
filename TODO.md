@@ -87,3 +87,17 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
 * Create ProForma from orders orders.bill(proforma=True)
+
+* generic confirmation breadcrumbs for single objects
+
+* DirectDebit due date = bill.due_date
+
+* settings.ENABLED_PLUGINS = ('path.module.ClassPlugin',)
+
+* Transaction states: CREATED, PROCESSED, EXECUTED, COMMITED, ABORTED (SECURED, REJECTED?)
+    * bill.send() -> transacction.EXECUTED when source=None
+    * transaction.secured() -> bill.paid when bill.total == transaction.value else Error
+    * bill.paid() -> transacton.SECURED
+    * bill.bad_debt() -> transaction.ABORTED
+    * transaction.ABORTED -> bill.bad_debt
+    - Issue new transaction when current transaction is ABORTED

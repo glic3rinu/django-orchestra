@@ -29,7 +29,7 @@ class PaymentMethod(plugins.Plugin):
         return data[self.number_field]
     
     def get_bill_message(self, source):
-        raise NotImplementedError
+        return ''
 
 
 class PaymentSourceDataForm(forms.ModelForm):

@@ -13,10 +13,10 @@ class Register(object):
     def register(self, name, model):
         if name in self._registry:
             raise KeyError("%s already registered" % name)
-        def has_role(user):
+        def has_role(user, model=model):
             try:
                 getattr(user, name)
-            except models.DoesNotExist:
+            except model.DoesNotExist:
                 return False
             return True
         setattr(User, 'has_%s' % name, has_role)

@@ -11,7 +11,7 @@ from . import settings
 
 class Account(models.Model):
     user = models.OneToOneField(djsettings.AUTH_USER_MODEL,
-            verbose_name=_("user"), related_name='accounts')
+            verbose_name=_("user"), related_name='accounts', null=True)
     type = models.CharField(_("type"), choices=settings.ACCOUNTS_TYPES,
             max_length=32, default=settings.ACCOUNTS_DEFAULT_TYPE)
     language = models.CharField(_("language"), max_length=2,

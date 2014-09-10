@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.utils import plugins
+from orchestra.utils.python import AttributeDict
 
 from . import settings
 from .helpers import get_register_or_cancel_events, get_register_or_renew_events
@@ -70,8 +71,8 @@ class ServiceHandler(plugins.Plugin):
                         day = 1
                     else:
                         raise NotImplementedError(msg)
-                    bp = datetime.datetime(year=date.year, month=date.month,
-                            day=day, tzinfo=timezone.get_current_timezone())
+                    bp = datetime.datetime(year=date.year, month=date.month, day=day,
+                        tzinfo=timezone.get_current_timezone())
                 elif self.billing_period == self.ANUAL:
                     if self.billing_point == self.ON_REGISTER:
                         month = order.registered_on.month
@@ -151,17 +152,26 @@ class ServiceHandler(plugins.Plugin):
         price = self.get_price(order, metric) * size
         return price
     
-    def create_line(self, order, price, size, ini, end):
-        nominal_price = self.nominal_price * size
+    def generate_line(self, order, price, size, ini, end):
+        subtotal = float(self.nominal_price) * size
         discounts = []
-        if nominal_price > price:
-            discounts.append(('volume', nominal_price-price))
-        # TODO Uncomment when prices are done
-#        elif nominal_price < price:
-#            raise ValueError("Something is wrong!")
-        return (order, nominal_price, size, ini, end, discounts)
+        if subtotal > price:
+            discounts.append(AttributeDict(**{
+                'type': 'volume',
+                'total': price-subtotal
+            }))
+        elif subtotal < price:
+            raise ValueError("Something is wrong!")
+        return AttributeDict(**{
+            'order': order,
+            'subtotal': subtotal,
+            'size': size,
+            'ini': ini,
+            'end': end,
+            'discounts': discounts,
+        })
     
-    def create_bill_lines(self, orders, **options):
+    def generate_bill_lines(self, orders, **options):
         # For the "boundary conditions" just think that:
         #   date(2011, 1, 1) is equivalent to datetime(2011, 1, 1, 0, 0, 0)
         #   In most cases:
@@ -175,6 +185,7 @@ class ServiceHandler(plugins.Plugin):
             # TODO create discount per compensation
         bp = None
         lines = []
+        commit = options.get('commit', True)
         for order in orders:
             bp = self.get_billing_point(order, bp=bp, **options)
             ini = order.billed_until or order.registered_on
@@ -184,15 +195,16 @@ class ServiceHandler(plugins.Plugin):
                 # Number of orders metric; bill line per order
                 size = self.get_pricing_size(ini, bp)
                 price = self.get_price_with_orders(order, size, ini, bp)
-                lines.append(self.create_line(order, price, size, ini, bp))
+                lines.append(self.generate_line(order, price, size, ini, bp))
             else:
                 # weighted metric; bill line per pricing period
                 for ini, end in self.get_pricing_slots(ini, bp):
                     size = self.get_pricing_size(ini, end)
                     price = self.get_price_with_metric(order, size, ini, end)
-                    lines.append(self.create_line(order, price, size, ini, end))
+                    lines.append(self.generate_line(order, price, size, ini, end))
             order.billed_until = bp
-            order.save() # TODO if commit
+            if commit:
+                order.save()
         return lines
     
     def compensate(self, orders):

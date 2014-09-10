@@ -14,7 +14,7 @@ class User(auth.AbstractBaseUser):
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
-            related_name='users', null=True)
+            related_name='users')
     first_name = models.CharField(_("first name"), max_length=30, blank=True)
     last_name = models.CharField(_("last name"), max_length=30, blank=True)
     email = models.EmailField(_('email address'), blank=True)

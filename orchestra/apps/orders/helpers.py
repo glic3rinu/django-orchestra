@@ -36,13 +36,14 @@ def get_related_objects(origin, max_depth=2):
                 new_models.append(related)
                 queue.append(new_models)
 
+
 def get_register_or_cancel_events(porders, order, ini, end):
     assert ini <= end, "ini > end"
     CANCEL = 'cancel'
     REGISTER = 'register'
     changes = {}
     counter = 0
-    for num, porder in enumerate(porders.order_by('registered_on')):
+    for num, porder in enumerate(porders.order_by('registered_on'), start=1):
         if porder == order:
             position = num
         if porder.cancelled_on:
@@ -76,7 +77,7 @@ def get_register_or_renew_events(handler, porders, order, ini, end):
     total = float((end-ini).days)
     for sini, send in handler.get_pricing_slots(ini, end):
         counter = 0
-        position = 0
+        position = -1
         for porder in porders.order_by('registered_on'):
             if porder == order:
                 position = abs(position)

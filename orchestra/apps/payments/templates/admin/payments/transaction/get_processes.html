@@ -1,0 +1,18 @@
+{% extends "admin/orchestra/generic_confirmation.html" %}
+{% load i18n admin_urls utils %}
+
+{% block content %}
+    <p>The following transaction processes have been generated, you may want to save them on your computer now.</p>
+    <ul>
+    {% for proc in processes %}
+        <li> <a href="{{ proc.id }}">Process #{{ proc.id }}</a>
+        {% if proc.file %}
+            <ul><li>File: <a href="{{ proc.file.url }}">{{ proc.file }}</a></li></ul>
+        {% endif %}
+        {% if proc.data %}
+            <ul><li>Data: {{ proc.data }}</li></ul>
+        {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

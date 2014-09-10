@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext
 from django.shortcuts import render
 
 from .forms import (BillSelectedOptionsForm, BillSelectConfirmationForm,
@@ -41,15 +42,16 @@ class BillSelectedOrders(object):
                 return self.select_related(request)
         self.context.update({
             'title': _("Options for billing selected orders, step 1 / 3"),
-            'step': 'one',
+            'step': 1,
             'form': form,
         })
         return render(request, self.template, self.context)
     
     def select_related(self, request):
-        self.options['related_queryset'] = self.queryset.all() #get_related(**options)
+        related = self.queryset.get_related().select_related('account__user', 'service')
+        self.options['related_queryset'] = related
         form = BillSelectRelatedForm(initial=self.options)
-        if request.POST.get('step') == 'two':
+        if int(request.POST.get('step')) >= 2:
             form = BillSelectRelatedForm(request.POST, initial=self.options)
             if form.is_valid():
                 select_related = form.cleaned_data['selected_related']
@@ -57,14 +59,14 @@ class BillSelectedOrders(object):
                 return self.confirmation(request)
         self.context.update({
             'title': _("Select related order for billing, step 2 / 3"),
-            'step': 'two',
+            'step': 2,
             'form': form,
         })
         return render(request, self.template, self.context)
     
     def confirmation(self, request):
         form = BillSelectConfirmationForm(initial=self.options)
-        if request.POST:
+        if int(request.POST.get('step')) >= 3:
             bills = self.queryset.bill(commit=True, **self.options)
             if not bills:
                 msg = _("Selected orders do not have pending billing")
@@ -72,19 +74,21 @@ class BillSelectedOrders(object):
             else:
                 ids = ','.join([str(bill.id) for bill in bills])
                 url = reverse('admin:bills_bill_changelist')
-                context = {
-                    'url': url + '?id=%s' % ids,
-                    'num': len(bills),
-                    'bills': _("bills"),
-                    'msg': _("have been generated"),
-                }
-                msg = '<a href="%(url)s">%(num)s %(bills)s</a> %(msg)s' % context
+                url += '?id__in=%s' % ids
+                num = len(bills)
+                msg = ungettext(
+                    '<a href="{url}">One bill</a> has been created.',
+                    '<a href="{url}">{num} bills</a> have been created.',
+                    num).format(url=url, num=num)
                 msg = mark_safe(msg)
                 self.modeladmin.message_user(request, msg, messages.INFO)
             return
+        bills = self.queryset.bill(commit=False, **self.options)
         self.context.update({
             'title': _("Confirmation for billing selected orders"),
-            'step': 'three',
+            'step': 3,
             'form': form,
+            'bills': bills,
+            'selected_related_objects': self.options['selected_related']
         })
         return render(request, self.template, self.context)

@@ -87,7 +87,6 @@ class AccountAdmin(ExtendedModelAdmin):
     
     def get_queryset(self, request):
         """ Select related for performance """
-        # TODO move invoicecontact to contacts
         qs = super(AccountAdmin, self).get_queryset(request)
         related = ('user', 'invoicecontact')
         return qs.select_related(*related)

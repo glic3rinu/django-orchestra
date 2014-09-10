@@ -42,7 +42,8 @@ class SEPADirectDebit(PaymentMethod):
         return _("This bill will been automatically charged to your bank account "
                  " with IBAN number<br><strong>%s</strong>.") % source.number
     
-    def process(self, transactions):
+    @classmethod
+    def process(cls, transactions):
         debts = []
         credits = []
         for transaction in transactions:
@@ -50,15 +51,20 @@ class SEPADirectDebit(PaymentMethod):
                 credits.append(transaction)
             else:
                 debts.append(transaction)
+        processes = []
         if debts:
-            self._process_debts(debts)
+            proc = cls.process_debts(debts)
+            processes.append(proc)
         if credits:
-            self._process_credits(credits)
+            proc = cls.process_credits(credits)
+            processes.append(proc)
+        return processes
     
-    def _process_credits(self, transactions):
+    @classmethod
+    def process_credits(cls, transactions):
         from ..models import TransactionProcess
-        self.process = TransactionProcess.objects.create()
-        context = self.get_context(transactions)
+        process = TransactionProcess.objects.create()
+        context = cls.get_context(transactions)
         sepa = lxml.builder.ElementMaker(
              nsmap = {
                  'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -67,9 +73,9 @@ class SEPADirectDebit(PaymentMethod):
         )
         sepa = sepa.Document(
             E.CstmrCdtTrfInitn(
-                self._get_header(context),
+                cls.get_header(context),
                 E.PmtInf(                                   # Payment Info
-                    E.PmtInfId(str(self.process.id)),        # Payment Id
+                    E.PmtInfId(str(process.id)),        # Payment Id
                     E.PmtMtd("TRF"),                        # Payment Method
                     E.NbOfTxs(context['num_transactions']), # Number of Transactions
                     E.CtrlSum(context['total']),            # Control Sum
@@ -89,17 +95,19 @@ class SEPADirectDebit(PaymentMethod):
                             E.BIC(context['bic'])
                         )
                     ),
-                *list(self._get_credit_transactions(transactions))   # Transactions
+                *list(cls.get_credit_transactions(transactions, process))   # Transactions
                 )
             )
         )
-        file_name = 'credit-transfer-%i.xml' % self.process.id
-        self._process_xml(sepa, 'pain.001.001.03.xsd', file_name)
+        file_name = 'credit-transfer-%i.xml' % process.id
+        cls.process_xml(sepa, 'pain.001.001.03.xsd', file_name, process)
+        return process
     
-    def _process_debts(self, transactions):
+    @classmethod
+    def process_debts(cls, transactions):
         from ..models import TransactionProcess
-        self.process = TransactionProcess.objects.create()
-        context = self.get_context(transactions)
+        process = TransactionProcess.objects.create()
+        context = cls.get_context(transactions)
         sepa = lxml.builder.ElementMaker(
              nsmap = {
                  'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -108,9 +116,9 @@ class SEPADirectDebit(PaymentMethod):
         )
         sepa = sepa.Document(
             E.CstmrDrctDbtInitn(
-                self._get_header(context),
+                cls.get_header(context, process),
                 E.PmtInf(                                   # Payment Info
-                    E.PmtInfId(str(self.process.id)),        # Payment Id
+                    E.PmtInfId(str(process.id)),        # Payment Id
                     E.PmtMtd("DD"),                         # Payment Method
                     E.NbOfTxs(context['num_transactions']), # Number of Transactions
                     E.CtrlSum(context['total']),            # Control Sum
@@ -139,14 +147,16 @@ class SEPADirectDebit(PaymentMethod):
                             E.BIC(context['bic'])
                         )
                     ),
-                *list(self._get_debt_transactions(transactions))   # Transactions
+                *list(cls.get_debt_transactions(transactions, process))   # Transactions
                 )
             )
         )
-        file_name = 'direct-debit-%i.xml' % self.process.id
-        self._process_xml(sepa, 'pain.008.001.02.xsd', file_name)
+        file_name = 'direct-debit-%i.xml' % process.id
+        cls.process_xml(sepa, 'pain.008.001.02.xsd', file_name, process)
+        return process
     
-    def get_context(self, transactions):
+    @classmethod
+    def get_context(cls, transactions):
         return {
             'name': settings.PAYMENTS_DD_CREDITOR_NAME,
             'iban': settings.PAYMENTS_DD_CREDITOR_IBAN,
@@ -157,9 +167,10 @@ class SEPADirectDebit(PaymentMethod):
             'num_transactions': str(len(transactions)),
         }
     
-    def _get_debt_transactions(self, transactions):
+    @classmethod
+    def get_debt_transactions(cls, transactions, process):
         for transaction in transactions:
-            transaction.process = self.process
+            transaction.process = process
             account = transaction.account
             data = transaction.source.data
             transaction.state = transaction.WAITTING_CONFIRMATION
@@ -197,9 +208,10 @@ class SEPADirectDebit(PaymentMethod):
                 ),
             )
     
-    def _get_credit_transactions(self, transactions):
+    @classmethod
+    def get_credit_transactions(transactions, process):
         for transaction in transactions:
-            transaction.process = self.process
+            transaction.process = process
             account = transaction.account
             data = transaction.source.data
             transaction.state = transaction.WAITTING_CONFIRMATION
@@ -231,9 +243,10 @@ class SEPADirectDebit(PaymentMethod):
                 ),
             )
     
-    def _get_header(self, context):
+    @classmethod
+    def get_header(cls, context, process):
         return E.GrpHdr(                            # Group Header
-            E.MsgId(str(self.process.id)),           # Message Id
+            E.MsgId(str(process.id)),           # Message Id
             E.CreDtTm(                              # Creation Date Time
                 context['now'].strftime("%Y-%m-%dT%H:%M:%S")
             ),
@@ -251,7 +264,8 @@ class SEPADirectDebit(PaymentMethod):
             )
         )
     
-    def _process_xml(self, sepa, xsd, file_name):
+    @classmethod
+    def process_xml(cls, sepa, xsd, file_name, process):
         # http://www.iso20022.org/documents/messages/1_0_version/pain/schemas/pain.008.001.02.zip
         path = os.path.dirname(os.path.realpath(__file__))
         xsd_path = os.path.join(path, xsd)
@@ -259,9 +273,9 @@ class SEPADirectDebit(PaymentMethod):
         schema = etree.XMLSchema(schema_doc)
         sepa = etree.parse(StringIO(etree.tostring(sepa)))
         schema.assertValid(sepa)
-        self.process.file = file_name
-        self.process.save()
-        sepa.write(self.process.file.path,
+        process.file = file_name
+        process.save()
+        sepa.write(process.file.path,
                    pretty_print=True,
                    xml_declaration=True,
                    encoding='UTF-8')

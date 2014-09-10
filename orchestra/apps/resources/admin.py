@@ -70,6 +70,10 @@ class ResourceDataAdmin(admin.ModelAdmin):
     readonly_fields = ('content_object_link',)
     
     content_object_link = admin_link('content_object')
+    
+    def get_queryset(self, request):
+        queryset = super(ResourceDataAdmin, self).get_queryset(request)
+        return queryset.prefetch_related('content_object')
 
 
 class MonitorDataAdmin(admin.ModelAdmin):
@@ -78,6 +82,10 @@ class MonitorDataAdmin(admin.ModelAdmin):
     readonly_fields = ('content_object_link',)
     
     content_object_link = admin_link('content_object')
+    
+    def get_queryset(self, request):
+        queryset = super(MonitorDataAdmin, self).get_queryset(request)
+        return queryset.prefetch_related('content_object')
 
 
 admin.site.register(Resource, ResourceAdmin)

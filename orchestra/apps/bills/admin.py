@@ -19,16 +19,8 @@ from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, Budget,
 
 class BillLineInline(admin.TabularInline):
     model = BillLine
-    fields = ('description', 'rate', 'amount', 'tax', 'total', 'subtotal')
-    readonly_fields = ('subtotal',)
-    
-    def subtotal(self, line):
-        if line.total:
-            subtotal = 0
-            for subline in line.sublines.all():
-                subtotal += subline.total
-            return line.total - subtotal
-        return ''
+    fields = ('description', 'rate', 'amount', 'tax', 'total', 'get_total')
+    readonly_fields = ('get_total',)
     
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.status != Bill.OPEN:
@@ -44,9 +36,17 @@ class BillLineInline(admin.TabularInline):
         if obj and obj.status != Bill.OPEN:
             return False
         return super(BillLineInline, self).has_delete_permission(request, obj=obj)
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'description':
+            kwargs['widget'] = forms.TextInput(attrs={'size':'110'})
+        else:
+            kwargs['widget'] = forms.TextInput(attrs={'size':'13'})
+        return super(BillLineInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class BudgetLineInline(admin.TabularInline):
+class BudgetLineInline(BillLineInline):
     model = Budget
     fields = ('description', 'rate', 'amount', 'tax', 'total')
 
@@ -108,7 +108,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return fieldsets
     
     def get_change_view_actions(self, obj=None):
-        actions = super(BillAdmin, self).get_change_view_actions(obj)
+        actions = super(BillAdmin, self).get_change_view_actions()
         discard = []
         if obj:
             if obj.status != Bill.OPEN:

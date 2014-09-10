@@ -76,8 +76,9 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         self.account = Account.objects.create(name='orchestra')
         self.username = 'orchestra'
         self.password = 'orchestra'
-        self.user = User.objects.create_superuser(username='orchestra', password='orchestra',
-                email='orchestra@orchestra.org', account=self.account)
+        self.user = User.objects.create_superuser(username='orchestra',
+                password='orchestra', email='orchestra@orchestra.org',
+                account=self.account)
     
     def admin_login(self):
         session = SessionStore()

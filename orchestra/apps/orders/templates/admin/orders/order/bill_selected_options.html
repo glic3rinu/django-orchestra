@@ -1,10 +1,17 @@
 {% extends "admin/base_site.html" %}
-{% load i18n l10n staticfiles admin_urls %}
+{% load i18n l10n staticfiles admin_urls utils %}
 
 {% block extrastyle %}
 {{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<style type="text/css">
+.account {
+    float: right;
+    margin-right: 400px;
+}
+</style>
 {% endblock %}
+
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
@@ -19,18 +26,53 @@
 {% block content %}
     <form action="" method="post">{% csrf_token %}
     <div>
-    
     <div style="margin:20px;">
+        {% if bills %}
+            {% for account, lines in bills %}
+            <div class="inline-group" id="rates-group">
+             <div class="tabular inline-related last-related">
+            <fieldset class="module">
+            <h2><a href="{% url 'admin:accounts_account_change' account.pk %}">{{ account }}</a></h2>
+            <table>
+            <thead>
+                <tr><th style="width:30%;">Description</th> <th style="width:30%;">Period</th> <th style="width:10%;">Quantity</th> <th style="width:10%;">Price</th></tr>
+            </thead>
+            <tbody>
+            {% for line in lines %}
+            <tr class="form-row {% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
+                <td>
+                    <a href="{{ line.order | admin_link }}">{{ line.order.description }}</a>
+                    {% for discount in line.discounts %}
+                        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Discount per {{ discount.type }}
+                    {% endfor %}
+                </td>
+                <td>{{ line.ini | date }} to {{ line.end | date }}</td>
+                <td>{{ line.size | floatformat:"-2" }}</td>
+                <td>
+                    &nbsp;{{ line.subtotal | floatformat:"-2" }} &euro;
+                    {% for discount in line.discounts %}<br>{{ discount.total | floatformat:"-2" }} &euro;{% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            </fieldset>
+            </div>
+            </div>
+            {% endfor %}
+        {% else %}
             {{ form.as_admin }}
+        {% endif %}
     </div>
+    {% for obj in selected_related_objects %}
+    <input type="hidden" name="selected_related" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
     {% for obj in queryset %}
     <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
     {% endfor %}
     <input type="hidden" name="action" value="bill_selected_orders" />
     <input type="hidden" name="step" value="{{ step }}" />
-    <input type="submit" value="{% trans "Yes, create slivers" %}" />
+    <input type="submit" value="{% if step == 3 %}{% trans "Yes, create bills" %}{% else %}{% trans "Next" %}{% endif %}" />
     </div>
     </form>
 {% endblock %}
-
-

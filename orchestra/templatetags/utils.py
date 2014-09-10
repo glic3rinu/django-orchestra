@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.forms import CheckboxInput
 
 from orchestra import get_version
+from orchestra.admin.utils import admin_change_url
 
 
 register = template.Library()
@@ -41,6 +42,11 @@ def size(value, length):
     return str(value) + (' '*num_spaces)
 
 
-@register.filter(name='is_checkbox')
+@register.filter
 def is_checkbox(field):
     return isinstance(field.field.widget, CheckboxInput)
+
+
+@register.filter
+def admin_link(obj):
+    return admin_change_url(obj)

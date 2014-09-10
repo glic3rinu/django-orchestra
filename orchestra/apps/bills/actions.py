@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.forms import adminmodelformset_factory
+from orchestra.admin.utils import get_object_from_url
 from orchestra.utils.html import html_to_pdf
 
 from .forms import SelectSourceForm
@@ -69,6 +70,7 @@ def close_bills(modeladmin, request, queryset):
         'app_label': opts.app_label,
         'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
         'formset': formset,
+        'obj': get_object_from_url(modeladmin, request),
     }
     return render(request, 'admin/orchestra/generic_confirmation.html', context)
 close_bills.verbose_name = _("Close")

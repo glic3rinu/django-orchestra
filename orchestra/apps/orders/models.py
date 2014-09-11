@@ -316,7 +316,7 @@ class OrderQuerySet(models.QuerySet):
                 lines = service.handler.generate_bill_lines(orders, **options)
                 bill_lines.extend(lines)
             if commit:
-                bills += bill_backend.create_bills(account, bill_lines)
+                bills += bill_backend.create_bills(account, bill_lines, **options)
             else:
                 bills += [(account, bill_lines)]
         return bills

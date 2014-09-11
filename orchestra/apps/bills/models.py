@@ -43,7 +43,7 @@ class Bill(models.Model):
         ('AMENDMENTINVOICE', _("Amendment invoice")),
         ('FEE', _("Fee")),
         ('AMENDMENTFEE', _("Amendment Fee")),
-        ('BUDGET', _("Budget")),
+        ('PROFORMA', _("Pro forma")),
     )
     
     number = models.CharField(_("number"), max_length=16, unique=True,
@@ -73,10 +73,6 @@ class Bill(models.Model):
     @cached_property
     def buyer(self):
         return self.account.invoicecontact
-    
-    @property
-    def lines(self):
-        return self.billlines
     
     @classmethod
     def get_class_type(cls):
@@ -210,28 +206,22 @@ class AmendmentFee(Bill):
         proxy = True
 
 
-class Budget(Bill):
+class ProForma(Bill):
     class Meta:
         proxy = True
-    
-    @property
-    def lines(self):
-        return self.budgetlines
 
 
-class BaseBillLine(models.Model):
+class BillLine(models.Model):
     """ Base model for bill item representation """
-    bill = models.ForeignKey(Bill, verbose_name=_("bill"),
-            related_name='%(class)ss')
+    bill = models.ForeignKey(Bill, verbose_name=_("bill"), related_name='lines')
     description = models.CharField(_("description"), max_length=256)
     rate = models.DecimalField(_("rate"), blank=True, null=True,
             max_digits=12, decimal_places=2)
     amount = models.DecimalField(_("amount"), max_digits=12, decimal_places=2)
     total = models.DecimalField(_("total"), max_digits=12, decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"))
-    
-    class Meta:
-        abstract = True
+    amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
+            related_name='amendment_lines', null=True, blank=True)
     
     def __unicode__(self):
         return "#%i" % self.number
@@ -240,19 +230,6 @@ class BaseBillLine(models.Model):
     def number(self):
         lines = type(self).objects.filter(bill=self.bill_id)
         return lines.filter(id__lte=self.id).order_by('id').count()
-    
-
-class BudgetLine(BaseBillLine):
-    pass
-
-
-class BillLine(BaseBillLine):
-    order_id = models.PositiveIntegerField(blank=True, null=True)
-    order_last_bill_date = models.DateTimeField(null=True)
-    order_billed_until = models.DateTimeField(null=True)
-    auto = models.BooleanField(default=False)
-    amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
-            related_name='amendment_lines', null=True, blank=True)
     
     def get_total(self):
         """ Computes subline discounts """
@@ -271,7 +248,7 @@ class BillLine(BaseBillLine):
 
 class BillSubline(models.Model):
     """ Subline used for describing an item discount """
-    bill_line = models.ForeignKey(BillLine, verbose_name=_("bill line"),
+    line = models.ForeignKey(BillLine, verbose_name=_("bill line"),
             related_name='sublines')
     description = models.CharField(_("description"), max_length=256)
     total = models.DecimalField(max_digits=12, decimal_places=2)
@@ -283,5 +260,6 @@ class BillSubline(models.Model):
         if self.line.bill.status == self.line.bill.OPEN:
             self.line.bill.total = self.line.bill.get_total()
             self.line.bill.save()
+
 
 accounts.register(Bill)

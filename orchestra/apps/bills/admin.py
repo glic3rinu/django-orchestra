@@ -13,8 +13,8 @@ from orchestra.apps.accounts.admin import AccountAdminMixin
 from . import settings
 from .actions import download_bills, view_bill, close_bills, send_bills
 from .filters import BillTypeListFilter
-from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, Budget,
-        BillLine, BudgetLine)
+from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma,
+        BillLine)
 
 
 class BillLineInline(admin.TabularInline):
@@ -46,11 +46,6 @@ class BillLineInline(admin.TabularInline):
         return super(BillLineInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class BudgetLineInline(BillLineInline):
-    model = Budget
-    fields = ('description', 'rate', 'amount', 'tax', 'total')
-
-
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'number', 'status', 'type_link', 'account_link', 'created_on_display',
@@ -77,8 +72,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     created_on_display = admin_date('created_on')
     
     def num_lines(self, bill):
-        return bill.billlines__count
-    num_lines.admin_order_field = 'billlines__count'
+        return bill.lines__count
+    num_lines.admin_order_field = 'lines__count'
     num_lines.short_description = _("lines")
     
     def display_total(self, bill):
@@ -120,8 +115,6 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return [action for action in actions if action.__name__ not in discard]
     
     def get_inline_instances(self, request, obj=None):
-        if self.model is Budget:
-            self.inlines = [BudgetLineInline]
         # Make parent object available for inline.has_add_permission()
         request.__bill__ = obj
         return super(BillAdmin, self).get_inline_instances(request, obj=obj)
@@ -136,8 +129,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         
     def get_queryset(self, request):
         qs = super(BillAdmin, self).get_queryset(request)
-        qs = qs.annotate(models.Count('billlines'))
-        qs = qs.prefetch_related('billlines', 'billlines__sublines')
+        qs = qs.annotate(models.Count('lines'))
+        qs = qs.prefetch_related('lines', 'lines__sublines')
         return qs
 
 #    def change_view(self, request, object_id, **kwargs):
@@ -154,4 +147,4 @@ admin.site.register(Invoice, BillAdmin)
 admin.site.register(AmendmentInvoice, BillAdmin)
 admin.site.register(Fee, BillAdmin)
 admin.site.register(AmendmentFee, BillAdmin)
-admin.site.register(Budget, BillAdmin)
+admin.site.register(ProForma, BillAdmin)

@@ -37,9 +37,13 @@ class BillSelectedOrders(object):
                 self.options = dict(
                     billing_point=form.cleaned_data['billing_point'],
                     fixed_point=form.cleaned_data['fixed_point'],
+                    is_proforma=form.cleaned_data['is_proforma'],
                     create_new_open=form.cleaned_data['create_new_open'],
                 )
-                return self.select_related(request)
+                if int(request.POST.get('step')) != 3:
+                    return self.select_related(request)
+                else:
+                    return self.confirmation(request)
         self.context.update({
             'title': _("Options for billing selected orders, step 1 / 3"),
             'step': 1,
@@ -55,7 +59,7 @@ class BillSelectedOrders(object):
             form = BillSelectRelatedForm(request.POST, initial=self.options)
             if form.is_valid():
                 select_related = form.cleaned_data['selected_related']
-                self.options['selected_related'] = select_related
+                self.queryset = self.queryset | select_related
                 return self.confirmation(request)
         self.context.update({
             'title': _("Select related order for billing, step 2 / 3"),
@@ -89,6 +93,5 @@ class BillSelectedOrders(object):
             'step': 3,
             'form': form,
             'bills': bills,
-            'selected_related_objects': self.options['selected_related']
         })
         return render(request, self.template, self.context)

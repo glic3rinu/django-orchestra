@@ -2,42 +2,44 @@ import datetime
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.bills.models import Invoice, Fee, BillLine, BillSubline
+from orchestra.apps.bills.models import Invoice, Fee, ProForma, BillLine, BillSubline
 
 
 class BillsBackend(object):
-    def create_bills(self, account, lines):
-        invoice = None
+    def create_bills(self, account, lines, **options):
+        bill = None
         bills = []
+        create_new = options.get('create_new_open', False)
+        is_proforma = options.get('is_proforma', False)
         for line in lines:
             service = line.order.service
-            if service.is_fee:
-                fee, __ = Fee.objects.get_or_create(account=account, status=Fee.OPEN)
-                storedline = fee.lines.create(
-                        rate=service.nominal_price,
-                        amount=line.size,
-                        total=line.subtotal, tax=0,
-                        description=self.format_period(line.ini, line.end),
-                )
-                self.create_sublines(storedline, line.discounts)
-                bills.append(fee)
-            else:
-                if invoice is None:
-                    invoice, __ = Invoice.objects.get_or_create(account=account,
-                            status=Invoice.OPEN)
-                    bills.append(invoice)
-                description = line.order.description 
-                if service.billing_period != service.NEVER:
-                    description += " %s" % self.format_period(line.ini, line.end)
-                storedline = invoice.lines.create(
-                    description=description,
+            # Create bill if needed
+            if bill is None or service.is_fee:
+                if is_proforma:
+                    if create_new:
+                        bill = ProForma.objects.create(account=account)
+                    else:
+                        bill, __ = ProForma.objects.get_or_create(account=account,
+                                status=ProForma.OPEN)
+                elif service.is_fee:
+                    bill = Fee.objects.create(account=account)
+                else:
+                    if create_new:
+                        bill = Invoice.objects.create(account=account)
+                    else:
+                        bill, __ = Invoice.objects.get_or_create(account=account,
+                                status=Invoice.OPEN)
+                bills.append(bill)
+            # Create bill line
+            billine = bill.lines.create(
                     rate=service.nominal_price,
                     amount=line.size,
-                    # TODO rename line.total > subtotal
                     total=line.subtotal,
                     tax=service.tax,
-                )
-                self.create_sublines(storedline, line.discounts)
+                    description=self.get_line_description(line),
+            )
+            self.create_sublines(billine, line.discounts)
+        print bills
         return bills
     
     def format_period(self, ini, end):
@@ -47,6 +49,15 @@ class BillsBackend(object):
             return ini
         return _("{ini} to {end}").format(ini=ini, end=end)
     
+    def get_line_description(self, line):
+        service = line.order.service
+        if service.is_fee:
+            return self.format_period(line.ini, line.end)
+        else:
+            description = line.order.description
+            if service.billing_period != service.NEVER:
+                description += " %s" % self.format_period(line.ini, line.end)
+            return description
     
     def create_sublines(self, line, discounts):
         for discount in discounts:

@@ -18,10 +18,14 @@ class BillSelectedOptionsForm(AdminFormMixin, forms.Form):
             label=_("fixed point"),
             help_text=_("Deisgnates whether you want the billing point to be an "
                         "exact date, or adapt it to the billing period."))
+    is_proforma = forms.BooleanField(initial=False, required=False,
+            label=_("Pro-forma, billing simulation"),
+            help_text=_("O."))
     create_new_open = forms.BooleanField(initial=False, required=False,
             label=_("Create a new open bill"),
             help_text=_("Deisgnates whether you want to put this orders on a new "
                         "open bill, or allow to reuse an existing one."))
+
 
 def selected_related_choices(queryset):
     for order in queryset:
@@ -40,6 +44,7 @@ class BillSelectRelatedForm(AdminFormMixin, forms.Form):
             required=False)
     billing_point = forms.DateField(widget=forms.HiddenInput())
     fixed_point = forms.BooleanField(widget=forms.HiddenInput(), required=False)
+    is_proforma = forms.BooleanField(widget=forms.HiddenInput(), required=False)
     create_new_open = forms.BooleanField(widget=forms.HiddenInput(), required=False)
     
     def __init__(self, *args, **kwargs):
@@ -51,8 +56,7 @@ class BillSelectRelatedForm(AdminFormMixin, forms.Form):
 
 
 class BillSelectConfirmationForm(AdminFormMixin, forms.Form):
-#    selected_related = forms.ModelMultipleChoiceField(queryset=Order.objects.none(),
-#            widget=forms.HiddenInput(), required=False)
     billing_point = forms.DateField(widget=forms.HiddenInput())
     fixed_point = forms.BooleanField(widget=forms.HiddenInput(), required=False)
+    is_proforma = forms.BooleanField(widget=forms.HiddenInput(), required=False)
     create_new_open = forms.BooleanField(widget=forms.HiddenInput(), required=False)

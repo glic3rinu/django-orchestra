@@ -60,13 +60,11 @@
             </div>
             </div>
             {% endfor %}
+            {{ form.as_table }}
         {% else %}
             {{ form.as_admin }}
         {% endif %}
     </div>
-    {% for obj in selected_related_objects %}
-    <input type="hidden" name="selected_related" value="{{ obj.pk|unlocalize }}" />
-    {% endfor %}
     {% for obj in queryset %}
     <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
     {% endfor %}

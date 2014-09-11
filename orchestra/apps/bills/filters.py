@@ -19,7 +19,7 @@ class BillTypeListFilter(SimpleListFilter):
             ('amendmentinvoice', _("Amendment invoice")),
             ('fee', _("Fee")),
             ('fee', _("Amendment fee")),
-            ('budget', _("Budget")),
+            ('proforma', _("Pro-forma")),
         )
     
 

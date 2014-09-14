@@ -192,28 +192,32 @@ class ServiceHandler(plugins.Plugin):
             end = max(end, bp) # TODO if all bp are the same ...
         
         related_orders = Order.objects.filter(service=self.service, account=account)
-        if self.on_cancel in (self.COMPENSATE, self.REFOUND):
+        if self.on_cancel == self.COMPENSATE:
             # Get orders pending for compensation
             givers = related_orders.filter_givers(ini, end)
             givers.sort(cmp=helpers.cmp_billed_until_or_registered_on)
             orders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
             self.compensate(givers, orders)
         
-        # Get pricing orders
-        porders = related_orders.filter_pricing_orders(ini, end)
-        porders = set(orders).union(set(porders))
-        for ini, end, orders in self.get_chunks(porders, ini, end):
-            if self.pricing_period == self.ANUAL:
-                pass
-            elif self.pricing_period == self.MONTHLY:
-                pass
-            else:
-                raise NotImplementedError
-            metric = len(orders)
-            for position, order in enumerate(orders):
-                # TODO position +1?
-                price = self.get_price(order, metric, position=position)
-                price *= size
+        rates = 'TODO'
+        if rates:
+            # Get pricing orders
+            porders = related_orders.filter_pricing_orders(ini, end)
+            porders = set(orders).union(set(porders))
+            for ini, end, orders in self.get_chunks(porders, ini, end):
+                if self.pricing_period == self.ANUAL:
+                    pass
+                elif self.pricing_period == self.MONTHLY:
+                    pass
+                else:
+                    raise NotImplementedError
+                metric = len(orders)
+                for position, order in enumerate(orders):
+                    # TODO position +1?
+                    price = self.get_price(order, metric, position=position)
+                    price *= size
+        else:
+            pass
     
     def compensate(self, givers, receivers):
         compensations = []

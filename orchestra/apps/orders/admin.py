@@ -47,8 +47,8 @@ class ServiceAdmin(admin.ModelAdmin):
         (_("Pricing options"), {
             'classes': ('wide',),
             'fields': ('metric', 'pricing_period', 'rate_algorithm',
-                       'orders_effect', 'on_cancel', 'payment_style',
-                       'trial_period', 'refound_period', 'tax', 'nominal_price')
+                       'on_cancel', 'payment_style',
+                       'tax', 'nominal_price')
         }),
     )
     inlines = [RateInline]

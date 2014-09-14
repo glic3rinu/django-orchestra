@@ -116,14 +116,14 @@ class Service(models.Model):
                 (FIXED_DATE, _("Fixed billing date")),
             ),
             default=FIXED_DATE)
-    delayed_billing = models.CharField(_("delayed billing"), max_length=16,
-            help_text=_("Period in which this service will be ignored for billing"),
-            choices=(
-                (NEVER, _("No delay (inmediate billing)")),
-                (TEN_DAYS, _("Ten days")),
-                (ONE_MONTH, _("One month")),
-            ),
-            default=ONE_MONTH, blank=True)
+#    delayed_billing = models.CharField(_("delayed billing"), max_length=16,
+#            help_text=_("Period in which this service will be ignored for billing"),
+#            choices=(
+#                (NEVER, _("No delay (inmediate billing)")),
+#                (TEN_DAYS, _("Ten days")),
+#                (ONE_MONTH, _("One month")),
+#            ),
+#            default=ONE_MONTH, blank=True)
     is_fee = models.BooleanField(_("is fee"), default=False,
             help_text=_("Designates whether this service should be billed as "
                         " membership fee or not"))
@@ -152,24 +152,20 @@ class Service(models.Model):
                 (MATCH_PRICE, _("Match price")),
             ),
             default=BEST_PRICE)
-    # TODO remove since it can be infered from pricing period? 
-    #       VARIABLE -> REGISTER_OR_RENEW
-    #       FIXED -> CONCURRENT
-    orders_effect = models.CharField(_("orders effect"),  max_length=16,
-            help_text=_("Defines the lookup behaviour when using orders for "
-                        "the pricing rate computation of this service."),
-            choices=(
-                (REGISTER_OR_RENEW, _("Register or renew events")),
-                (CONCURRENT, _("Active at every given time")),
-            ),
-            default=CONCURRENT)
+#    orders_effect = models.CharField(_("orders effect"),  max_length=16,
+#            help_text=_("Defines the lookup behaviour when using orders for "
+#                        "the pricing rate computation of this service."),
+#            choices=(
+#                (REGISTER_OR_RENEW, _("Register or renew events")),
+#                (CONCURRENT, _("Active at every given time")),
+#            ),
+#            default=CONCURRENT)
     on_cancel = models.CharField(_("on cancel"), max_length=16,
             help_text=_("Defines the cancellation behaviour of this service"),
             choices=(
                 (NOTHING, _("Nothing")),
                 (DISCOUNT, _("Discount")),
                 (COMPENSATE, _("Discount and compensate")),
-                (REFOUND, _("Discount, compensate and refound")),
             ),
             default=DISCOUNT)
     payment_style = models.CharField(_("payment style"), max_length=16,
@@ -180,24 +176,24 @@ class Service(models.Model):
                 (POSTPAY, _("Postpay (on demand)")),
             ),
             default=PREPAY)
-    trial_period = models.CharField(_("trial period"), max_length=16, blank=True,
-            help_text=_("Period in which no charge will be issued"),
-            choices=(
-                (NEVER, _("No trial")),
-                (TEN_DAYS, _("Ten days")),
-                (ONE_MONTH, _("One month")),
-            ),
-            default=NEVER)
-    refound_period = models.CharField(_("refound period"), max_length=16,
-            help_text=_("Period in which automatic refound will be performed on "
-                        "service cancellation"),
-            choices=(
-                (NEVER, _("Never refound")),
-                (TEN_DAYS, _("Ten days")),
-                (ONE_MONTH, _("One month")),
-                (ALWAYS, _("Always refound")),
-            ),
-            default=NEVER, blank=True)
+#    trial_period = models.CharField(_("trial period"), max_length=16, blank=True,
+#            help_text=_("Period in which no charge will be issued"),
+#            choices=(
+#                (NEVER, _("No trial")),
+#                (TEN_DAYS, _("Ten days")),
+#                (ONE_MONTH, _("One month")),
+#            ),
+#            default=NEVER)
+#    refound_period = models.CharField(_("refound period"), max_length=16,
+#            help_text=_("Period in which automatic refound will be performed on "
+#                        "service cancellation"),
+#            choices=(
+#                (NEVER, _("Never refound")),
+#                (TEN_DAYS, _("Ten days")),
+#                (ONE_MONTH, _("One month")),
+#                (ALWAYS, _("Always refound")),
+#            ),
+#            default=NEVER, blank=True)
     
     def __unicode__(self):
         return self.description

@@ -323,46 +323,16 @@ class OrderQuerySet(models.QuerySet):
             else:
                 bills += [(account, bill_lines)]
         return bills
-
-    def pricing_effect(self, ini=None, end=None, **options):
-        # TODO register but not billed duscard
-        if not ini:
-            for cini, ro in self.values_list('billed_until', 'registered_on'):
-                if not cini:
-                    cini = ro
-                if not ini:
-                    ini = cini
-                
-                ini = min(ini, cini)
-        if not end:
-            order = self.first()
-            if order:
-                service = order.service
-                service.billing_point == service.FIXED_DATE
-                end = service.handler.get_billing_point(order, **options)
-            else:
-                pass
-        return self.exclude(
-            cancelled_on__isnull=False, billed_until__isnull=False,
-            cancelled_on__lte=F('billed_until'), billed_until__lte=ini,
-            registered_on__gte=end)
     
-    def get_related(self, ini=None, end=None):
-        if not ini:
-            ini = ''
-        if not end:
-            end = ''
-        return self.pricing_effect().filter(
-            Q(billed_until__isnull=False, billed_until__lt=end) |
-            Q(billed_until__isnull=True, registered_on__lt=end))
-        # TODO iterate over every order, calculate its billing point and find related
-        qs = self.exclude(cancelled_on__isnull=False,
-                billed_until__gte=F('cancelled_on')).distinct()
-        original_ids = self.values_list('id', flat=True)
-        return self.model.objects.exclude(id__in=original_ids).filter(
-            service__in=qs.values_list('service_id', flat=True),
-            account__in=qs.values_list('account_id', flat=True)
-        )
+    def filter_givers(self, ini, end):
+        return self.filter(
+            cancelled_on__isnull=False, billed_until__isnull=False,
+            cancelled_on__lte=F('billed_until'), billed_until__gt=ini,
+            registered_on__lt=end)
+    
+    def filter_pricing_orders(self, ini, end):
+        return self.filter(billed_until__isnull=False, billed_until__gt=ini,
+            registered_on__lt=end)
     
     def by_object(self, obj, **kwargs):
         ct = ContentType.objects.get_for_model(obj)
@@ -386,7 +356,7 @@ class Order(models.Model):
     object_id = models.PositiveIntegerField(null=True)
     service = models.ForeignKey(Service, verbose_name=_("service"),
             related_name='orders')
-    registered_on = models.DateField(_("registered on"), auto_now_add=True)
+    registered_on = models.DateField(_("registered on"), auto_now_add=True) # TODO datetime field?
     cancelled_on = models.DateField(_("cancelled on"), null=True, blank=True)
     billed_on = models.DateField(_("billed on"), null=True, blank=True)
     billed_until = models.DateField(_("billed until"), null=True, blank=True)

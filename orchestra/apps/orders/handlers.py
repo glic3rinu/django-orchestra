@@ -170,18 +170,12 @@ class ServiceHandler(plugins.Plugin):
             'discounts': discounts,
         })
     
-    def _generate_bill_lines(self, orders, **options):
+    def _generate_bill_lines(self, orders, account, **options):
         # For the "boundary conditions" just think that:
         #   date(2011, 1, 1) is equivalent to datetime(2011, 1, 1, 0, 0, 0)
         #   In most cases:
         #       ini >= registered_date, end < registered_date
         
-        # TODO Perform compensations on cancelled services
-        if self.on_cancel in (self.COMPENSATE, self.REFOUND):
-            pass
-            # TODO compensations with commit=False, fuck commit or just fuck the transaction?
-            # compensate(orders, **options)
-            # TODO create discount per compensation
         bp = None
         lines = []
         commit = options.get('commit', True)
@@ -197,18 +191,45 @@ class ServiceHandler(plugins.Plugin):
             ini = min(ini, cini)
             end = max(end, bp) # TODO if all bp are the same ...
         
-        porders = orders.pricing_orders(ini=ini, end=end)
-        porders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
-        # Compensation
+        related_orders = Order.objects.filter(service=self.service, account=account)
+        if self.on_cancel in (self.COMPENSATE, self.REFOUND):
+            # Get orders pending for compensation
+            givers = related_orders.filter_givers(ini, end)
+            givers.sort(cmp=helpers.cmp_billed_until_or_registered_on)
+            orders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
+            self.compensate(givers, orders)
+        
+        # Get pricing orders
+        porders = related_orders.filter_pricing_orders(ini, end)
+        porders = set(orders).union(set(porders))
+        for ini, end, orders in self.get_chunks(porders, ini, end):
+            if self.pricing_period == self.ANUAL:
+                pass
+            elif self.pricing_period == self.MONTHLY:
+                pass
+            else:
+                raise NotImplementedError
+            metric = len(orders)
+            for position, order in enumerate(orders):
+                # TODO position +1?
+                price = self.get_price(order, metric, position=position)
+                price *= size
+    
+    def compensate(self, givers, receivers):
         compensations = []
-        receivers = []
-        for order in porders:
+        for order in givers:
             if order.billed_until and order.cancelled_on and order.cancelled_on < order.billed_until:
                 compensations.append[Interval(order.cancelled_on, order.billed_until, order)]
-        orders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
-        for order in orders:
-            order_interval = Interval(order.billed_until or order.registered_on, order.new_billed_until)
-            helpers.compensate(order_interval, compensations)
+        for order in receivers:
+            if not order.billed_until or order.billed_until < order.new_billed_until:
+                # receiver
+                ini = order.billed_until or order.registered_on
+                end = order.cancelled_on or datetime.date.max
+                order_interval = helpers.Interval(ini, order.new_billed_until) # TODO beyond interval?
+                compensations, used_compensations = helpers.compensate(order_interval, compensations)
+                order._compensations = used_compensations
+                for comp in used_compensations:
+                    comp.order.billed_until = min(comp.order.billed_until, comp.end)
     
     def get_chunks(self, porders, ini, end, ix=0):
         if ix >= len(porders):
@@ -267,44 +288,3 @@ class ServiceHandler(plugins.Plugin):
             if commit:
                 order.save()
         return lines
-    
-    def compensate(self, orders):
-        # TODO this compensation is a bit hard to write it propertly
-        #      don't forget to think about weighted and num order prices.
-        # Greedy algorithm for maximizing discount (non-deterministic)
-        # Reduce and break orders in donors and receivers
-        donors = []
-        receivers = []
-        for order in orders:
-            if order.cancelled_on and order.billed_until > order.cancelled_on:
-                donors.append(order)
-            elif not order.cancelled_on or order.cancelled_on > order.billed_until:
-                receivers.append(order)
-        
-        # Assign weights to every donor-receiver combination
-        weights = []
-        for donor in donors:
-            for receiver in receivers:
-                if receiver.cancelled_on:
-                    if not receiver.cancelled_on or receiver.cancelled_on < donor.billed_until:
-                        end = receiver.cancelled_on
-                    else:
-                        end = donor.billed_until
-                else:
-                    end = donor.billed_until
-                ini = donor.billed_until or donor.registered_on
-                if donor.cancelled_on > ini:
-                    ini = donor.cancelled_on
-                weight = (end-ini).days
-                weights.append((weight, ini, end, donor, receiver))
-        
-        # Choose weightest pairs
-        choosen = []
-        weights.sort(key=lambda n: n[0])
-        for weight, ini, end, donor, receiver in weigths:
-            if donor not in choosen and receiver not in choosen:
-                choosen += [donor, receiver]
-                donor.billed_until = end
-                donor.save()
-                price = self.get_price()#TODO
-                receiver.__discount_per_compensation =None

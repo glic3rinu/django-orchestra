@@ -8,8 +8,7 @@ from orchestra.apps.accounts.models import Account
 from orchestra.apps.users.models import User
 from orchestra.utils.tests import BaseTestCase, random_ascii
 
-from ... import settings
-from ...helpers import cmp_billed_until_or_registered_on
+from ... import settings, helpers
 from ...models import Service, Order
 
 
@@ -175,44 +174,73 @@ class OrderTests(BaseTestCase):
             service=service,
             registered_on=now+datetime.timedelta(days=8))
         orders = [order3, order, order1, order2, order4, order5, order6]
-        self.assertEqual(orders, sorted(orders, cmp=cmp_billed_until_or_registered_on))
+        self.assertEqual(orders, sorted(orders, cmp=helpers.cmp_billed_until_or_registered_on))
     
     def test_compensation(self):
         now = timezone.now()
         order = Order(
+            description='0',
             registered_on=now,
-            billed_until=now+datetime.timedelta(days=200),
+            billed_until=now+datetime.timedelta(days=220),
             cancelled_on=now+datetime.timedelta(days=100))
         order1 = Order(
+            description='1',
             registered_on=now+datetime.timedelta(days=5),
             cancelled_on=now+datetime.timedelta(days=190),
             billed_until=now+datetime.timedelta(days=200))
         order2 = Order(
+            description='2',
             registered_on=now+datetime.timedelta(days=6),
             cancelled_on=now+datetime.timedelta(days=200),
             billed_until=now+datetime.timedelta(days=200))
         order3 = Order(
+            description='3',
             registered_on=now+datetime.timedelta(days=6),
             billed_until=now+datetime.timedelta(days=200))
+        
+        tests = []
         order4 = Order(
-            registered_on=now+datetime.timedelta(days=6))
+            description='4',
+            registered_on=now+datetime.timedelta(days=6),
+            billed_until=now+datetime.timedelta(days=102))
+        order4.new_billed_until = now+datetime.timedelta(days=200)
+        tests.append([
+            [now+datetime.timedelta(days=102), now+datetime.timedelta(days=220), order],
+        ])
         order5 = Order(
-            registered_on=now+datetime.timedelta(days=7))
+            description='5',
+            registered_on=now+datetime.timedelta(days=7),
+            billed_until=now+datetime.timedelta(days=102))
+        order5.new_billed_until =  now+datetime.timedelta(days=195)
+        tests.append([
+            [now+datetime.timedelta(days=190), now+datetime.timedelta(days=200), order1]
+        ])
         order6 = Order(
+            description='6',
             registered_on=now+datetime.timedelta(days=8))
+        order6.new_billed_until = now+datetime.timedelta(days=200)
+        tests.append([
+            [now+datetime.timedelta(days=100), now+datetime.timedelta(days=102), order],
+        ])
         porders = [order3, order, order1, order2, order4, order5, order6]
-        porders = sorted(porders, cmp=cmp_billed_until_or_registered_on)
+        porders = sorted(porders, cmp=helpers.cmp_billed_until_or_registered_on)
         service = self.create_service()
         compensations = []
-        from ... import helpers
+        receivers = []
         for order in porders:
             if order.billed_until and order.cancelled_on and order.cancelled_on < order.billed_until:
                 compensations.append(helpers.Interval(order.cancelled_on, order.billed_until, order=order))
-        for order in porders:
-            bp = service.handler.get_billing_point(order)
-            order_interval = helpers.Interval(order.billed_until or order.registered_on, bp)
-            print helpers.compensate(order_interval, compensations)
-        
+            elif hasattr(order, 'new_billed_until') and (not order.billed_until or order.billed_until < order.new_billed_until):
+                receivers.append(order)
+        for order, test in zip(receivers, tests):
+            ini = order.billed_until or order.registered_on
+            end = order.cancelled_on or now+datetime.timedelta(days=20000)
+            order_interval = helpers.Interval(ini, end)
+            (compensations, used_compensations) = helpers.compensate(order_interval, compensations)
+            for compensation, test_line in zip(used_compensations, test):
+                self.assertEqual(test_line[0], compensation.ini)
+                self.assertEqual(test_line[1], compensation.end)
+                self.assertEqual(test_line[2], compensation.order)
     
 #    def test_ftp_account_1_year_fiexed(self):
 #        service = self.create_service()

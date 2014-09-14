@@ -1,5 +1,7 @@
 import inspect
 
+from django.utils import timezone
+
 from orchestra.apps.accounts.models import Account
 
 
@@ -116,32 +118,44 @@ class Interval(object):
     def __sub__(self, other):
         remaining = []
         if self.ini < other.ini:
-            remaining.append(Interval(self.ini, min(self.end, other.ini)))
+            remaining.append(Interval(self.ini, min(self.end, other.ini), self.order))
         if self.end > other.end:
-            remaining.append(Interval(max(self.ini,other.end), self.end))
+            remaining.append(Interval(max(self.ini,other.end), self.end, self.order))
         return remaining
     
     def __repr__(self):
-        return "Start: %s    End: %s" % (self.ini, self.end)
+        now = timezone.now()
+        return "Start: %s    End: %s" % ((self.ini-now).days, (self.end-now).days)
     
     def intersect(self, other, remaining_self=None, remaining_other=None):
         if remaining_self is not None:
             remaining_self += (self - other)
         if remaining_other is not None:
             remaining_other += (other - self)
-        result = Interval(max(self.ini, other.ini), min(self.end, other.end))
+        result = Interval(max(self.ini, other.ini), min(self.end, other.end), self.order)
         if len(result)>0:
             return result
         else:
             return None
+    
+    def intersect_set(self, others, remaining_self=None, remaining_other=None):
+        intersections = []
+        for interval in others:
+            intersection = self.intersect(interval, remaining_self, remaining_other)
+            if intersection:
+                intersections.append(intersection)
+        return intersections
+    
 
-
-def get_intersections(order, compensations):
+def get_intersections(order_intervals, compensations):
     intersections = []
     for compensation in compensations:
-        intersection = compensation.intersect(order)
-        if intersection:
-            intersections.append((len(intersection), intersection))
+        intersection = compensation.intersect_set(order_intervals)
+        length = 0
+        for intersection_interval in intersection:
+            length += len(intersection_interval)
+        intersections.append((length, compensation))
+    intersections.sort()
     return intersections
 
 # Intervals should not overlap
@@ -153,24 +167,32 @@ def intersect(compensation, order_intervals):
         compensated.append(compensation.intersect(interval, unused_compensation, not_compensated))
     return (compensated, not_compensated, unused_compensation)
 
+def apply_compensation(order, compensation):
+    remaining_order = []
+    remaining_compensation = []
+    applied_compensation = compensation.intersect_set(order, remaining_compensation, remaining_order)
+    return applied_compensation, remaining_order, remaining_compensation
 
+# TODO can be optimized
 def update_intersections(not_compensated, compensations):
-    intersections = []
-    for (_,compensation) in compensations:
-        intersections += get_intersections(compensation, not_compensated)
-    return intersections
+    compensation_intervals = []
+    for __, compensation in compensations:
+        compensation_intervals.append(compensation)
+    return get_intersections(not_compensated, compensation_intervals)
 
 
 def compensate(order, compensations):
-    intersections = get_intersections(order, compensations)
-    not_compensated = [order]
-    result = []
-    while intersections:
-        # Apply the biggest intersection
-        intersections.sort(reverse=True)
-        (_,intersection) = intersections.pop()
-        (compensated, not_compensated, unused_compensation) = intersect(intersection, not_compensated)
-        # Reorder de intersections:
-        intersections = update_intersections(not_compensated, intersections)
-        result += compensated
-    return result
+    remaining_interval = [order]
+    ordered_intersections = get_intersections(remaining_interval, compensations)
+    applied_compensations = []
+    remaining_compensations = []
+    while ordered_intersections and ordered_intersections[len(ordered_intersections)-1][0]>0:
+        # Apply the first compensation:
+        __, compensation = ordered_intersections.pop()
+        (applied_compensation, remaining_interval, remaining_compensation) = apply_compensation(remaining_interval, compensation)
+        remaining_compensations += remaining_compensation
+        applied_compensations += applied_compensation
+        ordered_intersections = update_intersections(remaining_interval, ordered_intersections)
+    for __, compensation in ordered_intersections:
+        remaining_compensations.append(compensation)
+    return remaining_compensations, applied_compensations

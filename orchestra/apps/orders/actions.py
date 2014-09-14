@@ -53,6 +53,8 @@ class BillSelectedOrders(object):
     
     def select_related(self, request):
         related = self.queryset.get_related().select_related('account__user', 'service')
+        if not related:
+            return self.confirmation(request)
         self.options['related_queryset'] = related
         form = BillSelectRelatedForm(initial=self.options)
         if int(request.POST.get('step')) >= 2:

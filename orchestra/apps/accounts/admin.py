@@ -137,7 +137,8 @@ class AccountAdminMixin(object):
     def account_link(self, instance):
         account = instance.account if instance.pk else self.account
         url = reverse('admin:accounts_account_change', args=(account.pk,))
-        return '<a href="%s">%s</a>' % (url, account.name)
+        pk = account.pk
+        return '<a href="%s">%s</a>' % (url, str(account))
     account_link.short_description = _("account")
     account_link.allow_tags = True
     account_link.admin_order_field = 'account__user__username'

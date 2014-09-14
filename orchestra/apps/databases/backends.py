@@ -73,7 +73,7 @@ class MySQLPermissionBackend(ServiceController):
 
 
 class MysqlDisk(ServiceMonitor):
-    model = 'database.Database'
+    model = 'databases.Database'
     verbose_name = _("MySQL disk")
     
     def exceeded(self, db):

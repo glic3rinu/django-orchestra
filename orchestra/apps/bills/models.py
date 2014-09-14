@@ -220,6 +220,9 @@ class BillLine(models.Model):
     amount = models.DecimalField(_("amount"), max_digits=12, decimal_places=2)
     total = models.DecimalField(_("total"), max_digits=12, decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"))
+    # TODO
+#    order_id = models.ForeignKey('orders.Order', null=True, blank=True,
+#            help_text=_("Informative link back to the order"))
     amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
             related_name='amendment_lines', null=True, blank=True)
     

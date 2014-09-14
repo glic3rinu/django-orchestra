@@ -152,6 +152,9 @@ class Service(models.Model):
                 (MATCH_PRICE, _("Match price")),
             ),
             default=BEST_PRICE)
+    # TODO remove since it can be infered from pricing period? 
+    #       VARIABLE -> REGISTER_OR_RENEW
+    #       FIXED -> CONCURRENT
     orders_effect = models.CharField(_("orders effect"),  max_length=16,
             help_text=_("Defines the lookup behaviour when using orders for "
                         "the pricing rate computation of this service."),
@@ -320,8 +323,39 @@ class OrderQuerySet(models.QuerySet):
             else:
                 bills += [(account, bill_lines)]
         return bills
+
+    def pricing_effect(self, ini=None, end=None, **options):
+        # TODO register but not billed duscard
+        if not ini:
+            for cini, ro in self.values_list('billed_until', 'registered_on'):
+                if not cini:
+                    cini = ro
+                if not ini:
+                    ini = cini
+                
+                ini = min(ini, cini)
+        if not end:
+            order = self.first()
+            if order:
+                service = order.service
+                service.billing_point == service.FIXED_DATE
+                end = service.handler.get_billing_point(order, **options)
+            else:
+                pass
+        return self.exclude(
+            cancelled_on__isnull=False, billed_until__isnull=False,
+            cancelled_on__lte=F('billed_until'), billed_until__lte=ini,
+            registered_on__gte=end)
     
-    def get_related(self):
+    def get_related(self, ini=None, end=None):
+        if not ini:
+            ini = ''
+        if not end:
+            end = ''
+        return self.pricing_effect().filter(
+            Q(billed_until__isnull=False, billed_until__lt=end) |
+            Q(billed_until__isnull=True, registered_on__lt=end))
+        # TODO iterate over every order, calculate its billing point and find related
         qs = self.exclude(cancelled_on__isnull=False,
                 billed_until__gte=F('cancelled_on')).distinct()
         original_ids = self.values_list('id', flat=True)
@@ -439,7 +473,8 @@ class MetricStorage(models.Model):
         except cls.DoesNotExist:
             return 0
 
-
+# TODO If this happens to be very costly then, consider an additional
+#      implementation when runnning within a request/Response cycle, more efficient :)
 @receiver(pre_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
     if sender in services:

@@ -65,6 +65,7 @@ class SEPADirectDebit(PaymentMethod):
         from ..models import TransactionProcess
         process = TransactionProcess.objects.create()
         context = cls.get_context(transactions)
+        # http://businessbanking.bankofireland.com/fs/doc/wysiwyg/b22440-mss130725-pain001-xml-file-structure-dec13.pdf
         sepa = lxml.builder.ElementMaker(
              nsmap = {
                  'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -75,12 +76,12 @@ class SEPADirectDebit(PaymentMethod):
             E.CstmrCdtTrfInitn(
                 cls.get_header(context),
                 E.PmtInf(                                   # Payment Info
-                    E.PmtInfId(str(process.id)),        # Payment Id
+                    E.PmtInfId(str(process.id)),            # Payment Id
                     E.PmtMtd("TRF"),                        # Payment Method
                     E.NbOfTxs(context['num_transactions']), # Number of Transactions
                     E.CtrlSum(context['total']),            # Control Sum
-                    E.ReqdExctnDt   (                       # Requested Execution Date
-                        context['now'].strftime("%Y-%m-%d")
+                    E.ReqdExctnDt(                          # Requested Execution Date
+                        (context['now']+datetime.timedelta(days=10)).strftime("%Y-%m-%d")
                     ),
                     E.Dbtr(                                 # Debtor
                         E.Nm(context['name'])
@@ -108,6 +109,7 @@ class SEPADirectDebit(PaymentMethod):
         from ..models import TransactionProcess
         process = TransactionProcess.objects.create()
         context = cls.get_context(transactions)
+        # http://businessbanking.bankofireland.com/fs/doc/wysiwyg/sepa-direct-debit-pain-008-001-02-xml-file-structure-july-2013.pdf
         sepa = lxml.builder.ElementMaker(
              nsmap = {
                  'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -118,7 +120,7 @@ class SEPADirectDebit(PaymentMethod):
             E.CstmrDrctDbtInitn(
                 cls.get_header(context, process),
                 E.PmtInf(                                   # Payment Info
-                    E.PmtInfId(str(process.id)),        # Payment Id
+                    E.PmtInfId(str(process.id)),            # Payment Id
                     E.PmtMtd("DD"),                         # Payment Method
                     E.NbOfTxs(context['num_transactions']), # Number of Transactions
                     E.CtrlSum(context['total']),            # Control Sum

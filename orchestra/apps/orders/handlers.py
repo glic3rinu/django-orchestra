@@ -10,8 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.utils import plugins
 from orchestra.utils.python import AttributeDict
 
-from . import settings
-from .helpers import get_register_or_cancel_events, get_register_or_renew_events
+from . import settings, helpers
 
 
 class ServiceHandler(plugins.Plugin):
@@ -138,9 +137,9 @@ class ServiceHandler(plugins.Plugin):
             ).filter(registered_on__lt=end).order_by('registered_on')
         price = 0
         if self.orders_effect == self.REGISTER_OR_RENEW:
-            events = get_register_or_renew_events(porders, order, ini, end)
+            events = helpers.get_register_or_renew_events(porders, order, ini, end)
         elif self.orders_effect == self.CONCURRENT:
-            events = get_register_or_cancel_events(porders, order, ini, end)
+            events = helpers.get_register_or_cancel_events(porders, order, ini, end)
         else:
             raise NotImplementedError
         for metric, position, ratio in events:
@@ -170,6 +169,68 @@ class ServiceHandler(plugins.Plugin):
             'end': end,
             'discounts': discounts,
         })
+    
+    def _generate_bill_lines(self, orders, **options):
+        # For the "boundary conditions" just think that:
+        #   date(2011, 1, 1) is equivalent to datetime(2011, 1, 1, 0, 0, 0)
+        #   In most cases:
+        #       ini >= registered_date, end < registered_date
+        
+        # TODO Perform compensations on cancelled services
+        if self.on_cancel in (self.COMPENSATE, self.REFOUND):
+            pass
+            # TODO compensations with commit=False, fuck commit or just fuck the transaction?
+            # compensate(orders, **options)
+            # TODO create discount per compensation
+        bp = None
+        lines = []
+        commit = options.get('commit', True)
+        ini = datetime.date.max
+        end = datetime.date.ini
+        # boundary lookup
+        for order in orders:
+            cini = order.registered_on
+            if order.billed_until:
+                cini = order.billed_until
+            bp = self.get_billing_point(order, bp=bp, **options)
+            order.new_billed_until = bp
+            ini = min(ini, cini)
+            end = max(end, bp) # TODO if all bp are the same ...
+        
+        porders = orders.pricing_orders(ini=ini, end=end)
+        porders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
+        # Compensation
+        compensations = []
+        receivers = []
+        for order in porders:
+            if order.billed_until and order.cancelled_on and order.cancelled_on < order.billed_until:
+                compensations.append[Interval(order.cancelled_on, order.billed_until, order)]
+        orders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
+        for order in orders:
+            order_interval = Interval(order.billed_until or order.registered_on, order.new_billed_until)
+            helpers.compensate(order_interval, compensations)
+    
+    def get_chunks(self, porders, ini, end, ix=0):
+        if ix >= len(porders):
+            return [[ini, end, []]]
+        order = porders[ix]
+        ix += 1
+        bu = getattr(order, 'new_billed_until', order.billed_until)
+        if not bu or bu <= ini or order.registered_on >= end:
+            return self.get_chunks(porders, ini, end, ix=ix)
+        result = []
+        if order.registered_on < end and order.registered_on > ini:
+            ro = order.registered_on
+            result = self.get_chunks(porders, ini, ro, ix=ix)
+            ini = ro
+        if bu < end:
+            result += self.get_chunks(porders, bu, end, ix=ix)
+            end = bu
+        chunks = self.get_chunks(porders, ini, end, ix=ix)
+        for chunk in chunks:
+            chunk[2].insert(0, order)
+            result.append(chunk)
+        return result
     
     def generate_bill_lines(self, orders, **options):
         # For the "boundary conditions" just think that:

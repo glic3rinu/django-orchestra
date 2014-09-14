@@ -88,3 +88,89 @@ def get_register_or_renew_events(handler, porders, order, ini, end):
             elif porder.billed_until > send or porder.cancelled_on > send:
                 counter += 1
         yield counter, position, (send-sini)/total
+
+
+def cmp_billed_until_or_registered_on(a, b):
+    """
+    1) billed_until greater first
+    2) registered_on smaller first
+    """
+    if a.billed_until == b.billed_until:
+        return (a.registered_on-b.registered_on).days
+    elif a.billed_until and b.billed_until:
+        return (b.billed_until-a.billed_until).days
+    elif a.billed_until:
+        return (b.registered_on-a.billed_until).days
+    return (b.billed_until-a.registered_on).days
+
+
+class Interval(object):
+    def __init__(self, ini, end, order=None):
+        self.ini = ini
+        self.end = end
+        self.order = order
+    
+    def __len__(self):
+        return max((self.end-self.ini).days, 0)
+    
+    def __sub__(self, other):
+        remaining = []
+        if self.ini < other.ini:
+            remaining.append(Interval(self.ini, min(self.end, other.ini)))
+        if self.end > other.end:
+            remaining.append(Interval(max(self.ini,other.end), self.end))
+        return remaining
+    
+    def __repr__(self):
+        return "Start: %s    End: %s" % (self.ini, self.end)
+    
+    def intersect(self, other, remaining_self=None, remaining_other=None):
+        if remaining_self is not None:
+            remaining_self += (self - other)
+        if remaining_other is not None:
+            remaining_other += (other - self)
+        result = Interval(max(self.ini, other.ini), min(self.end, other.end))
+        if len(result)>0:
+            return result
+        else:
+            return None
+
+
+def get_intersections(order, compensations):
+    intersections = []
+    for compensation in compensations:
+        intersection = compensation.intersect(order)
+        if intersection:
+            intersections.append((len(intersection), intersection))
+    return intersections
+
+# Intervals should not overlap
+def intersect(compensation, order_intervals):
+    compensated = []
+    not_compensated = []
+    unused_compensation = []
+    for interval in order_intervals:
+        compensated.append(compensation.intersect(interval, unused_compensation, not_compensated))
+    return (compensated, not_compensated, unused_compensation)
+
+
+def update_intersections(not_compensated, compensations):
+    intersections = []
+    for (_,compensation) in compensations:
+        intersections += get_intersections(compensation, not_compensated)
+    return intersections
+
+
+def compensate(order, compensations):
+    intersections = get_intersections(order, compensations)
+    not_compensated = [order]
+    result = []
+    while intersections:
+        # Apply the biggest intersection
+        intersections.sort(reverse=True)
+        (_,intersection) = intersections.pop()
+        (compensated, not_compensated, unused_compensation) = intersect(intersection, not_compensated)
+        # Reorder de intersections:
+        intersections = update_intersections(not_compensated, intersections)
+        result += compensated
+    return result

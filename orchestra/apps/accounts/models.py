@@ -10,6 +10,7 @@ from . import settings
 
 
 class Account(models.Model):
+    # Users depends on Accounts (think about what should happen when you delete an account)
     user = models.OneToOneField(djsettings.AUTH_USER_MODEL,
             verbose_name=_("user"), related_name='accounts', null=True)
     type = models.CharField(_("type"), choices=settings.ACCOUNTS_TYPES,
@@ -24,9 +25,9 @@ class Account(models.Model):
     def __unicode__(self):
         return self.name
     
-    @cached_property
+    @property
     def name(self):
-        return self.user.username
+        return self.user.username if self.user_id else str(self.pk)
     
     @classmethod
     def get_main(cls):

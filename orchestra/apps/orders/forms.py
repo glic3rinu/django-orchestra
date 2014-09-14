@@ -39,7 +39,12 @@ def selected_related_choices(queryset):
 
 
 class BillSelectRelatedForm(AdminFormMixin, forms.Form):
-    selected_related = forms.ModelMultipleChoiceField(label=_("Related"),
+     # This doesn't work well with reordering after billing
+#    pricing_with_all = forms.BooleanField(label=_("Do pricing with all orders"),
+#            initial=False, required=False, help_text=_("The price may vary "
+#                "depending on the billed orders. This options designates whether "
+#                "all existing orders will be used for price computation or not."))
+    selected_related = forms.ModelMultipleChoiceField(label=_("Related orders"),
             queryset=Order.objects.none(), widget=forms.CheckboxSelectMultiple,
             required=False)
     billing_point = forms.DateField(widget=forms.HiddenInput())

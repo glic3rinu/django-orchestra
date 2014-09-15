@@ -18,19 +18,27 @@ from orchestra.models import queryset
 from orchestra.utils.apps import autodiscover
 from orchestra.utils.python import import_class
 
-from . import helpers, settings, pricing
+from . import helpers, settings, rating
 from .handlers import ServiceHandler
 
 
 class Plan(models.Model):
-    account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
-            related_name='plans')
-    name = models.CharField(_("plan"), max_length=128,
-            choices=settings.ORDERS_PLANS,
-            default=settings.ORDERS_DEFAULT_PLAN)
+    name = models.CharField(_("plan"), max_length=128)
+    is_default = models.BooleanField(_("is default"), default=False)
+    is_combinable = models.BooleanField(_("is combinable"), default=True)
+    allow_multiple = models.BooleanField(_("allow multipls"), default=False)
     
     def __unicode__(self):
         return self.name
+
+
+class ContractedPlan(models.Model):
+    plan = models.ForeignKey(Plan, verbose_name=_("plan"), related_name='contracts')
+    account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
+            related_name='plans')
+    
+    def __unicode__(self):
+        return str(self.plan)
 
 
 class RateQuerySet(models.QuerySet):
@@ -47,8 +55,7 @@ class RateQuerySet(models.QuerySet):
 class Rate(models.Model):
     service = models.ForeignKey('orders.Service', verbose_name=_("service"),
             related_name='rates')
-    plan = models.CharField(_("plan"), max_length=128, blank=True,
-            choices=(('', _("Default")),) + settings.ORDERS_PLANS)
+    plan = models.ForeignKey(Plan, verbose_name=_("plan"), related_name='rates')
     quantity = models.PositiveIntegerField(_("quantity"), null=True, blank=True)
     price = models.DecimalField(_("price"), max_digits=12, decimal_places=2)
     
@@ -82,12 +89,11 @@ class Service(models.Model):
     COMPENSATE = 'COMPENSATE'
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
-    BEST_PRICE = 'BEST_PRICE'
-    PROGRESSIVE_PRICE = 'PROGRESSIVE_PRICE'
+    STEPED_PRICE = 'STEPED_PRICE'
     MATCH_PRICE = 'MATCH_PRICE'
     RATE_METHODS = {
-        BEST_PRICE: pricing.best_price,
-        MATCH_PRICE: pricing.match_price,
+        STEPED_PRICE: rating.steped_price,
+        MATCH_PRICE: rating.match_price,
     }
     
     description = models.CharField(_("description"), max_length=256, unique=True)
@@ -147,11 +153,10 @@ class Service(models.Model):
     rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
             help_text=_("Algorithm used to interprete the rating table"),
             choices=(
-                (BEST_PRICE, _("Best progressive price")),
-                (PROGRESSIVE_PRICE, _("Conservative progressive price")),
+                (STEPED_PRICE, _("Steped price")),
                 (MATCH_PRICE, _("Match price")),
             ),
-            default=BEST_PRICE)
+            default=STEPED_PRICE)
 #    orders_effect = models.CharField(_("orders effect"),  max_length=16,
 #            help_text=_("Defines the lookup behaviour when using orders for "
 #                        "the pricing rate computation of this service."),
@@ -312,7 +317,7 @@ class OrderQuerySet(models.QuerySet):
         for account, services in qs.group_by('account', 'service'):
             bill_lines = []
             for service, orders in services:
-                lines = service.handler.generate_bill_lines(orders, **options)
+                lines = service.handler.generate_bill_lines(orders, account, **options)
                 bill_lines.extend(lines)
             if commit:
                 bills += bill_backend.create_bills(account, bill_lines, **options)

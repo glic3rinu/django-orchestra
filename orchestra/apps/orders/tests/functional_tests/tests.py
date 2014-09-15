@@ -33,25 +33,19 @@ class OrderTests(BaseTestCase):
             match='not user.is_main and user.has_posix()',
             billing_period=Service.ANUAL,
             billing_point=Service.FIXED_DATE,
-            delayed_billing=Service.NEVER,
+#            delayed_billing=Service.NEVER,
             is_fee=False,
             metric='',
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm=Service.BEST_PRICE,
-            orders_effect=Service.CONCURRENT,
+            rate_algorithm=Service.STEPED_PRICE,
+#            orders_effect=Service.CONCURRENT,
             on_cancel=Service.DISCOUNT,
             payment_style=Service.PREPAY,
-            trial_period=Service.NEVER,
-            refound_period=Service.NEVER,
+#            trial_period=Service.NEVER,
+#            refound_period=Service.NEVER,
             tax=21,
             nominal_price=10,
         )
-        service.rates.create(
-            plan='',
-            quantity=1,
-            price=9,
-        )
-        self.account = self.create_account()
         return service
     
 #    def test_ftp_account_1_year_fiexed(self):
@@ -62,7 +56,8 @@ class OrderTests(BaseTestCase):
     
     def create_ftp(self):
         username = '%s_ftp' % random_ascii(10)
-        user = User.objects.create_user(username=username, account=self.account)
+        account = self.create_account()
+        user = User.objects.create_user(username=username, account=account)
         POSIX = user._meta.get_field_by_name('posix')[0].model
         POSIX.objects.create(user=user)
         return user
@@ -176,7 +171,7 @@ class OrderTests(BaseTestCase):
         orders = [order3, order, order1, order2, order4, order5, order6]
         self.assertEqual(orders, sorted(orders, cmp=helpers.cmp_billed_until_or_registered_on))
     
-    def test_compensation(self):
+    def atest_compensation(self):
         now = timezone.now()
         order = Order(
             description='0',
@@ -241,6 +236,85 @@ class OrderTests(BaseTestCase):
                 self.assertEqual(test_line[0], compensation.ini)
                 self.assertEqual(test_line[1], compensation.end)
                 self.assertEqual(test_line[2], compensation.order)
+    
+    def get_rates(self, account):
+        rates = self.rates.filter(Q(plan__is_default=True) | Q(plan__contracts__account=account)).order_by('plan', 'quantity').select_related('plan').disctinct()
+        # match price
+        candidates = []
+        selected = False
+        for rate in rates:
+            if prev and prev.plan != rate.plan:
+                if not selected:
+                    candidates.append(prev)
+                selected = False
+            if not selected and rate.quantity >= metric:
+                candidates.append(rate)
+                selected = True
+        if not selected:
+            candidates.append(prev)
+        candidates.sort(key=lambda r: r.price)
+        return candidates[0]
+        
+        # Step price
+        groups = []
+        prev = None
+        for rate in rates:
+            elif not prev or (not rate.is_combinable and prev.plan != rate.plan):
+                groups.append([rate])
+            else:
+                groups[-1].append(rate)
+        for group in groups:
+            for rates in group:
+                
+        return result
+    
+    def test_rates(self):
+        service = self.create_service()
+        superplan = Plan.objects.create(name='SUPER', allow_multiple=False, is_combinable=False)
+        service.rates.create(plan=superplan, quantity=1, price=0)
+        service.rates.create(plan=superplan, quantity=3, price=10)
+        service.rates.create(plan=superplan, quantity=4, price=9)
+        service.rates.create(plan=superplan, quantity=10, price=1)
+        account = self.create_account()
+        account.plans.create(plan=superplan)
+        result = service.get_rates(account, 1)
+        import sys
+        from decimal import Decimal
+        rates = [
+            {'price': Decimal('0.00'), 'quantity': 2},
+            {'price': Decimal('10.00'), 'quantity': 1},
+            {'price': Decimal('9.00'), 'quantity': 6},
+            {'price': Decimal('1.00'), 'quantity': sys.maxint}
+        ]
+        self.assertEqual(rates, result)
+        dupeplan = Plan.objects.create(name='DUPE', allow_multiple=True, is_combinable=False)
+        service.rates.create(plan=dupeplan, quantity=1, price=0)
+        service.rates.create(plan=dupeplan, quantity=3, price=9)
+        result = service.get_rates(account, 1)
+        self.assertEqual(rates, result)
+        account.plans.create(plan=dupeplan)
+        rates = [
+            {'price': Decimal('0.00'), 'quantity': 4},
+            {'price': Decimal('10.00'), 'quantity': 1},
+            {'price': Decimal('9.00'), 'quantity': 6},
+            {'price': Decimal('1.00'), 'quantity': sys.maxint}
+        ]
+        result = service.get_rates(account, 1)
+        print 'b', result
+        self.assertEqual(rates, result)
+        service.rates.create(plan='HYPER', quantity=1, price=10)
+        service.rates.create(plan='HYPER', quantity=5, price=0)
+        service.rates.create(plan='HYPER', quantity=6, price=10)
+        account.plans.create(name='HYPER')
+        rates = [
+            {'price': Decimal('0.00'), 'quantity': 4},
+            {'price': Decimal('10.00'), 'quantity': 1},
+            {'price': Decimal('0.00'), 'quantity': 1},
+            {'price': Decimal('9.00'), 'quantity': 6},
+            {'price': Decimal('1.00'), 'quantity': sys.maxint}
+        ]
+        result = service.get_rates(account, 1)
+        self.assertEqual(rates, result)
     
 #    def test_ftp_account_1_year_fiexed(self):
 #        service = self.create_service()

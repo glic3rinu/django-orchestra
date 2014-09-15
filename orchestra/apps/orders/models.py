@@ -46,10 +46,10 @@ class RateQuerySet(models.QuerySet):
     
     def by_account(self, account):
         # Default allways selected
-        qset = Q(plan='')
-        for plan in account.plans.all():
-            qset |= Q(plan=plan)
-        return self.filter(qset)
+        return self.filter(
+            Q(plan__is_default=True) |
+            Q(plan__contracts__account=account)
+        ).order_by('plan', 'quantity').select_related('plan').distinct()
 
 
 class Rate(models.Model):
@@ -89,10 +89,10 @@ class Service(models.Model):
     COMPENSATE = 'COMPENSATE'
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
-    STEPED_PRICE = 'STEPED_PRICE'
+    STEP_PRICE = 'STEP_PRICE'
     MATCH_PRICE = 'MATCH_PRICE'
     RATE_METHODS = {
-        STEPED_PRICE: rating.steped_price,
+        STEP_PRICE: rating.step_price,
         MATCH_PRICE: rating.match_price,
     }
     
@@ -153,10 +153,10 @@ class Service(models.Model):
     rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
             help_text=_("Algorithm used to interprete the rating table"),
             choices=(
-                (STEPED_PRICE, _("Steped price")),
+                (STEP_PRICE, _("Step price")),
                 (MATCH_PRICE, _("Match price")),
             ),
-            default=STEPED_PRICE)
+            default=STEP_PRICE)
 #    orders_effect = models.CharField(_("orders effect"),  max_length=16,
 #            help_text=_("Defines the lookup behaviour when using orders for "
 #                        "the pricing rate computation of this service."),
@@ -257,12 +257,19 @@ class Service(models.Model):
             return self.billing_period
         return self.pricing_period
     
-    def get_price(self, order, metric, position=None):
+    def get_price(self, order, metric, rates=None, position=None):
         """
         if position is provided an specific price for that position is returned,
         accumulated price is returned otherwise
         """
-        rates = self.get_rates(order.account, metric)
+        rates = self.get_rates(order.account)
+        if not rates:
+            rates = [{
+                'quantity': metric,
+                'price': self.nominal_price,
+            }]
+        else:
+            rates =  self.rate_method(rates, metric)
         counter = 0
         if position is None:
             ant_counter = 0
@@ -281,25 +288,14 @@ class Service(models.Model):
                 if counter >= position:
                     return float(rate['price'])
     
-    
-    def get_rates(self, account, metric):
+    def get_rates(self, account, cache=False):
+        # rates are cached per account
+        if not cache:
+            return self.rates.by_account(account)
         if not hasattr(self, '__cached_rates'):
             self.__cached_rates = {}
-        if account.id in self.__cached_rates:
-            rates, cache = self.__cached_rates.get(account.id)
-        else:
-            rates = self.rates.by_account(account)
-            cache = {}
-            if not rates:
-                rates = [{
-                    'quantity': sys.maxint,
-                    'price': self.nominal_price,
-                }]
-                self.__cached_rates[account.id] = (rates, cache)
-                return rates
-            self.__cached_rates[account.id] = (rates, cache)
-        # Caching depends on the specific rating method
-        return self.rate_method(rates, metric, cache=cache)
+        rates = self.__cached_rates.get(account.id, self.rates.by_account(account))
+        return rates
     
     @property
     def rate_method(self):

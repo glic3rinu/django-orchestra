@@ -37,7 +37,7 @@ class OrderTests(BaseTestCase):
             is_fee=False,
             metric='',
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm=Service.STEPED_PRICE,
+            rate_algorithm=Service.STEP_PRICE,
 #            orders_effect=Service.CONCURRENT,
             on_cancel=Service.DISCOUNT,
             payment_style=Service.PREPAY,
@@ -239,89 +239,100 @@ class OrderTests(BaseTestCase):
     
     def get_rates(self, account):
         rates = self.rates.filter(Q(plan__is_default=True) | Q(plan__contracts__account=account)).order_by('plan', 'quantity').select_related('plan').disctinct()
-        # match price
-        candidates = []
-        selected = False
-        for rate in rates:
-            if prev and prev.plan != rate.plan:
-                if not selected:
-                    candidates.append(prev)
-                selected = False
-            if not selected and rate.quantity >= metric:
-                candidates.append(rate)
-                selected = True
-        if not selected:
-            candidates.append(prev)
-        candidates.sort(key=lambda r: r.price)
-        return candidates[0]
-        
-        # Step price
-        groups = []
-        prev = None
-        for rate in rates:
-            if rate.quantity <= metric:
-                if not prev or (not rate.is_combinable and prev.plan != rate.plan):
-                    groups.append([rate])
-                else:
-                    groups[-1].append(rate)
-        results = []
-        for group in groups:
-            ini = None
-            for rate in group:
-                if not ini:
-                    ini = rate.quantity
-                
-                
-        return result
     
     def test_rates(self):
+        from ...models import Plan
+        import sys
+        from decimal import Decimal
         service = self.create_service()
-        superplan = Plan.objects.create(name='SUPER', allow_multiple=False, is_combinable=False)
+        
+        superplan = Plan.objects.create(name='SUPER', allow_multiple=False, is_combinable=True)
         service.rates.create(plan=superplan, quantity=1, price=0)
         service.rates.create(plan=superplan, quantity=3, price=10)
         service.rates.create(plan=superplan, quantity=4, price=9)
         service.rates.create(plan=superplan, quantity=10, price=1)
         account = self.create_account()
         account.plans.create(plan=superplan)
-        result = service.get_rates(account, 1)
-        import sys
-        from decimal import Decimal
+        results = service.get_rates(account)
+        results = service.rate_method(results, 30)
         rates = [
             {'price': Decimal('0.00'), 'quantity': 2},
             {'price': Decimal('10.00'), 'quantity': 1},
             {'price': Decimal('9.00'), 'quantity': 6},
-            {'price': Decimal('1.00'), 'quantity': sys.maxint}
+            {'price': Decimal('1.00'), 'quantity': 21}
         ]
-        self.assertEqual(rates, result)
-        dupeplan = Plan.objects.create(name='DUPE', allow_multiple=True, is_combinable=False)
+        for rate, result in zip(rates, results):
+            self.assertEqual(rate['price'], result.price)
+            self.assertEqual(rate['quantity'], result.quantity)
+        
+        dupeplan = Plan.objects.create(name='DUPE', allow_multiple=True, is_combinable=True)
         service.rates.create(plan=dupeplan, quantity=1, price=0)
         service.rates.create(plan=dupeplan, quantity=3, price=9)
-        result = service.get_rates(account, 1)
-        self.assertEqual(rates, result)
+        results = service.get_rates(account)
+        results = service.rate_method(results, 30)
+        for rate, result in zip(rates, results):
+            self.assertEqual(rate['price'], result.price)
+            self.assertEqual(rate['quantity'], result.quantity)
+        
         account.plans.create(plan=dupeplan)
+        results = service.get_rates(account)
+        results = service.rate_method(results, 30)
         rates = [
             {'price': Decimal('0.00'), 'quantity': 4},
-            {'price': Decimal('10.00'), 'quantity': 1},
-            {'price': Decimal('9.00'), 'quantity': 6},
-            {'price': Decimal('1.00'), 'quantity': sys.maxint}
+            {'price': Decimal('9.00'), 'quantity': 5},
+            {'price': Decimal('1.00'), 'quantity': 21},
         ]
-        result = service.get_rates(account, 1)
-        print 'b', result
-        self.assertEqual(rates, result)
-        service.rates.create(plan='HYPER', quantity=1, price=10)
-        service.rates.create(plan='HYPER', quantity=5, price=0)
-        service.rates.create(plan='HYPER', quantity=6, price=10)
-        account.plans.create(name='HYPER')
+        for rate, result in zip(rates, results):
+            self.assertEqual(rate['price'], result.price)
+            self.assertEqual(rate['quantity'], result.quantity)
+        
+        hyperplan = Plan.objects.create(name='HYPER', allow_multiple=True, is_combinable=False)
+        service.rates.create(plan=hyperplan, quantity=1, price=0)
+        service.rates.create(plan=hyperplan, quantity=20, price=5)
+        account.plans.create(plan=hyperplan)
+        results = service.get_rates(account)
+        results = service.rate_method(results, 30)
         rates = [
-            {'price': Decimal('0.00'), 'quantity': 4},
-            {'price': Decimal('10.00'), 'quantity': 1},
-            {'price': Decimal('0.00'), 'quantity': 1},
-            {'price': Decimal('9.00'), 'quantity': 6},
-            {'price': Decimal('1.00'), 'quantity': sys.maxint}
+            {'price': Decimal('0.00'), 'quantity': 19},
+            {'price': Decimal('5.00'), 'quantity': 11}
         ]
-        result = service.get_rates(account, 1)
-        self.assertEqual(rates, result)
-    
+        for rate, result in zip(rates, results):
+            self.assertEqual(rate['price'], result.price)
+            self.assertEqual(rate['quantity'], result.quantity)
+        hyperplan.is_combinable = True
+        hyperplan.save()
+        results = service.get_rates(account)
+        results = service.rate_method(results, 30)
+        rates = [
+            {'price': Decimal('0.00'), 'quantity': 23},
+            {'price': Decimal('1.00'), 'quantity': 7}
+        ]
+        for rate, result in zip(rates, results):
+            self.assertEqual(rate['price'], result.price)
+            self.assertEqual(rate['quantity'], result.quantity)
+        
+        service.rate_algorithm = service.MATCH_PRICE
+        service.save()
+        results = service.get_rates(account)
+        results = service.rate_method(results, 30)
+        self.assertEqual(1, len(results))
+        self.assertEqual(Decimal('1.00'), results[0].price)
+        self.assertEqual(30, results[0].quantity)
+        
+        hyperplan.delete()
+        results = service.get_rates(account)
+        results = service.rate_method(results, 8)
+        self.assertEqual(1, len(results))
+        self.assertEqual(Decimal('9.00'), results[0].price)
+        self.assertEqual(8, results[0].quantity)
+        
+        superplan.delete()
+        results = service.get_rates(account)
+        results = service.rate_method(results, 30)
+        self.assertEqual(1, len(results))
+        self.assertEqual(Decimal('9.00'), results[0].price)
+        self.assertEqual(30, results[0].quantity)
+        
 #    def test_ftp_account_1_year_fiexed(self):
 #        service = self.create_service()
 #        now = timezone.now().date()etb

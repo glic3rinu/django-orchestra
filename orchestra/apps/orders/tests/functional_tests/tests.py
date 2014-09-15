@@ -259,12 +259,18 @@ class OrderTests(BaseTestCase):
         groups = []
         prev = None
         for rate in rates:
-            elif not prev or (not rate.is_combinable and prev.plan != rate.plan):
-                groups.append([rate])
-            else:
-                groups[-1].append(rate)
+            if rate.quantity <= metric:
+                if not prev or (not rate.is_combinable and prev.plan != rate.plan):
+                    groups.append([rate])
+                else:
+                    groups[-1].append(rate)
+        results = []
         for group in groups:
-            for rates in group:
+            ini = None
+            for rate in group:
+                if not ini:
+                    ini = rate.quantity
+                
                 
         return result
     

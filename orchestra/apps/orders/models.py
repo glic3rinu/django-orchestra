@@ -313,7 +313,7 @@ class OrderQuerySet(models.QuerySet):
         commit = options.get('commit', True)
         for account, services in qs.group_by('account', 'service').iteritems():
             bill_lines = []
-            for service, orders in services:
+            for service, orders in services.iteritems():
                 lines = service.handler.generate_bill_lines(orders, account, **options)
                 bill_lines.extend(lines)
             if commit:

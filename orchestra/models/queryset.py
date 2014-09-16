@@ -21,6 +21,7 @@ def group_by(qset, *fields):
                     group = group[current]
                 except KeyError:
                     group[current] = OrderedDict()
+                    group = group[current]
             else:
                 try:
                     group[current].append(obj)

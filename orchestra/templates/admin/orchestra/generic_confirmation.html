@@ -29,7 +29,7 @@
     <p>{{ content_message | safe }}</p>
     <ul>
     {% for display_object in display_objects %}
-        <li> <a href="{% url 'admin:nodes_node_change' deletable_object.id %}">{{ deletable_object }} </a></li>
+        <li> <a href="{% url opts|admin_urlname:'change' display_object.pk %}">{{ display_object }} </a></li>
     {% endfor %}
     </ul>
     <form action="" method="post">{% csrf_token %}

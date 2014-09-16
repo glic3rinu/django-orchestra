@@ -67,17 +67,15 @@ class TransactionQuerySet(models.QuerySet):
 class Transaction(models.Model):
     WAITTING_PROCESSING = 'WAITTING_PROCESSING' # CREATED
     WAITTING_CONFIRMATION = 'WAITTING_CONFIRMATION' # PROCESSED
-    CONFIRMED = 'CONFIRMED'
-    REJECTED = 'REJECTED'
-    DISCARTED = 'DISCARTED'
+    EXECUTED = 'EXECUTED'
     SECURED = 'SECURED'
+    REJECTED = 'REJECTED'
     STATES = (
         (WAITTING_PROCESSING, _("Waitting processing")),
         (WAITTING_CONFIRMATION, _("Waitting confirmation")),
-        (CONFIRMED, _("Confirmed")),
-        (REJECTED, _("Rejected")),
+        (EXECUTED, _("Executed")),
         (SECURED, _("Secured")),
-        (DISCARTED, _("Discarted")),
+        (REJECTED, _("Rejected")),
     )
     
     objects = TransactionQuerySet.as_manager()
@@ -101,6 +99,21 @@ class Transaction(models.Model):
     @property
     def account(self):
         return self.bill.account
+    
+    def mark_as_executed(self):
+        self.state = self.EXECUTED
+        self.save()
+    
+    def mark_as_secured(self):
+        self.state = self.SECURED
+        # TODO think carefully about bill feedback
+        self.bill.mark_as_paid()
+        self.save()
+    
+    def mark_as_rejected(self):
+        self.state = self.REJECTED
+        # TODO bill feedback
+        self.save()
 
 
 class TransactionProcess(models.Model):

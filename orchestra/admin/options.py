@@ -62,7 +62,8 @@ class ChangeViewActionsMixin(object):
                                        action.url_name)))
         return new_urls + urls
     
-    def get_change_view_actions(self):
+    def get_change_view_actions(self, obj=None):
+        """ allow customization on modelamdin """
         views = []
         for action in self.change_view_actions:
             if isinstance(action, basestring):
@@ -79,8 +80,9 @@ class ChangeViewActionsMixin(object):
     def change_view(self, request, object_id, **kwargs):
         if not 'extra_context' in kwargs:
             kwargs['extra_context'] = {}
+        obj = self.get_object(request, unquote(object_id))
         kwargs['extra_context']['object_tools_items'] = [
-            action.__dict__ for action in self.get_change_view_actions()
+            action.__dict__ for action in self.get_change_view_actions(obj=obj)
         ]
         return super(ChangeViewActionsMixin, self).change_view(request, object_id, **kwargs)
 

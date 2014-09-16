@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ungettext
@@ -71,10 +72,13 @@ class BillSelectedOrders(object):
         })
         return render(request, self.template, self.context)
     
+    @transaction.atomic
     def confirmation(self, request):
         form = BillSelectConfirmationForm(initial=self.options)
         if int(request.POST.get('step')) >= 3:
             bills = self.queryset.bill(commit=True, **self.options)
+            for order in self.queryset:
+                modeladmin.log_change(request, order, 'Billed')
             if not bills:
                 msg = _("Selected orders do not have pending billing")
                 self.modeladmin.message_user(request, msg, messages.WARNING)

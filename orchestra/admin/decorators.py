@@ -24,16 +24,16 @@ def admin_field(method):
     return admin_field_wrapper
 
 
-def action_with_confirmation(action_name, extra_context={},
+def action_with_confirmation(action_name=None, extra_context={},
                              template='admin/orchestra/generic_confirmation.html'):
     """ 
     Generic pattern for actions that needs confirmation step
     If custom template is provided the form must contain:
     <input type="hidden" name="post" value="generic_confirmation" />
     """
-    def decorator(func, extra_context=extra_context, template=template):
+    def decorator(func, extra_context=extra_context, template=template, action_name=action_name):
         @wraps(func, assigned=available_attrs(func))
-        def inner(modeladmin, request, queryset):
+        def inner(modeladmin, request, queryset, action_name=action_name):
             # The user has already confirmed the action.
             if request.POST.get('post') == "generic_confirmation":
                 stay = func(modeladmin, request, queryset)
@@ -48,7 +48,8 @@ def action_with_confirmation(action_name, extra_context={},
                 objects_name = force_text(opts.verbose_name)
             else:
                 objects_name = force_text(opts.verbose_name_plural)
-            
+            if not action_name:
+                action_name = func.__name__
             context = {
                 "title": "Are you sure?",
                 "content_message": "Are you sure you want to %s the selected %s?" %

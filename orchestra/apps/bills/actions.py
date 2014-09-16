@@ -46,8 +46,7 @@ def close_bills(modeladmin, request, queryset):
     if not queryset:
         messages.warning(request, _("Selected bills should be in open state"))
         return
-    SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm,
-            extra=0)
+    SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm, extra=0)
     formset = SelectSourceFormSet(queryset=queryset)
     if request.POST.get('post') == 'generic_confirmation':
         formset = SelectSourceFormSet(request.POST, request.FILES, queryset=queryset)
@@ -55,6 +54,8 @@ def close_bills(modeladmin, request, queryset):
             for form in formset.forms:
                 source = form.cleaned_data['source']
                 form.instance.close(payment=source)
+            for bill in queryset:
+                modeladmin.log_change(request, bill, 'Closed')
             messages.success(request, _("Selected bills have been closed"))
             return
     opts = modeladmin.model._meta
@@ -80,5 +81,6 @@ close_bills.url_name = 'close'
 def send_bills(modeladmin, request, queryset):
     for bill in queryset:
         bill.send()
+        modeladmin.log_change(request, bill, 'Sent')
 send_bills.verbose_name = _("Send")
 send_bills.url_name = 'send'

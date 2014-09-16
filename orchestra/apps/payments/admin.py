@@ -5,10 +5,11 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin import ChangeViewActionsMixin
 from orchestra.admin.utils import admin_colored, admin_link, wrap_admin_view
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
-from .actions import process_transactions
+from . import actions
 from .methods import PaymentMethod
 from .models import PaymentSource, Transaction, TransactionProcess
 
@@ -16,10 +17,9 @@ from .models import PaymentSource, Transaction, TransactionProcess
 STATE_COLORS = {
     Transaction.WAITTING_PROCESSING: 'darkorange',
     Transaction.WAITTING_CONFIRMATION: 'magenta',
-    Transaction.CONFIRMED: 'olive',
+    Transaction.EXECUTED: 'olive',
     Transaction.SECURED: 'green',
     Transaction.REJECTED: 'red',
-    Transaction.DISCARTED: 'blue',
 }
 
 
@@ -27,7 +27,10 @@ class TransactionInline(admin.TabularInline):
     model = Transaction
     can_delete = False
     extra = 0
-    fields = ('transaction_link', 'bill_link', 'source_link', 'display_state', 'amount', 'currency')
+    fields = (
+        'transaction_link', 'bill_link', 'source_link', 'display_state',
+        'amount', 'currency'
+    )
     readonly_fields = fields
     
     transaction_link = admin_link('__unicode__', short_description=_("ID"))
@@ -44,14 +47,19 @@ class TransactionInline(admin.TabularInline):
         return False
 
 
-class TransactionAdmin(AccountAdminMixin, admin.ModelAdmin):
+class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdmin):
     list_display = (
-        'id', 'bill_link', 'account_link', 'source_link', 'display_state', 'amount', 'process_link'
+        'id', 'bill_link', 'account_link', 'source_link', 'display_state',
+        'amount', 'process_link'
     )
     list_filter = ('source__method', 'state')
-    actions = (process_transactions,)
+    actions = (
+        actions.process_transactions, actions.mark_as_executed,
+        actions.mark_as_secured, actions.mark_as_rejected
+    )
+    change_view_actions = actions
     filter_by_account_fields = ['source']
-    readonly_fields = ('process_link', 'account_link')
+    readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link')
     
     bill_link = admin_link('bill')
     source_link = admin_link('source')
@@ -62,6 +70,20 @@ class TransactionAdmin(AccountAdminMixin, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(TransactionAdmin, self).get_queryset(request)
         return qs.select_related('source', 'bill__account__user')
+    
+    def get_change_view_actions(self, obj=None):
+        actions = super(TransactionAdmin, self).get_change_view_actions()
+        discard = []
+        if obj:
+            if obj.state == Transaction.EXECUTED:
+                discard = ['mark_as_executed']
+            elif obj.state == Transaction.REJECTED:
+                discard = ['mark_as_rejected']
+            elif obj.state == Transaction.SECURED:
+                discard = ['mark_as_secured']
+        if not discard:
+            return actions
+        return [action for action in actions if action.__name__ not in discard]
 
 
 class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
@@ -89,10 +111,14 @@ class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
         return select_urls + urls 
     
     def select_method_view(self, request):
+        opts = self.model._meta
         context = {
+            'opts': opts,
+            'app_label': opts.app_label,
             'methods': PaymentMethod.get_plugin_choices(),
         }
-        return render(request, 'admin/payments/payment_source/select_method.html', context)
+        template = 'admin/payments/payment_source/select_method.html'
+        return render(request, template, context)
     
     def add_view(self, request, form_url='', extra_context=None):
         """ Redirects to select account view if required """

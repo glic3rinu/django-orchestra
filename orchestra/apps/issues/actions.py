@@ -17,7 +17,7 @@ def change_ticket_state_factory(action, final_state):
         'form': ChangeReasonForm()
     }
     @transaction.atomic
-    @action_with_confirmation(action, extra_context=context)
+    @action_with_confirmation(action_name=action, extra_context=context)
     def change_ticket_state(modeladmin, request, queryset, action=action, final_state=final_state):
         form = ChangeReasonForm(request.POST)
         if form.is_valid():
@@ -81,6 +81,7 @@ def take_tickets(modeladmin, request, queryset):
             ticket.messages.create(content=content, author=request.user)
             if is_read and not ticket.is_read_by(request.user):
                 ticket.mark_as_read_by(request.user)
+            modeladmin.log_change(request, ticket, 'Taken')
     context = {
         'count': queryset.count(),
         'user': request.user
@@ -97,6 +98,7 @@ def mark_as_unread(modeladmin, request, queryset):
     """ Mark a tickets as unread """
     for ticket in queryset:
         ticket.mark_as_unread_by(request.user)
+        modeladmin.log_change(request, ticket, 'Marked as unread')
     msg = _("%s selected tickets have been marked as unread.") % queryset.count()
     modeladmin.message_user(request, msg)
 
@@ -106,6 +108,7 @@ def mark_as_read(modeladmin, request, queryset):
     """ Mark a tickets as unread """
     for ticket in queryset:
         ticket.mark_as_read_by(request.user)
+        modeladmin.log_change(request, ticket, 'Marked as read')
     msg = _("%s selected tickets have been marked as read.") % queryset.count()
     modeladmin.message_user(request, msg)
 

@@ -1,5 +1,6 @@
 import sys
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.migrations.recorder import MigrationRecorder
 from django.db.models import F, Q
@@ -39,6 +40,11 @@ class ContractedPlan(models.Model):
     
     def __unicode__(self):
         return str(self.plan)
+    
+    def clean(self):
+        if not self.pk and not self.plan.allow_multipls:
+            if ContractedPlan.objects.filter(plan=self.plan, account=self.account).exists():
+                raise ValidationError("A contracted plan for this account already exists")
 
 
 class RateQuerySet(models.QuerySet):

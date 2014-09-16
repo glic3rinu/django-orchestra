@@ -1,5 +1,6 @@
 import calendar
 import datetime
+import decimal
 
 from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
@@ -71,7 +72,7 @@ class ServiceHandler(plugins.Plugin):
                     else:
                         raise NotImplementedError(msg)
                     bp = datetime.datetime(year=date.year, month=date.month, day=day,
-                        tzinfo=timezone.get_current_timezone())
+                        tzinfo=timezone.get_current_timezone()).date()
                 elif self.billing_period == self.ANUAL:
                     if self.billing_point == self.ON_REGISTER:
                         month = order.registered_on.month
@@ -87,7 +88,7 @@ class ServiceHandler(plugins.Plugin):
                     if bp.month >= month:
                         year = bp.year + 1
                     bp = datetime.datetime(year=year, month=month, day=day,
-                        tzinfo=timezone.get_current_timezone())
+                        tzinfo=timezone.get_current_timezone()).date()
                 elif self.billing_period == self.NEVER:
                     bp = order.registered_on
                 else:
@@ -96,21 +97,23 @@ class ServiceHandler(plugins.Plugin):
             return order.cancelled_on
         return bp
     
-    def get_pricing_size(self, ini, end):
+    def get_price_size(self, ini, end):
         rdelta = relativedelta.relativedelta(end, ini)
-        if self.get_pricing_period() == self.MONTHLY:
-            size = rdelta.months
+        if self.billing_period == self.MONTHLY:
+            size = rdelta.years * 12
+            size += rdelta.months
             days = calendar.monthrange(end.year, end.month)[1]
-            size += float(rdelta.days)/days
-        elif self.get_pricing_period() == self.ANUAL:
+            size += decimal.Decimal(rdelta.days)/days
+        elif self.billing_period == self.ANUAL:
             size = rdelta.years
+            size += decimal.Decimal(rdelta.months)/12
             days = 366 if calendar.isleap(end.year) else 365
-            size += float((end-ini).days)/days
-        elif self.get_pricing_period() == self.NEVER:
+            size += decimal.Decimal(rdelta.days)/days
+        elif self.billing_period == self.NEVER:
             size = 1
         else:
             raise NotImplementedError
-        return size
+        return decimal.Decimal(size)
     
     def get_pricing_slots(self, ini, end):
         period = self.get_pricing_period()
@@ -131,56 +134,139 @@ class ServiceHandler(plugins.Plugin):
             yield ini, next
             ini = next
     
-    def get_price_with_orders(self, order, size, ini, end):
-        porders = self.orders.filter(account=order.account).filter(
-            Q(cancelled_on__isnull=True) | Q(cancelled_on__gt=ini)
-            ).filter(registered_on__lt=end).order_by('registered_on')
-        price = 0
-        if self.orders_effect == self.REGISTER_OR_RENEW:
-            events = helpers.get_register_or_renew_events(porders, order, ini, end)
-        elif self.orders_effect == self.CONCURRENT:
-            events = helpers.get_register_or_cancel_events(porders, order, ini, end)
-        else:
-            raise NotImplementedError
-        for metric, position, ratio in events:
-            price += self.get_price(order, metric, position=position) * size * ratio
-        return price
+    def generate_discount(self, line, dtype, price):
+        line.discounts.append(AttributeDict(**{
+            'type': dtype,
+            'total': price,
+        }))
     
-    def get_price_with_metric(self, order, size, ini, end):
-        metric = order.get_metric(ini, end)
-        price = self.get_price(order, metric) * size
-        return price
-    
-    def generate_line(self, order, price, size, ini, end):
-        subtotal = float(self.nominal_price) * size
-        discounts = []
-        if subtotal > price:
-            discounts.append(AttributeDict(**{
-                'type': 'volume',
-                'total': price-subtotal
-            }))
-        elif subtotal < price:
-            raise ValueError("Something is wrong!")
-        return AttributeDict(**{
+    def generate_line(self, order, price, size, ini, end, discounts=[]):
+        subtotal = self.nominal_price * size
+        line = AttributeDict(**{
             'order': order,
             'subtotal': subtotal,
             'size': size,
             'ini': ini,
             'end': end,
-            'discounts': discounts,
+            'discounts': [],
         })
+        discounted = 0
+        for dtype, dprice in discounts:
+            self.generate_discount(line, dtype, dprice)
+            discounted += dprice
+        subtotal -= discounted
+        if subtotal > price:
+            self.generate_discount(line, 'volume', price-subtotal)
+        return line
+
+    def compensate(self, givers, receivers, commit=True):
+        compensations = []
+        for order in givers:
+            if order.billed_until and order.cancelled_on and order.cancelled_on < order.billed_until:
+                interval = helpers.Interval(order.cancelled_on, order.billed_until, order)
+                compensations.append[interval]
+        for order in receivers:
+            if not order.billed_until or order.billed_until < order.new_billed_until:
+                # receiver
+                ini = order.billed_until or order.registered_on
+                end = order.cancelled_on or datetime.date.max
+                order_interval = helpers.Interval(ini, order.new_billed_until)
+                compensations, used_compensations = helpers.compensate(order_interval, compensations)
+                order._compensations = used_compensations
+                for comp in used_compensations:
+                    comp.order.new_billed_until = min(comp.order.billed_until, comp.end)
+        if commit:
+            for order in givers:
+                if hasattr(order, 'new_billed_until'):
+                    order.billed_until = order.new_billed_until
+                    order.save()
     
-    def _generate_bill_lines(self, orders, account, **options):
+    def get_register_or_renew_events(self, porders, ini, end):
+        # TODO count intermediat billing points too
+        counter = 0
+        for order in porders:
+            bu = getattr(order, 'new_billed_until', order.billed_until)
+            if bu:
+                if order.register >= ini and order.register < end:
+                    counter += 1
+                if order.register != bu and bu >= ini and bu < end:
+                    counter += 1
+                if order.billed_until and order.billed_until != bu:
+                    if order.register != order.billed_until and order.billed_until >= ini and order.billed_until < end:
+                        counter += 1
+        return counter
+    
+    def bill_concurrent_orders(self, account, porders, rates, ini, end, commit=True):
+        # Concurrent
+        # Get pricing orders
+        priced = {}
+        for ini, end, orders in helpers.get_chunks(porders, ini, end):
+            size = self.get_price_size(ini, end)
+            metric = len(orders)
+            interval = helpers.Interval(ini=ini, end=end)
+            for position, order in enumerate(orders):
+                csize = 0
+                compensations = getattr(order, '_compensations', [])
+                for comp in compensations:
+                    intersect = comp.intersect(interval)
+                    if intersect:
+                        csize += self.get_price_size(intersect.ini, intersect.end)
+                price = self.get_price(account, metric, position=position, rates=rates)
+                price = price * size
+                cprice = price * (size-csize)
+                if order in prices:
+                    priced[order][0] += price
+                    priced[order][1] += cprice
+                else:
+                    priced[order] = (price, cprice)
+        lines = []
+        for order, prices in priced.iteritems():
+            # Generate lines and discounts from order.nominal_price
+            price, cprice = prices
+            if cprice:
+                discounts = (('compensation', cprice),)
+            line = self.generate_line(order, price, size, ini, end, discounts=discounts)
+            lines.append(line)
+            if commit:
+                order.billed_until = order.new_billed_until
+                order.save()
+        return lines
+    
+    def bill_registered_or_renew_events(self, account, porders, rates, ini, end, commit=True):
+        # Before registration
+        lines = []
+        perido = self.get_pricing_period()
+        if period == self.MONTHLY:
+            rdelta = relativedelta.relativedelta(months=1)
+        elif period == self.ANUAL:
+            rdelta = relativedelta.relativedelta(years=1)
+        elif period == self.NEVER:
+            raise NotImplementedError("Rates with no pricing period?")
+        ini -= rdelta
+        for position, order in enumerate(porders):
+            if hasattr(order, 'new_billed_until'):
+                cend = order.billed_until or order.registered_on
+                cini = cend - rdelta
+                metric = self.get_register_or_renew_events(porders, cini, cend)
+                size = self.get_price_size(ini, end)
+                price = self.get_price(account, metric, position=position, rates=rates)
+                price = price * size
+                line = self.generate_line(order, price, size, ini, end)
+                lines.append(line)
+                if commit:
+                    order.billed_until = order.new_billed_until
+                    order.save()
+    
+    def bill_with_orders(self, orders, account, **options):
         # For the "boundary conditions" just think that:
         #   date(2011, 1, 1) is equivalent to datetime(2011, 1, 1, 0, 0, 0)
         #   In most cases:
         #       ini >= registered_date, end < registered_date
-        
         bp = None
         lines = []
         commit = options.get('commit', True)
         ini = datetime.date.max
-        end = datetime.date.ini
+        end = datetime.date.min
         # boundary lookup
         for order in orders:
             cini = order.registered_on
@@ -189,87 +275,42 @@ class ServiceHandler(plugins.Plugin):
             bp = self.get_billing_point(order, bp=bp, **options)
             order.new_billed_until = bp
             ini = min(ini, cini)
-            end = max(end, bp) # TODO if all bp are the same ...
-        
+            end = max(end, bp)
+        from .models import Order
         related_orders = Order.objects.filter(service=self.service, account=account)
         if self.on_cancel == self.COMPENSATE:
             # Get orders pending for compensation
             givers = related_orders.filter_givers(ini, end)
             givers.sort(cmp=helpers.cmp_billed_until_or_registered_on)
             orders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
-            self.compensate(givers, orders)
+            self.compensate(givers, orders, commit=commit)
         
-        rates = 'TODO'
+        rates = self.get_rates(account)
         if rates:
-            # Get pricing orders
             porders = related_orders.filter_pricing_orders(ini, end)
-            porders = set(orders).union(set(porders))
-            for ini, end, orders in self.get_chunks(porders, ini, end):
-                if self.pricing_period == self.ANUAL:
-                    pass
-                elif self.pricing_period == self.MONTHLY:
-                    pass
-                else:
-                    raise NotImplementedError
-                metric = len(orders)
-                for position, order in enumerate(orders):
-                    # TODO position +1?
-                    price = self.get_price(order, metric, position=position)
-                    price *= size
+            porders = list(set(orders).union(set(porders)))
+            porders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
+            if self.billing_period != self.NEVER and self.get_pricing_period != self.NEVER:
+                liens = self.bill_concurrent_orders(account, porders, rates, ini, end, commit=commit)
+            else:
+                lines = self.bill_registered_or_renew_events(account, porders, rates, ini, end, commit=commit)
         else:
-            pass
-    
-    def compensate(self, givers, receivers):
-        compensations = []
-        for order in givers:
-            if order.billed_until and order.cancelled_on and order.cancelled_on < order.billed_until:
-                compensations.append[Interval(order.cancelled_on, order.billed_until, order)]
-        for order in receivers:
-            if not order.billed_until or order.billed_until < order.new_billed_until:
-                # receiver
+            lines = []
+            price = self.nominal_price
+            # Calculate nominal price
+            for order in orders:
                 ini = order.billed_until or order.registered_on
-                end = order.cancelled_on or datetime.date.max
-                order_interval = helpers.Interval(ini, order.new_billed_until) # TODO beyond interval?
-                compensations, used_compensations = helpers.compensate(order_interval, compensations)
-                order._compensations = used_compensations
-                for comp in used_compensations:
-                    comp.order.billed_until = min(comp.order.billed_until, comp.end)
+                end = order.new_billed_until
+                size = self.get_price_size(ini, end)
+                order.nominal_price = price * size
+                line = self.generate_line(order, price*size, size, ini, end)
+                lines.append(line)
+                if commit:
+                    order.billed_until = order.new_billed_until
+                    order.save()
+        return lines
     
-    def get_chunks(self, porders, ini, end, ix=0):
-        if ix >= len(porders):
-            return [[ini, end, []]]
-        order = porders[ix]
-        ix += 1
-        bu = getattr(order, 'new_billed_until', order.billed_until)
-        if not bu or bu <= ini or order.registered_on >= end:
-            return self.get_chunks(porders, ini, end, ix=ix)
-        result = []
-        if order.registered_on < end and order.registered_on > ini:
-            ro = order.registered_on
-            result = self.get_chunks(porders, ini, ro, ix=ix)
-            ini = ro
-        if bu < end:
-            result += self.get_chunks(porders, bu, end, ix=ix)
-            end = bu
-        chunks = self.get_chunks(porders, ini, end, ix=ix)
-        for chunk in chunks:
-            chunk[2].insert(0, order)
-            result.append(chunk)
-        return result
-    
-    def generate_bill_lines(self, orders, **options):
-        # For the "boundary conditions" just think that:
-        #   date(2011, 1, 1) is equivalent to datetime(2011, 1, 1, 0, 0, 0)
-        #   In most cases:
-        #       ini >= registered_date, end < registered_date
-        
-        # TODO Perform compensations on cancelled services
-        if self.on_cancel in (self.COMPENSATE, self.REFOUND):
-            pass
-            # TODO compensations with commit=False, fuck commit or just fuck the transaction?
-            # compensate(orders, **options)
-            # TODO create discount per compensation
-        bp = None
+    def bill_with_metric(self, orders, account, **options):
         lines = []
         commit = options.get('commit', True)
         for order in orders:
@@ -277,18 +318,32 @@ class ServiceHandler(plugins.Plugin):
             ini = order.billed_until or order.registered_on
             if bp <= ini:
                 continue
-            if not self.metric:
-                # Number of orders metric; bill line per order
-                size = self.get_pricing_size(ini, bp)
-                price = self.get_price_with_orders(order, size, ini, bp)
-                lines.append(self.generate_line(order, price, size, ini, bp))
-            else:
-                # weighted metric; bill line per pricing period
-                for ini, end in self.get_pricing_slots(ini, bp):
-                    size = self.get_pricing_size(ini, end)
-                    price = self.get_price_with_metric(order, size, ini, end)
-                    lines.append(self.generate_line(order, price, size, ini, end))
-            order.billed_until = bp
+            order.new_billed_until = bp
+            # weighted metric; bill line per pricing period
+            prev = None
+            lines_info = []
+            for ini, end in self.get_pricing_slots(ini, bp):
+                size = self.get_price_size(ini, end)
+                metric = order.get_metric(ini, end)
+                price = self.get_price(order, metric)
+                current = AttributeDict(price=price, size=size, ini=ini, end=end)
+                if prev and prev.metric == current.metric and prev.end == current.end:
+                    prev.end = current.end
+                    prev.size += current.size
+                    prev.price += current.price
+                else:
+                    lines_info.append(current)
+                prev = current
+            for line in lines_info:
+                lines.append(self.generate_line(order, price, size, ini, end))
             if commit:
+                order.billed_until = order.new_billed_until
                 order.save()
+        return lines
+    
+    def generate_bill_lines(self, orders, account, **options):
+        if not self.metric:
+            lines = self.bill_with_orders(orders, account, **options)
+        else:
+            lines = self.bill_with_metric(orders, account, **options)
         return lines

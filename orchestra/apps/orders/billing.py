@@ -39,7 +39,6 @@ class BillsBackend(object):
                     description=self.get_line_description(line),
             )
             self.create_sublines(billine, line.discounts)
-        print bills
         return bills
     
     def format_period(self, ini, end):

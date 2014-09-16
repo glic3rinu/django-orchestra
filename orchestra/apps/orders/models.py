@@ -49,7 +49,7 @@ class RateQuerySet(models.QuerySet):
         return self.filter(
             Q(plan__is_default=True) |
             Q(plan__contracts__account=account)
-        ).order_by('plan', 'quantity').select_related('plan').distinct()
+        ).order_by('plan', 'quantity').select_related('plan')
 
 
 class Rate(models.Model):
@@ -257,12 +257,13 @@ class Service(models.Model):
             return self.billing_period
         return self.pricing_period
     
-    def get_price(self, order, metric, rates=None, position=None):
+    def get_price(self, account, metric, rates=None, position=None):
         """
         if position is provided an specific price for that position is returned,
         accumulated price is returned otherwise
         """
-        rates = self.get_rates(order.account)
+        if rates is None:
+            rates = self.get_rates(account)
         if not rates:
             rates = [{
                 'quantity': metric,
@@ -288,7 +289,7 @@ class Service(models.Model):
                 if counter >= position:
                     return float(rate['price'])
     
-    def get_rates(self, account, cache=False):
+    def get_rates(self, account, cache=True):
         # rates are cached per account
         if not cache:
             return self.rates.by_account(account)
@@ -310,7 +311,7 @@ class OrderQuerySet(models.QuerySet):
         bill_backend = Order.get_bill_backend()
         qs = self.select_related('account', 'service')
         commit = options.get('commit', True)
-        for account, services in qs.group_by('account', 'service'):
+        for account, services in qs.group_by('account', 'service').iteritems():
             bill_lines = []
             for service, orders in services:
                 lines = service.handler.generate_bill_lines(orders, account, **options)

@@ -101,3 +101,4 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
     * bill.bad_debt() -> transaction.ABORTED
     * transaction.ABORTED -> bill.bad_debt
     - Issue new transaction when current transaction is ABORTED
+* underescore *every* private function

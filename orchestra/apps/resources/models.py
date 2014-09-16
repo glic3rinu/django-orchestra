@@ -178,7 +178,7 @@ def create_resource_relation():
             return self
     
     relation = GenericRelation('resources.ResourceData')
-    for ct, resources in Resource.objects.group_by('content_type'):
+    for ct, resources in Resource.objects.group_by('content_type').iteritems():
         model = ct.model_class()
         model.add_to_class('resource_set', relation)
         model.resources = ResourceHandler()

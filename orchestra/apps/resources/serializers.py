@@ -26,7 +26,7 @@ class ResourceSerializer(serializers.ModelSerializer):
 if not running_syncdb():
     # TODO why this is even loaded during syncdb?
     # Create nested serializers on target models
-    for ct, resources in Resource.objects.group_by('content_type'):
+    for ct, resources in Resource.objects.group_by('content_type').iteritems():
         model = ct.model_class()
         try:
             router.insert(model, 'resources', ResourceSerializer, required=False, many=True, source='resource_set')

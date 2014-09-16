@@ -7,14 +7,25 @@ def _compute(rates, metric):
     value = 0
     num = len(rates)
     accumulated = 0
+    barrier = 1
+    next_barrier = None
     end = False
     ix = 0
     steps = []
     while ix < num and not end:
+        fold = 1
+        # Multiple contractions
+        while ix < num-1 and rates[ix] == rates[ix+1]:
+            ix += 1
+            fold += 1
         if ix+1 == num:
             quantity = metric - accumulated
+            next_barrier = quantity
         else:
             quantity = rates[ix+1].quantity - rates[ix].quantity
+            next_barrier = quantity
+            if rates[ix+1].price > rates[ix].price:
+                quantity *= fold
             if accumulated+quantity > metric:
                 quantity = metric - accumulated
                 end = True
@@ -22,9 +33,10 @@ def _compute(rates, metric):
         steps.append(AttributeDict(**{
             'quantity': quantity,
             'price': price,
-            'barrier': accumulated+1,
+            'barrier': barrier,
         }))
         accumulated += quantity
+        barrier += next_barrier
         value += quantity*price
         ix += 1
     return value, steps
@@ -32,9 +44,10 @@ def _compute(rates, metric):
 
 def step_price(rates, metric):
     # Step price
+    # TODO allow multiple plans
     group = []
     minimal = (sys.maxint, [])
-    for plan, rates in rates.group_by('plan'):
+    for plan, rates in rates.group_by('plan').iteritems():
         value, steps = _compute(rates, metric)
         if plan.is_combinable:
             group.append(steps)
@@ -90,7 +103,7 @@ def match_price(rates, metric):
     candidates = []
     selected = False
     prev = None
-    for rate in rates:
+    for rate in rates.distinct():
         if prev and prev.plan != rate.plan:
             if not selected and prev.quantity <= metric:
                 candidates.append(prev)

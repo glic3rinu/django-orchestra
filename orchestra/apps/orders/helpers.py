@@ -39,57 +39,27 @@ def get_related_objects(origin, max_depth=2):
                 queue.append(new_models)
 
 
-def get_register_or_cancel_events(porders, order, ini, end):
-    assert ini <= end, "ini > end"
-    CANCEL = 'cancel'
-    REGISTER = 'register'
-    changes = {}
-    counter = 0
-    for num, porder in enumerate(porders.order_by('registered_on'), start=1):
-        if porder == order:
-            position = num
-        if porder.cancelled_on:
-            cancel = porder.cancelled_on
-            if porder.billed_until and porder.cancelled_on < porder.billed_until:
-                cancel = porder.billed_until
-            if cancel > ini and cancel < end:
-                changes.setdefault(cancel, [])
-                changes[cancel].append((CANCEL, num))
-        if porder.registered_on <= ini:
-            counter += 1
-        elif porder.registered_on < end:
-            changes.setdefault(porder.registered_on, [])
-            changes[porder.registered_on].append((REGISTER, num))
-    pointer = ini
-    total = float((end-ini).days)
-    for date in sorted(changes.keys()):
-        yield counter, position, (date-pointer).days/total
-        for change, num in changes[date]:
-            if change is CANCEL:
-                counter -= 1
-                if num < position:
-                    position -= 1
-            else:
-                counter += 1
-        pointer = date
-    yield counter, position, (end-pointer).days/total
-
-
-def get_register_or_renew_events(handler, porders, order, ini, end):
-    total = float((end-ini).days)
-    for sini, send in handler.get_pricing_slots(ini, end):
-        counter = 0
-        position = -1
-        for porder in porders.order_by('registered_on'):
-            if porder == order:
-                position = abs(position)
-            elif position < 0:
-                position -= 1
-            if porder.registered_on >= sini and porder.registered_on < send:
-                counter += 1
-            elif porder.billed_until > send or porder.cancelled_on > send:
-                counter += 1
-        yield counter, position, (send-sini)/total
+def get_chunks(porders, ini, end, ix=0):
+    if ix >= len(porders):
+        return [[ini, end, []]]
+    order = porders[ix]
+    ix += 1
+    bu = getattr(order, 'new_billed_until', order.billed_until)
+    if not bu or bu <= ini or order.registered_on >= end:
+        return get_chunks(porders, ini, end, ix=ix)
+    result = []
+    if order.registered_on < end and order.registered_on > ini:
+        ro = order.registered_on
+        result = get_chunks(porders, ini, ro, ix=ix)
+        ini = ro
+    if bu < end:
+        result += get_chunks(porders, bu, end, ix=ix)
+        end = bu
+    chunks = get_chunks(porders, ini, end, ix=ix)
+    for chunk in chunks:
+        chunk[2].insert(0, order)
+        result.append(chunk)
+    return result
 
 
 def cmp_billed_until_or_registered_on(a, b):
@@ -145,7 +115,7 @@ class Interval(object):
             if intersection:
                 intersections.append(intersection)
         return intersections
-    
+
 
 def get_intersections(order_intervals, compensations):
     intersections = []
@@ -158,8 +128,9 @@ def get_intersections(order_intervals, compensations):
     intersections.sort()
     return intersections
 
-# Intervals should not overlap
+
 def intersect(compensation, order_intervals):
+    # Intervals should not overlap
     compensated = []
     not_compensated = []
     unused_compensation = []
@@ -167,14 +138,16 @@ def intersect(compensation, order_intervals):
         compensated.append(compensation.intersect(interval, unused_compensation, not_compensated))
     return (compensated, not_compensated, unused_compensation)
 
+
 def apply_compensation(order, compensation):
     remaining_order = []
     remaining_compensation = []
     applied_compensation = compensation.intersect_set(order, remaining_compensation, remaining_order)
     return applied_compensation, remaining_order, remaining_compensation
 
-# TODO can be optimized
+
 def update_intersections(not_compensated, compensations):
+    # TODO can be optimized
     compensation_intervals = []
     for __, compensation in compensations:
         compensation_intervals.append(compensation)

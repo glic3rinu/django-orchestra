@@ -1,28 +1,30 @@
+from collections import OrderedDict
+
 from .utils import get_field_value
 
 
-def group_by(qset, *fields, **kwargs):
-    """ group_by iterator with support for multiple nested fields """
-    ix = kwargs.get('ix', 0)
-    if ix is 0:
-        qset = qset.order_by(*fields)
-    group = []
-    first = True
+def group_by(qset, *fields):
+    """ 100% in python in order to preserve original order_by """
+    first = OrderedDict()
+    num = len(fields)
     for obj in qset:
-        try:
-            current = get_field_value(obj, fields[ix])
-        except AttributeError:
-            # Intermediary relation does not exists
-            current = None
-        if first or current == previous:
-            group.append(obj)
-        else:
-            if ix < len(fields)-1:
-                group = group_by(group, *fields, ix=ix+1)
-            yield previous, group
-            group = [obj]
-        previous = current
-        first = False
-    if ix < len(fields)-1:
-        group = group_by(group, *fields, ix=ix+1)
-    yield previous, group
+        ix = 0
+        group = first
+        while ix < num:
+            try:
+                current = get_field_value(obj, fields[ix])
+            except AttributeError:
+                # Intermediary relation does not exists
+                current = None
+            if ix < num-1:
+                try:
+                    group = group[current]
+                except KeyError:
+                    group[current] = OrderedDict()
+            else:
+                try:
+                    group[current].append(obj)
+                except KeyError:
+                    group[current] = [obj]
+            ix += 1
+    return first

@@ -468,5 +468,5 @@ def update_orders(sender, **kwargs):
 
 
 accounts.register(Order)
-accounts.register(Plan)
-services.register(Plan, menu=False)
+accounts.register(ContractedPlan)
+services.register(ContractedPlan, menu=False)

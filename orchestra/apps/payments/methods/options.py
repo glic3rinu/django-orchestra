@@ -2,6 +2,10 @@ from dateutil import relativedelta
 from django import forms
 
 from orchestra.utils import plugins
+from orchestra.utils.functional import cached
+from orchestra.utils.python import import_class
+
+from .. import settings
 
 
 class PaymentMethod(plugins.Plugin):
@@ -12,7 +16,13 @@ class PaymentMethod(plugins.Plugin):
     serializer = None
     due_delta = relativedelta.relativedelta(months=1)
     
-    __metaclass__ = plugins.PluginMount
+    @classmethod
+    @cached
+    def get_plugins(cls):
+        plugins = []
+        for cls in settings.PAYMENTS_ENABLED_METHODS:
+            plugins.append(import_class(cls))
+        return plugins
     
     def get_form(self):
         self.form.plugin = self

@@ -144,7 +144,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.contacts.models.Contact',
             'orchestra.apps.users.models.User',
             'orchestra.apps.orders.models.Order',
-            'orchestra.apps.orders.models.Plan',
+            'orchestra.apps.orders.models.ContractedPlan',
             'orchestra.apps.bills.models.Bill',
 #            'orchestra.apps.payments.models.PaymentSource',
             'orchestra.apps.payments.models.Transaction',
@@ -161,6 +161,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.resources.models.Resource',
             'orchestra.apps.resources.models.Monitor',
             'orchestra.apps.orders.models.Service',
+            'orchestra.apps.orders.models.Plan',
         ),
         'collapsible': True,
     }),
@@ -186,7 +187,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'contacts/contact': 'contact_book.png',
     'orders/order': 'basket.png',
     'orders/service': 'price.png',
-    'orders/plan': 'Pack.png',
+    'orders/contractedplan': 'Pack.png',
     'bills/bill': 'invoice.png',
     'payments/paymentsource': 'card_in_use.png',
     'payments/transaction': 'transaction.png',
@@ -199,6 +200,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'orchestration/backendlog': 'scriptlog.png',
     'resources/resource': "gauge.png",
     'resources/monitor': "Utilities-system-monitor.png",
+    'orders/plan': 'Pack.png',
 }
 
 # Django-celery

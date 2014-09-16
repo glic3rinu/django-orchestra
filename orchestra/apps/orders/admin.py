@@ -15,17 +15,23 @@ from orchestra.utils.humanize import naturaldate
 
 from .actions import BillSelectedOrders
 from .filters import ActiveOrderListFilter, BilledOrderListFilter
-from .models import Plan, Rate, Service, Order, MetricStorage
-
-
-class PlanAdmin(AccountAdminMixin, admin.ModelAdmin):
-    list_display = ('name', 'account_link')
-    list_filter = ('name',)
+from .models import Plan, ContractedPlan, Rate, Service, Order, MetricStorage
 
 
 class RateInline(admin.TabularInline):
     model = Rate
     ordering = ('plan', 'quantity')
+
+
+class PlanAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_default', 'is_combinable', 'allow_multiple')
+    list_filter = ('is_default', 'is_combinable', 'allow_multiple')
+    inlines = [RateInline]
+
+
+class ContractedPlanAdmin(AccountAdminMixin, admin.ModelAdmin):
+    list_display = ('plan', 'account_link')
+    list_filter = ('plan__name',)
 
 
 class ServiceAdmin(admin.ModelAdmin):
@@ -41,14 +47,12 @@ class ServiceAdmin(admin.ModelAdmin):
         }),
         (_("Billing options"), {
             'classes': ('wide',),
-            'fields': ('billing_period', 'billing_point', 'delayed_billing',
-                       'is_fee')
+            'fields': ('billing_period', 'billing_point', 'is_fee')
         }),
         (_("Pricing options"), {
             'classes': ('wide',),
             'fields': ('metric', 'pricing_period', 'rate_algorithm',
-                       'on_cancel', 'payment_style',
-                       'tax', 'nominal_price')
+                       'on_cancel', 'payment_style', 'tax', 'nominal_price')
         }),
     )
     inlines = [RateInline]
@@ -129,6 +133,7 @@ class MetricStorageAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Plan, PlanAdmin)
+admin.site.register(ContractedPlan, ContractedPlanAdmin)
 admin.site.register(Service, ServiceAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(MetricStorage, MetricStorageAdmin)

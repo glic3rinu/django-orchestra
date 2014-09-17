@@ -7,16 +7,15 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from orchestra.apps.accounts.models import Account
+from orchestra.apps.services.models import Service
+from orchestra.apps.services import settings as services_settings
 from orchestra.apps.users.models import User
 from orchestra.utils.tests import BaseTestCase, random_ascii
-
-from ... import settings
-from ...models import Service
 
 
 class ServiceTests(BaseTestCase):
     DEPENDENCIES = (
-        'orchestra.apps.orders',
+        'orchestra.apps.services',
         'orchestra.apps.users',
         'orchestra.apps.users.roles.posix',
     )
@@ -80,7 +79,7 @@ class ServiceTests(BaseTestCase):
         service = self.create_ftp_service()
         self.create_ftp()
         now = timezone.now()
-        bp_month = settings.SERVICES_SERVICE_ANUAL_BILLING_MONTH
+        bp_month = services_settings.SERVICES_SERVICE_ANUAL_BILLING_MONTH
         if now.month > bp_month:
             bp = datetime.datetime(year=now.year+1, month=bp_month,
                 day=1, tzinfo=timezone.get_current_timezone())

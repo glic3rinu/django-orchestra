@@ -1,3 +1,4 @@
+import datetime
 from functools import wraps
 
 from django.conf import settings
@@ -11,7 +12,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.models.utils import get_field_value
-from orchestra.utils.humanize import naturaldate
+from orchestra.utils import humanize
 
 from .decorators import admin_field
 
@@ -131,8 +132,12 @@ def admin_date(*args, **kwargs):
     value = get_field_value(instance, kwargs['field'])
     if not value:
         return kwargs.get('default', '')
+    if isinstance(value, datetime.datetime):
+        natural = humanize.naturaldatetime(value)
+    else:
+        natural = humanize.naturaldate(value)
     return '<span title="{0}">{1}</span>'.format(
-        escape(str(value)), escape(naturaldate(value)),
+        escape(str(value)), escape(natural),
     )
 
 

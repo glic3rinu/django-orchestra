@@ -78,7 +78,7 @@ class ServiceHandler(plugins.Plugin):
                         month = order.registered_on.month
                         day = order.registered_on.day
                     elif self.billing_point == self.FIXED_DATE:
-                        month = settings.ORDERS_SERVICE_ANUAL_BILLING_MONTH
+                        month = settings.SERVICES_SERVICE_ANUAL_BILLING_MONTH
                         day = 1
                     else:
                         raise NotImplementedError(msg)
@@ -276,8 +276,7 @@ class ServiceHandler(plugins.Plugin):
             order.new_billed_until = bp
             ini = min(ini, cini)
             end = max(end, bp)
-        from .models import Order
-        related_orders = Order.objects.filter(service=self.service, account=account)
+        related_orders = account.orders.filter(service=self.service)
         if self.on_cancel == self.COMPENSATE:
             # Get orders pending for compensation
             givers = related_orders.filter_givers(ini, end)

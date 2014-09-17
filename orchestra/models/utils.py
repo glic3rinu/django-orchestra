@@ -35,8 +35,8 @@ def get_model_field_path(origin, target):
     while queue:
         model, path = queue.pop(0)
         if len(model) > 4:
-            msg = "maximum recursion depth exceeded while looking for %s"
-            raise RuntimeError(msg % target)
+            msg = "maximum recursion depth exceeded while looking for %s from %s"
+            raise RuntimeError(msg % (target, origin))
         node = model[-1]
         if node == target:
             return path

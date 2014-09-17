@@ -40,7 +40,7 @@ def _un(singular__plural, n=None):
     return ungettext(singular, plural, n)
 
 
-def naturaldate(date, include_seconds=False):
+def naturaldatetime(date, include_seconds=False):
     """Convert datetime into a human natural date string."""
     if not date:
         return ''
@@ -85,6 +85,32 @@ def naturaldate(date, include_seconds=False):
     
     if delta_midnight.days == 0:
         return _('yesterday at {time}').format(time=date.strftime('%H:%M'))
+    
+    count = 0
+    for chunk, pluralizefun in OLDER_CHUNKS:
+        if days < 7.0:
+            count = days + float(hours)/24
+            fmt = pluralize_day(count)
+            return fmt.format(num=count, ago=ago)
+        if days >= chunk:
+            count = (delta_midnight.days + 1) / chunk
+            count = abs(count)
+            fmt = pluralizefun(count)
+            return fmt.format(num=count, ago=ago)
+
+
+def naturaldate(date):
+    if not date:
+        return ''
+    
+    today = timezone.now().date()
+    delta = today - date
+    days = delta.days
+    
+    if days == 0:
+        return _('today')
+    elif days == 1:
+        return _('yesterday')
     
     count = 0
     for chunk, pluralizefun in OLDER_CHUNKS:

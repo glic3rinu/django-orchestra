@@ -10,11 +10,24 @@ from orchestra.apps.accounts.models import Account
 from orchestra.apps.users.models import User
 from orchestra.utils.tests import BaseTestCase, random_ascii
 
-from ... import settings, helpers
-from ...models import Plan, Service, Order
+from .. import settings, helpers
+from ..models import Service, Plan, Rate
 
 
-class OrderTests(BaseTestCase):
+class Order(object):
+    """ Fake order for testing """
+    last_id = 0
+    
+    def __init__(self, **kwargs):
+        self.registered_on = kwargs.get('registered_on', timezone.now().date())
+        self.billed_until = kwargs.get('billed_until', None)
+        self.cancelled_on = kwargs.get('cancelled_on', None)
+        type(self).last_id += 1
+        self.id = self.last_id
+        self.pk = self.id
+
+
+class HandlerTests(BaseTestCase):
     DEPENDENCIES = (
         'orchestra.apps.orders',
         'orchestra.apps.users',
@@ -46,62 +59,50 @@ class OrderTests(BaseTestCase):
         )
         return service
     
-    def create_ftp(self, account=None):
-        username = '%s_ftp' % random_ascii(10)
-        if not account:
-            account = self.create_account()
-        user = User.objects.create_user(username=username, account=account)
-        POSIX = user._meta.get_field_by_name('posix')[0].model
-        POSIX.objects.create(user=user)
-        return user
-    
     def test_get_chunks(self):
         service = self.create_ftp_service()
         handler = service.handler
         porders = []
         now = timezone.now().date()
-        ct = ContentType.objects.get_for_model(User)
-        account = self.create_account()
         
-        ftp = self.create_ftp(account=account)
-        order = Order.objects.get(content_type=ct, object_id=ftp.pk)
+        order = Order()
         porders.append(order)
         end = handler.get_billing_point(order)
         chunks = helpers.get_chunks(porders, now, end)
         self.assertEqual(1, len(chunks))
         self.assertIn([now, end, []], chunks)
         
-        ftp = self.create_ftp(account=account)
-        order1 = Order.objects.get(content_type=ct, object_id=ftp.pk)
-        order1.billed_until = now+datetime.timedelta(days=2)
+        order1 = Order(
+            billed_until=now+datetime.timedelta(days=2)
+        )
         porders.append(order1)
         chunks = helpers.get_chunks(porders, now, end)
         self.assertEqual(2, len(chunks))
         self.assertIn([order1.registered_on, order1.billed_until, [order1]], chunks)
         self.assertIn([order1.billed_until, end, []], chunks)
         
-        ftp = self.create_ftp(account=account)
-        order2 = Order.objects.get(content_type=ct, object_id=ftp.pk)
-        order2.billed_until = now+datetime.timedelta(days=700)
+        order2 = Order(
+            billed_until = now+datetime.timedelta(days=700)
+        )
         porders.append(order2)
         chunks = helpers.get_chunks(porders, now, end)
         self.assertEqual(2, len(chunks))
         self.assertIn([order.registered_on, order1.billed_until, [order1, order2]], chunks)
         self.assertIn([order1.billed_until, end, [order2]], chunks)
         
-        ftp = self.create_ftp(account=account)
-        order3 = Order.objects.get(content_type=ct, object_id=ftp.pk)
-        order3.billed_until = now+datetime.timedelta(days=700)
+        order3 = Order(
+            billed_until = now+datetime.timedelta(days=700)
+        )
         porders.append(order3)
         chunks = helpers.get_chunks(porders, now, end)
         self.assertEqual(2, len(chunks))
         self.assertIn([order.registered_on, order1.billed_until, [order1, order2, order3]], chunks)
         self.assertIn([order1.billed_until, end, [order2, order3]], chunks)
         
-        ftp = self.create_ftp(account=account)
-        order4 = Order.objects.get(content_type=ct, object_id=ftp.pk)
-        order4.registered_on = now+datetime.timedelta(days=5)
-        order4.billed_until = now+datetime.timedelta(days=10)
+        order4 = Order(
+            registered_on=now+datetime.timedelta(days=5),
+            billed_until = now+datetime.timedelta(days=10)
+        )
         porders.append(order4)
         chunks = helpers.get_chunks(porders, now, end)
         self.assertEqual(4, len(chunks))
@@ -110,10 +111,10 @@ class OrderTests(BaseTestCase):
         self.assertIn([order4.registered_on, order4.billed_until, [order2, order3, order4]], chunks)
         self.assertIn([order4.billed_until, end, [order2, order3]], chunks)
         
-        ftp = self.create_ftp(account=account)
-        order5 = Order.objects.get(content_type=ct, object_id=ftp.pk)
-        order5.registered_on = now+datetime.timedelta(days=700)
-        order5.billed_until = now+datetime.timedelta(days=780)
+        order5 = Order(
+            registered_on=now+datetime.timedelta(days=700),
+            billed_until=now+datetime.timedelta(days=780)
+        )
         porders.append(order5)
         chunks = helpers.get_chunks(porders, now, end)
         self.assertEqual(4, len(chunks))
@@ -122,10 +123,10 @@ class OrderTests(BaseTestCase):
         self.assertIn([order4.registered_on, order4.billed_until, [order2, order3, order4]], chunks)
         self.assertIn([order4.billed_until, end, [order2, order3]], chunks)
         
-        ftp = self.create_ftp(account=account)
-        order6 = Order.objects.get(content_type=ct, object_id=ftp.pk)
-        order6.registered_on = now-datetime.timedelta(days=780)
-        order6.billed_until = now-datetime.timedelta(days=700)
+        order6 = Order(
+            registered_on=now+datetime.timedelta(days=780),
+            billed_until=now+datetime.timedelta(days=700)
+        )
         porders.append(order6)
         chunks = helpers.get_chunks(porders, now, end)
         self.assertEqual(4, len(chunks))
@@ -135,32 +136,23 @@ class OrderTests(BaseTestCase):
         self.assertIn([order4.billed_until, end, [order2, order3]], chunks)
     
     def test_sort_billed_until_or_registered_on(self):
-        service = self.create_ftp_service()
         now = timezone.now()
         order = Order(
-            service=service,
-            registered_on=now,
             billed_until=now+datetime.timedelta(days=200))
         order1 = Order(
-            service=service,
             registered_on=now+datetime.timedelta(days=5),
             billed_until=now+datetime.timedelta(days=200))
         order2 = Order(
-            service=service,
             registered_on=now+datetime.timedelta(days=6),
             billed_until=now+datetime.timedelta(days=200))
         order3 = Order(
-            service=service,
             registered_on=now+datetime.timedelta(days=6),
             billed_until=now+datetime.timedelta(days=201))
         order4 = Order(
-            service=service,
             registered_on=now+datetime.timedelta(days=6))
         order5 = Order(
-            service=service,
             registered_on=now+datetime.timedelta(days=7))
         order6 = Order(
-            service=service,
             registered_on=now+datetime.timedelta(days=8))
         orders = [order3, order, order1, order2, order4, order5, order6]
         self.assertEqual(orders, sorted(orders, cmp=helpers.cmp_billed_until_or_registered_on))
@@ -169,7 +161,6 @@ class OrderTests(BaseTestCase):
         now = timezone.now()
         order = Order(
             description='0',
-            registered_on=now,
             billed_until=now+datetime.timedelta(days=220),
             cancelled_on=now+datetime.timedelta(days=100))
         order1 = Order(
@@ -213,7 +204,6 @@ class OrderTests(BaseTestCase):
         ])
         porders = [order3, order, order1, order2, order4, order5, order6]
         porders = sorted(porders, cmp=helpers.cmp_billed_until_or_registered_on)
-        service = self.create_ftp_service()
         compensations = []
         receivers = []
         for order in porders:
@@ -234,7 +224,8 @@ class OrderTests(BaseTestCase):
     def test_rates(self):
         service = self.create_ftp_service()
         account = self.create_account()
-        superplan = Plan.objects.create(name='SUPER', allow_multiple=False, is_combinable=True)
+        superplan = Plan.objects.create(
+            name='SUPER', allow_multiple=False, is_combinable=True)
         service.rates.create(plan=superplan, quantity=1, price=0)
         service.rates.create(plan=superplan, quantity=3, price=10)
         service.rates.create(plan=superplan, quantity=4, price=9)
@@ -252,7 +243,8 @@ class OrderTests(BaseTestCase):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
         
-        dupeplan = Plan.objects.create(name='DUPE', allow_multiple=True, is_combinable=True)
+        dupeplan = Plan.objects.create(
+            name='DUPE', allow_multiple=True, is_combinable=True)
         service.rates.create(plan=dupeplan, quantity=1, price=0)
         service.rates.create(plan=dupeplan, quantity=3, price=9)
         results = service.get_rates(account, cache=False)
@@ -273,7 +265,8 @@ class OrderTests(BaseTestCase):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
         
-        hyperplan = Plan.objects.create(name='HYPER', allow_multiple=False, is_combinable=False)
+        hyperplan = Plan.objects.create(
+            name='HYPER', allow_multiple=False, is_combinable=False)
         service.rates.create(plan=hyperplan, quantity=1, price=0)
         service.rates.create(plan=hyperplan, quantity=20, price=5)
         account.plans.create(plan=hyperplan)
@@ -323,7 +316,8 @@ class OrderTests(BaseTestCase):
     def test_rates_allow_multiple(self):
         service = self.create_ftp_service()
         account = self.create_account()
-        dupeplan = Plan.objects.create(name='DUPE', allow_multiple=True, is_combinable=True)
+        dupeplan = Plan.objects.create(
+            name='DUPE', allow_multiple=True, is_combinable=True)
         account.plans.create(plan=dupeplan)
         service.rates.create(plan=dupeplan, quantity=1, price=0)
         service.rates.create(plan=dupeplan, quantity=3, price=9)
@@ -347,7 +341,7 @@ class OrderTests(BaseTestCase):
         for rate, result in zip(rates, results):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
-
+        
         account.plans.create(plan=dupeplan)
         results = service.get_rates(account, cache=False)
         results = service.rate_method(results, 30)
@@ -359,40 +353,5 @@ class OrderTests(BaseTestCase):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
     
-    def test_ftp_account_1_year_fiexed(self):
-        service = self.create_ftp_service()
-        user = self.create_ftp()
-        bp = timezone.now().date() + relativedelta.relativedelta(years=1)
-        bills = service.orders.bill(billing_point=bp, fixed_point=True)
-        self.assertEqual(10, bills[0].get_total())
-    
-    def test_ftp_account_2_year_fiexed(self):
-        service = self.create_ftp_service()
-        user = self.create_ftp()
-        bp = timezone.now().date() + relativedelta.relativedelta(years=2)
-        bills = service.orders.bill(billing_point=bp, fixed_point=True)
-        self.assertEqual(20, bills[0].get_total())
-    
-    def test_ftp_account_6_month_fixed(self):
-        service = self.create_ftp_service()
-        self.create_ftp()
-        bp = timezone.now().date() + relativedelta.relativedelta(months=6)
-        bills = service.orders.bill(billing_point=bp, fixed_point=True)
-        self.assertEqual(5, bills[0].get_total())
-    
-    def test_ftp_account_next_billing_point(self):
-        service = self.create_ftp_service()
-        self.create_ftp()
-        now = timezone.now()
-        bp_month = settings.ORDERS_SERVICE_ANUAL_BILLING_MONTH
-        if now.month > bp_month:
-            bp = datetime.datetime(year=now.year+1, month=bp_month,
-                day=1, tzinfo=timezone.get_current_timezone())
-        else:
-            bp = datetime.datetime(year=now.year, month=bp_month,
-                day=1, tzinfo=timezone.get_current_timezone())
-        bills = service.orders.bill(billing_point=now, fixed_point=False)
-        size = decimal.Decimal((bp - now).days)/365
-        error = decimal.Decimal(0.05)
-        self.assertGreater(10*size+error*(10*size), bills[0].get_total())
-        self.assertLess(10*size-error*(10*size), bills[0].get_total())
+    def test_compensations(self):
+        pass

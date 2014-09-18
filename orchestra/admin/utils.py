@@ -91,7 +91,7 @@ def action_to_view(action, modeladmin):
     return action_view
 
 
-def admin_change_url(obj):
+def change_url(obj):
     opts = obj._meta
     view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
     return reverse(view_name, args=(obj.pk,))
@@ -106,7 +106,7 @@ def admin_link(*args, **kwargs):
         obj = get_field_value(instance, kwargs['field'])
     if not getattr(obj, 'pk', None):
         return '---'
-    url = admin_change_url(obj)
+    url = change_url(obj)
     extra = ''
     if kwargs['popup']:
         extra = 'onclick="return showAddAnotherPopup(this);"'

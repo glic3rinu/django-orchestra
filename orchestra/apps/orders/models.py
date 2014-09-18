@@ -1,6 +1,5 @@
 import sys
 
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.migrations.recorder import MigrationRecorder
 from django.db.models import F, Q
@@ -10,7 +9,6 @@ from django.dispatch import receiver
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import ValidationError
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _

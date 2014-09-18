@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.template import loader, Context
 from django.utils import timezone
+from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -25,16 +26,13 @@ class BillManager(models.Manager):
 
 
 class Bill(models.Model):
-    OPEN = 'OPEN'
-    CLOSED = 'CLOSED'
-    SENT = 'SENT'
+    OPEN = ''
     PAID = 'PAID'
+    PENDING = 'PENDING'
     BAD_DEBT = 'BAD_DEBT'
-    STATUSES = (
-        (OPEN, _("Open")),
-        (CLOSED, _("Closed")),
-        (SENT, _("Sent")),
+    PAYMENT_STATES = (
         (PAID, _("Paid")),
+        (PENDING, _("Pending")),
         (BAD_DEBT, _("Bad debt")),
     )
     
@@ -51,10 +49,10 @@ class Bill(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
              related_name='%(class)s')
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
-    status = models.CharField(_("status"), max_length=16, choices=STATUSES,
-            default=OPEN)
     created_on = models.DateTimeField(_("created on"), auto_now_add=True)
     closed_on = models.DateTimeField(_("closed on"), blank=True, null=True)
+    is_open = models.BooleanField(_("is open"), default=True)
+    is_sent = models.BooleanField(_("is sent"), default=False)
     due_on = models.DateField(_("due on"), null=True, blank=True)
     last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -74,6 +72,21 @@ class Bill(models.Model):
     def buyer(self):
         return self.account.invoicecontact
     
+    @cached_property
+    def payment_state(self):
+        if self.is_open:
+            return self.OPEN
+        secured = self.transactions.secured().amount()
+        if secured >= self.total:
+            return self.PAID
+        elif self.transactions.exclude_rejected().exists():
+            return self.PENDING
+        return self.BAD_DEBT
+    
+    def get_payment_state_display(self):
+        value = self.payment_state
+        return force_text(dict(self.PAYMENT_STATES).get(value, value))
+    
     @classmethod
     def get_class_type(cls):
         return cls.__name__.upper()
@@ -87,7 +100,7 @@ class Bill(models.Model):
         if bill_type == 'BILL':
             raise TypeError("get_new_number() can not be used on a Bill class")
         prefix = getattr(settings, 'BILLS_%s_NUMBER_PREFIX' % bill_type)
-        if self.status == self.OPEN:
+        if self.is_open:
             prefix = 'O{}'.format(prefix)
         bills = cls.objects.filter(number__regex=r'^%s[1-9]+' % prefix)
         last_number = bills.order_by('-number').values_list('number', flat=True).first()
@@ -110,7 +123,7 @@ class Bill(models.Model):
         return now + relativedelta(months=1)
     
     def close(self, payment=False):
-        assert self.status == self.OPEN, "Bill not in Open state"
+        assert self.is_open, "Bill not in Open state"
         if payment is False:
             payment = self.account.paymentsources.get_default()
         if not self.due_on:
@@ -119,7 +132,8 @@ class Bill(models.Model):
         self.html = self.render(payment=payment)
         self.transactions.create(bill=self, source=payment, amount=self.total)
         self.closed_on = timezone.now()
-        self.status = self.CLOSED
+        self.is_open = False
+        self.is_sent = False
         self.save()
     
     def send(self):
@@ -134,7 +148,7 @@ class Bill(models.Model):
                 ('%s.pdf' % self.number, html_to_pdf(self.html), 'application/pdf')
             ]
         )
-        self.status = self.SENT
+        self.is_sent = True
         self.save()
     
     def render(self, payment=False):
@@ -166,7 +180,7 @@ class Bill(models.Model):
     def save(self, *args, **kwargs):
         if not self.type:
             self.type = self.get_type()
-        if not self.number or (self.number.startswith('O') and self.status != self.OPEN):
+        if not self.number or (self.number.startswith('O') and not self.is_open):
             self.set_number()
         super(Bill, self).save(*args, **kwargs)
     
@@ -217,8 +231,8 @@ class BillLine(models.Model):
     description = models.CharField(_("description"), max_length=256)
     rate = models.DecimalField(_("rate"), blank=True, null=True,
             max_digits=12, decimal_places=2)
-    amount = models.DecimalField(_("amount"), max_digits=12, decimal_places=2)
-    total = models.DecimalField(_("total"), max_digits=12, decimal_places=2)
+    quantity = models.DecimalField(_("quantity"), max_digits=12, decimal_places=2)
+    subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"))
     # TODO
 #    order_id = models.ForeignKey('orders.Order', null=True, blank=True,
@@ -236,15 +250,15 @@ class BillLine(models.Model):
     
     def get_total(self):
         """ Computes subline discounts """
-        subtotal = self.total
+        total = self.subtotal
         for subline in self.sublines.all():
-            subtotal += subline.total
-        return subtotal
+            total += subline.total
+        return total
     
     def save(self, *args, **kwargs):
         # TODO cost of this shit
         super(BillLine, self).save(*args, **kwargs)
-        if self.bill.status == self.bill.OPEN:
+        if self.bill.is_open:
             self.bill.total = self.bill.get_total()
             self.bill.save()
 
@@ -260,7 +274,7 @@ class BillSubline(models.Model):
     def save(self, *args, **kwargs):
         # TODO cost of this shit
         super(BillSubline, self).save(*args, **kwargs)
-        if self.line.bill.status == self.line.bill.OPEN:
+        if self.line.bill.is_open:
             self.line.bill.total = self.line.bill.get_total()
             self.line.bill.save()
 

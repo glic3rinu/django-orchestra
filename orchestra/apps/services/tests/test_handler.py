@@ -136,7 +136,7 @@ class HandlerTests(BaseTestCase):
         self.assertIn([order4.billed_until, end, [order2, order3]], chunks)
     
     def test_sort_billed_until_or_registered_on(self):
-        now = timezone.now()
+        now = timezone.now().date()
         order = Order(
             billed_until=now+datetime.timedelta(days=200))
         order1 = Order(
@@ -158,7 +158,7 @@ class HandlerTests(BaseTestCase):
         self.assertEqual(orders, sorted(orders, cmp=helpers.cmp_billed_until_or_registered_on))
     
     def test_compensation(self):
-        now = timezone.now()
+        now = timezone.now().date()
         order = Order(
             description='0',
             billed_until=now+datetime.timedelta(days=220),
@@ -353,5 +353,16 @@ class HandlerTests(BaseTestCase):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
     
-    def test_compensations(self):
-        pass
+    def test_generate_bill_lines_with_compensation(self):
+        service = self.create_ftp_service()
+        account = self.create_account()
+        now = timezone.now().date()
+        order = Order(
+            cancelled_on=now,
+            billed_until=now+relativedelta.relativedelta(years=2)
+        )
+        order1 = Order()
+        orders = [order, order1]
+        lines = service.handler.generate_bill_lines(orders, account, commit=False)
+        print lines
+        print len(lines)

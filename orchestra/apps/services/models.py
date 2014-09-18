@@ -1,6 +1,5 @@
 import sys
 
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, Q
 from django.db.models.signals import pre_delete, post_delete, post_save
@@ -90,7 +89,6 @@ class Service(models.Model):
     NOTHING = 'NOTHING'
     DISCOUNT = 'DISCOUNT'
     REFOUND = 'REFOUND'
-    COMPENSATE = 'COMPENSATE'
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
     STEP_PRICE = 'STEP_PRICE'
@@ -174,7 +172,6 @@ class Service(models.Model):
             choices=(
                 (NOTHING, _("Nothing")),
                 (DISCOUNT, _("Discount")),
-                (COMPENSATE, _("Discount and compensate")),
             ),
             default=DISCOUNT)
     payment_style = models.CharField(_("payment style"), max_length=16,
@@ -229,11 +226,10 @@ class Service(models.Model):
     def clean(self):
         content_type = self.handler.get_content_type()
         if self.content_type != content_type:
-            msg =_("Content type must be equal to '%s'.") % str(content_type)
-            raise ValidationError(msg)
+            ct = str(content_type)
+            raise ValidationError(_("Content type must be equal to '%s'.") % ct)
         if not self.match:
-            msg =_("Match should be provided")
-            raise ValidationError(msg)
+            raise ValidationError(_("Match should be provided"))
         try:
             obj = content_type.model_class().objects.all()[0]
         except IndexError:

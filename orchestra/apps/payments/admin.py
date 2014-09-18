@@ -16,74 +16,11 @@ from .models import PaymentSource, Transaction, TransactionProcess
 
 STATE_COLORS = {
     Transaction.WAITTING_PROCESSING: 'darkorange',
-    Transaction.WAITTING_CONFIRMATION: 'magenta',
+    Transaction.WAITTING_EXECUTION: 'magenta',
     Transaction.EXECUTED: 'olive',
     Transaction.SECURED: 'green',
     Transaction.REJECTED: 'red',
 }
-
-
-class TransactionInline(admin.TabularInline):
-    model = Transaction
-    can_delete = False
-    extra = 0
-    fields = (
-        'transaction_link', 'bill_link', 'source_link', 'display_state',
-        'amount', 'currency'
-    )
-    readonly_fields = fields
-    
-    transaction_link = admin_link('__unicode__', short_description=_("ID"))
-    bill_link = admin_link('bill')
-    source_link = admin_link('source')
-    display_state = admin_colored('state', colors=STATE_COLORS)
-    
-    class Media:
-        css = {
-            'all': ('orchestra/css/hide-inline-id.css',)
-        }
-    
-    def has_add_permission(self, *args, **kwargs):
-        return False
-
-
-class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdmin):
-    list_display = (
-        'id', 'bill_link', 'account_link', 'source_link', 'display_state',
-        'amount', 'process_link'
-    )
-    list_filter = ('source__method', 'state')
-    actions = (
-        actions.process_transactions, actions.mark_as_executed,
-        actions.mark_as_secured, actions.mark_as_rejected
-    )
-    change_view_actions = actions
-    filter_by_account_fields = ['source']
-    readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link')
-    
-    bill_link = admin_link('bill')
-    source_link = admin_link('source')
-    process_link = admin_link('process', short_description=_("proc"))
-    account_link = admin_link('bill__account')
-    display_state = admin_colored('state', colors=STATE_COLORS)
-    
-    def get_queryset(self, request):
-        qs = super(TransactionAdmin, self).get_queryset(request)
-        return qs.select_related('source', 'bill__account__user')
-    
-    def get_change_view_actions(self, obj=None):
-        actions = super(TransactionAdmin, self).get_change_view_actions()
-        discard = []
-        if obj:
-            if obj.state == Transaction.EXECUTED:
-                discard = ['mark_as_executed']
-            elif obj.state == Transaction.REJECTED:
-                discard = ['mark_as_rejected']
-            elif obj.state == Transaction.SECURED:
-                discard = ['mark_as_secured']
-        if not discard:
-            return actions
-        return [action for action in actions if action.__name__ not in discard]
 
 
 class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
@@ -138,11 +75,74 @@ class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
         obj.save()
 
 
-class TransactionProcessAdmin(admin.ModelAdmin):
+class TransactionInline(admin.TabularInline):
+    model = Transaction
+    can_delete = False
+    extra = 0
+    fields = (
+        'transaction_link', 'bill_link', 'source_link', 'display_state',
+        'amount', 'currency'
+    )
+    readonly_fields = fields
+    
+    transaction_link = admin_link('__unicode__', short_description=_("ID"))
+    bill_link = admin_link('bill')
+    source_link = admin_link('source')
+    display_state = admin_colored('state', colors=STATE_COLORS)
+    
+    class Media:
+        css = {
+            'all': ('orchestra/css/hide-inline-id.css',)
+        }
+    
+    def has_add_permission(self, *args, **kwargs):
+        return False
+
+
+class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdmin):
+    list_display = (
+        'id', 'bill_link', 'account_link', 'source_link', 'display_state',
+        'amount', 'process_link'
+    )
+    list_filter = ('source__method', 'state')
+    actions = (
+        actions.process_transactions, actions.mark_as_executed,
+        actions.mark_as_secured, actions.mark_as_rejected
+    )
+    change_view_actions = actions
+    filter_by_account_fields = ['source']
+    readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link')
+    
+    bill_link = admin_link('bill')
+    source_link = admin_link('source')
+    process_link = admin_link('process', short_description=_("proc"))
+    account_link = admin_link('bill__account')
+    display_state = admin_colored('state', colors=STATE_COLORS)
+    
+    def get_queryset(self, request):
+        qs = super(TransactionAdmin, self).get_queryset(request)
+        return qs.select_related('source', 'bill__account__user')
+    
+    def get_change_view_actions(self, obj=None):
+        actions = super(TransactionAdmin, self).get_change_view_actions()
+        exclude = []
+        if obj:
+            if obj.state == Transaction.EXECUTED:
+                exclude.append('mark_as_executed')
+            elif obj.state == Transaction.REJECTED:
+                exclude.append('mark_as_rejected')
+            elif obj.state == Transaction.SECURED:
+                exclude.append('mark_as_secured')
+        return [action for action in actions if action.__name__ not in exclude]
+
+
+class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     list_display = ('id', 'file_url', 'display_transactions', 'created_at')
     fields = ('data', 'file_url', 'display_transactions', 'created_at')
     readonly_fields = ('file_url', 'display_transactions', 'created_at')
     inlines = [TransactionInline]
+    actions = (actions.mark_process_as_executed, actions.abort, actions.commit)
+    change_view_actions = actions
     
     def file_url(self, process):
         if process.file:
@@ -169,6 +169,18 @@ class TransactionProcessAdmin(admin.ModelAdmin):
         return '<a href="%s">%s</a>' % (url, '<br>'.join(lines))
     display_transactions.short_description = _("Transactions")
     display_transactions.allow_tags = True
+    
+    def get_change_view_actions(self, obj=None):
+        actions = super(TransactionProcessAdmin, self).get_change_view_actions()
+        exclude = []
+        if obj:
+            if obj.state == TransactionProcess.EXECUTED:
+                exclude.append('mark_process_as_executed')
+            elif obj.state == TransactionProcess.COMMITED:
+                exclude = ['mark_process_as_executed', 'abort', 'commit']
+            elif obj.state == TransactionProcess.ABORTED:
+                exclude = ['mark_process_as_executed', 'abort', 'commit']
+        return [action for action in actions if action.__name__ not in exclude]
 
 
 admin.site.register(PaymentSource, PaymentSourceAdmin)

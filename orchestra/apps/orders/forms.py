@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.forms import AdminFormMixin
-from orchestra.admin.utils import admin_change_url
+from orchestra.admin.utils import change_url
 
 from .models import Order
 
@@ -32,8 +32,8 @@ def selected_related_choices(queryset):
         verbose = '<a href="{order_url}">{description}</a> '
         verbose += '<a class="account" href="{account_url}">{account}</a>'
         verbose = verbose.format(
-            order_url=admin_change_url(order), description=order.description,
-            account_url=admin_change_url(order.account), account=str(order.account)
+            order_url=change_url(order), description=order.description,
+            account_url=change_url(order.account), account=str(order.account)
         )
         yield (order.pk, mark_safe(verbose))
 

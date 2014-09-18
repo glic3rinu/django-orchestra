@@ -42,7 +42,7 @@ view_bill.url_name = 'view'
 
 
 def close_bills(modeladmin, request, queryset):
-    queryset = queryset.filter(status=queryset.model.OPEN)
+    queryset = queryset.filter(is_open=True)
     if not queryset:
         messages.warning(request, _("Selected bills should be in open state"))
         return

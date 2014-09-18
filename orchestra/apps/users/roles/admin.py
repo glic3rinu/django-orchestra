@@ -10,7 +10,7 @@ from django.utils.encoding import force_text
 from django.utils.html import escape
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from orchestra.admin.utils import get_modeladmin
+from orchestra.admin.utils import get_modeladmin, change_url
 
 from .forms import role_form_factory
 from ..models import User
@@ -71,9 +71,8 @@ class RoleAdmin(object):
                 modeladmin.log_change(request, request.user, "%s saved" % self.name.capitalize())
                 msg = _('The role %(name)s for user "%(obj)s" was %(action)s successfully.') % context
                 modeladmin.message_user(request, msg, messages.SUCCESS)
-                url = 'admin:%s_%s_change' % (opts.app_label, opts.module_name)
                 if not "_continue" in request.POST:
-                    return redirect(url, object_id)
+                    return redirect(change_url(user))
                 exists = True
         
         if exists:
@@ -117,7 +116,7 @@ class RoleAdmin(object):
             obj_display = force_text(obj)
             modeladmin.log_deletion(request, obj, obj_display)
             modeladmin.delete_model(request, obj)
-            post_url = reverse('admin:users_user_change', args=(user.pk,))
+            post_url = change_url(user)
             preserved_filters = modeladmin.get_preserved_filters(request)
             post_url = add_preserved_filters(
                 {'preserved_filters': preserved_filters, 'opts': opts}, post_url

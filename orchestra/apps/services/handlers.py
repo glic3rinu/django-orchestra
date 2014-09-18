@@ -164,7 +164,7 @@ class ServiceHandler(plugins.Plugin):
         for order in givers:
             if order.billed_until and order.cancelled_on and order.cancelled_on < order.billed_until:
                 interval = helpers.Interval(order.cancelled_on, order.billed_until, order)
-                compensations.append[interval]
+                compensations.append(interval)
         for order in receivers:
             if not order.billed_until or order.billed_until < order.new_billed_until:
                 # receiver
@@ -277,9 +277,10 @@ class ServiceHandler(plugins.Plugin):
             ini = min(ini, cini)
             end = max(end, bp)
         related_orders = account.orders.filter(service=self.service)
-        if self.on_cancel == self.COMPENSATE:
+        if self.on_cancel == self.DISCOUNT:
             # Get orders pending for compensation
-            givers = related_orders.filter_givers(ini, end)
+            givers = list(related_orders.filter_givers(ini, end))
+            print givers
             givers.sort(cmp=helpers.cmp_billed_until_or_registered_on)
             orders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
             self.compensate(givers, orders, commit=commit)
@@ -341,6 +342,7 @@ class ServiceHandler(plugins.Plugin):
         return lines
     
     def generate_bill_lines(self, orders, account, **options):
+        # TODO filter out orders with cancelled_on < billed_until ?
         if not self.metric:
             lines = self.bill_with_orders(orders, account, **options)
         else:

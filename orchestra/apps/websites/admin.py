@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import admin_link
+from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.apps.accounts.widgets import account_related_field_widget_factory
 
@@ -72,7 +72,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         webapps = []
         for content in website.content_set.all().select_related('webapp'):
             webapp = content.webapp
-            url = reverse('admin:webapps_webapp_change', args=(webapp.pk,))
+            url = change_url(webapp)
             name = "%s on %s" % (webapp.get_type_display(), content.path)
             webapps.append('<a href="%s">%s</a>' % (url, name))
         return '<br>'.join(webapps)

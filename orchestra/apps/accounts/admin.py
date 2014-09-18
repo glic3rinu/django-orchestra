@@ -9,7 +9,8 @@ from django.utils.six.moves.urllib.parse import parse_qsl
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query
+from orchestra.admin.utils import (wrap_admin_view, admin_link, set_url_query,
+        change_url)
 from orchestra.core import services, accounts
 
 from .filters import HasMainUserListFilter
@@ -136,8 +137,7 @@ class AccountAdminMixin(object):
     
     def account_link(self, instance):
         account = instance.account if instance.pk else self.account
-        url = reverse('admin:accounts_account_change', args=(account.pk,))
-        pk = account.pk
+        url = change_url(account)
         return '<a href="%s">%s</a>' % (url, str(account))
     account_link.short_description = _("account")
     account_link.allow_tags = True

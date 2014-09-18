@@ -33,8 +33,8 @@ class BillsBackend(object):
             # Create bill line
             billine = bill.lines.create(
                     rate=service.nominal_price,
-                    amount=line.size,
-                    total=line.subtotal,
+                    quantity=line.size,
+                    subtotal=line.subtotal,
                     tax=service.tax,
                     description=self.get_line_description(line),
             )

@@ -27,11 +27,7 @@
   <div>
     <div style="margin:20px;">
     <p>{{ content_message | safe }}</p>
-    <ul>
-    {% for display_object in display_objects %}
-        <li> <a href="{% url opts|admin_urlname:'change' display_object.pk %}">{{ display_object }} </a></li>
-    {% endfor %}
-    </ul>
+    <ul>{{ display_objects | unordered_list }}</ul>
     <form action="" method="post">{% csrf_token %}
     {% if form %}
         <fieldset class="module aligned">
@@ -53,7 +49,6 @@
     {% if formset %}
         {{ formset.as_admin }}
     {% endif %}
-    
     <div>
     {% for obj in queryset %}
     <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />

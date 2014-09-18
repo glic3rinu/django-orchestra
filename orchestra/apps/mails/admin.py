@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import insertattr, admin_link
+from orchestra.admin.utils import insertattr, admin_link, change_url
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin, AccountAdminMixin
 from orchestra.apps.domains.forms import DomainIterator
 
@@ -57,7 +57,7 @@ class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def display_addresses(self, mailbox):
         addresses = []
         for addr in mailbox.addresses.all():
-            url = reverse('admin:mails_address_change', args=(addr.pk,))
+            url = change_url(addr)
             addresses.append('<a href="%s">%s</a>' % (url, addr.email))
         return '<br>'.join(addresses)
     display_addresses.short_description = _("Addresses")
@@ -106,7 +106,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     def display_mailboxes(self, address):
         boxes = []
         for mailbox in address.mailboxes.all():
-            url = reverse('admin:mails_mailbox_change', args=(mailbox.pk,))
+            url = change_url(mailbox)
             boxes.append('<a href="%s">%s</a>' % (url, mailbox.name))
         return '<br>'.join(boxes)
     display_mailboxes.short_description = _("Mailboxes")

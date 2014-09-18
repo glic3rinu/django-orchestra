@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin.utils import change_url
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 
 from .models import WebApp, WebAppOption
@@ -37,7 +38,7 @@ class WebAppAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         websites = []
         for content in webapp.content_set.all().select_related('website'):
             website = content.website
-            url = reverse('admin:websites_website_change', args=(website.pk,))
+            url = change_url(website)
             name = "%s on %s" % (website.name, content.path)
             websites.append('<a href="%s">%s</a>' % (url, name))
         return '<br>'.join(websites)

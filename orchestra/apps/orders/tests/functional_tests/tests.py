@@ -13,7 +13,7 @@ from orchestra.apps.users.models import User
 from orchestra.utils.tests import BaseTestCase, random_ascii
 
 
-class ServiceTests(BaseTestCase):
+class BillingTests(BaseTestCase):
     DEPENDENCIES = (
         'orchestra.apps.services',
         'orchestra.apps.users',
@@ -91,3 +91,18 @@ class ServiceTests(BaseTestCase):
         error = decimal.Decimal(0.05)
         self.assertGreater(10*size+error*(10*size), bills[0].get_total())
         self.assertLess(10*size-error*(10*size), bills[0].get_total())
+    
+    def test_ftp_account_with_compensation(self):
+        account = self.create_account()
+        service = self.create_ftp_service()
+        user = self.create_ftp(account=account)
+        bp = timezone.now().date() + relativedelta.relativedelta(years=2)
+        bills = service.orders.bill(billing_point=bp, fixed_point=True)
+        user.delete()
+        user = self.create_ftp(account=account)
+        bp = timezone.now().date() + relativedelta.relativedelta(years=1)
+        bills = service.orders.bill(billing_point=bp, fixed_point=True)
+        for line in bills[0].lines.all():
+            print line
+            print line.sublines.all()
+        # TODO asserts

@@ -8,7 +8,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin
-from orchestra.admin.utils import wrap_admin_view, admin_link
+from orchestra.admin.utils import wrap_admin_view, admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
@@ -79,7 +79,7 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
             if webs:
                 links = []
                 for web in webs:
-                    url = reverse('admin:websites_website_change', args=(web.pk,))
+                    url = change_url(web)
                     links.append('<a href="%s">%s</a>' % (url, web.name))
                 return '<br>'.join(links)
         return _("No website")

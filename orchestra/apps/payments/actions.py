@@ -1,9 +1,14 @@
+from functools import partial
+
 from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
+from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.decorators import action_with_confirmation
+from orchestra.admin.utils import change_url
 
 from .methods import PaymentMethod
 from .models import Transaction
@@ -38,8 +43,7 @@ def process_transactions(modeladmin, request, queryset):
 
 @transaction.atomic
 @action_with_confirmation()
-def mark_as_executed(modeladmin, request, queryset):
-    """ Mark a tickets as unread """
+def mark_as_executed(modeladmin, request, queryset, extra_context={}):
     for transaction in queryset:
         transaction.mark_as_executed()
         modeladmin.log_change(request, transaction, 'Executed')
@@ -52,7 +56,6 @@ mark_as_executed.verbose_name = _("Mark as executed")
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_secured(modeladmin, request, queryset):
-    """ Mark a tickets as unread """
     for transaction in queryset:
         transaction.mark_as_secured()
         modeladmin.log_change(request, transaction, 'Secured')
@@ -65,7 +68,6 @@ mark_as_secured.verbose_name = _("Mark as secured")
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_rejected(modeladmin, request, queryset):
-    """ Mark a tickets as unread """
     for transaction in queryset:
         transaction.mark_as_rejected()
         modeladmin.log_change(request, transaction, 'Rejected')
@@ -73,3 +75,62 @@ def mark_as_rejected(modeladmin, request, queryset):
     modeladmin.message_user(request, msg)
 mark_as_rejected.url_name = 'reject'
 mark_as_rejected.verbose_name = _("Mark as rejected")
+
+
+def _format_display_objects(modeladmin, request, queryset, related):
+    objects = []
+    opts = modeladmin.model._meta
+    for obj in queryset:
+        objects.append(
+            mark_safe('{0}: <a href="{1}">{2}</a>'.format(
+                capfirst(opts.verbose_name), change_url(obj), obj))
+        )
+        subobjects = []
+        attr, verb = related
+        for related in getattr(obj.transactions, attr)():
+            subobjects.append(
+                mark_safe('{0}: <a href="{1}">{2}</a> will be marked as {3}'.format(
+                    capfirst(subobj.get_type().lower()), change_url(subobj), subobj, verb))
+            )
+        objects.append(subobjects)
+    return {'display_objects': objects}
+
+_format_executed = partial(_format_display_objects, related=('all', 'executed'))
+_format_abort = partial(_format_display_objects, related=('processing', 'aborted'))
+_format_commit = partial(_format_display_objects, related=('all', 'secured'))
+
+
+@transaction.atomic
+@action_with_confirmation(extra_context=_format_executed)
+def mark_process_as_executed(modeladmin, request, queryset):
+    for process in queryset:
+        process.mark_as_executed()
+        modeladmin.log_change(request, process, 'Executed')
+    msg = _("%s selected processes have been marked as executed.") % queryset.count()
+    modeladmin.message_user(request, msg)
+mark_process_as_executed.url_name = 'executed'
+mark_process_as_executed.verbose_name = _("Mark as executed")
+
+
+@transaction.atomic
+@action_with_confirmation(extra_context=_format_abort)
+def abort(modeladmin, request, queryset):
+    for process in queryset:
+        process.abort()
+        modeladmin.log_change(request, process, 'Aborted')
+    msg = _("%s selected processes have been aborted.") % queryset.count()
+    modeladmin.message_user(request, msg)
+abort.url_name = 'abort'
+abort.verbose_name = _("Abort")
+
+
+@transaction.atomic
+@action_with_confirmation(extra_context=_format_commit)
+def commit(modeladmin, request, queryset):
+    for transaction in queryset:
+        transaction.mark_as_rejected()
+        modeladmin.log_change(request, transaction, 'Rejected')
+    msg = _("%s selected transactions have been marked as rejected.") % queryset.count()
+    modeladmin.message_user(request, msg)
+commit.url_name = 'commit'
+commit.verbose_name = _("Commit")

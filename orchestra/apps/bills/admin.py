@@ -61,7 +61,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('number', 'display_total', 'account_link', 'type',
-                       'is_open', 'display_payment_state', 'is_sent', 'due_on', 'comments'),
+                       'display_payment_state', 'is_sent', 'due_on', 'comments'),
         }),
         (_("Raw"), {
             'classes': ('collapse',),
@@ -71,7 +71,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     actions = [download_bills, close_bills, send_bills]
     change_view_actions = [view_bill, download_bills, send_bills, close_bills]
     change_readonly_fields = ('account_link', 'type', 'is_open')
-    readonly_fields = ('number', 'display_total', 'display_payment_state')
+    readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
     inlines = [BillLineInline]
     
     created_on_display = admin_date('created_on')

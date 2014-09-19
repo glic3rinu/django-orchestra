@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from django.db import models
@@ -22,10 +23,14 @@ from . import helpers, settings
 from .handlers import ServiceHandler
 
 
+logger = logging.getLogger(__name__)
+
+
 class OrderQuerySet(models.QuerySet):
     group_by = queryset.group_by
     
     def bill(self, **options):
+        # TODO classmethod?
         bills = []
         bill_backend = Order.get_bill_backend()
         qs = self.select_related('account', 'service')
@@ -41,13 +46,17 @@ class OrderQuerySet(models.QuerySet):
                 bills += [(account, bill_lines)]
         return bills
     
-    def filter_givers(self, ini, end):
-        return self.filter(
-            cancelled_on__isnull=False, billed_until__isnull=False,
-            cancelled_on__lte=F('billed_until'), billed_until__gt=ini,
-            registered_on__lt=end)
+    def givers(self, ini, end):
+        return self.cancelled_and_billed().filter(billed_until__gt=ini, registered_on__lt=end)
     
-    def filter_pricing_orders(self, ini, end):
+    def cancelled_and_billed(self, exclude=False):
+        qs = dict(cancelled_on__isnull=False, billed_until__isnull=False,
+                  cancelled_on__lte=F('billed_until'))
+        if exclude:
+            return self.exclude(**qs)
+        return self.filter(**qs)
+    
+    def pricing_orders(self, ini, end):
         return self.filter(billed_until__isnull=False, billed_until__gt=ini,
             registered_on__lt=end)
     
@@ -86,18 +95,6 @@ class Order(models.Model):
     def __unicode__(self):
         return str(self.service)
     
-    def update(self):
-        instance = self.content_object
-        handler = self.service.handler
-        if handler.metric:
-            metric = handler.get_metric(instance)
-            if metric is not None:
-                MetricStorage.store(self, metric)
-        description = "{}: {}".format(handler.description, str(instance))
-        if self.description != description:
-            self.description = description
-            self.save()
-    
     @classmethod
     def update_orders(cls, instance):
         Service = get_model(*settings.ORDERS_SERVICE_MODEL.split('.'))
@@ -111,6 +108,7 @@ class Order(models.Model):
                         continue
                     order = cls.objects.create(content_object=instance,
                             service=service, account_id=account_id)
+                    logger.info("CREATED new order id: {id}".format(id=order.id))
                 else:
                     order = orders.get()
                 order.update()
@@ -121,9 +119,24 @@ class Order(models.Model):
     def get_bill_backend(cls):
         return import_class(settings.ORDERS_BILLING_BACKEND)()
     
+    def update(self):
+        instance = self.content_object
+        handler = self.service.handler
+        if handler.metric:
+            metric = handler.get_metric(instance)
+            if metric is not None:
+                MetricStorage.store(self, metric)
+        description = "{}: {}".format(handler.description, str(instance))
+        logger.info("UPDATED order id: {id} description:{description}".format(
+                    id=self.id, description=description))
+        if self.description != description:
+            self.description = description
+            self.save()
+    
     def cancel(self):
         self.cancelled_on = timezone.now()
         self.save()
+        logger.info("CANCELLED order id: {id}".format(id=self.id))
     
     def get_metric(self, ini, end):
         return MetricStorage.get(self, ini, end)
@@ -162,30 +175,31 @@ class MetricStorage(models.Model):
             return 0
 
 
-# TODO If this happens to be very costly then, consider an additional
-#      implementation when runnning within a request/Response cycle, more efficient :)
-@receiver(pre_delete, dispatch_uid="orders.cancel_orders")
+_excluded_models = (MetricStorage, LogEntry, Order, ContentType, MigrationRecorder.Migration)
+
+@receiver(post_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
-    if sender in services:
+    if sender not in _excluded_models:
         instance = kwargs['instance']
-        for order in Order.objects.by_object(instance).active():
-            order.cancel()
+        if hasattr(instance, 'account'):
+            for order in Order.objects.by_object(instance).active():
+                order.cancel()
+        else:
+            related = helpers.get_related_objects(instance)
+            if related and related != instance:
+                Order.update_orders(related)
 
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
-@receiver(post_delete, dispatch_uid="orders.update_orders_post_delete")
 def update_orders(sender, **kwargs):
-    exclude = (
-        MetricStorage, LogEntry, Order, ContentType, MigrationRecorder.Migration
-    )
-    if sender not in exclude:
+    if sender not in _excluded_models:
         instance = kwargs['instance']
-        if instance.pk:
-            # post_save
+        if hasattr(instance, 'account'):
             Order.update_orders(instance)
-        related = helpers.get_related_objects(instance)
-        if related:
-            Order.update_orders(related)
+        else:
+            related = helpers.get_related_objects(instance)
+            if related and related != instance:
+                Order.update_orders(related)
 
 
 accounts.register(Order)

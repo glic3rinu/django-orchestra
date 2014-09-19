@@ -96,13 +96,16 @@ class BillingTests(BaseTestCase):
         account = self.create_account()
         service = self.create_ftp_service()
         user = self.create_ftp(account=account)
-        bp = timezone.now().date() + relativedelta.relativedelta(years=2)
-        bills = service.orders.bill(billing_point=bp, fixed_point=True)
+        first_bp = timezone.now().date() + relativedelta.relativedelta(years=2)
+        bills = service.orders.bill(billing_point=first_bp, fixed_point=True)
         user.delete()
         user = self.create_ftp(account=account)
         bp = timezone.now().date() + relativedelta.relativedelta(years=1)
-        bills = service.orders.bill(billing_point=bp, fixed_point=True)
-        for line in bills[0].lines.all():
-            print line
-            print line.sublines.all()
-        # TODO asserts
+        bills = service.orders.bill(billing_point=bp, fixed_point=True, new_open=True)
+        discount = bills[0].lines.order_by('id')[0].sublines.get()
+        self.assertEqual(decimal.Decimal(-20), discount.total)
+        order = service.orders.order_by('id').first()
+        self.assertEqual(order.cancelled_on, order.billed_until)
+        order = service.orders.order_by('-id').first()
+        self.assertEqual(first_bp, order.billed_until)
+        self.assertEqual(decimal.Decimal(0), bills[0].get_total())

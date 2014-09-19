@@ -118,18 +118,22 @@ class Transaction(models.Model):
                 raise ValidationError(_("New transactions can not be allocated for this bill"))
     
     def mark_as_processed(self):
+        assert self.state == self.WAITTING_PROCESSING
         self.state = self.WAITTING_EXECUTION
         self.save()
     
     def mark_as_executed(self):
+        assert self.state == self.WAITTING_EXECUTION
         self.state = self.EXECUTED
         self.save()
     
     def mark_as_secured(self):
+        assert self.state == self.EXECUTED
         self.state = self.SECURED
         self.save()
     
     def mark_as_rejected(self):
+        assert self.state == self.EXECUTED
         self.state = self.REJECTED
         self.save()
 

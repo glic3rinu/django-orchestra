@@ -51,6 +51,7 @@ class Bill(models.Model):
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
     created_on = models.DateTimeField(_("created on"), auto_now_add=True)
     closed_on = models.DateTimeField(_("closed on"), blank=True, null=True)
+    # TODO rename to is_closed
     is_open = models.BooleanField(_("is open"), default=True)
     is_sent = models.BooleanField(_("is sent"), default=False)
     due_on = models.DateField(_("due on"), null=True, blank=True)
@@ -130,7 +131,8 @@ class Bill(models.Model):
             self.due_on = self.get_due_date(payment=payment)
         self.total = self.get_total()
         self.html = self.render(payment=payment)
-        self.transactions.create(bill=self, source=payment, amount=self.total)
+        if self.get_type() != 'PROFORMA':
+            self.transactions.create(bill=self, source=payment, amount=self.total)
         self.closed_on = timezone.now()
         self.is_open = False
         self.is_sent = False

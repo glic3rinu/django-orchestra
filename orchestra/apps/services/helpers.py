@@ -1,6 +1,3 @@
-from django.utils import timezone
-
-
 def get_chunks(porders, ini, end, ix=0):
     if ix >= len(porders):
         return [[ini, end, []]]
@@ -57,8 +54,10 @@ class Interval(object):
         return remaining
     
     def __repr__(self):
-        now = timezone.now()
-        return "Start: %s    End: %s" % ((self.ini-now).days, (self.end-now).days)
+        return "Start: {ini}    End: {end}".format(
+            ini=self.ini.strftime('%Y-%-m-%-d'),
+            end=self.end.strftime('%Y-%-m-%-d')
+        )
     
     def intersect(self, other, remaining_self=None, remaining_other=None):
         if remaining_self is not None:

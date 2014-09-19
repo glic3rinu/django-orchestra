@@ -9,7 +9,7 @@ class BillsBackend(object):
     def create_bills(self, account, lines, **options):
         bill = None
         bills = []
-        create_new = options.get('create_new_open', False)
+        create_new = options.get('new_open', False)
         is_proforma = options.get('is_proforma', False)
         for line in lines:
             service = line.order.service
@@ -19,16 +19,14 @@ class BillsBackend(object):
                     if create_new:
                         bill = ProForma.objects.create(account=account)
                     else:
-                        bill, __ = ProForma.objects.get_or_create(account=account,
-                                status=ProForma.OPEN)
+                        bill, __ = ProForma.objects.get_or_create(account=account, is_open=True)
                 elif service.is_fee:
                     bill = Fee.objects.create(account=account)
                 else:
                     if create_new:
                         bill = Invoice.objects.create(account=account)
                     else:
-                        bill, __ = Invoice.objects.get_or_create(account=account,
-                                status=Invoice.OPEN)
+                        bill, __ = Invoice.objects.get_or_create(account=account, is_open=True)
                 bills.append(bill)
             # Create bill line
             billine = bill.lines.create(

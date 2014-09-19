@@ -127,12 +127,14 @@ class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdm
         actions = super(TransactionAdmin, self).get_change_view_actions()
         exclude = []
         if obj:
+            if obj.state == Transaction.WAITTING_PROCESSING:
+                exclude = ['mark_as_executed', 'mark_as_secured', 'mark_as_rejected']
+            elif obj.state == Transaction.WAITTING_EXECUTION:
+                exclude = ['process_transactions', 'mark_as_secured', 'mark_as_rejected']
             if obj.state == Transaction.EXECUTED:
-                exclude.append('mark_as_executed')
-            elif obj.state == Transaction.REJECTED:
-                exclude.append('mark_as_rejected')
-            elif obj.state == Transaction.SECURED:
-                exclude.append('mark_as_secured')
+                exclude = ['process_transactions', 'mark_as_executed']
+            elif obj.state in [Transaction.REJECTED, Transaction.SECURED]:
+                return []
         return [action for action in actions if action.__name__ not in exclude]
 
 

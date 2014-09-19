@@ -21,7 +21,7 @@ class BillSelectedOptionsForm(AdminFormMixin, forms.Form):
     is_proforma = forms.BooleanField(initial=False, required=False,
             label=_("Pro-forma, billing simulation"),
             help_text=_("O."))
-    create_new_open = forms.BooleanField(initial=False, required=False,
+    new_open = forms.BooleanField(initial=False, required=False,
             label=_("Create a new open bill"),
             help_text=_("Deisgnates whether you want to put this orders on a new "
                         "open bill, or allow to reuse an existing one."))

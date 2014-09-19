@@ -39,7 +39,7 @@ class BillSelectedOrders(object):
                     billing_point=form.cleaned_data['billing_point'],
                     fixed_point=form.cleaned_data['fixed_point'],
                     is_proforma=form.cleaned_data['is_proforma'],
-                    create_new_open=form.cleaned_data['create_new_open'],
+                    new_open=form.cleaned_data['new_open'],
                 )
                 if int(request.POST.get('step')) != 3:
                     return self.select_related(request)

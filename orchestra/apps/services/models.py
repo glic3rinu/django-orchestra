@@ -172,6 +172,7 @@ class Service(models.Model):
             choices=(
                 (NOTHING, _("Nothing")),
                 (DISCOUNT, _("Discount")),
+                (REFOUND, _("Refound")),
             ),
             default=DISCOUNT)
     payment_style = models.CharField(_("payment style"), max_length=16,

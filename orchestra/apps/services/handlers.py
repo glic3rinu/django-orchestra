@@ -65,6 +65,8 @@ class ServiceHandler(plugins.Plugin):
                     date = bp
                     if self.payment_style == self.PREPAY:
                         date += relativedelta.relativedelta(months=1)
+                    else:
+                        date = timezone.now().date()
                     if self.billing_point == self.ON_REGISTER:
                         day = order.registered_on.day
                     elif self.billing_point == self.FIXED_DATE:
@@ -84,7 +86,7 @@ class ServiceHandler(plugins.Plugin):
                         raise NotImplementedError(msg)
                     year = bp.year
                     if self.payment_style == self.POSTPAY:
-                        year = bo.year - relativedelta.relativedelta(years=1)
+                        year = bp.year - relativedelta.relativedelta(years=1)
                     if bp.month >= month:
                         year = bp.year + 1
                     bp = datetime.datetime(year=year, month=month, day=day,
@@ -116,10 +118,19 @@ class ServiceHandler(plugins.Plugin):
         return decimal.Decimal(size)
     
     def get_pricing_slots(self, ini, end):
+        day = 1
+        month = settings.SERVICES_SERVICE_ANUAL_BILLING_MONTH
+        if self.billing_point == self.ON_REGISTER:
+            day = ini.day
+            month = ini.month
         period = self.get_pricing_period()
         if period == self.MONTHLY:
+            ini = datetime.datetime(year=ini.year, month=ini.month, day=day,
+                                    tzinfo=timezone.get_current_timezone()).date()
             rdelta = relativedelta.relativedelta(months=1)
         elif period == self.ANUAL:
+            ini = datetime.datetime(year=ini.year, month=month, day=day,
+                                    tzinfo=timezone.get_current_timezone()).date()
             rdelta = relativedelta.relativedelta(years=1)
         elif period == self.NEVER:
             yield ini, end
@@ -128,10 +139,9 @@ class ServiceHandler(plugins.Plugin):
             raise NotImplementedError
         while True:
             next = ini + rdelta
-            if next >= end:
-                yield ini, end
-                break
             yield ini, next
+            if next >= end:
+                break
             ini = next
     
     def generate_discount(self, line, dtype, price):
@@ -213,12 +223,12 @@ class ServiceHandler(plugins.Plugin):
         for order in porders:
             bu = getattr(order, 'new_billed_until', order.billed_until)
             if bu:
-                if order.register >= ini and order.register < end:
+                if order.registered_on > ini and order.registered_on <= end:
                     counter += 1
-                if order.register != bu and bu >= ini and bu < end:
+                if order.registered_on != bu and bu > ini and bu <= end:
                     counter += 1
                 if order.billed_until and order.billed_until != bu:
-                    if order.register != order.billed_until and order.billed_until >= ini and order.billed_until < end:
+                    if order.registered_on != order.billed_until and order.billed_until > ini and order.billed_until <= end:
                         counter += 1
         return counter
     
@@ -230,7 +240,7 @@ class ServiceHandler(plugins.Plugin):
             size = self.get_price_size(ini, end)
             metric = len(orders)
             interval = helpers.Interval(ini=ini, end=end)
-            for position, order in enumerate(orders):
+            for position, order in enumerate(orders, start=1):
                 csize = 0
                 compensations = getattr(order, '_compensations', [])
                 # Compensations < new_billed_until
@@ -269,14 +279,14 @@ class ServiceHandler(plugins.Plugin):
     def bill_registered_or_renew_events(self, account, porders, rates, commit=True):
         # Before registration
         lines = []
-        perido = self.get_pricing_period()
+        period = self.get_pricing_period()
         if period == self.MONTHLY:
             rdelta = relativedelta.relativedelta(months=1)
         elif period == self.ANUAL:
             rdelta = relativedelta.relativedelta(years=1)
         elif period == self.NEVER:
             raise NotImplementedError("Rates with no pricing period?")
-        for position, order in enumerate(porders):
+        for position, order in enumerate(porders, start=1):
             if hasattr(order, 'new_billed_until'):
                 pend = order.billed_until or order.registered_on
                 pini = pend - rdelta
@@ -298,6 +308,7 @@ class ServiceHandler(plugins.Plugin):
                 if commit:
                     order.billed_until = order.new_billed_until
                     order.save()
+        return lines
     
     def bill_with_orders(self, orders, account, **options):
         # For the "boundary conditions" just think that:
@@ -340,7 +351,7 @@ class ServiceHandler(plugins.Plugin):
             porders = related_orders.pricing_orders(ini, end)
             porders = list(set(orders).union(set(porders)))
             porders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
-            if self.billing_period != self.NEVER and self.get_pricing_period != self.NEVER:
+            if self.billing_period != self.NEVER and self.get_pricing_period == self.NEVER:
                 liens = self.bill_concurrent_orders(account, porders, rates, ini, end, commit=commit)
             else:
                 # TODO compensation in this case?
@@ -371,6 +382,7 @@ class ServiceHandler(plugins.Plugin):
         # TODO filter out orders with cancelled_on < billed_until ?
         lines = []
         commit = options.get('commit', True)
+        bp = None
         for order in orders:
             bp = self.get_billing_point(order, bp=bp, **options)
             ini = order.billed_until or order.registered_on
@@ -381,25 +393,17 @@ class ServiceHandler(plugins.Plugin):
             prev = None
             lines_info = []
             for ini, end in self.get_pricing_slots(ini, bp):
-                size = self.get_price_size(ini, end)
                 metric = order.get_metric(ini, end)
                 price = self.get_price(order, metric)
-                current = AttributeDict(price=price, size=size, ini=ini, end=end)
-                if prev and prev.metric == current.metric and prev.end == current.end:
-                    prev.end = current.end
-                    prev.size += current.size
-                    prev.price += current.price
-                else:
-                    lines_info.append(current)
-                prev = current
-            for line in lines_info:
-                lines.append(self.generate_line(order, price, size, ini, end))
+                lines.append(self.generate_line(order, price, metric, ini, end))
             if commit:
                 order.billed_until = order.new_billed_until
                 order.save()
         return lines
     
     def generate_bill_lines(self, orders, account, **options):
+        if options.get('proforma', False):
+            options['commit'] = False
         if not self.metric:
             lines = self.bill_with_orders(orders, account, **options)
         else:

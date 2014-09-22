@@ -50,7 +50,7 @@ class HandlerTests(BaseTestCase):
             billing_point=Service.FIXED_DATE,
             is_fee=False,
             metric='',
-            pricing_period=Service.BILLING_PERIOD,
+            pricing_period=Service.NEVER,
             rate_algorithm=Service.STEP_PRICE,
             on_cancel=Service.DISCOUNT,
             payment_style=Service.PREPAY,

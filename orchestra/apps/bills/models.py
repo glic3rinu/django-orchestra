@@ -62,6 +62,9 @@ class Bill(models.Model):
     
     objects = BillManager()
     
+    class Meta:
+        get_latest_by = 'created_on'
+    
     def __unicode__(self):
         return self.number
     

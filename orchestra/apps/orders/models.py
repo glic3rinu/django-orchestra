@@ -1,3 +1,4 @@
+import decimal
 import logging
 import sys
 
@@ -122,13 +123,15 @@ class Order(models.Model):
     def update(self):
         instance = self.content_object
         handler = self.service.handler
+        metric = ''
         if handler.metric:
             metric = handler.get_metric(instance)
             if metric is not None:
                 MetricStorage.store(self, metric)
+            metric = ', metric:{}'.format(metric)
         description = "{}: {}".format(handler.description, str(instance))
-        logger.info("UPDATED order id: {id} description:{description}".format(
-                    id=self.id, description=description))
+        logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
+                    id=self.id, description=description, metric=metric))
         if self.description != description:
             self.description = description
             self.save()
@@ -143,10 +146,10 @@ class Order(models.Model):
 
 
 class MetricStorage(models.Model):
-    order = models.ForeignKey(Order, verbose_name=_("order"))
-    value = models.BigIntegerField(_("value"))
-    created_on = models.DateField(_("created on"), auto_now_add=True)
-    updated_on = models.DateField(_("updated on"), auto_now=True)
+    order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
+    value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
+    created_on = models.DateField(_("created"), auto_now_add=True)
+    updated_on = models.DateTimeField(_("updated"))
     
     class Meta:
         get_latest_by = 'created_on'
@@ -156,23 +159,24 @@ class MetricStorage(models.Model):
     
     @classmethod
     def store(cls, order, value):
+        now = timezone.now()
         try:
             metric = cls.objects.filter(order=order).latest()
         except cls.DoesNotExist:
-            cls.objects.create(order=order, value=value)
+            cls.objects.create(order=order, value=value, updated_on=now)
         else:
             if metric.value != value:
-                cls.objects.create(order=order, value=value)
+                cls.objects.create(order=order, value=value, updated_on=now)
             else:
+                metric.updated_on = now
                 metric.save()
     
     @classmethod
     def get(cls, order, ini, end):
         try:
-            return cls.objects.filter(order=order, updated_on__lt=end,
-                    updated_on__gte=ini).latest('updated_on').value
+            return order.metrics.filter(updated_on__lt=end, updated_on__gte=ini).latest('updated_on').value
         except cls.DoesNotExist:
-            return 0
+            return decimal.Decimal(0)
 
 
 _excluded_models = (MetricStorage, LogEntry, Order, ContentType, MigrationRecorder.Migration)

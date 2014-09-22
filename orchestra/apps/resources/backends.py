@@ -52,7 +52,7 @@ class ServiceMonitor(ServiceBackend):
         return line.split()
     
     def store(self, log):
-        """ stores montirod values from stdout """
+        """ stores monitored values from stdout """
         from .models import MonitorData
         name = self.get_name()
         app_label, model_name = self.model.split('.')

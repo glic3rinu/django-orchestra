@@ -1,3 +1,4 @@
+import decimal
 import sys
 
 from django.db import models
@@ -281,14 +282,14 @@ class Service(models.Model):
                 if counter >= metric:
                     counter = metric
                     accumulated += (counter - ant_counter) * rate['price']
-                    return float(accumulated)
+                    return decimal.Decimal(accumulated)
                 ant_counter = counter
                 accumulated += rate['price'] * rate['quantity']
         else:
             for rate in rates:
                 counter += rate['quantity']
                 if counter >= position:
-                    return float(rate['price'])
+                    return decimal.Decimal(rate['price'])
     
     def get_rates(self, account, cache=True):
         # rates are cached per account

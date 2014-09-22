@@ -27,15 +27,22 @@ def monitor(resource_id):
     model = resource.content_type.model_class()
     for obj in model.objects.all():
         data = ResourceData.get_or_create(obj, resource)
-        current = data.get_used()
+        data.update()
         if not resource.disable_trigger:
-            if data.used < data.allocated and current > data.allocated:
+            if data.used < data.allocated:
                 op = Operation.create(backend, obj, Operation.EXCEED)
                 operations.append(op)
-            elif data.used > data.allocated and current < data.allocated:
+            elif data.used < data.allocated:
                 op = Operation.create(backend, obj, Operation.RECOVERY)
                 operation.append(op)
-        data.used = current or 0
-        data.last_update = timezone.now()
-        data.save()
+#        data = ResourceData.get_or_create(obj, resource)
+#        current = data.get_used()
+#        if not resource.disable_trigger:
+#            if data.used < data.allocated and current > data.allocated:
+#                op = Operation.create(backend, obj, Operation.EXCEED)
+#                operations.append(op)
+#            elif data.used > data.allocated and current < data.allocated:
+#                op = Operation.create(backend, obj, Operation.RECOVERY)
+#                operation.append(op)
+#        data.update(current=current)
     Operation.execute(operations)

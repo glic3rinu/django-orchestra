@@ -14,7 +14,6 @@ TODO
 
 * add `BackendLog` retry action
 * move invoice contact to invoices app?
-* wrapper around reverse('admin:....') `link()` and `link_factory()`
 * PHPbBckendMiixin with get_php_ini
 * Apache: `IncludeOptional /etc/apache2/extra-vhos[t]/account-site-custom.con[f]`
 * rename account.user to primary_user
@@ -40,11 +39,8 @@ TODO
 Remember that, as always with QuerySets, any subsequent chained methods which imply a different database query will ignore previously cached results, and retrieve data using a fresh database query. 
 * profile select_related vs prefetch_related
 
-* use HTTP OPTIONS instead of configuration endpoint, or rename to settings?
 
 * Log changes from rest api (serialized objects)
-
-
 * passlib; nano /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py SortedDict -> collections.OrderedDict
 * pip install pyinotify
 
@@ -105,3 +101,8 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
 
 
 * create log file at /var/log/orchestra.log and rotate
+
+* order.register_at
+    @property
+    def register_on(self):
+        return order.register_at.date()

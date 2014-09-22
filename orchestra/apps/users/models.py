@@ -38,8 +38,7 @@ class User(auth.AbstractBaseUser):
     
     @property
     def is_main(self):
-        # TODO chicken and egg
-        return not self.account.user_id or self.account.user == self
+        return self.account.user == self
     
     def get_full_name(self):
         full_name = '%s %s' % (self.first_name, self.last_name)

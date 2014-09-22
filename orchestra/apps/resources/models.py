@@ -2,11 +2,11 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.core import validators
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
 from orchestra.models import queryset, fields
-from orchestra.utils.functional import cached
 
 from . import helpers
 from .backends import ServiceMonitor
@@ -43,6 +43,7 @@ class Resource(models.Model):
             default=LAST,
             help_text=_("Operation used for aggregating this resource monitored"
                         "data."))
+    # TODO rename to on_deman
     ondemand = models.BooleanField(_("on demand"), default=False,
             help_text=_("If enabled the resource will not be pre-allocated, "
                         "but allocated under the application demand"))
@@ -79,6 +80,7 @@ class Resource(models.Model):
         return "{}-{}".format(str(self.content_type), self.name)
     
     def save(self, *args, **kwargs):
+#        created = not self.pk
         super(Resource, self).save(*args, **kwargs)
         # Create Celery periodic task
         name = 'monitor.%s' % str(self)
@@ -98,6 +100,8 @@ class Resource(models.Model):
             elif task.crontab != self.crontab:
                 task.crontab = self.crontab
                 task.save()
+#        if created:
+#            create_resource_relation()
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
@@ -136,6 +140,13 @@ class ResourceData(models.Model):
     
     def get_used(self):
         return helpers.compute_resource_usage(self)
+    
+    def update(self, current=None):
+        if current is None:
+            current = self.get_used()
+        self.used = current or 0
+        self.last_update = timezone.now()
+        self.save()
 
 
 class MonitorData(models.Model):
@@ -169,7 +180,6 @@ def create_resource_relation():
                 resource = Resource.objects.get(content_type__model=model,
                         name=attr, is_active=True)
                 data = ResourceData(content_object=self.obj, resource=resource)
-            setattr(self, attr, data)
             return data
         
         def __get__(self, obj, cls):

@@ -172,6 +172,9 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     display_transactions.short_description = _("Transactions")
     display_transactions.allow_tags = True
     
+    def has_add_permission(self, *args, **kwargs):
+        return False
+    
     def get_change_view_actions(self, obj=None):
         actions = super(TransactionProcessAdmin, self).get_change_view_actions()
         exclude = []

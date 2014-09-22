@@ -11,7 +11,7 @@ from .backends import ServiceMonitor
 
 def compute_resource_usage(data):
     """ Computes MonitorData.used based on related monitors """
-    MonitorData = type(data)
+    from .models import MonitorData
     resource = data.resource
     today = timezone.now()
     result = 0
@@ -29,9 +29,7 @@ def compute_resource_usage(data):
             objects = monitor_model.objects.filter(**{fields: data.object_id})
             pks = objects.values_list('id', flat=True)
             ct = ContentType.objects.get_for_model(monitor_model)
-            dataset = MonitorData.objects.filter(monitor=monitor,
-                    content_type=ct, object_id__in=pks)
-        
+            dataset = MonitorData.objects.filter(monitor=monitor, content_type=ct, object_id__in=pks)
         # Process dataset according to resource.period
         if resource.period == resource.MONTHLY_AVG:
             try:
@@ -39,11 +37,9 @@ def compute_resource_usage(data):
             except MonitorData.DoesNotExist:
                 continue
             has_result = True
-            epoch = datetime(year=today.year, month=today.month, day=1,
-                             tzinfo=timezone.utc)
+            epoch = datetime(year=today.year, month=today.month, day=1, tzinfo=timezone.utc)
             total = (epoch-last.date).total_seconds()
-            dataset = dataset.filter(date__year=today.year,
-                                     date__month=today.month)
+            dataset = dataset.filter(date__year=today.year, date__month=today.month)
             for data in dataset:
                 slot = (previous-data.date).total_seconds()
                 result += data.value * slot/total
@@ -62,7 +58,5 @@ def compute_resource_usage(data):
                 continue
             has_result = True
         else:
-            msg = "%s support not implemented" % data.period
-            raise NotImplementedError(msg)
-        
+            raise NotImplementedError("%s support not implemented" % data.period)
     return result/resource.scale if has_result else None

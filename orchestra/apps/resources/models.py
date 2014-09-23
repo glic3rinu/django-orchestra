@@ -80,7 +80,7 @@ class Resource(models.Model):
         return "{}-{}".format(str(self.content_type), self.name)
     
     def save(self, *args, **kwargs):
-#        created = not self.pk
+        created = not self.pk
         super(Resource, self).save(*args, **kwargs)
         # Create Celery periodic task
         name = 'monitor.%s' % str(self)
@@ -100,8 +100,8 @@ class Resource(models.Model):
             elif task.crontab != self.crontab:
                 task.crontab = self.crontab
                 task.save()
-#        if created:
-#            create_resource_relation()
+        if created:
+            create_resource_relation()
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)

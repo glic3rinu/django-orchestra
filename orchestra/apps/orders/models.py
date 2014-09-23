@@ -185,10 +185,10 @@ _excluded_models = (MetricStorage, LogEntry, Order, ContentType, MigrationRecord
 def cancel_orders(sender, **kwargs):
     if sender not in _excluded_models:
         instance = kwargs['instance']
-        if hasattr(instance, 'account'):
+        if sender in services:
             for order in Order.objects.by_object(instance).active():
                 order.cancel()
-        else:
+        elif not hasattr(instance, 'account'):
             related = helpers.get_related_objects(instance)
             if related and related != instance:
                 Order.update_orders(related)
@@ -198,9 +198,9 @@ def cancel_orders(sender, **kwargs):
 def update_orders(sender, **kwargs):
     if sender not in _excluded_models:
         instance = kwargs['instance']
-        if hasattr(instance, 'account'):
+        if sender in services:
             Order.update_orders(instance)
-        else:
+        elif not hasattr(instance, 'account'):
             related = helpers.get_related_objects(instance)
             if related and related != instance:
                 Order.update_orders(related)

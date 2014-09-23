@@ -11,7 +11,7 @@ from . import settings
 
 class MailSystemUserBackend(ServiceController):
     verbose_name = _("Mail system user")
-    model = 'mail.Mailbox'
+    model = 'mails.Mailbox'
     # TODO related_models = ('resources__content_type') ??
     
     DEFAULT_GROUP = 'postfix'
@@ -66,7 +66,7 @@ class MailSystemUserBackend(ServiceController):
 
 class PostfixAddressBackend(ServiceController):
     verbose_name = _("Postfix address")
-    model = 'mail.Address'
+    model = 'mails.Address'
     
     def include_virtdomain(self, context):
         self.append(
@@ -140,7 +140,7 @@ class AutoresponseBackend(ServiceController):
 
 
 class MaildirDisk(ServiceMonitor):
-    model = 'email.Mailbox'
+    model = 'mails.Mailbox'
     resource = ServiceMonitor.DISK
     verbose_name = _("Maildir disk usage")
     

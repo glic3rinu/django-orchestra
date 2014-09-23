@@ -218,7 +218,6 @@ class ServiceHandler(plugins.Plugin):
         return dsize, cend
     
     def get_register_or_renew_events(self, porders, ini, end):
-        # TODO count intermediat billing points too
         counter = 0
         for order in porders:
             bu = getattr(order, 'new_billed_until', order.billed_until)
@@ -251,13 +250,14 @@ class ServiceHandler(plugins.Plugin):
                 price = self.get_price(account, metric, position=position, rates=rates)
                 price = price * size
                 cprice = price * (size-csize)
-                if order in prices:
+                if order in priced:
                     priced[order][0] += price
                     priced[order][1] += cprice
                 else:
                     priced[order] = (price, cprice)
         lines = []
         for order, prices in priced.iteritems():
+            discounts = ()
             # Generate lines and discounts from order.nominal_price
             price, cprice = prices
             # Compensations > new_billed_until
@@ -351,8 +351,8 @@ class ServiceHandler(plugins.Plugin):
             porders = related_orders.pricing_orders(ini, end)
             porders = list(set(orders).union(set(porders)))
             porders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
-            if self.billing_period != self.NEVER and self.get_pricing_period == self.NEVER:
-                liens = self.bill_concurrent_orders(account, porders, rates, ini, end, commit=commit)
+            if self.billing_period != self.NEVER and self.get_pricing_period() == self.NEVER:
+                lines = self.bill_concurrent_orders(account, porders, rates, ini, end, commit=commit)
             else:
                 # TODO compensation in this case?
                 lines = self.bill_registered_or_renew_events(account, porders, rates, commit=commit)
@@ -392,10 +392,29 @@ class ServiceHandler(plugins.Plugin):
             # weighted metric; bill line per pricing period
             prev = None
             lines_info = []
-            for ini, end in self.get_pricing_slots(ini, bp):
-                metric = order.get_metric(ini, end)
-                price = self.get_price(order, metric)
-                lines.append(self.generate_line(order, price, metric, ini, end))
+            if self.billing_period != self.NEVER:
+                if self.get_pricing_period() == self.NEVER:
+                    # Changes
+                    for ini, end, metric in order.get_metric(ini, end, changes=True)
+                        size = self.get_price_size(ini, end)
+                        price = self.get_price(order, metric)
+                        price = price * size
+                        # TODO metric and size in invoice (period and quantity)
+                        lines.append(self.generate_line(order, price, metric, ini, end))
+                else:
+                    # pricing_slots
+                    for ini, end in self.get_pricing_slots(ini, bp):
+                        metric = order.get_metric(ini, end)
+                        price = self.get_price(order, metric)
+                        lines.append(self.generate_line(order, price, metric, ini, end))
+            else:
+                if self.get_pricing_period() == self.NEVER:
+                    # get metric
+                    metric = order.get_metric(ini, end)
+                    price = self.get_price(order, metric)
+                    lines.append(self.generate_line(order, price, metric, ini, end))
+                else:
+                    raise NotImplementedError
             if commit:
                 order.billed_until = order.new_billed_until
                 order.save()

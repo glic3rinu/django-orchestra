@@ -8,6 +8,9 @@ from django.db.models import F
 from django.utils import timezone
 
 from orchestra.apps.accounts.models import Account
+from orchestra.apps.mails.models import Mailbox
+from orchestra.apps.miscellaneous.models import MiscService, Miscellaneous
+from orchestra.apps.resources.models import Resource, ResourceData, MonitorData
 from orchestra.apps.services.models import Service, Plan
 from orchestra.apps.services import settings as services_settings
 from orchestra.apps.users.models import User
@@ -17,7 +20,7 @@ from orchestra.utils.tests import BaseTestCase, random_ascii
 class BaseBillingTest(BaseTestCase):
     def create_account(self):
         account = Account.objects.create()
-        user = User.objects.create_user(username='rata_palida', account=account)
+        user = User.objects.create_user(username='account_%s' % random_ascii(5), account=account)
         account.user = user
         account.save()
         return account
@@ -109,10 +112,13 @@ class FTPBillingTest(BaseBillingTest):
         order = service.orders.order_by('-id').first()
         self.assertEqual(first_bp, order.billed_until)
         self.assertEqual(decimal.Decimal(0), bills[0].get_total())
+    
+    def test_ftp_account_with_rates(self):
+        pass
+
 
 class DomainBillingTest(BaseBillingTest):
     def create_domain_service(self):
-        from orchestra.apps.miscellaneous.models import MiscService, Miscellaneous
         service = Service.objects.create(
             description="Domain .ES",
             content_type=ContentType.objects.get_for_model(Miscellaneous),
@@ -136,7 +142,6 @@ class DomainBillingTest(BaseBillingTest):
         return service
     
     def create_domain(self, account=None):
-        from orchestra.apps.miscellaneous.models import MiscService, Miscellaneous
         if not account:
             account = self.create_account()
         domain_name = '%s.es' % random_ascii(10)
@@ -278,7 +283,6 @@ class TrafficBillingTest(BaseBillingTest):
         return self.resource
     
     def report_traffic(self, account, date, value):
-        from orchestra.apps.resources.models import ResourceData, MonitorData
         ct = ContentType.objects.get_for_model(Account)
         object_id = account.pk
         MonitorData.objects.create(monitor='FTPTraffic', content_object=account.user, value=value, date=date)
@@ -310,3 +314,147 @@ class TrafficBillingTest(BaseBillingTest):
         order.metrics.filter(id=3).update(updated_on=F('updated_on')-delta)
         bills = service.orders.bill(proforma=True)
         self.assertEqual(900, bills[0].get_total())
+    
+    def test_multiple_traffics(self):
+        service = self.create_traffic_service()
+        resource = self.create_traffic_resource()
+        account1 = self.create_account()
+        account2 = self.create_account()
+
+
+class MailboxBillingTest(BaseBillingTest):
+    def create_mailbox_service(self):
+        service = Service.objects.create(
+            description="Mailbox",
+            content_type=ContentType.objects.get_for_model(Mailbox),
+            match="True",
+            billing_period=Service.ANUAL,
+            billing_point=Service.FIXED_DATE,
+            is_fee=False,
+            metric='',
+            pricing_period=Service.NEVER,
+            rate_algorithm=Service.STEP_PRICE,
+            on_cancel=Service.DISCOUNT,
+            payment_style=Service.PREPAY,
+            tax=0,
+            nominal_price=10
+        )
+        plan = Plan.objects.create(is_default=True, name='Default')
+        service.rates.create(plan=plan, quantity=1, price=0)
+        service.rates.create(plan=plan, quantity=5, price=10)
+        return service
+    
+    def create_mailbox_disk_service(self):
+        service = Service.objects.create(
+            description="Mailbox disk",
+            content_type=ContentType.objects.get_for_model(Mailbox),
+            match="True",
+            billing_period=Service.ANUAL,
+            billing_point=Service.FIXED_DATE,
+            is_fee=False,
+            metric='max((mailbox.resources.disk.allocated or 0) -1, 0)',
+            pricing_period=Service.NEVER,
+            rate_algorithm=Service.STEP_PRICE,
+            on_cancel=Service.DISCOUNT,
+            payment_style=Service.PREPAY,
+            tax=0,
+            nominal_price=10
+        )
+        plan = Plan.objects.create(is_default=True, name='Default')
+        service.rates.create(plan=plan, quantity=1, price=0)
+        service.rates.create(plan=plan, quantity=2, price=10)
+        return service
+    
+    def create_disk_resource(self):
+        self.resource = Resource.objects.create(
+            name='disk',
+            content_type=ContentType.objects.get_for_model(Mailbox),
+            period=Resource.LAST,
+            verbose_name='Mailbox disk',
+            unit='GB',
+            scale=10**9,
+            ondemand=False,
+            monitors='MaildirDisk',
+        )
+        return self.resource
+    
+    def allocate_disk(self, mailbox, value):
+        data = ResourceData.get_or_create(mailbox, self.resource)
+        data.allocated = value
+        data.save()
+    
+    def create_mailbox(self, account=None):
+        if not account:
+            account = self.create_account()
+        mailbox_name = '%s@orchestra.lan' % random_ascii(10)
+        return Mailbox.objects.create(name=mailbox_name, account=account)
+    
+    def test_mailbox_size(self):
+        service = self.create_mailbox_service()
+        disk_service = self.create_mailbox_disk_service()
+        self.create_disk_resource()
+        account = self.create_account()
+        mailbox = self.create_mailbox(account=account)
+        self.allocate_disk(mailbox, 10)
+        bill = service.orders.bill()[0]
+        self.assertEqual(0, bill.get_total())
+        bill = disk_service.orders.bill()[0]
+        for line in bill.lines.all():
+            for discount in line.sublines.all():
+                print discount.__dict__
+        self.assertEqual(80, bill.get_total())
+        mailbox = self.create_mailbox(account=account)
+        mailbox = self.create_mailbox(account=account)
+        mailbox = self.create_mailbox(account=account)
+        mailbox = self.create_mailbox(account=account)
+        mailbox = self.create_mailbox(account=account)
+        bill = service.orders.bill()[0]
+        print disk_service.orders.bill()[0].get_total()
+
+
+class JobBillingTest(BaseBillingTest):
+    def create_job_service(self):
+        service = Service.objects.create(
+            description="Random job",
+            content_type=ContentType.objects.get_for_model(Miscellaneous),
+            match="miscellaneous.is_active and miscellaneous.service.name.lower() == 'job'",
+            billing_period=Service.MONTHLY,
+            billing_point=Service.FIXED_DATE,
+            is_fee=False,
+            metric='mailbox.resources.disk.allocated',
+            pricing_period=Service.BILLING_PERIOD,
+            rate_algorithm=Service.STEP_PRICE,
+            on_cancel=Service.NOTHING,
+            payment_style=Service.POSTPAY,
+            tax=0,
+            nominal_price=10
+        )
+        plan = Plan.objects.create(is_default=True, name='Default')
+        service.rates.create(plan=plan, quantity=1, price=0)
+        service.rates.create(plan=plan, quantity=11, price=10)
+        return service
+    
+    def create_job(self, account=None):
+        if not account:
+            account = self.create_account()
+        job_name = '%s.es' % random_ascii(10)
+        job_service, __ = MiscService.objects.get_or_create(name='job', description='Random job')
+        return Miscellaneous.objects.create(service=job_service, description=job_name, account=account)
+    
+    def test_job(self):
+        pass
+
+
+class PlanBillingTest(BaseBillingTest):
+    def create_plan_service(self):
+        pass
+    
+    def create_plan(self):
+        if not account:
+            account = self.create_account()
+        domain_name = '%s.es' % random_ascii(10)
+        domain_service, __ = MiscService.objects.get_or_create(name='domain .es', description='Domain .ES')
+        return Miscellaneous.objects.create(service=domain_service, description=domain_name, account=account)
+    
+    def test_plan(self):
+        pass

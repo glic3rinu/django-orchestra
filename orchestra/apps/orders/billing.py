@@ -35,7 +35,7 @@ class BillsBackend(object):
             # Create bill line
             billine = bill.lines.create(
                     rate=service.nominal_price,
-                    quantity=line.size,
+                    quantity=line.metric*line.size,
                     subtotal=line.subtotal,
                     tax=service.tax,
                     description=self.get_line_description(line),
@@ -54,11 +54,14 @@ class BillsBackend(object):
         service = line.order.service
         if service.is_fee:
             return self.format_period(line.ini, line.end)
-        else:
-            description = line.order.description
-            if service.billing_period != service.NEVER:
-                description += " %s" % self.format_period(line.ini, line.end)
-            return description
+        description = line.order.description
+        if service.billing_period != service.NEVER:
+            description += " %s" % self.format_period(line.ini, line.end)
+        if service.metric and service.billing_period != service.NEVER and service.pricing_period == service.NEVER:
+            metric = format(line.metric, '.2f').rstrip('0').rstrip('.')
+            size = format(line.size, '.2f').rstrip('0').rstrip('.')
+            description += " (%s*%s)" % (metric, size)
+        return description
     
     def create_sublines(self, line, discounts):
         for discount in discounts:

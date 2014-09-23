@@ -141,14 +141,32 @@ class Order(models.Model):
         self.save()
         logger.info("CANCELLED order id: {id}".format(id=self.id))
     
-    def get_metric(self, ini, end):
-        return MetricStorage.get(self, ini, end)
+    def get_metric(self, ini, end, changes=False):
+        if changes:
+            result = []
+            prev = None
+            for metric in self.metrics.filter(created_on__lt=end).order_by('created_on'):
+                created = metric.created_on.date()
+                if created > ini:
+                    cini = prev.created_on.date()
+                    if not result:
+                        cini = ini
+                    result.append((cini, created, prev.value))
+                prev = metric
+            if created < end:
+                result.append((created, end, metric.value))
+            return result
+        try:
+            metrics = self.metrics.filter(updated_on__lt=end, updated_on__gte=ini)
+            return metrics.latest('updated_on').value
+        except MetricStorage.DoesNotExist:
+            return decimal.Decimal(0)
 
 
 class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
-    created_on = models.DateField(_("created"), auto_now_add=True)
+    created_on = models.DateTimeField(_("created"), auto_now_add=True)
     updated_on = models.DateTimeField(_("updated"))
     
     class Meta:
@@ -170,25 +188,19 @@ class MetricStorage(models.Model):
             else:
                 metric.updated_on = now
                 metric.save()
-    
-    @classmethod
-    def get(cls, order, ini, end):
-        try:
-            return order.metrics.filter(updated_on__lt=end, updated_on__gte=ini).latest('updated_on').value
-        except cls.DoesNotExist:
-            return decimal.Decimal(0)
 
 
 _excluded_models = (MetricStorage, LogEntry, Order, ContentType, MigrationRecorder.Migration)
+
 
 @receiver(post_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
     if sender not in _excluded_models:
         instance = kwargs['instance']
-        if sender in services:
+        if hasattr(instance, 'account'):
             for order in Order.objects.by_object(instance).active():
                 order.cancel()
-        elif not hasattr(instance, 'account'):
+        else:
             related = helpers.get_related_objects(instance)
             if related and related != instance:
                 Order.update_orders(related)
@@ -198,12 +210,13 @@ def cancel_orders(sender, **kwargs):
 def update_orders(sender, **kwargs):
     if sender not in _excluded_models:
         instance = kwargs['instance']
-        if sender in services:
+        if hasattr(instance, 'account'):
             Order.update_orders(instance)
-        elif not hasattr(instance, 'account'):
+        else:
             related = helpers.get_related_objects(instance)
             if related and related != instance:
                 Order.update_orders(related)
+
 
 
 accounts.register(Order)

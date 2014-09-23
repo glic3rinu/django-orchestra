@@ -311,7 +311,9 @@ class TrafficBillingTest(BaseBillingTest):
         self.assertEqual(0, bills[0].get_total())
         
         self.report_traffic(account, date, 10**10*9)
-        order.metrics.filter(id=3).update(updated_on=F('updated_on')-delta)
+        metric = order.metrics.latest()
+        metric.updated_on -= delta
+        metric.save()
         bills = service.orders.bill(proforma=True)
         self.assertEqual(900, bills[0].get_total())
     
@@ -320,6 +322,11 @@ class TrafficBillingTest(BaseBillingTest):
         resource = self.create_traffic_resource()
         account1 = self.create_account()
         account2 = self.create_account()
+        # TODO
+        
+    def test_traffic_prepay(self):
+        pass
+        # TODO
 
 
 class MailboxBillingTest(BaseBillingTest):
@@ -361,8 +368,7 @@ class MailboxBillingTest(BaseBillingTest):
             nominal_price=10
         )
         plan = Plan.objects.create(is_default=True, name='Default')
-        service.rates.create(plan=plan, quantity=1, price=0)
-        service.rates.create(plan=plan, quantity=2, price=10)
+        service.rates.create(plan=plan, quantity=1, price=10)
         return service
     
     def create_disk_resource(self):
@@ -398,18 +404,56 @@ class MailboxBillingTest(BaseBillingTest):
         self.allocate_disk(mailbox, 10)
         bill = service.orders.bill()[0]
         self.assertEqual(0, bill.get_total())
-        bill = disk_service.orders.bill()[0]
-        for line in bill.lines.all():
-            for discount in line.sublines.all():
-                print discount.__dict__
-        self.assertEqual(80, bill.get_total())
+        bp = timezone.now().date() + relativedelta.relativedelta(years=1)
+        bill = disk_service.orders.bill(billing_point=bp, fixed_point=True)[0]
+        self.assertEqual(90, bill.get_total())
         mailbox = self.create_mailbox(account=account)
         mailbox = self.create_mailbox(account=account)
         mailbox = self.create_mailbox(account=account)
         mailbox = self.create_mailbox(account=account)
         mailbox = self.create_mailbox(account=account)
-        bill = service.orders.bill()[0]
-        print disk_service.orders.bill()[0].get_total()
+        mailbox = self.create_mailbox(account=account)
+        bill = service.orders.bill(billing_point=bp, fixed_point=True)[0]
+        self.assertEqual(120, bill.get_total())
+    
+    def test_mailbox_size_with_changes(self):
+        service = self.create_mailbox_disk_service()
+        self.create_disk_resource()
+        account = self.create_account()
+        mailbox = self.create_mailbox(account=account)
+        now = timezone.now()
+        bp = now.date() + relativedelta.relativedelta(years=1)
+        
+        self.allocate_disk(mailbox, 10)
+        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
+        self.assertEqual(9*10, bill.get_total())
+        
+        self.allocate_disk(mailbox, 20)
+        created_on = now+relativedelta.relativedelta(months=6)
+        order = service.orders.get()
+        metric = order.metrics.latest('id')
+        metric.created_on = created_on
+        metric.save()
+        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
+        self.assertEqual(9*10*0.5 + 19*10*0.5, bill.get_total())
+        
+        self.allocate_disk(mailbox, 30)
+        created_on = now+relativedelta.relativedelta(months=9)
+        order = service.orders.get()
+        metric = order.metrics.latest('id')
+        metric.created_on = created_on
+        metric.save()
+        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
+        self.assertEqual(9*10*0.5 + 19*10*0.25 + 29*10*0.25, bill.get_total())
+        
+        self.allocate_disk(mailbox, 10)
+        created_on = now+relativedelta.relativedelta(years=1)
+        order = service.orders.get()
+        metric = order.metrics.latest('id')
+        metric.created_on = created_on
+        metric.save()
+        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
+        self.assertEqual(9*10*0.5 + 19*10*0.25 + 29*10*0.25, bill.get_total())
 
 
 class JobBillingTest(BaseBillingTest):
@@ -418,10 +462,10 @@ class JobBillingTest(BaseBillingTest):
             description="Random job",
             content_type=ContentType.objects.get_for_model(Miscellaneous),
             match="miscellaneous.is_active and miscellaneous.service.name.lower() == 'job'",
-            billing_period=Service.MONTHLY,
-            billing_point=Service.FIXED_DATE,
+            billing_period=Service.NEVER,
+            billing_point=Service.ON_REGISTER,
             is_fee=False,
-            metric='mailbox.resources.disk.allocated',
+            metric='miscellaneous.amount',
             pricing_period=Service.BILLING_PERIOD,
             rate_algorithm=Service.STEP_PRICE,
             on_cancel=Service.NOTHING,
@@ -434,15 +478,19 @@ class JobBillingTest(BaseBillingTest):
         service.rates.create(plan=plan, quantity=11, price=10)
         return service
     
-    def create_job(self, account=None):
+    def create_job(self, amount, account=None):
         if not account:
             account = self.create_account()
         job_name = '%s.es' % random_ascii(10)
-        job_service, __ = MiscService.objects.get_or_create(name='job', description='Random job')
-        return Miscellaneous.objects.create(service=job_service, description=job_name, account=account)
+        job_service, __ = MiscService.objects.get_or_create(name='job', description='Random job', has_amount=True)
+        return Miscellaneous.objects.create(service=job_service, description=job_name, account=account, amount=amount)
     
     def test_job(self):
-        pass
+        service = self.create_job_service()
+        account = self.create_account()
+        job = self.create_job(10, account=account)
+        print service.orders.all()
+        print service.orders.bill()[0].get_total()
 
 
 class PlanBillingTest(BaseBillingTest):

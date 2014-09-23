@@ -38,7 +38,7 @@ class FTPBillingTest(BaseBillingTest):
             metric='',
             pricing_period=Service.NEVER,
             rate_algorithm=Service.STEP_PRICE,
-            on_cancel=Service.DISCOUNT,
+            on_cancel=Service.COMPENSATE,
             payment_style=Service.PREPAY,
             tax=0,
             nominal_price=10,
@@ -269,7 +269,6 @@ class TrafficBillingTest(BaseBillingTest):
         return service
     
     def create_traffic_resource(self):
-        from orchestra.apps.resources.models import Resource
         self.resource = Resource.objects.create(
             name='traffic',
             content_type=ContentType.objects.get_for_model(Account),
@@ -341,7 +340,7 @@ class MailboxBillingTest(BaseBillingTest):
             metric='',
             pricing_period=Service.NEVER,
             rate_algorithm=Service.STEP_PRICE,
-            on_cancel=Service.DISCOUNT,
+            on_cancel=Service.COMPENSATE,
             payment_style=Service.PREPAY,
             tax=0,
             nominal_price=10
@@ -467,15 +466,15 @@ class JobBillingTest(BaseBillingTest):
             is_fee=False,
             metric='miscellaneous.amount',
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm=Service.MATCH_PRICE,
             on_cancel=Service.NOTHING,
             payment_style=Service.POSTPAY,
             tax=0,
-            nominal_price=10
+            nominal_price=20
         )
         plan = Plan.objects.create(is_default=True, name='Default')
-        service.rates.create(plan=plan, quantity=1, price=0)
-        service.rates.create(plan=plan, quantity=11, price=10)
+        service.rates.create(plan=plan, quantity=1, price=20)
+        service.rates.create(plan=plan, quantity=10, price=15)
         return service
     
     def create_job(self, amount, account=None):
@@ -488,9 +487,14 @@ class JobBillingTest(BaseBillingTest):
     def test_job(self):
         service = self.create_job_service()
         account = self.create_account()
-        job = self.create_job(10, account=account)
-        print service.orders.all()
-        print service.orders.bill()[0].get_total()
+        
+        job = self.create_job(5, account=account)
+        bill = service.orders.bill()[0]
+        self.assertEqual(5*20, bill.get_total())
+        
+        job = self.create_job(100, account=account)
+        bill = service.orders.bill(new_open=True)[0]
+        self.assertEqual(100*15, bill.get_total())
 
 
 class PlanBillingTest(BaseBillingTest):

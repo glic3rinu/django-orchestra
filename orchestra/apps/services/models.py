@@ -89,6 +89,7 @@ class Service(models.Model):
     CONCURRENT = 'CONCURRENT'
     NOTHING = 'NOTHING'
     DISCOUNT = 'DISCOUNT'
+    COMPENSATE = 'COMPENSATE'
     REFOUND = 'REFOUND'
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
@@ -173,6 +174,7 @@ class Service(models.Model):
             choices=(
                 (NOTHING, _("Nothing")),
                 (DISCOUNT, _("Discount")),
+                (COMPENSATE, _("Compensat")),
                 (REFOUND, _("Refound")),
             ),
             default=DISCOUNT)
@@ -266,13 +268,13 @@ class Service(models.Model):
         """
         if rates is None:
             rates = self.get_rates(account)
+        if rates:
+            rates =  self.rate_method(rates, metric)
         if not rates:
             rates = [{
                 'quantity': metric,
                 'price': self.nominal_price,
             }]
-        else:
-            rates =  self.rate_method(rates, metric)
         counter = 0
         if position is None:
             ant_counter = 0

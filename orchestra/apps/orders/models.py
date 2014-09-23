@@ -141,14 +141,15 @@ class Order(models.Model):
         self.save()
         logger.info("CANCELLED order id: {id}".format(id=self.id))
     
-    def get_metric(self, ini, end, changes=False):
-        if changes:
+    def get_metric(self, *args, **kwargs):
+        if kwargs.pop('changes', False):
+            ini, end = args
             result = []
             prev = None
-            for metric in self.metrics.filter(created_on__lt=end).order_by('created_on'):
-                created = metric.created_on.date()
+            for metric in self.metrics.filter(created_on__lt=end).order_by('id'):
+                created = metric.created_on
                 if created > ini:
-                    cini = prev.created_on.date()
+                    cini = prev.created_on
                     if not result:
                         cini = ini
                     result.append((cini, created, prev.value))
@@ -156,8 +157,20 @@ class Order(models.Model):
             if created < end:
                 result.append((created, end, metric.value))
             return result
-        try:
+        if kwargs:
+            raise AttributeError
+        if len(args) == 2:
+            ini, end = args
             metrics = self.metrics.filter(updated_on__lt=end, updated_on__gte=ini)
+        elif len(args) == 1:
+            date = args[0]
+            metrics = self.metrics.filter(updated_on__year=date.year,
+                    updated_on__month=date.month, updated_on__day=date.day)
+        elif not args:
+            return self.metrics.latest('updated_on').value
+        else:
+            raise AttributeError
+        try:
             return metrics.latest('updated_on').value
         except MetricStorage.DoesNotExist:
             return decimal.Decimal(0)
@@ -166,11 +179,11 @@ class Order(models.Model):
 class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
-    created_on = models.DateTimeField(_("created"), auto_now_add=True)
+    created_on = models.DateField(_("created"), auto_now_add=True)
     updated_on = models.DateTimeField(_("updated"))
     
     class Meta:
-        get_latest_by = 'created_on'
+        get_latest_by = 'id'
     
     def __unicode__(self):
         return unicode(self.order)

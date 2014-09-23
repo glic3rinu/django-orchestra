@@ -106,3 +106,6 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
     @property
     def register_on(self):
         return order.register_at.date()
+
+
+* latest by 'id' *always*

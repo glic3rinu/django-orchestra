@@ -44,7 +44,6 @@ def _compute(rates, metric):
 
 def step_price(rates, metric):
     # Step price
-    # TODO allow multiple plans
     group = []
     minimal = (sys.maxint, [])
     for plan, rates in rates.group_by('plan').iteritems():
@@ -104,18 +103,22 @@ def match_price(rates, metric):
     selected = False
     prev = None
     for rate in rates.distinct():
-        if prev and prev.plan != rate.plan:
-            if not selected and prev.quantity <= metric:
-                candidates.append(prev)
-            selected = False
-        if not selected and rate.quantity > metric:
-            candidates.append(prev)
-            selected = True
+        if prev:
+            if prev.plan != rate.plan:
+                if not selected and prev.quantity <= metric:
+                    candidates.append(prev)
+                selected = False
+            if not selected and rate.quantity > metric:
+                if prev.quantity <= metric:
+                    candidates.append(prev)
+                    selected = True
         prev = rate
     if not selected and prev.quantity <= metric:
         candidates.append(prev)
     candidates.sort(key=lambda r: r.price)
-    return [AttributeDict(**{
-        'quantity': metric,
-        'price': candidates[0].price,
-    })]
+    if candidates:
+        return [AttributeDict(**{
+            'quantity': metric,
+            'price': candidates[0].price,
+        })]
+    return None

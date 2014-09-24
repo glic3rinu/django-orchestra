@@ -82,7 +82,7 @@ export -f get_orchestra_dir
 
 
 function print_install_requirements_help () {
-    cat <<- EOF 
+    cat <<- EOF
 		
 		${bold}NAME${normal}
 		    ${bold}orchetsra-admin install_requirements${normal} - Installs all Orchestra requirements using apt-get and pip
@@ -157,7 +157,8 @@ function install_requirements () {
             iceweasel"
         PIP="${PIP} \
             selenium \
-            xvfbwrapper"
+            xvfbwrapper \
+            freezegun"
     fi
     
     # Make sure locales are in place before installing postgres
@@ -253,6 +254,7 @@ function print_install_certificate_help () {
 		EOF
 }
 
+
 function install_certificate () {
     opts=$(getopt -o h -l help -- "$@") || exit 1
     set -- $opts
@@ -311,7 +313,6 @@ function uninstall_certificate () {
 export -f uninstall_certificate
 
 
-
 function print_install_postfix_help () {
     cat <<- EOF
 
@@ -329,7 +330,7 @@ function print_install_postfix_help () {
 function install_postfix () {
     opts=$(getopt -o h -l help -- "$@") || exit 1
     set -- $opts
-
+    
     while [ $# -gt 0 ]; do
         case $1 in
             -h|--help) print_deploy_help; exit 0 ;;
@@ -363,6 +364,7 @@ function install_postfix () {
 	fi;
 }
 export -f install_postfix
+
 
 function print_uninstall_postfix_help () {
     cat <<- EOF

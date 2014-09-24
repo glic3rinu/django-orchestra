@@ -13,7 +13,9 @@ from .. import settings
 
 class Apache2Backend(ServiceController):
     model = 'websites.Website'
-    related_models = (('websites.Content', 'website'),)
+    related_models = (
+        ('websites.Content', 'website'),
+    )
     verbose_name = _("Apache 2")
     
     def save(self, site):

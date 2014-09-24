@@ -326,7 +326,7 @@ class HandlerTests(BaseTestCase):
         rates = [
             {'price': decimal.Decimal('0.00'), 'quantity': 2},
             {'price': decimal.Decimal('9.00'), 'quantity': 28},
-            ]
+        ]
         for rate, result in zip(rates, results):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
@@ -337,7 +337,7 @@ class HandlerTests(BaseTestCase):
         rates = [
             {'price': decimal.Decimal('0.00'), 'quantity': 4},
             {'price': decimal.Decimal('9.00'), 'quantity': 26},
-            ]
+        ]
         for rate, result in zip(rates, results):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
@@ -348,7 +348,7 @@ class HandlerTests(BaseTestCase):
         rates = [
             {'price': decimal.Decimal('0.00'), 'quantity': 6},
             {'price': decimal.Decimal('9.00'), 'quantity': 24},
-            ]
+        ]
         for rate, result in zip(rates, results):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
@@ -366,3 +366,6 @@ class HandlerTests(BaseTestCase):
         lines = service.handler.generate_bill_lines(orders, account, commit=False)
         print lines
         print len(lines)
+        # TODO
+
+    # TODO test incomplete rate 1 -> nominal_price 10 -> rate

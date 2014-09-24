@@ -57,7 +57,9 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
     list_filter = [TopDomainListFilter]
     change_readonly_fields = ('name',)
     search_fields = ['name', 'account__user__username']
-    default_changelist_filters = (('top_domain', 'True'),)
+    default_changelist_filters = (
+        ('top_domain', 'True'),
+    )
     form = DomainAdminForm
     
     def structured_name(self, domain):

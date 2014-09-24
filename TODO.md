@@ -109,3 +109,4 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
 
 
 * latest by 'id' *always*
+* replace add_now by default=lambda: timezone.now()

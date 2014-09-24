@@ -66,7 +66,7 @@ class BackendLog(models.Model):
     last_update = models.DateTimeField(_("last update"), auto_now=True)
     
     class Meta:
-        get_latest_by = 'created'
+        get_latest_by = 'id'
     
     @property
     def execution_time(self):

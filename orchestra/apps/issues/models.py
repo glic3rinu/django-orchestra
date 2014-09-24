@@ -161,7 +161,7 @@ class Message(models.Model):
     created_on = models.DateTimeField(_("created on"), auto_now_add=True)
     
     class Meta:
-        get_latest_by = "created_on"
+        get_latest_by = 'id'
     
     def __unicode__(self):
         return u"#%i" % self.id
@@ -188,4 +188,6 @@ class TicketTracker(models.Model):
             related_name='ticket_trackers')
     
     class Meta:
-        unique_together = (('ticket', 'user'),)
+        unique_together = (
+            ('ticket', 'user'),
+        )

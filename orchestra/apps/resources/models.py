@@ -161,7 +161,7 @@ class MonitorData(models.Model):
     content_object = GenericForeignKey()
     
     class Meta:
-        get_latest_by = 'date'
+        get_latest_by = 'id'
         verbose_name_plural = _("monitor data")
     
     def __unicode__(self):

@@ -288,7 +288,9 @@ class ServiceHandler(plugins.Plugin):
             dsize, new_end = self.apply_compensations(order, only_beyond=True)
             cprice += dsize*price
             if cprice:
-                discounts = (('compensation', -cprice),)
+                discounts = (
+                    ('compensation', -cprice),
+                )
                 if new_end:
                     size = self.get_price_size(order.new_billed_until, new_end)
                     price += price*size
@@ -386,7 +388,9 @@ class ServiceHandler(plugins.Plugin):
                 discounts = ()
                 dsize, new_end = self.apply_compensations(order)
                 if dsize:
-                    discounts=(('compensation', -dsize*price),)
+                    discounts=(
+                        ('compensation', -dsize*price),
+                    )
                     if new_end:
                         order.new_billed_until = new_end
                         end = new_end

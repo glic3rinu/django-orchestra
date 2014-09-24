@@ -2,10 +2,11 @@ import datetime
 import decimal
 import sys
 
-from dateutil import relativedelta
+from dateutil.relativedelta import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.utils import timezone
+from freezegun import freeze_time
 
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.mails.models import Mailbox
@@ -56,21 +57,21 @@ class FTPBillingTest(BaseBillingTest):
     def test_ftp_account_1_year_fiexed(self):
         service = self.create_ftp_service()
         user = self.create_ftp()
-        bp = timezone.now().date() + relativedelta.relativedelta(years=1)
+        bp = timezone.now().date() + relativedelta(years=1)
         bills = service.orders.bill(billing_point=bp, fixed_point=True)
         self.assertEqual(10, bills[0].get_total())
     
     def test_ftp_account_2_year_fiexed(self):
         service = self.create_ftp_service()
         user = self.create_ftp()
-        bp = timezone.now().date() + relativedelta.relativedelta(years=2)
+        bp = timezone.now().date() + relativedelta(years=2)
         bills = service.orders.bill(billing_point=bp, fixed_point=True)
         self.assertEqual(20, bills[0].get_total())
     
     def test_ftp_account_6_month_fixed(self):
         service = self.create_ftp_service()
         self.create_ftp()
-        bp = timezone.now().date() + relativedelta.relativedelta(months=6)
+        bp = timezone.now().date() + relativedelta(months=6)
         bills = service.orders.bill(billing_point=bp, fixed_point=True)
         self.assertEqual(5, bills[0].get_total())
     
@@ -95,7 +96,7 @@ class FTPBillingTest(BaseBillingTest):
         account = self.create_account()
         service = self.create_ftp_service()
         user = self.create_ftp(account=account)
-        first_bp = timezone.now().date() + relativedelta.relativedelta(years=2)
+        first_bp = timezone.now().date() + relativedelta(years=2)
         bills = service.orders.bill(billing_point=first_bp, fixed_point=True)
         self.assertEqual(1, service.orders.active().count())
         user.delete()
@@ -103,7 +104,7 @@ class FTPBillingTest(BaseBillingTest):
         user = self.create_ftp(account=account)
         self.assertEqual(1, service.orders.active().count())
         self.assertEqual(2, service.orders.count())
-        bp = timezone.now().date() + relativedelta.relativedelta(years=1)
+        bp = timezone.now().date() + relativedelta(years=1)
         bills = service.orders.bill(billing_point=bp, fixed_point=True, new_open=True)
         discount = bills[0].lines.order_by('id')[0].sublines.get()
         self.assertEqual(decimal.Decimal(-20), discount.total)
@@ -246,7 +247,9 @@ class DomainBillingTest(BaseBillingTest):
         self.assertEqual(6, bills[0].get_total())
 
 
-class TrafficBillingTest(BaseBillingTest):
+class BaseTrafficBillingTest(BaseBillingTest):
+    METRIC = 'account.resources.traffic.used'
+    
     def create_traffic_service(self):
         service = Service.objects.create(
             description="Traffic",
@@ -255,7 +258,7 @@ class TrafficBillingTest(BaseBillingTest):
             billing_period=Service.MONTHLY,
             billing_point=Service.FIXED_DATE,
             is_fee=False,
-            metric='account.resources.traffic.used',
+            metric=self.METRIC,
             pricing_period=Service.BILLING_PERIOD,
             rate_algorithm=Service.STEP_PRICE,
             on_cancel=Service.NOTHING,
@@ -287,7 +290,9 @@ class TrafficBillingTest(BaseBillingTest):
         MonitorData.objects.create(monitor='FTPTraffic', content_object=account.user, value=value, date=date)
         data = ResourceData.get_or_create(account, self.resource)
         data.update()
-    
+
+
+class TrafficBillingTest(BaseTrafficBillingTest):
     def test_traffic(self):
         service = self.create_traffic_service()
         resource = self.create_traffic_resource()
@@ -297,7 +302,7 @@ class TrafficBillingTest(BaseBillingTest):
         bills = service.orders.bill(commit=False)
         self.assertEqual([(account, [])], bills)
         
-        # Prepay
+        # move into the past
         delta = datetime.timedelta(days=60)
         date = (timezone.now()-delta).date()
         order = service.orders.get()
@@ -322,10 +327,71 @@ class TrafficBillingTest(BaseBillingTest):
         account1 = self.create_account()
         account2 = self.create_account()
         # TODO
-        
+
+
+class TrafficPrepayBillingTest(BaseTrafficBillingTest):
+    METRIC = "max((account.resources.traffic.used or 0) - getattr(account.miscellaneous.filter(service__name='traffic prepay').last(), 'amount', 0), 0)"
+    
+    def create_prepay_service(self):
+        service = Service.objects.create(
+            description="Traffic prepay",
+            content_type=ContentType.objects.get_for_model(Miscellaneous),
+            match="miscellaneous.is_active and miscellaneous.service.name.lower() == 'traffic prepay'",
+            billing_period=Service.ANUAL,
+            billing_point=Service.FIXED_DATE,
+            is_fee=False,
+            metric="miscellaneous.amount",
+            pricing_period=Service.BILLING_PERIOD,
+            rate_algorithm=Service.STEP_PRICE,
+            on_cancel=Service.NOTHING, # TODO on_register == NOTHING or make on_cancel generic
+            payment_style=Service.PREPAY,
+            tax=0,
+            nominal_price=5
+        )
+        return service
+    
+    def create_prepay(self, amount, account=None):
+        if not account:
+            account = self.create_account()
+        name = 'traffic prepay'
+        service, __ = MiscService.objects.get_or_create(name='traffic prepay', description='Traffic prepay', has_amount=True)
+        return Miscellaneous.objects.create(service=service, description=name, account=account, amount=amount)
+    
     def test_traffic_prepay(self):
-        pass
-        # TODO
+        service = self.create_traffic_service()
+        prepay_service = self.create_prepay_service()
+        account = self.create_account()
+        
+        self.create_traffic_resource()
+        prepay = self.create_prepay(10, account=account)
+        self.report_traffic(account, timezone.now(), 10**9)
+        
+        print prepay_service.orders.all()
+        # TODO metric on the current day! how to solve it consistently?
+        # TODO prepay doesnt allow for discount
+        
+        # move into the past
+        # TODO         with patch.object(timezone, 'now', return_value=now+relativedelta(years=1)):
+        delta = datetime.timedelta(days=60)
+        date = (timezone.now()-delta).date()
+        order = service.orders.get()
+        order.registered_on = date
+        order.save()
+        
+        metric = order.metrics.latest()
+        metric.updated_on -= delta
+        metric.save()
+        
+        bills = service.orders.bill(proforma=True)
+        self.assertEqual(0, bills[0].get_total())
+        
+        self.report_traffic(account, date, 10**10*9)
+        metric = order.metrics.latest()
+        metric.updated_on -= delta
+        metric.save()
+        
+        bills = service.orders.bill(proforma=True)
+        self.assertEqual((90-10-10)*10, bills[0].get_total())
 
 
 class MailboxBillingTest(BaseBillingTest):
@@ -403,7 +469,7 @@ class MailboxBillingTest(BaseBillingTest):
         self.allocate_disk(mailbox, 10)
         bill = service.orders.bill()[0]
         self.assertEqual(0, bill.get_total())
-        bp = timezone.now().date() + relativedelta.relativedelta(years=1)
+        bp = timezone.now().date() + relativedelta(years=1)
         bill = disk_service.orders.bill(billing_point=bp, fixed_point=True)[0]
         self.assertEqual(90, bill.get_total())
         mailbox = self.create_mailbox(account=account)
@@ -421,38 +487,30 @@ class MailboxBillingTest(BaseBillingTest):
         account = self.create_account()
         mailbox = self.create_mailbox(account=account)
         now = timezone.now()
-        bp = now.date() + relativedelta.relativedelta(years=1)
+        bp = now.date() + relativedelta(years=1)
+        options = dict(billing_point=bp, fixed_point=True, proforma=True, new_open=True)
         
         self.allocate_disk(mailbox, 10)
-        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
+        bill = service.orders.bill(**options).pop()
         self.assertEqual(9*10, bill.get_total())
         
-        self.allocate_disk(mailbox, 20)
-        created_on = now+relativedelta.relativedelta(months=6)
-        order = service.orders.get()
-        metric = order.metrics.latest('id')
-        metric.created_on = created_on
-        metric.save()
-        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
-        self.assertEqual(9*10*0.5 + 19*10*0.5, bill.get_total())
+        with freeze_time(now+relativedelta(months=6)):
+            self.allocate_disk(mailbox, 20)
+            bill = service.orders.bill(**options).pop()
+            total = 9*10*0.5 + 19*10*0.5
+            self.assertEqual(total, bill.get_total())
         
-        self.allocate_disk(mailbox, 30)
-        created_on = now+relativedelta.relativedelta(months=9)
-        order = service.orders.get()
-        metric = order.metrics.latest('id')
-        metric.created_on = created_on
-        metric.save()
-        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
-        self.assertEqual(9*10*0.5 + 19*10*0.25 + 29*10*0.25, bill.get_total())
+        with freeze_time(now+relativedelta(months=9)):
+            self.allocate_disk(mailbox, 30)
+            bill = service.orders.bill(**options).pop()
+            total = 9*10*0.5 + 19*10*0.25 + 29*10*0.25
+            self.assertEqual(total, bill.get_total())
         
-        self.allocate_disk(mailbox, 10)
-        created_on = now+relativedelta.relativedelta(years=1)
-        order = service.orders.get()
-        metric = order.metrics.latest('id')
-        metric.created_on = created_on
-        metric.save()
-        bill = service.orders.bill(billing_point=bp, fixed_point=True, proforma=True, new_open=True)[0]
-        self.assertEqual(9*10*0.5 + 19*10*0.25 + 29*10*0.25, bill.get_total())
+        with freeze_time(now+relativedelta(years=1)):
+            self.allocate_disk(mailbox, 10)
+            bill = service.orders.bill(**options).pop()
+            total = 9*10*0.5 + 19*10*0.25 + 29*10*0.25
+            self.assertEqual(total, bill.get_total())
 
 
 class JobBillingTest(BaseBillingTest):
@@ -480,9 +538,9 @@ class JobBillingTest(BaseBillingTest):
     def create_job(self, amount, account=None):
         if not account:
             account = self.create_account()
-        job_name = '%s.es' % random_ascii(10)
-        job_service, __ = MiscService.objects.get_or_create(name='job', description='Random job', has_amount=True)
-        return Miscellaneous.objects.create(service=job_service, description=job_name, account=account, amount=amount)
+        description = 'Random Job %s' % random_ascii(10)
+        service, __ = MiscService.objects.get_or_create(name='job', description=description, has_amount=True)
+        return Miscellaneous.objects.create(service=service, description=description, account=account, amount=amount)
     
     def test_job(self):
         service = self.create_job_service()
@@ -499,7 +557,22 @@ class JobBillingTest(BaseBillingTest):
 
 class PlanBillingTest(BaseBillingTest):
     def create_plan_service(self):
-        pass
+        service = Service.objects.create(
+            description="Association membership fee",
+            content_type=ContentType.objects.get_for_model(Miscellaneous),
+            match="account.is_active and account.type == 'ASSOCIATION'",
+            billing_period=Service.ANUAL,
+            billing_point=Service.FIXED_DATE,
+            is_fee=True,
+            metric='',
+            pricing_period=Service.BILLING_PERIOD,
+            rate_algorithm=Service.STEP_PRICE,
+            on_cancel=Service.DISCOUNT,
+            payment_style=Service.PREPAY,
+            tax=0,
+            nominal_price=20
+        )
+        return service
     
     def create_plan(self):
         if not account:

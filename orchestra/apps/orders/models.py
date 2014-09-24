@@ -81,9 +81,9 @@ class Order(models.Model):
             related_name='orders')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField(null=True)
-    service = models.ForeignKey(settings.ORDERS_SERVICE_MODEL,
-            verbose_name=_("service"), related_name='orders')
-    registered_on = models.DateField(_("registered"), auto_now_add=True) # TODO datetime field?
+    service = models.ForeignKey(settings.ORDERS_SERVICE_MODEL, verbose_name=_("service"),
+            related_name='orders')
+    registered_on = models.DateField(_("registered"), default=lambda: timezone.now())
     cancelled_on = models.DateField(_("cancelled"), null=True, blank=True)
     billed_on = models.DateField(_("billed on"), null=True, blank=True)
     billed_until = models.DateField(_("billed until"), null=True, blank=True)
@@ -92,6 +92,9 @@ class Order(models.Model):
     
     content_object = generic.GenericForeignKey()
     objects = OrderQuerySet.as_manager()
+    
+    class Meta:
+        get_latest_by = 'id'
     
     def __unicode__(self):
         return str(self.service)
@@ -180,6 +183,7 @@ class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     created_on = models.DateField(_("created"), auto_now_add=True)
+#    default=lambda: timezone.now())
     updated_on = models.DateTimeField(_("updated"))
     
     class Meta:
@@ -203,8 +207,10 @@ class MetricStorage(models.Model):
                 metric.save()
 
 
-_excluded_models = (MetricStorage, LogEntry, Order, ContentType, MigrationRecorder.Migration)
+accounts.register(Order)
 
+
+_excluded_models = (MetricStorage, LogEntry, Order, ContentType, MigrationRecorder.Migration)
 
 @receiver(post_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
@@ -218,7 +224,6 @@ def cancel_orders(sender, **kwargs):
             if related and related != instance:
                 Order.update_orders(related)
 
-
 @receiver(post_save, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):
     if sender not in _excluded_models:
@@ -229,7 +234,3 @@ def update_orders(sender, **kwargs):
             related = helpers.get_related_objects(instance)
             if related and related != instance:
                 Order.update_orders(related)
-
-
-
-accounts.register(Order)

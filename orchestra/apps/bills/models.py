@@ -35,17 +35,21 @@ class Bill(models.Model):
         (PENDING, _("Pending")),
         (BAD_DEBT, _("Bad debt")),
     )
-    
+    BILL = 'BILL'
+    INVOICE = 'INVOICE'
+    AMENDMENTINVOICE = 'AMENDMENTINVOICE'
+    FEE = 'FEE'
+    AMENDMENTFEE = 'AMENDMENTFEE'
+    PROFORMA = 'PROFORMA'
     TYPES = (
-        ('INVOICE', _("Invoice")),
-        ('AMENDMENTINVOICE', _("Amendment invoice")),
-        ('FEE', _("Fee")),
-        ('AMENDMENTFEE', _("Amendment Fee")),
-        ('PROFORMA', _("Pro forma")),
+        (INVOICE, _("Invoice")),
+        (AMENDMENTINVOICE, _("Amendment invoice")),
+        (FEE, _("Fee")),
+        (AMENDMENTFEE, _("Amendment Fee")),
+        (PROFORMA, _("Pro forma")),
     )
     
-    number = models.CharField(_("number"), max_length=16, unique=True,
-            blank=True)
+    number = models.CharField(_("number"), max_length=16, unique=True, blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
              related_name='%(class)s')
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
@@ -63,7 +67,7 @@ class Bill(models.Model):
     objects = BillManager()
     
     class Meta:
-        get_latest_by = 'created_on'
+        get_latest_by = 'id'
     
     def __unicode__(self):
         return self.number
@@ -101,8 +105,8 @@ class Bill(models.Model):
     def set_number(self):
         cls = type(self)
         bill_type = self.get_type()
-        if bill_type == 'BILL':
-            raise TypeError("get_new_number() can not be used on a Bill class")
+        if bill_type == self.BILL:
+            raise TypeError('This method can not be used on BILL instances')
         prefix = getattr(settings, 'BILLS_%s_NUMBER_PREFIX' % bill_type)
         if self.is_open:
             prefix = 'O{}'.format(prefix)
@@ -117,8 +121,7 @@ class Bill(models.Model):
         number_length = settings.BILLS_NUMBER_LENGTH
         zeros = (number_length - len(str(number))) * '0'
         number = zeros + str(number)
-        self.number = '{prefix}{year}{number}'.format(
-                prefix=prefix, year=year, number=number)
+        self.number = '{prefix}{year}{number}'.format(prefix=prefix, year=year, number=number)
     
     def get_due_date(self, payment=None):
         now = timezone.now()
@@ -134,7 +137,7 @@ class Bill(models.Model):
             self.due_on = self.get_due_date(payment=payment)
         self.total = self.get_total()
         self.html = self.render(payment=payment)
-        if self.get_type() != 'PROFORMA':
+        if self.get_type() != self.PROFORMA:
             self.transactions.create(bill=self, source=payment, amount=self.total)
         self.closed_on = timezone.now()
         self.is_open = False
@@ -175,8 +178,8 @@ class Bill(models.Model):
             'default_due_date': self.get_due_date(payment=payment),
             'now': timezone.now(),
         })
-        template = getattr(settings, 'BILLS_%s_TEMPLATE' % self.get_type(),
-                settings.BILLS_DEFAULT_TEMPLATE)
+        template_name = 'BILLS_%s_TEMPLATE' % self.get_type()
+        template = getattr(settings, template_name, settings.BILLS_DEFAULT_TEMPLATE)
         bill_template = loader.get_template(template)
         html = bill_template.render(context)
         html = html.replace('-pageskip-', '<pdf:nextpage />')
@@ -234,8 +237,7 @@ class BillLine(models.Model):
     """ Base model for bill item representation """
     bill = models.ForeignKey(Bill, verbose_name=_("bill"), related_name='lines')
     description = models.CharField(_("description"), max_length=256)
-    rate = models.DecimalField(_("rate"), blank=True, null=True,
-            max_digits=12, decimal_places=2)
+    rate = models.DecimalField(_("rate"), blank=True, null=True, max_digits=12, decimal_places=2)
     quantity = models.DecimalField(_("quantity"), max_digits=12, decimal_places=2)
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"))
@@ -261,7 +263,7 @@ class BillLine(models.Model):
         return total
     
     def save(self, *args, **kwargs):
-        # TODO cost of this shit
+        # TODO cost and consistency of this shit
         super(BillLine, self).save(*args, **kwargs)
         if self.bill.is_open:
             self.bill.total = self.bill.get_total()
@@ -270,8 +272,7 @@ class BillLine(models.Model):
 
 class BillSubline(models.Model):
     """ Subline used for describing an item discount """
-    line = models.ForeignKey(BillLine, verbose_name=_("bill line"),
-            related_name='sublines')
+    line = models.ForeignKey(BillLine, verbose_name=_("bill line"), related_name='sublines')
     description = models.CharField(_("description"), max_length=256)
     total = models.DecimalField(max_digits=12, decimal_places=2)
     # TODO type ? Volume and Compensation

@@ -409,10 +409,30 @@ class ServiceHandler(plugins.Plugin):
         lines = []
         bp = None
         for order in orders:
+            bp = self.get_billing_point(order, bp=bp, **options)
+            if (self.billing_period != self.NEVER and
+                self.get_pricing_period() == self.NEVER and
+                self.payment_style == self.PREPAY and order.billed_on):
+                    # Recharge
+                    if self.payment_style == self.PREPAY and order.billed_on:
+                        rini = order.billed_on
+                        charged = None
+                        new_metric, new_price = 0, 0
+                        for cini, cend, metric in order.get_metric(rini, bp, changes=True):
+                            if charged is None:
+                                charged = metric
+                            size = self.get_price_size(cini, cend)
+                            new_price += self.get_price(order, metric) * size
+                            new_metric += metric
+                        size = self.get_price_size(rini, bp)
+                        old_price = self.get_price(order, charged) * size
+                        if new_price > old_price:
+                            metric = new_metric - charged
+                            price = new_price - old_price
+                            lines.append(self.generate_line(order, price, rini, bp, metric=metric, computed=True))
             if order.billed_until and order.cancelled_on and order.cancelled_on >= order.billed_until:
                 continue
             if self.billing_period != self.NEVER:
-                bp = self.get_billing_point(order, bp=bp, **options)
                 ini = order.billed_until or order.registered_on
                 # Periodic billing
                 if bp <= ini:
@@ -425,6 +445,8 @@ class ServiceHandler(plugins.Plugin):
                         lines.append(self.generate_line(order, price, cini, cend, metric=metric))
                 elif self.get_pricing_period() == self.billing_period:
                     # pricing_slots (Traffic-like)
+                    if self.payment_style == self.PREPAY:
+                        raise NotImplementedError
                     for cini, cend in self.get_pricing_slots(ini, bp):
                         metric = order.get_metric(cini, cend)
                         price = self.get_price(order, metric)
@@ -456,7 +478,8 @@ class ServiceHandler(plugins.Plugin):
         if options.get('commit', True):
             now = timezone.now().date()
             for line in lines:
-                line.order.billed_on = now
-                line.order.billed_until = line.order.new_billed_until
-                line.order.save()
+                order = line.order
+                order.billed_on = now
+                order.billed_until = getattr(order, 'new_billed_until', order.billed_until)
+                order.save()
         return lines

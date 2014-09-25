@@ -129,5 +129,31 @@ class MailboxBillingTest(BaseBillingTest):
             bill = service.orders.bill(**options).pop()
             total = 9*10*0.5 + 19*10*0.25 + 29*10*0.25
             self.assertEqual(total, bill.get_total())
+    
+    def test_mailbox_with_recharge(self):
+        service = self.create_mailbox_disk_service()
+        self.create_disk_resource()
+        account = self.create_account()
+        mailbox = self.create_mailbox(account=account)
+        now = timezone.now()
+        bp = now.date() + relativedelta(years=1)
+        options = dict(billing_point=bp, fixed_point=True)
+        
+        self.allocate_disk(mailbox, 100)
+        bill = service.orders.bill(**options).pop()
+        self.assertEqual(99*10, bill.get_total())
+        
+        with freeze_time(now+relativedelta(months=6)):
+            self.allocate_disk(mailbox, 50)
+            bills = service.orders.bill(**options)
+            self.assertEqual([], bills)
+        
+        with freeze_time(now+relativedelta(months=6)):
+            self.allocate_disk(mailbox, 200)
+            bill = service.orders.bill(new_open=True, **options).pop()
+            self.assertEqual((199-99)*10*0.5, bill.get_total())
+        
+        with freeze_time(now+relativedelta(months=6)):
+            bills = service.orders.bill(new_open=True, **options)
+            self.assertEqual([], bills)
 
-    # TODO recharge missing stuff

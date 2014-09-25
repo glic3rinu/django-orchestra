@@ -32,7 +32,6 @@ class OrderQuerySet(models.QuerySet):
     group_by = queryset.group_by
     
     def bill(self, **options):
-        # TODO classmethod?
         bills = []
         bill_backend = Order.get_bill_backend()
         qs = self.select_related('account', 'service')

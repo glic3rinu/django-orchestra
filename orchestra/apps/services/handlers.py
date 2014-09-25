@@ -454,7 +454,9 @@ class ServiceHandler(plugins.Plugin):
         else:
             lines = self.bill_with_metric(orders, account, **options)
         if options.get('commit', True):
+            now = timezone.now().date()
             for line in lines:
+                line.order.billed_on = now
                 line.order.billed_until = line.order.new_billed_until
                 line.order.save()
         return lines

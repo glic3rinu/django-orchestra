@@ -77,6 +77,7 @@ autodiscover('handlers')
 
 class Service(models.Model):
     NEVER = ''
+#    DAILY = 'DAILY'
     MONTHLY = 'MONTHLY'
     ANUAL = 'ANUAL'
     TEN_DAYS = 'TEN_DAYS'
@@ -90,7 +91,7 @@ class Service(models.Model):
     NOTHING = 'NOTHING'
     DISCOUNT = 'DISCOUNT'
     COMPENSATE = 'COMPENSATE'
-    REFOUND = 'REFOUND'
+    REFUND = 'REFUND'
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
     STEP_PRICE = 'STEP_PRICE'
@@ -175,9 +176,27 @@ class Service(models.Model):
                 (NOTHING, _("Nothing")),
                 (DISCOUNT, _("Discount")),
                 (COMPENSATE, _("Compensat")),
-                (REFOUND, _("Refound")),
+                (REFUND, _("Refund")),
             ),
             default=DISCOUNT)
+#    on_broken_period = models.CharField(_("on broken period", max_length=16,
+#            help_text=_("Defines the billing behaviour when periods are incomplete on register and on cancel"),
+#            choices=(
+#                (NOTHING, _("Nothing, period is atomic")),
+#                (DISCOUNT, _("Bill partially")),
+#                (COMPENSATE, _("Compensate on cancel")),
+#                (REFUND, _("Refund on cancel")),
+#            ),
+#            default=DISCOUNT)
+#    granularity = models.CharField(_("granularity"), max_length=16,
+#            help_text=_("Defines the minimum size a period can be broken into"),
+#            choices=(
+#                (DAILY, _("One day")),
+#                (MONTHLY, _("One month")),
+#                (ANUAL, _("One year")),
+#            ),
+#            default=DAILY,
+#    )
     payment_style = models.CharField(_("payment style"), max_length=16,
             help_text=_("Designates whether this service should be paid after "
                         "consumtion (postpay/on demand) or prepaid"),
@@ -194,14 +213,14 @@ class Service(models.Model):
 #                (ONE_MONTH, _("One month")),
 #            ),
 #            default=NEVER)
-#    refound_period = models.CharField(_("refound period"), max_length=16,
-#            help_text=_("Period in which automatic refound will be performed on "
+#    refund_period = models.CharField(_("refund period"), max_length=16,
+#            help_text=_("Period in which automatic refund will be performed on "
 #                        "service cancellation"),
 #            choices=(
-#                (NEVER, _("Never refound")),
+#                (NEVER, _("Never refund")),
 #                (TEN_DAYS, _("Ten days")),
 #                (ONE_MONTH, _("One month")),
-#                (ALWAYS, _("Always refound")),
+#                (ALWAYS, _("Always refund")),
 #            ),
 #            default=NEVER, blank=True)
     

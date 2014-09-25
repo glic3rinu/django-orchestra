@@ -46,6 +46,7 @@ class BillsBackend(object):
     def format_period(self, ini, end):
         ini = ini.strftime("%b, %Y")
         end = (end-datetime.timedelta(seconds=1)).strftime("%b, %Y")
+        # TODO if diff is less than a month: write the month only
         if ini == end:
             return ini
         return _("{ini} to {end}").format(ini=ini, end=end)

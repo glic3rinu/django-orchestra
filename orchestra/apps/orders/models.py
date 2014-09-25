@@ -1,3 +1,4 @@
+import datetime
 import decimal
 import logging
 import sys
@@ -167,8 +168,9 @@ class Order(models.Model):
             metrics = self.metrics.filter(updated_on__lt=end, updated_on__gte=ini)
         elif len(args) == 1:
             date = args[0]
-            metrics = self.metrics.filter(updated_on__year=date.year,
-                    updated_on__month=date.month, updated_on__day=date.day)
+            date = datetime.date(year=date.year, month=date.month, day=date.day)
+            date += datetime.timedelta(days=1)
+            metrics = self.metrics.filter(updated_on__lt=date)
         elif not args:
             return self.metrics.latest('updated_on').value
         else:

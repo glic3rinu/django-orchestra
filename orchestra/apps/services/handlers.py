@@ -73,8 +73,7 @@ class ServiceHandler(plugins.Plugin):
                         day = 1
                     else:
                         raise NotImplementedError(msg)
-                    bp = datetime.datetime(year=date.year, month=date.month, day=day,
-                        tzinfo=timezone.get_current_timezone()).date()
+                    bp = datetime.date(year=date.year, month=date.month, day=day)
                 elif self.billing_period == self.ANUAL:
                     if self.billing_point == self.ON_REGISTER:
                         month = order.registered_on.month
@@ -89,15 +88,23 @@ class ServiceHandler(plugins.Plugin):
                         year = bp.year - relativedelta.relativedelta(years=1)
                     if bp.month >= month:
                         year = bp.year + 1
-                    bp = datetime.datetime(year=year, month=month, day=day,
-                        tzinfo=timezone.get_current_timezone()).date()
+                    bp = datetime.date(year=year, month=month, day=day)
                 elif self.billing_period == self.NEVER:
                     bp = order.registered_on
                 else:
                     raise NotImplementedError(msg)
         if self.on_cancel != self.NOTHING and order.cancelled_on and order.cancelled_on < bp:
-            return order.cancelled_on
+            bp = order.cancelled_on
         return bp
+    
+#    def aligned(self, date):
+#        if self.granularity == self.DAILY:
+#            return date
+#        elif self.granularity == self.MONTHLY:
+#            return datetime.date(year=date.year, month=date.month, day=1)
+#        elif self.granularity == self.ANUAL:
+#            return datetime.date(year=date.year, month=1, day=1)
+#        raise NotImplementedError
     
     def get_price_size(self, ini, end):
         rdelta = relativedelta.relativedelta(end, ini)
@@ -126,11 +133,9 @@ class ServiceHandler(plugins.Plugin):
         period = self.get_pricing_period()
         rdelta = self.get_pricing_rdelta()
         if period == self.MONTHLY:
-            ini = datetime.datetime(year=ini.year, month=ini.month, day=day,
-                                    tzinfo=timezone.get_current_timezone()).date()
+            ini = datetime.date(year=ini.year, month=ini.month, day=day)
         elif period == self.ANUAL:
-            ini = datetime.datetime(year=ini.year, month=month, day=day,
-                                    tzinfo=timezone.get_current_timezone()).date()
+            ini = datetime.date(year=ini.year, month=month, day=day)
         elif period == self.NEVER:
             yield ini, end
             raise StopIteration
@@ -246,12 +251,13 @@ class ServiceHandler(plugins.Plugin):
         for order in porders:
             bu = getattr(order, 'new_billed_until', order.billed_until)
             if bu:
-                if order.registered_on > ini and order.registered_on <= end:
+                registered = order.registered_on
+                if registered > ini and registered <= end:
                     counter += 1
-                if order.registered_on != bu and bu > ini and bu <= end:
+                if registered != bu and bu > ini and bu <= end:
                     counter += 1
                 if order.billed_until and order.billed_until != bu:
-                    if order.registered_on != order.billed_until and order.billed_until > ini and order.billed_until <= end:
+                    if registered != order.billed_until and order.billed_until > ini and order.billed_until <= end:
                         counter += 1
         return counter
     
@@ -331,6 +337,7 @@ class ServiceHandler(plugins.Plugin):
         #   In most cases:
         #       ini >= registered_date, end < registered_date
         # boundary lookup and exclude cancelled and billed
+        # TODO service.payment_style == self.POSTPAY  no discounts no shit on_cancel
         orders_ = []
         bp = None
         ini = datetime.date.max
@@ -339,7 +346,7 @@ class ServiceHandler(plugins.Plugin):
             cini = order.registered_on
             if order.billed_until:
                 # exclude cancelled and billed
-                if self.on_cancel != self.REFOUND:
+                if self.on_cancel != self.REFUND:
                     if order.cancelled_on and order.billed_until > order.cancelled_on:
                         continue
                 cini = order.billed_until
@@ -413,20 +420,22 @@ class ServiceHandler(plugins.Plugin):
                 order.new_billed_until = bp
                 if self.get_pricing_period() == self.NEVER:
                     # Changes (Mailbox disk-like)
-                    for ini, end, metric in order.get_metric(ini, bp, changes=True):
+                    for cini, cend, metric in order.get_metric(ini, bp, changes=True):
                         price = self.get_price(order, metric)
-                        lines.append(self.generate_line(order, price, ini, end, metric=metric))
-                else:
+                        lines.append(self.generate_line(order, price, cini, cend, metric=metric))
+                elif self.get_pricing_period() == self.billing_period:
                     # pricing_slots (Traffic-like)
-                    for ini, end in self.get_pricing_slots(ini, bp):
-                        metric = order.get_metric(ini, end)
+                    for cini, cend in self.get_pricing_slots(ini, bp):
+                        metric = order.get_metric(cini, cend)
                         price = self.get_price(order, metric)
-                        lines.append(self.generate_line(order, price, ini, end, metric=metric))
+                        lines.append(self.generate_line(order, price, cini, cend, metric=metric))
+                else:
+                    raise NotImplementedError
             else:
                 # One-time billing
                 if order.billed_until:
                     continue
-                date = order.registered_on
+                date = timezone.now().date()
                 order.new_billed_until = date
                 if self.get_pricing_period() == self.NEVER:
                     # get metric (Job-like)

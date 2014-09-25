@@ -330,23 +330,24 @@ class TrafficBillingTest(BaseTrafficBillingTest):
 
 
 class TrafficPrepayBillingTest(BaseTrafficBillingTest):
-    METRIC = "max((account.resources.traffic.used or 0) - getattr(account.miscellaneous.filter(service__name='traffic prepay').last(), 'amount', 0), 0)"
+    METRIC = "max((account.resources.traffic.used or 0) - getattr(account.miscellaneous.filter(is_active=True, service__name='traffic prepay').last(), 'amount', 0), 0)"
     
     def create_prepay_service(self):
         service = Service.objects.create(
             description="Traffic prepay",
             content_type=ContentType.objects.get_for_model(Miscellaneous),
             match="miscellaneous.is_active and miscellaneous.service.name.lower() == 'traffic prepay'",
-            billing_period=Service.ANUAL,
-            billing_point=Service.FIXED_DATE,
+            billing_period=Service.MONTHLY,
+            # make sure full months are always paid
+            billing_point=Service.ON_REGISTER,
             is_fee=False,
             metric="miscellaneous.amount",
-            pricing_period=Service.BILLING_PERIOD,
+            pricing_period=Service.NEVER,
             rate_algorithm=Service.STEP_PRICE,
-            on_cancel=Service.NOTHING, # TODO on_register == NOTHING or make on_cancel generic
+            on_cancel=Service.NOTHING,
             payment_style=Service.PREPAY,
             tax=0,
-            nominal_price=5
+            nominal_price=50
         )
         return service
     
@@ -361,37 +362,43 @@ class TrafficPrepayBillingTest(BaseTrafficBillingTest):
         service = self.create_traffic_service()
         prepay_service = self.create_prepay_service()
         account = self.create_account()
-        
         self.create_traffic_resource()
-        prepay = self.create_prepay(10, account=account)
-        self.report_traffic(account, timezone.now(), 10**9)
+        now = timezone.now()
         
-        print prepay_service.orders.all()
+        prepay = self.create_prepay(10, account=account)
+        bill = account.orders.bill(proforma=True)[0]
+        self.assertEqual(10*50, bill.get_total())
+        
+        self.report_traffic(account, timezone.now(), 10**10)
+        with freeze_time(now+relativedelta(months=1)):
+            bill = account.orders.bill(proforma=True, new_open=True)[0]
+            self.assertEqual(2*10*50 + 0*10, bill.get_total())
+        
+        # TODO dateutils.relativedelta is buggy with fakedatetime
+        # TODO RuntimeWarning: DateTimeField MetricStorage.updated_on received a naive
+        self.report_traffic(account, timezone.now(), 10**10)
+        with freeze_time(now+relativedelta(months=1)):
+            bill = account.orders.bill(proforma=True, new_open=True)[0]
+        self.assertEqual(2*10*50 + 0*10, bill.get_total())
+        
+        self.report_traffic(account, timezone.now(), 10**10)
+        with freeze_time(now+relativedelta(months=1)):
+            bill = account.orders.bill(proforma=True, new_open=True)[0]
+        self.assertEqual(2*10*50 + (30-10-10)*10, bill.get_total())
+        
+        with freeze_time(now+relativedelta(months=2)):
+            self.report_traffic(account, timezone.now(), 10**11)
+        with freeze_time(now+relativedelta(months=1)):
+            bill = account.orders.bill(proforma=True, new_open=True)[0]
+            self.assertEqual(2*10*50 + (30-10-10)*10, bill.get_total())
+        
+        with freeze_time(now+relativedelta(months=3)):
+            bill = account.orders.bill(proforma=True, new_open=True)[0]
+        self.assertEqual(4*10*50 +  (30-10-10)*10 + (100-10-10)*10, bill.get_total())
+        
         # TODO metric on the current day! how to solve it consistently?
         # TODO prepay doesnt allow for discount
-        
-        # move into the past
-        # TODO         with patch.object(timezone, 'now', return_value=now+relativedelta(years=1)):
-        delta = datetime.timedelta(days=60)
-        date = (timezone.now()-delta).date()
-        order = service.orders.get()
-        order.registered_on = date
-        order.save()
-        
-        metric = order.metrics.latest()
-        metric.updated_on -= delta
-        metric.save()
-        
-        bills = service.orders.bill(proforma=True)
-        self.assertEqual(0, bills[0].get_total())
-        
-        self.report_traffic(account, date, 10**10*9)
-        metric = order.metrics.latest()
-        metric.updated_on -= delta
-        metric.save()
-        
-        bills = service.orders.bill(proforma=True)
-        self.assertEqual((90-10-10)*10, bills[0].get_total())
+
 
 
 class MailboxBillingTest(BaseBillingTest):
@@ -583,3 +590,6 @@ class PlanBillingTest(BaseBillingTest):
     
     def test_plan(self):
         pass
+
+
+# TODO web disk size

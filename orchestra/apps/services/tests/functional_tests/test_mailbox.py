@@ -4,7 +4,7 @@ from django.utils import timezone
 from freezegun import freeze_time
 
 from orchestra.apps.mails.models import Mailbox
-from orchestra.apps.resources.models import Resource, ResourceData, MonitorData
+from orchestra.apps.resources.models import Resource, ResourceData
 from orchestra.utils.tests import random_ascii
 
 from ...models import Service, Plan
@@ -62,7 +62,7 @@ class MailboxBillingTest(BaseBillingTest):
             verbose_name='Mailbox disk',
             unit='GB',
             scale=10**9,
-            ondemand=False,
+            on_demand=False,
             monitors='MaildirDisk',
         )
         return self.resource

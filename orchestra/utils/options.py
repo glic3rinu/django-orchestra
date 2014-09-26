@@ -40,4 +40,4 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
 
 
 def running_syncdb():
-    return 'migrate' in sys.argv or 'syncdb' in sys.argv
+    return 'migrate' in sys.argv or 'syncdb' in sys.argv or 'makemigrations' in sys.argv

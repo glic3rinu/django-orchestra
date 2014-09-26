@@ -78,9 +78,9 @@
     {% with sublines=line.sublines.all %}
     <span class="{% if not sublines %}last {% endif %}column-id">{{ line.id }}</span>
     <span class="{% if not sublines %}last {% endif %}column-description">{{ line.description }}</span>
-    <span class="{% if not sublines %}last {% endif %}column-quantity">{{ line.amount|default:"&nbsp;" }}</span>
+    <span class="{% if not sublines %}last {% endif %}column-quantity">{{ line.quantity|default:"&nbsp;" }}</span>
     <span class="{% if not sublines %}last {% endif %}column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
-    <span class="{% if not sublines %}last {% endif %}column-subtotal">{{ line.total }} &{{ currency.lower }};</span>
+    <span class="{% if not sublines %}last {% endif %}column-subtotal">{{ line.subtotal }} &{{ currency.lower }};</span>
     <br>
         {% for subline in sublines %}
             <span class="{% if forloop.last %}last {% endif %}subline column-id">&nbsp;</span>

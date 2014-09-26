@@ -1,13 +1,10 @@
 from django import forms
 from django.contrib import admin
-from django.core.urlresolvers import reverse
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
-from orchestra.apps.accounts.widgets import account_related_field_widget_factory
 
 from .models import Content, Website, WebsiteOption
 

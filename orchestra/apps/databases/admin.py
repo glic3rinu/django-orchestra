@@ -1,8 +1,6 @@
-from django.db import models
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 

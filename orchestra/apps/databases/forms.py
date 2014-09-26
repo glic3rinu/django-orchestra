@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, ReadOnlyPasswordHashField
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -109,7 +109,6 @@ class ReadOnlySQLPasswordHashField(ReadOnlyPasswordHashField):
             if 'Invalid' not in original:
                 return original
             encoded = value
-            final_attrs = self.build_attrs(attrs)
             if not encoded:
                 summary = mark_safe("<strong>%s</strong>" % _("No password set."))
             else:

@@ -42,7 +42,7 @@ class PlanBillingTest(BaseBillingTest):
     
     def test_plan(self):
         account = self.create_account()
-        service = self.create_plan_service()
+        self.create_plan_service()
         self.create_plan(account=account)
         bill = account.orders.bill().pop()
         self.assertEqual(bill.FEE, bill.type)

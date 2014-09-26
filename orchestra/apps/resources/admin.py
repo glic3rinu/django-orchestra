@@ -15,16 +15,16 @@ from .models import Resource, ResourceData, MonitorData
 
 class ResourceAdmin(ExtendedModelAdmin):
     list_display = (
-        'id', 'verbose_name', 'content_type', 'period', 'ondemand',
+        'id', 'verbose_name', 'content_type', 'period', 'on_demand',
         'default_allocation', 'unit', 'disable_trigger', 'crontab',
     )
-    list_filter = (UsedContentTypeFilter, 'period', 'ondemand', 'disable_trigger')
+    list_filter = (UsedContentTypeFilter, 'period', 'on_demand', 'disable_trigger')
     fieldsets = (
         (None, {
             'fields': ('name', 'content_type', 'period'),
         }),
         (_("Configuration"), {
-            'fields': ('verbose_name', 'unit', 'scale', 'ondemand',
+            'fields': ('verbose_name', 'unit', 'scale', 'on_demand',
                        'default_allocation', 'disable_trigger', 'is_active'),
         }),
         (_("Monitoring"), {
@@ -64,7 +64,7 @@ class ResourceAdmin(ExtendedModelAdmin):
 
 class ResourceDataAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'resource', 'used', 'allocated', 'last_update', 'content_object_link'
+        'id', 'resource', 'used', 'allocated', 'updated_at', 'content_object_link'
     )
     list_filter = ('resource',)
     readonly_fields = ('content_object_link',)
@@ -77,7 +77,7 @@ class ResourceDataAdmin(admin.ModelAdmin):
 
 
 class MonitorDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'monitor', 'date', 'value', 'content_object_link')
+    list_display = ('id', 'monitor', 'created_at', 'value', 'content_object_link')
     list_filter = ('monitor',)
     readonly_fields = ('content_object_link',)
     
@@ -118,16 +118,16 @@ def resource_inline_factory(resources):
         formset = ResourceInlineFormSet
         can_delete = False
         fields = (
-            'verbose_name', 'used', 'display_last_update', 'allocated', 'unit'
+            'verbose_name', 'used', 'display_updated', 'allocated', 'unit'
         )
-        readonly_fields = ('used', 'display_last_update')
+        readonly_fields = ('used', 'display_updated')
         
         class Media:
             css = {
                 'all': ('orchestra/css/hide-inline-id.css',)
             }
         
-        display_last_update = admin_date('last_update', default=_("Never"))
+        display_updated = admin_date('updated_at', default=_("Never"))
         
         def has_add_permission(self, *args, **kwargs):
             """ Hidde add another """

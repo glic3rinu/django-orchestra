@@ -4,7 +4,6 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from orchestra.utils.apps import is_installed
 from orchestra.utils.paths import get_site_root
 from orchestra.utils.system import run, check_root
 

@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import admin_link, admin_date
+from orchestra.admin.utils import admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from . import settings
@@ -53,8 +53,8 @@ class BillLineInline(admin.TabularInline):
 
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'number', 'is_open', 'type_link', 'account_link', 'created_on_display',
-        'num_lines', 'display_total', 'display_payment_state'
+        'number', 'type_link', 'account_link', 'created_on_display',
+        'num_lines', 'display_total', 'display_payment_state', 'is_open'
     )
     list_filter = (BillTypeListFilter, 'is_open',)
     add_fields = ('account', 'type', 'is_open', 'due_on', 'comments')

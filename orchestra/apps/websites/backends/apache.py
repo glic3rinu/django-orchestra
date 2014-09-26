@@ -1,5 +1,6 @@
 import textwrap
 import os
+import re
 
 from django.template import Template, Context
 from django.utils import timezone
@@ -123,6 +124,7 @@ class Apache2Backend(ServiceController):
     def get_protections(self, site):
         protections = ""
         __, regex = settings.WEBSITES_OPTIONS['directory_protection']
+        context = self.get_context(site)
         for protection in site.options.filter(name='directory_protection'):
             path, name, passwd = re.match(regex, protection.value).groups()
             path = os.path.join(context['root'], path)

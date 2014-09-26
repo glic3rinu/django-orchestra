@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from django.contrib.contenttypes import generic
 
 from orchestra.utils import running_syncdb
 

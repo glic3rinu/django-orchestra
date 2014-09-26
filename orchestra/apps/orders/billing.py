@@ -2,7 +2,7 @@ import datetime
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.bills.models import Invoice, Fee, ProForma, BillLine, BillSubline
+from orchestra.apps.bills.models import Invoice, Fee, ProForma
 
 
 class BillsBackend(object):
@@ -39,6 +39,10 @@ class BillsBackend(object):
                     subtotal=line.subtotal,
                     tax=service.tax,
                     description=self.get_line_description(line),
+                    
+                    order=line.order,
+                    order_billed_on=line.order.old_billed_on,
+                    order_billed_until=line.order.old_billed_until
             )
             self.create_sublines(billine, line.discounts)
         return bills
@@ -46,7 +50,6 @@ class BillsBackend(object):
     def format_period(self, ini, end):
         ini = ini.strftime("%b, %Y")
         end = (end-datetime.timedelta(seconds=1)).strftime("%b, %Y")
-        # TODO if diff is less than a month: write the month only
         if ini == end:
             return ini
         return _("{ini} to {end}").format(ini=ini, end=end)
@@ -67,6 +70,7 @@ class BillsBackend(object):
     def create_sublines(self, line, discounts):
         for discount in discounts:
             line.sublines.create(
-                description=_("Discount per %s") % discount.type,
+                description=_("Discount per %s") % discount.type.lower(),
                 total=discount.total,
+                type=discount.type,
             )

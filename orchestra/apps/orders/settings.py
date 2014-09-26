@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
 
 
 ORDERS_BILLING_BACKEND = getattr(settings, 'ORDERS_BILLING_BACKEND',

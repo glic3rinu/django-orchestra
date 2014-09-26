@@ -1,17 +1,15 @@
 import datetime
 import decimal
-import sys
 
-from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.users.models import User
-from orchestra.utils.tests import BaseTestCase, random_ascii
+from orchestra.utils.tests import BaseTestCase
 
-from .. import settings, helpers
-from ..models import Service, Plan, Rate
+from .. import helpers
+from ..models import Service, Plan
 
 
 class Order(object):

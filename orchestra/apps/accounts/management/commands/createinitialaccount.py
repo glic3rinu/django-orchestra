@@ -1,10 +1,9 @@
 from optparse import make_option
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from orchestra.apps.accounts.models import Account
-from orchestra.apps.users.models import User
 
 
 class Command(BaseCommand):
@@ -29,5 +28,4 @@ class Command(BaseCommand):
             username = options.get('username')
             password = options.get('password')
             account = Account.objects.create()
-            user = User.objects.create_superuser(username, email, password,
-                    account=account, is_main=True)
+            account.users.create_superuser(username, email, password, is_main=True)

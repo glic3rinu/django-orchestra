@@ -111,11 +111,16 @@ def naturaldate(date):
         return _('today')
     elif days == 1:
         return _('yesterday')
+    ago = ' ago'
+    if days < 0:
+        ago = ''
+    days = abs(days)
+    delta_midnight = today - date
     
     count = 0
     for chunk, pluralizefun in OLDER_CHUNKS:
         if days < 7.0:
-            count = days + float(hours)/24
+            count = days
             fmt = pluralize_day(count)
             return fmt.format(num=count, ago=ago)
         if days >= chunk:

@@ -1,5 +1,4 @@
 import os
-import sys
 
 from optparse import make_option
 

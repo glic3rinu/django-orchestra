@@ -1,11 +1,11 @@
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
 from orchestra.core.validators import (validate_ipv4_address, validate_ipv6_address,
-    validate_hostname, validate_ascii)
+        validate_hostname, validate_ascii)
+from orchestra.utils.python import AttrDict
 
 from . import settings, validators, utils
 
@@ -69,13 +69,17 @@ class Domain(models.Model):
                 # Update serial and insert at 0
                 value = record.value.split()
                 value[2] = str(self.serial)
-                records.insert(0, (record.SOA, ' '.join(value)))
+                records.insert(0,
+                    AttrDict(type=record.SOA, ttl=record.get_ttl(), value=' '.join(value))
+                )
             else:
-                records.append((record.type, record.value))
+                records.append(
+                    AttrDict(type=record.type, ttl=record.get_ttl(), value=record.value)
+                )
         if not self.top:
             if Record.NS not in types:
                 for ns in settings.DOMAINS_DEFAULT_NS:
-                    records.append((Record.NS, ns))
+                    records.append(AttrDict(type=Record.NS, value=ns))
             if Record.SOA not in types:
                 soa = [
                     "%s." % settings.DOMAINS_DEFAULT_NAME_SERVER,
@@ -86,18 +90,28 @@ class Domain(models.Model):
                     settings.DOMAINS_DEFAULT_EXPIRATION,
                     settings.DOMAINS_DEFAULT_MIN_CACHING_TIME
                 ]
-                records.insert(0, (Record.SOA, ' '.join(soa)))
+                records.insert(0, AttrDict(type=Record.SOA, value=' '.join(soa)))
         no_cname = Record.CNAME not in types
         if Record.MX not in types and no_cname:
             for mx in settings.DOMAINS_DEFAULT_MX:
-                records.append((Record.MX, mx))
+                records.append(AttrDict(type=Record.MX, value=mx))
         if (Record.A not in types and Record.AAAA not in types) and no_cname:
-            records.append((Record.A, settings.DOMAINS_DEFAULT_A))
+            records.append(AttrDict(type=Record.A, value=settings.DOMAINS_DEFAULT_A))
         result = ''
-        for type, value in records:
-            name = '%s.%s' % (self.name, ' '*(37-len(self.name)))
-            type = '%s %s' % (type, ' '*(7-len(type)))
-            result += '%s IN %s %s\n' % (name, type, value)
+        for record in records:
+            name = '{name}.{spaces}'.format(
+                name=self.name, spaces=' ' * (37-len(self.name))
+            )
+            ttl = record.get('ttl', settings.DOMAINS_DEFAULT_TTL)
+            ttl = '{spaces}{ttl}'.format(
+                spaces=' ' * (7-len(ttl)), ttl=ttl
+            )
+            type = '{type} {spaces}'.format(
+                type=record.type, spaces=' ' * (7-len(record.type))
+            )
+            result += '{name} {ttl} IN {type} {value}\n'.format(
+                name=name, ttl=ttl, type=type, value=record.value
+            )
         return result
     
     def save(self, *args, **kwargs):
@@ -150,13 +164,15 @@ class Record(models.Model):
         (SOA, "SOA"),
     )
     
-    # TODO TTL
     domain = models.ForeignKey(Domain, verbose_name=_("domain"), related_name='records')
-    type = models.CharField(max_length=32, choices=TYPE_CHOICES)
-    value = models.CharField(max_length=256)
+    ttl = models.CharField(_("TTL"), max_length=8, blank=True,
+            help_text=_("Record TTL, defaults to %s") % settings.DOMAINS_DEFAULT_TTL,
+            validators=[validators.validate_zone_interval])
+    type = models.CharField(_("type"), max_length=32, choices=TYPE_CHOICES)
+    value = models.CharField(_("value"), max_length=256)
     
     def __unicode__(self):
-        return "%s IN %s %s" % (self.domain, self.type, self.value)
+        return "%s %s IN %s %s" % (self.domain, self.get_ttl(), self.type, self.value)
     
     def clean(self):
         """ validates record value based on its type """
@@ -172,6 +188,8 @@ class Record(models.Model):
             self.SOA: validators.validate_soa_record,
         }
         mapp[self.type](self.value)
-
+    
+    def get_ttl(self):
+        return self.ttl or settings.DOMAINS_DEFAULT_TTL
 
 services.register(Domain)

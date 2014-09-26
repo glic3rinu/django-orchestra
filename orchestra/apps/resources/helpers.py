@@ -38,13 +38,15 @@ def compute_resource_usage(data):
                 continue
             has_result = True
             epoch = datetime(year=today.year, month=today.month, day=1, tzinfo=timezone.utc)
-            total = (epoch-last.date).total_seconds()
-            dataset = dataset.filter(date__year=today.year, date__month=today.month)
+            total = (last.created_at-epoch).total_seconds()
+            dataset = dataset.filter(created_at__year=today.year, created_at__month=today.month)
+            ini = epoch
             for data in dataset:
-                slot = (previous-data.date).total_seconds()
+                slot = (data.created_at-ini).total_seconds()
                 result += data.value * slot/total
+                ini = data.created_at
         elif resource.period == resource.MONTHLY_SUM:
-            dataset = dataset.filter(date__year=today.year, date__month=today.month)
+            dataset = dataset.filter(created_at__year=today.year, created_at__month=today.month)
             # FIXME Aggregation of 0s returns None! django bug?
             # value = dataset.aggregate(models.Sum('value'))['value__sum']
             values = dataset.values_list('value', flat=True)

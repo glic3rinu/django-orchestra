@@ -43,14 +43,14 @@ class FTPBillingTest(BaseBillingTest):
     
     def test_ftp_account_1_year_fiexed(self):
         service = self.create_ftp_service()
-        user = self.create_ftp()
+        self.create_ftp()
         bp = timezone.now().date() + relativedelta(years=1)
         bills = service.orders.bill(billing_point=bp, fixed_point=True)
         self.assertEqual(10, bills[0].get_total())
     
     def test_ftp_account_2_year_fiexed(self):
         service = self.create_ftp_service()
-        user = self.create_ftp()
+        self.create_ftp()
         bp = timezone.now().date() + relativedelta(years=2)
         bills = service.orders.bill(billing_point=bp, fixed_point=True)
         self.assertEqual(20, bills[0].get_total())
@@ -79,7 +79,7 @@ class FTPBillingTest(BaseBillingTest):
     
     def test_ftp_account_with_compensation(self):
         account = self.create_account()
-        service = self.create_ftp_service()
+        self.create_ftp_service()
         user = self.create_ftp(account=account)
         first_bp = timezone.now().date() + relativedelta(years=2)
         bills = account.orders.bill(billing_point=first_bp, fixed_point=True)

@@ -1,6 +1,6 @@
-import inspect
 from dateutil.relativedelta import relativedelta
 
+from django.core.validators import ValidationError
 from django.db import models
 from django.template import loader, Context
 from django.utils import timezone
@@ -9,8 +9,8 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.accounts.models import Account
+from orchestra.apps.contacts.models import Contact
 from orchestra.core import accounts
-from orchestra.utils.functional import cached
 from orchestra.utils.html import html_to_pdf
 
 from . import settings
@@ -53,13 +53,12 @@ class Bill(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
              related_name='%(class)s')
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
-    created_on = models.DateTimeField(_("created on"), auto_now_add=True)
-    closed_on = models.DateTimeField(_("closed on"), blank=True, null=True)
-    # TODO rename to is_closed
+    created_on = models.DateField(_("created on"), auto_now_add=True)
+    closed_on = models.DateField(_("closed on"), blank=True, null=True)
     is_open = models.BooleanField(_("is open"), default=True)
     is_sent = models.BooleanField(_("is sent"), default=False)
     due_on = models.DateField(_("due on"), null=True, blank=True)
-    last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
+    updated_on = models.DateField(_("updated on"), auto_now=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     comments = models.TextField(_("comments"), blank=True)
     html = models.TextField(_("HTML"), blank=True)
@@ -145,7 +144,6 @@ class Bill(models.Model):
         self.save()
     
     def send(self):
-        from orchestra.apps.contacts.models import Contact
         self.account.send_email(
             template=settings.BILLS_EMAIL_NOTIFICATION_TEMPLATE,
             context={
@@ -241,9 +239,13 @@ class BillLine(models.Model):
     quantity = models.DecimalField(_("quantity"), max_digits=12, decimal_places=2)
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"))
-    # TODO
-#    order_id = models.ForeignKey('orders.Order', null=True, blank=True,
-#            help_text=_("Informative link back to the order"))
+    # Undo
+    order = models.ForeignKey(settings.BILLS_ORDER_MODEL, null=True, blank=True,
+            help_text=_("Informative link back to the order"))
+    order_billed_on = models.DateField(_("order billed"), null=True, blank=True)
+    order_billed_until = models.DateField(_("order billed until"), null=True, blank=True)
+    created_on = models.DateField(_("created"), auto_now_add=True)
+    # Amendment
     amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
             related_name='amendment_lines', null=True, blank=True)
     
@@ -262,6 +264,17 @@ class BillLine(models.Model):
             total += subline.total
         return total
     
+    def undo(self):
+        # TODO warn user that undoing bills with compensations lead to compensation lost
+        for attr in ['order_id', 'order_billed_on', 'order_billed_until']:
+            if not getattr(self, attr):
+                raise ValidationError(_("Not enough information stored for undoing"))
+        if self.created_on != self.order.billed_on:
+            raise ValidationError(_("Dates don't match"))
+        self.order.billed_until = self.order_billed_until
+        self.order.billed_on = self.order_billed_on
+        self.delete()
+    
     def save(self, *args, **kwargs):
         # TODO cost and consistency of this shit
         super(BillLine, self).save(*args, **kwargs)
@@ -272,10 +285,20 @@ class BillLine(models.Model):
 
 class BillSubline(models.Model):
     """ Subline used for describing an item discount """
+    VOLUME = 'VOLUME'
+    COMPENSATION = 'COMPENSATION'
+    OTHER = 'OTHER'
+    TYPES = (
+        (VOLUME, _("Volume")),
+        (COMPENSATION, _("Compensation")),
+        (OTHER, _("Other")),
+    )
+    
+    # TODO: order info for undoing
     line = models.ForeignKey(BillLine, verbose_name=_("bill line"), related_name='sublines')
     description = models.CharField(_("description"), max_length=256)
     total = models.DecimalField(max_digits=12, decimal_places=2)
-    # TODO type ? Volume and Compensation
+    type = models.CharField(_("type"), max_length=16, choices=TYPES, default=OTHER)
     
     def save(self, *args, **kwargs):
         # TODO cost of this shit

@@ -43,8 +43,7 @@ class Resource(models.Model):
             default=LAST,
             help_text=_("Operation used for aggregating this resource monitored"
                         "data."))
-    # TODO rename to on_deman
-    ondemand = models.BooleanField(_("on demand"), default=False,
+    on_demand = models.BooleanField(_("on demand"), default=False,
             help_text=_("If enabled the resource will not be pre-allocated, "
                         "but allocated under the application demand"))
     default_allocation = models.PositiveIntegerField(_("default allocation"),
@@ -116,12 +115,12 @@ class Resource(models.Model):
 
 class ResourceData(models.Model):
     """ Stores computed resource usage and allocation """
-    resource = models.ForeignKey(Resource, related_name='dataset')
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    used = models.PositiveIntegerField(null=True)
-    last_update = models.DateTimeField(null=True)
-    allocated = models.PositiveIntegerField(null=True, blank=True)
+    resource = models.ForeignKey(Resource, related_name='dataset', verbose_name=_("resource"))
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
+    object_id = models.PositiveIntegerField(_("object id"))
+    used = models.PositiveIntegerField(_("used"), null=True)
+    updated_at = models.DateTimeField(_("updated"), null=True)
+    allocated = models.PositiveIntegerField(_("allocated"), null=True, blank=True)
     
     content_object = GenericForeignKey()
     
@@ -146,7 +145,7 @@ class ResourceData(models.Model):
         if current is None:
             current = self.get_used()
         self.used = current or 0
-        self.last_update = timezone.now()
+        self.updated_at = timezone.now()
         self.save()
 
 
@@ -154,9 +153,9 @@ class MonitorData(models.Model):
     """ Stores monitored data """
     monitor = models.CharField(_("monitor"), max_length=256,
             choices=ServiceMonitor.get_plugin_choices())
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    date = models.DateTimeField(_("date"), auto_now_add=True)
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
+    object_id = models.PositiveIntegerField(_("object id"))
+    created_at = models.DateTimeField(_("created"), auto_now_add=True)
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     
     content_object = GenericForeignKey()

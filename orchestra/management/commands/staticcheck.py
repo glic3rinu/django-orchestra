@@ -1,0 +1,102 @@
+# Adapted from http://djangosnippets.org/snippets/1762/
+
+import ast
+import os
+import sys
+
+from django.core.management.base import BaseCommand
+from pyflakes import checker, messages
+
+from orchestra.utils.paths import get_orchestra_root
+
+
+# BlackHole, PySyntaxError and checking based on
+# https://github.com/patrys/gedit-pyflakes-plugin.git
+class BlackHole(object):
+    write = flush = lambda *args, **kwargs: None
+    
+    def __enter__(self):
+        self.stderr, sys.stderr = sys.stderr, self
+    
+    def __exit__(self, *args, **kwargs):
+        sys.stderr = self.stderr
+
+
+class PySyntaxError(messages.Message):
+    message = 'syntax error in line %d: %s'
+    
+    def __init__(self, filename, e):
+        super(PySyntaxError, self).__init__(filename, e)
+        self.message_args = (e.offset, e.text)
+
+
+def check(codeString, filename):
+    """
+    Check the Python source given by C{codeString} for flakes.
+    
+    @param codeString: The Python source to check.
+    @type codeString: C{str}
+    
+    @param filename: The name of the file the source came from, used to report errors.
+    @type filename: C{str}
+    
+    @return: The number of warnings emitted.
+    @rtype: C{int}
+    """
+    try:
+        with BlackHole():
+            tree = ast.parse(codeString, filename)
+    except SyntaxError, e:
+        return [PySyntaxError(filename, e)]
+    else:
+        # Okay, it's syntactically valid.  Now parse it into an ast and check it
+        w = checker.Checker(tree, filename)
+        
+        lines = codeString.split('\n')
+        # honour pyflakes: ignore comments
+        messages = [message for message in w.messages
+                    if lines[message.lineno-1].find('pyflakes:ignore') < 0]
+        messages.sort(lambda a, b: cmp(a.lineno, b.lineno))
+        return messages
+
+
+def checkPath(filename):
+    """
+    Check the given path, printing out any warnings detected.
+    @return: the number of warnings printed
+    """
+    try:
+        return check(file(filename, 'U').read() + '\n', filename)
+    except IOError, msg:
+        return ["%s: %s" % (filename, msg.args[1])]
+    except TypeError:
+        pass
+
+
+def checkPaths(filenames):
+    warnings = []
+    for arg in filenames:
+        if os.path.isdir(arg):
+            for dirpath, dirnames, filenames in os.walk(arg):
+                for filename in filenames:
+                    if filename.endswith('.py'):
+                        warnings.extend(checkPath(os.path.join(dirpath, filename)))
+        else:
+            warnings.extend(checkPath(arg))
+    return warnings
+#### pyflakes.scripts.pyflakes ends.
+
+
+class Command(BaseCommand):
+    help = "Run pyflakes syntax checks."
+    args = '[filename [filename [...]]]'
+    
+    def handle(self, *filenames, **options):
+        if not filenames:
+            filenames = [get_orchestra_root(), '.']
+        warnings = checkPaths(filenames)
+        for warning in warnings:
+            print warning
+        if warnings:
+            print 'Total warnings: %d' % len(warnings)
+            raise SystemExit(1)

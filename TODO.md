@@ -59,12 +59,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
                              dependency collector with max_recursion that matches the number of dots on service.match and service.metric
 
 
-* Be consistent with dates:
-    * created_on date
-    * created_at datetime
-
-at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
-
 
 * backend logs with hal logo
 * Use logs for storing monitored values
@@ -82,13 +76,6 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
-* Create ProForma from orders orders.bill(proforma=True)
-
-* generic confirmation breadcrumbs for single objects
-
-* DirectDebit due date = bill.due_date
-
-* settings.ENABLED_PLUGINS = ('path.module.ClassPlugin',)
 
 * Transaction states: CREATED, PROCESSED, EXECUTED, COMMITED, ABORTED (SECURED, REJECTED?)
     * bill.send() -> transacction.EXECUTED when source=None
@@ -108,5 +95,7 @@ at + clock time, midnight, noon- At 3:30 p.m., At 4:01, At noon
         return order.register_at.date()
 
 
-* latest by 'id' *always*
-* replace add_now by default=lambda: timezone.now()
+* mail backend related_models = ('resources__content_type') ??
+* ignore orders
+
+* Redmine, BSCW and other applications management

@@ -9,7 +9,6 @@ from django.shortcuts import redirect
 from django.utils import importlib
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
 
 from orchestra.models.utils import get_field_value
 from orchestra.utils import humanize

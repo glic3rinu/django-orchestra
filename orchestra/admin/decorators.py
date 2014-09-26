@@ -1,6 +1,5 @@
 from functools import wraps, partial
 
-from django.contrib import messages
 from django.contrib.admin import helpers
 from django.template.response import TemplateResponse
 from django.utils.decorators import available_attrs
@@ -61,8 +60,10 @@ def action_with_confirmation(action_name=None, extra_context={},
             
             if len(queryset) == 1:
                 objects_name = force_text(opts.verbose_name)
+                obj = queryset.get()
             else:
                 objects_name = force_text(opts.verbose_name_plural)
+                obj = None
             if not action_name:
                 action_name = func.__name__
             context = {
@@ -73,6 +74,7 @@ def action_with_confirmation(action_name=None, extra_context={},
                 'action_value': action_value,
                 'queryset': queryset,
                 'opts': opts,
+                'obj': obj,
                 'app_label': app_label,
                 'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
             }

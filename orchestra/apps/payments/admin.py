@@ -1,4 +1,3 @@
-from django import forms
 from django.conf.urls import patterns, url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -37,7 +36,6 @@ class PaymentSourceAdmin(AccountAdminMixin, admin.ModelAdmin):
     def get_urls(self):
         """ Hooks select account url """
         urls = super(PaymentSourceAdmin, self).get_urls()
-        admin_site = self.admin_site
         opts = self.model._meta
         info = opts.app_label, opts.model_name
         select_urls = patterns("",

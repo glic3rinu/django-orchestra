@@ -1,7 +1,5 @@
 from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -62,8 +60,8 @@ class BackendLog(models.Model):
     exit_code = models.IntegerField(_("exit code"), null=True)
     task_id = models.CharField(_("task ID"), max_length=36, unique=True, null=True,
             help_text="Celery task ID when used as execution backend")
-    created = models.DateTimeField(_("created"), auto_now_add=True)
-    last_update = models.DateTimeField(_("last update"), auto_now=True)
+    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("updated"), auto_now=True)
     
     class Meta:
         get_latest_by = 'id'
@@ -89,7 +87,7 @@ class BackendOperation(models.Model):
     action = models.CharField(_("action"), max_length=64)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    # TODO rename to content_object
+    
     instance = generic.GenericForeignKey('content_type', 'object_id')
     
     class Meta:

@@ -1,6 +1,6 @@
 import sys
 
-from orchestra.utils.python import AttributeDict
+from orchestra.utils.python import AttrDict
 
 
 def _compute(rates, metric):
@@ -30,7 +30,7 @@ def _compute(rates, metric):
                 quantity = metric - accumulated
                 end = True
         price = rates[ix].price
-        steps.append(AttributeDict(**{
+        steps.append(AttrDict(**{
             'quantity': quantity,
             'price': price,
             'barrier': barrier,
@@ -109,7 +109,7 @@ def step_price(rates, metric):
                 if result and result[-1].price == price:
                     result[-1].quantity += quantity
                 else:
-                    result.append(AttributeDict(quantity=quantity, price=price))
+                    result.append(AttrDict(quantity=quantity, price=price))
                 ix = 0
                 targets = []
             else:
@@ -139,7 +139,7 @@ def match_price(rates, metric):
         candidates.append(prev)
     candidates.sort(key=lambda r: r.price)
     if candidates:
-        return [AttributeDict(**{
+        return [AttrDict(**{
             'quantity': metric,
             'price': candidates[0].price,
         })]

@@ -6,7 +6,6 @@ from orchestra.utils.apps import autodiscover as module_autodiscover
 from orchestra.utils.python import import_class
 
 from .helpers import insert_links, replace_collectionmethodname
-from .root import APIRoot
 
 
 def collectionlink(**kwargs):

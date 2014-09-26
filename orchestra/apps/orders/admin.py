@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ChangeListDefaultFilter
 from orchestra.admin.utils import admin_link, admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.utils.humanize import naturaldate
@@ -13,7 +12,7 @@ from .filters import ActiveOrderListFilter, BilledOrderListFilter
 from .models import Order, MetricStorage
 
 
-class OrderAdmin(AccountAdminMixin, ChangeListDefaultFilter, admin.ModelAdmin):
+class OrderAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = (
         'id', 'service', 'account_link', 'content_object_link',
         'display_registered_on', 'display_billed_until', 'display_cancelled_on'
@@ -22,9 +21,6 @@ class OrderAdmin(AccountAdminMixin, ChangeListDefaultFilter, admin.ModelAdmin):
     list_filter = (ActiveOrderListFilter, BilledOrderListFilter, 'service',)
     actions = (BillSelectedOrders(),)
     date_hierarchy = 'registered_on'
-    default_changelist_filters = (
-        ('is_active', 'True'),
-    )
     
     content_object_link = admin_link('content_object', order=False)
     display_registered_on = admin_date('registered_on')

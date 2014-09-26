@@ -6,7 +6,6 @@ from django.contrib.auth import BACKEND_SESSION_KEY, SESSION_KEY, get_user_model
 from django.contrib.sessions.backends.db import SessionStore
 from django.test import LiveServerTestCase, TestCase
 from orm.api import Api
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.webdriver import WebDriver
 from xvfbwrapper import Xvfb
 

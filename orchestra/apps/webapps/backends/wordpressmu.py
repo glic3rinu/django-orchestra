@@ -1,5 +1,4 @@
 import re
-import sys
 
 import requests
 from django.utils.translation import ugettext_lazy as _
@@ -55,6 +54,7 @@ class WordpressMuBackend(WebAppServiceMixin, ServiceController):
             'blog[email]': email,
             '_wpnonce_add-blog': wpnonce,
         }
+        # TODO validate response
         response = session.post(url, data=data)
     
     def delete_blog(self, webapp, server):

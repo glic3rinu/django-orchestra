@@ -1,28 +1,24 @@
 import datetime
 import decimal
 import logging
-import sys
 
 from django.db import models
 from django.db.migrations.recorder import MigrationRecorder
 from django.db.models import F, Q
 from django.db.models.loading import get_model
-from django.db.models.signals import pre_delete, post_delete, post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import caches, services, accounts
+from orchestra.core import accounts
 from orchestra.models import queryset
-from orchestra.utils.apps import autodiscover
 from orchestra.utils.python import import_class
 
 from . import helpers, settings
-from .handlers import ServiceHandler
 
 
 logger = logging.getLogger(__name__)
@@ -39,8 +35,13 @@ class OrderQuerySet(models.QuerySet):
         for account, services in qs.group_by('account', 'service').iteritems():
             bill_lines = []
             for service, orders in services.iteritems():
+                for order in orders:
+                    # Saved for undoing support
+                    order.old_billed_on = order.billed_on
+                    order.old_billed_until = order.billed_until
                 lines = service.handler.generate_bill_lines(orders, account, **options)
                 bill_lines.extend(lines)
+            # TODO make this consistent always returning the same fucking objects
             if commit:
                 bills += bill_backend.create_bills(account, bill_lines, **options)
             else:
@@ -73,7 +74,7 @@ class OrderQuerySet(models.QuerySet):
     
     def inactive(self, **kwargs):
         """ return inactive orders """
-        return self.filter(cancelled_on__lt=timezone.now(), **kwargs)
+        return self.filter(cancelled_on__lte=timezone.now(), **kwargs)
 
 
 class Order(models.Model):

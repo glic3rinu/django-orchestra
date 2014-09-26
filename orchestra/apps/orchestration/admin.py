@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
@@ -89,18 +88,18 @@ class BackendLogAdmin(admin.ModelAdmin):
     )
     list_display_links = ('id', 'backend')
     list_filter = ('state', 'backend')
-    date_hierarchy = 'last_update'
+    date_hierarchy = 'updated_at'
     inlines = [BackendOperationInline]
     fields = [
         'backend', 'server_link', 'state', 'mono_script', 'mono_stdout',
         'mono_stderr', 'mono_traceback', 'exit_code', 'task_id', 'display_created',
-        'display_last_update', 'execution_time'
+        'display_updated', 'execution_time'
     ]
     readonly_fields = fields
     
     server_link = admin_link('server')
-    display_last_update = admin_date('last_update')
-    display_created = admin_date('created')
+    display_updated = admin_date('updated_at')
+    display_created = admin_date('created_at')
     display_state = admin_colored('state', colors=STATE_COLORS)
     mono_script = display_mono('script')
     mono_stdout = display_mono('stdout')
@@ -111,6 +110,9 @@ class BackendLogAdmin(admin.ModelAdmin):
         """ Order by structured name and imporve performance """
         qs = super(BackendLogAdmin, self).get_queryset(request)
         return qs.select_related('server').defer('script', 'stdout')
+    
+    def has_add_permission(self, *args, **kwargs):
+        return False
 
 
 class ServerAdmin(admin.ModelAdmin):

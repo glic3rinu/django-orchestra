@@ -1,5 +1,3 @@
-from django.db import IntegrityError, transaction
-
 from orchestra.utils.tests import BaseTestCase
 
 from .. import operations, backends

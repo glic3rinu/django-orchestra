@@ -1,11 +1,9 @@
 from django import forms
-from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
-from orchestra.admin.utils import change_url
 from orchestra.apps.users.models import User
 from orchestra.forms.widgets import ReadOnlyWidget
 
@@ -42,7 +40,6 @@ class MessageInlineForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(MessageInlineForm, self).__init__(*args, **kwargs)
-        admin_link = change_url(self.user)
         self.fields['created_on'].widget = ReadOnlyWidget('')
         
     def clean_content(self):

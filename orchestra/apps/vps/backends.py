@@ -1,5 +1,3 @@
-from django.utils.translation import ugettext_lazy as _
-
 from orchestra.apps.resources import ServiceMonitor
 
 

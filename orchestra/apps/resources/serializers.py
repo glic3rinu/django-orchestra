@@ -44,12 +44,12 @@ if not running_syncdb():
                     msg = "Unknown or duplicated resource '%s'." % resource
                     raise serializers.ValidationError(msg)
                 resources.remove(resource)
-                if not resource.ondemand and not data.allocated:
+                if not resource.on_demand and not data.allocated:
                     data.allocated = resource.default_allocation
                 result.append(data)
             for resource in resources:
                 data = ResourceData(resource=resource)
-                if not resource.ondemand:
+                if not resource.on_demand:
                     data.allocated = resource.default_allocation
                 result.append(data)
             attrs[source] = result
@@ -64,7 +64,7 @@ if not running_syncdb():
             ret['available_resources'] = [
                 {
                     'name': resource.name,
-                    'ondemand': resource.ondemand,
+                    'on_demand': resource.on_demand,
                     'default_allocation': resource.default_allocation
                 } for resource in resources
             ]

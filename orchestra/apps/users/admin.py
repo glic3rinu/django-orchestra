@@ -55,7 +55,6 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
     def get_urls(self):
         """ Returns the additional urls for the change view links """
         urls = super(UserAdmin, self).get_urls()
-        admin_site = self.admin_site
         opts = self.model._meta
         new_urls = patterns("")
         for role in self.roles:

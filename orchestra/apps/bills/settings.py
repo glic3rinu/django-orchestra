@@ -36,3 +36,6 @@ BILLS_SELLER_BANK_ACCOUNT = getattr(settings, 'BILLS_SELLER_BANK_ACCOUNT', '0000
 
 BILLS_EMAIL_NOTIFICATION_TEMPLATE = getattr(settings, 'BILLS_EMAIL_NOTIFICATION_TEMPLATE', 
     'bills/bill-notification.email')
+
+
+BILLS_ORDER_MODEL = getattr(settings, 'BILLS_ORDER_MODEL', 'orders.Order')

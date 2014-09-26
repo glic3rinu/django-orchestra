@@ -78,7 +78,7 @@ class BillSelectedOrders(object):
         if int(request.POST.get('step')) >= 3:
             bills = self.queryset.bill(commit=True, **self.options)
             for order in self.queryset:
-                modeladmin.log_change(request, order, 'Billed')
+                self.modeladmin.log_change(request, order, 'Billed')
             if not bills:
                 msg = _("Selected orders do not have pending billing")
                 self.modeladmin.message_user(request, msg, messages.WARNING)

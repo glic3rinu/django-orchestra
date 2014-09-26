@@ -66,7 +66,7 @@ class OrderedSet(collections.MutableSet):
         return set(self) == set(other)
 
 
-class AttributeDict(dict):
+class AttrDict(dict):
     def __init__(self, *args, **kwargs):
-        super(AttributeDict, self).__init__(*args, **kwargs)
+        super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self

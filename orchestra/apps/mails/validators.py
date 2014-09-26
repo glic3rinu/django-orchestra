@@ -44,7 +44,6 @@ def validate_forward(value):
 
 
 def validate_sieve(value):
-    from .models import Mailbox
     sieve_name = '%s.sieve' % hashlib.md5(value).hexdigest()
     path = os.path.join(settings.EMAILS_SIEVETEST_PATH, sieve_name)
     with open(path, 'wb') as f:

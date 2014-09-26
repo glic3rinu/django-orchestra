@@ -1,3 +1,4 @@
+from django.core import exceptions
 from django.db import models
 from django.utils.text import capfirst
 

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
 
 
 CONTACTS_DEFAULT_EMAIL_USAGES = getattr(settings, 'CONTACTS_DEFAULT_EMAIL_USAGES',

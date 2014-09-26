@@ -9,7 +9,7 @@ from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
-from .actions import update_orders
+from .actions import update_orders, view_help
 from .models import Plan, ContractedPlan, Rate, Service
 
 
@@ -52,7 +52,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     )
     inlines = [RateInline]
     actions = [update_orders]
-    change_view_actions = actions
+    change_view_actions = actions + [view_help]
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Improve performance of account field and filter by account """

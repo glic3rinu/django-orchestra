@@ -7,6 +7,7 @@ from orchestra.apps.orchestration import ServiceController
 from orchestra.apps.resources import ServiceMonitor
 
 from . import settings
+from .models import Address
 
 
 class MailSystemUserBackend(ServiceController):
@@ -152,7 +153,7 @@ class MaildirDisk(ServiceMonitor):
         )
     
     def get_context(self, mailbox):
-        context = MailSystemUserBackend().get_context(site)
+        context = MailSystemUserBackend().get_context(mailbox)
         context['home'] = settings.EMAILS_HOME % context
         context['maildir_path'] = os.path.join(context['home'], 'Maildir/maildirsize')
         context['object_id'] = mailbox.pk

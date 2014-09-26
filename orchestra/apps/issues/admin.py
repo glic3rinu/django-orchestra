@@ -56,7 +56,7 @@ class MessageReadOnlyInline(admin.TabularInline):
     def content_html(self, msg):
         context = {
             'number': msg.number,
-            'time': admin_date('created_on')(msg),
+            'time': admin_date('created_at')(msg),
             'author': admin_link('author')(msg) if msg.author else msg.author_name,
         }
         summary = _("#%(number)i Updated by %(author)s about %(time)s") % context
@@ -98,11 +98,11 @@ class MessageInline(admin.TabularInline):
 class TicketInline(admin.TabularInline):
     fields = [
         'ticket_id', 'subject', 'creator_link', 'owner_link', 'colored_state',
-        'colored_priority', 'created', 'last_modified'
+        'colored_priority', 'created', 'updated'
     ]
     readonly_fields =  [
         'ticket_id', 'subject', 'creator_link', 'owner_link', 'colored_state',
-        'colored_priority', 'created', 'last_modified'
+        'colored_priority', 'created', 'updated'
     ]
     model = Ticket
     extra = 0
@@ -110,8 +110,8 @@ class TicketInline(admin.TabularInline):
     
     creator_link = admin_link('creator')
     owner_link = admin_link('owner')
-    created = admin_link('created_on')
-    last_modified = admin_link('last_modified_on')
+    created = admin_link('created_at')
+    updated = admin_link('updated_at')
     colored_state = admin_colored('state', colors=STATE_COLORS, bold=False)
     colored_priority = admin_colored('priority', colors=PRIORITY_COLORS, bold=False)
     
@@ -121,10 +121,10 @@ class TicketInline(admin.TabularInline):
     ticket_id.allow_tags = True
 
 
-class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeViewActions, 
+class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
     list_display = [
         'unbold_id', 'bold_subject', 'display_creator', 'display_owner',
-        'display_queue', 'display_priority', 'display_state', 'last_modified'
+        'display_queue', 'display_priority', 'display_state', 'updated'
     ]
     list_display_links = ('unbold_id', 'bold_subject')
     list_filter = [
@@ -134,7 +134,7 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
         ('my_tickets', lambda r: 'True' if not r.user.is_superuser else 'False'),
         ('state', 'OPEN')
     )
-    date_hierarchy = 'created_on'
+    date_hierarchy = 'created_at'
     search_fields = [
         'id', 'subject', 'creator__username', 'creator__email', 'queue__name',
         'owner__username'
@@ -192,20 +192,20 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     display_creator = admin_link('creator')
     display_queue = admin_link('queue')
     display_owner = admin_link('owner')
-    last_modified = admin_date('last_modified_on')
+    updated = admin_date('updated')
     display_state = admin_colored('state', colors=STATE_COLORS, bold=False)
     display_priority = admin_colored('priority', colors=PRIORITY_COLORS, bold=False)
     
     def display_summary(self, ticket):
         context = {
             'creator': admin_link('creator')(self, ticket) if ticket.creator else ticket.creator_name,
-            'created': admin_date('created_on')(ticket),
+            'created': admin_date('created_at')(ticket),
             'updated': '',
         }
         msg = ticket.messages.last()
         if msg:
             context.update({
-                'updated': admin_date('created_on')(msg),
+                'updated': admin_date('created_at')(msg),
                 'updater': admin_link('author')(self, msg) if msg.author else msg.author_name,
             })
             context['updated'] = '. Updated by %(updater)s about %(updated)s' % context
@@ -283,7 +283,7 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin): #TODO ChangeView
     def message_preview_view(self, request):
         """ markdown preview render via ajax """
         data = request.POST.get("data")
-        data_formated = markdowt_tn(strip_tags(data))
+        data_formated = markdown(strip_tags(data))
         return HttpResponse(data_formated)
     
     def get_queryset(self, request):

@@ -1,7 +1,5 @@
 from django import forms
-from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
-from djcelery.humanize import naturaldate
 
 from orchestra.forms.widgets import ShowTextWidget, ReadOnlyWidget
 
@@ -21,7 +19,7 @@ class ResourceForm(forms.ModelForm):
         if self.resource:
             self.fields['verbose_name'].initial = self.resource.verbose_name
             self.fields['unit'].initial = self.resource.unit
-            if self.resource.ondemand:
+            if self.resource.on_demand:
                 self.fields['allocated'].required = False
                 self.fields['allocated'].widget = ReadOnlyWidget(None, '')
             else:

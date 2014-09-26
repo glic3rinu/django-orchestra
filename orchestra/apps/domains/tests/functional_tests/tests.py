@@ -124,7 +124,7 @@ class DomainTestMixin(object):
             self.assertNotEqual(hostmaster, soa[5])
     
     def validate_update(self, server_addr, domain_name):
-        domain = Domain.objects.get(name=domain_name)
+        Domain.objects.get(name=domain_name)
         context = {
             'domain_name': domain_name,
             'server_addr': server_addr

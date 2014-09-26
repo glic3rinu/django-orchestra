@@ -4,12 +4,11 @@ import decimal
 
 from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.utils import plugins
-from orchestra.utils.python import AttributeDict
+from orchestra.utils.python import AttrDict
 
 from . import settings, helpers
 
@@ -21,6 +20,8 @@ class ServiceHandler(plugins.Plugin):
     
     Relax and enjoy the journey.
     """
+    _VOLUME = 'VOLUME'
+    _COMPENSATION = 'COMPENSATION'
     
     model = None
     
@@ -160,7 +161,7 @@ class ServiceHandler(plugins.Plugin):
             return None
     
     def generate_discount(self, line, dtype, price):
-        line.discounts.append(AttributeDict(**{
+        line.discounts.append(AttrDict(**{
             'type': dtype,
             'total': price,
         }))
@@ -182,7 +183,7 @@ class ServiceHandler(plugins.Plugin):
         if not computed:
             price = price * size
         subtotal = self.nominal_price * size * metric
-        line = AttributeDict(**{
+        line = AttrDict(**{
             'order': order,
             'subtotal': subtotal,
             'ini': ini,
@@ -197,7 +198,7 @@ class ServiceHandler(plugins.Plugin):
             discounted += dprice
         subtotal += discounted
         if subtotal > price:
-            self.generate_discount(line, 'volume', price-subtotal)
+            self.generate_discount(line, self._VOLUME, price-subtotal)
         return line
     
     def assign_compensations(self, givers, receivers, **options):
@@ -225,7 +226,6 @@ class ServiceHandler(plugins.Plugin):
     
     def apply_compensations(self, order, only_beyond=False):
         dsize = 0
-        discounts = ()
         ini = order.billed_until or order.registered_on
         end = order.new_billed_until
         beyond = end
@@ -296,7 +296,7 @@ class ServiceHandler(plugins.Plugin):
             cprice += dsize*price
             if cprice:
                 discounts = (
-                    ('compensation', -cprice),
+                    (self._COMPENSATION, -cprice),
                 )
                 if new_end:
                     size = self.get_price_size(order.new_billed_until, new_end)
@@ -323,11 +323,12 @@ class ServiceHandler(plugins.Plugin):
                 discounts = ()
                 dsize, new_end = self.apply_compensations(order)
                 if dsize:
-                    discounts=(('compensation', -dsize*price),)
+                    discounts=(
+                        (self._COMPENSATION, -dsize*price),
+                    )
                     if new_end:
                         order.new_billed_until = new_end
                         end = new_end
-                size = self.get_price_size(ini, end)
                 line = self.generate_line(order, price, ini, end, discounts=discounts)
                 lines.append(line)
         return lines
@@ -395,7 +396,7 @@ class ServiceHandler(plugins.Plugin):
                 dsize, new_end = self.apply_compensations(order)
                 if dsize:
                     discounts=(
-                        ('compensation', -dsize*price),
+                        (self._COMPENSATION, -dsize*price),
                     )
                     if new_end:
                         order.new_billed_until = new_end

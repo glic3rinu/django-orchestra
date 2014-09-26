@@ -1,6 +1,5 @@
 from django.conf import settings as djsettings
 from django.db import models
-from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
@@ -18,7 +17,7 @@ class Account(models.Model):
     language = models.CharField(_("language"), max_length=2,
             choices=settings.ACCOUNTS_LANGUAGES,
             default=settings.ACCOUNTS_DEFAULT_LANGUAGE)
-    register_date = models.DateTimeField(_("register date"), auto_now_add=True)
+    registered_on = models.DateField(_("registered"), auto_now_add=True)
     comments = models.TextField(_("comments"), max_length=256, blank=True)
     is_active = models.BooleanField(default=True)
     

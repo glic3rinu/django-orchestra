@@ -2,7 +2,6 @@ from django import forms
 from django.conf.urls import patterns, url
 from django.contrib import admin, messages
 from django.contrib.admin.util import unquote
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.six.moves.urllib.parse import parse_qsl
@@ -115,7 +114,6 @@ class AccountListAdmin(AccountAdmin):
     select_account.order_admin_field = 'user__username'
     
     def changelist_view(self, request, extra_context=None):
-        opts = self.model._meta
         original_app_label = request.META['PATH_INFO'].split('/')[-5]
         original_model = request.META['PATH_INFO'].split('/')[-4]
         context = {
@@ -182,7 +180,6 @@ class AccountAdminMixin(object):
     
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         account_id = self.get_account_from_preserve_filters(request)
-        verb = 'change' if object_id else 'add'
         if not object_id:
             if account_id:
                 # Preselect account

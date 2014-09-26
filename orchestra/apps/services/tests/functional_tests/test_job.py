@@ -39,13 +39,13 @@ class JobBillingTest(BaseBillingTest):
         return account.miscellaneous.create(service=service, description=description, amount=amount)
     
     def test_job(self):
-        service = self.create_job_service()
+        self.create_job_service()
         account = self.create_account()
         
-        job = self.create_job(5, account=account)
+        self.create_job(5, account=account)
         bill = account.orders.bill()[0]
         self.assertEqual(5*20, bill.get_total())
         
-        job = self.create_job(100, account=account)
+        self.create_job(100, account=account)
         bill = account.orders.bill(new_open=True)[0]
         self.assertEqual(100*15, bill.get_total())

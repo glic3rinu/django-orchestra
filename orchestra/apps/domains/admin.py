@@ -1,17 +1,13 @@
 from django import forms
-from django.conf.urls import patterns, url
 from django.contrib import admin
-from django.contrib.admin.util import unquote
-from django.core.urlresolvers import reverse
-from django.db.models import F
-from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin
-from orchestra.admin.utils import wrap_admin_view, admin_link, change_url
+from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
+from .actions import view_zone
 from .forms import RecordInlineFormSet, DomainAdminForm
 from .filters import TopDomainListFilter
 from .models import Domain, Record
@@ -61,6 +57,7 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
         ('top_domain', 'True'),
     )
     form = DomainAdminForm
+    change_view_actions = [view_zone]
     
     def structured_name(self, domain):
         if not domain.is_top:
@@ -89,35 +86,12 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
     websites.short_description = _("Websites")
     websites.allow_tags = True
     
-    def get_urls(self):
-        """ Returns the additional urls for the change view links """
-        urls = super(DomainAdmin, self).get_urls()
-        admin_site = self.admin_site
-        opts = self.model._meta
-        urls = patterns("",
-            url('^(\d+)/view-zone/$',
-                wrap_admin_view(self, self.view_zone_view),
-                name='domains_domain_view_zone')
-        ) + urls
-        return urls
-    
-    def view_zone_view(self, request, object_id):
-        zone = self.get_object(request, unquote(object_id))
-        context = {
-            'opts': self.model._meta,
-            'object': zone,
-            'title': _("%s zone content") % zone.origin.name
-        }
-        return TemplateResponse(request, 'admin/domains/domain/view_zone.html',
-            context)
-    
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """
         qs = super(DomainAdmin, self).get_queryset(request)
         qs = qs.select_related('top')
-#        qs = qs.select_related('top')
         # For some reason if we do this we know for sure that join table will be called T4
-        __ = str(qs.query)
+        str(qs.query)
         qs = qs.extra(
             select={'structured_name': 'CONCAT(T4.name, domains_domain.name)'},
         ).order_by('structured_name')

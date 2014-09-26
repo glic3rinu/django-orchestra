@@ -41,7 +41,7 @@ class DomainBillingTest(BaseBillingTest):
         return account.miscellaneous.create(service=domain_service, description=domain_name)
     
     def test_domain(self):
-        service = self.create_domain_service()
+        self.create_domain_service()
         account = self.create_account()
         self.create_domain(account=account)
         bills = account.orders.bill()
@@ -69,7 +69,7 @@ class DomainBillingTest(BaseBillingTest):
         self.assertEqual(56, bills[0].get_total())
     
     def test_domain_proforma(self):
-        service = self.create_domain_service()
+        self.create_domain_service()
         account = self.create_account()
         self.create_domain(account=account)
         bills = account.orders.bill(proforma=True, new_open=True)
@@ -97,7 +97,7 @@ class DomainBillingTest(BaseBillingTest):
         self.assertEqual(56, bills[0].get_total())
     
     def test_domain_cumulative(self):
-        service = self.create_domain_service()
+        self.create_domain_service()
         account = self.create_account()
         self.create_domain(account=account)
         bills = account.orders.bill(proforma=True)
@@ -110,7 +110,7 @@ class DomainBillingTest(BaseBillingTest):
         self.assertEqual(30, bills[0].get_total())
     
     def test_domain_new_open(self):
-        service = self.create_domain_service()
+        self.create_domain_service()
         account = self.create_account()
         self.create_domain(account=account)
         bills = account.orders.bill(new_open=True)

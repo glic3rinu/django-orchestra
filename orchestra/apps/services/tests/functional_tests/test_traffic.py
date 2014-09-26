@@ -1,5 +1,3 @@
-import datetime
-
 from dateutil.relativedelta import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
@@ -46,26 +44,23 @@ class BaseTrafficBillingTest(BaseBillingTest):
             verbose_name='Account Traffic',
             unit='GB',
             scale=10**9,
-            ondemand=True,
+            on_demand=True,
             monitors='FTPTraffic',
         )
         return self.resource
     
     def report_traffic(self, account, value):
-        ct = ContentType.objects.get_for_model(Account)
-        object_id = account.pk
-        MonitorData.objects.create(monitor='FTPTraffic', content_object=account.user,
-                value=value, date=timezone.now())
+        MonitorData.objects.create(monitor='FTPTraffic', content_object=account.user, value=value)
         data = ResourceData.get_or_create(account, self.resource)
         data.update()
 
 
 class TrafficBillingTest(BaseTrafficBillingTest):
     def test_traffic(self):
-        service = self.create_traffic_service()
-        resource = self.create_traffic_resource()
+        self.create_traffic_service()
+        self.create_traffic_resource()
         account = self.create_account()
-        now = timezone.now().date()
+        now = timezone.now()
         
         self.report_traffic(account, 10**9)
         bill = account.orders.bill(commit=False)[0]
@@ -82,8 +77,8 @@ class TrafficBillingTest(BaseTrafficBillingTest):
         self.assertEqual((90-10)*10, bill.get_total())
     
     def test_multiple_traffics(self):
-        service = self.create_traffic_service()
-        resource = self.create_traffic_resource()
+        self.create_traffic_service()
+        self.create_traffic_resource()
         account1 = self.create_account()
         account2 = self.create_account()
         self.report_traffic(account1, 10**10)
@@ -129,13 +124,13 @@ class TrafficPrepayBillingTest(BaseTrafficBillingTest):
         return account.miscellaneous.create(service=service, description=name, amount=amount)
     
     def test_traffic_prepay(self):
-        service = self.create_traffic_service()
-        prepay_service = self.create_prepay_service()
+        self.create_traffic_service()
+        self.create_prepay_service()
         account = self.create_account()
         self.create_traffic_resource()
         now = timezone.now()
         
-        prepay = self.create_prepay(10, account=account)
+        self.create_prepay(10, account=account)
         bill = account.orders.bill(proforma=True)[0]
         self.assertEqual(10*50, bill.get_total())
         

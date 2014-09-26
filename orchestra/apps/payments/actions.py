@@ -26,8 +26,8 @@ def process_transactions(modeladmin, request, queryset):
             method = PaymentMethod.get_plugin(method)
             procs = method.process(transactions)
             processes += procs
-            for transaction in transactions:
-                modeladmin.log_change(request, transaction, 'Processed')
+            for trans in transactions:
+                modeladmin.log_change(request, trans, 'Processed')
     if not processes:
         return
     opts = modeladmin.model._meta
@@ -44,9 +44,9 @@ def process_transactions(modeladmin, request, queryset):
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_executed(modeladmin, request, queryset, extra_context={}):
-    for transaction in queryset:
-        transaction.mark_as_executed()
-        modeladmin.log_change(request, transaction, 'Executed')
+    for trans in queryset:
+        trans.mark_as_executed()
+        modeladmin.log_change(request, trans, 'Executed')
     msg = _("%s selected transactions have been marked as executed.") % queryset.count()
     modeladmin.message_user(request, msg)
 mark_as_executed.url_name = 'execute'
@@ -56,9 +56,9 @@ mark_as_executed.verbose_name = _("Mark as executed")
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_secured(modeladmin, request, queryset):
-    for transaction in queryset:
-        transaction.mark_as_secured()
-        modeladmin.log_change(request, transaction, 'Secured')
+    for trans in queryset:
+        trans.mark_as_secured()
+        modeladmin.log_change(request, trans, 'Secured')
     msg = _("%s selected transactions have been marked as secured.") % queryset.count()
     modeladmin.message_user(request, msg)
 mark_as_secured.url_name = 'secure'
@@ -68,9 +68,9 @@ mark_as_secured.verbose_name = _("Mark as secured")
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_rejected(modeladmin, request, queryset):
-    for transaction in queryset:
-        transaction.mark_as_rejected()
-        modeladmin.log_change(request, transaction, 'Rejected')
+    for trans in queryset:
+        trans.mark_as_rejected()
+        modeladmin.log_change(request, trans, 'Rejected')
     msg = _("%s selected transactions have been marked as rejected.") % queryset.count()
     modeladmin.message_user(request, msg)
 mark_as_rejected.url_name = 'reject'
@@ -90,7 +90,7 @@ def _format_display_objects(modeladmin, request, queryset, related):
         for related in getattr(obj.transactions, attr)():
             subobjects.append(
                 mark_safe('{0}: <a href="{1}">{2}</a> will be marked as {3}'.format(
-                    capfirst(subobj.get_type().lower()), change_url(subobj), subobj, verb))
+                    capfirst(related.get_type().lower()), change_url(related), related, verb))
             )
         objects.append(subobjects)
     return {'display_objects': objects}
@@ -127,9 +127,9 @@ abort.verbose_name = _("Abort")
 @transaction.atomic
 @action_with_confirmation(extra_context=_format_commit)
 def commit(modeladmin, request, queryset):
-    for transaction in queryset:
-        transaction.mark_as_rejected()
-        modeladmin.log_change(request, transaction, 'Rejected')
+    for trans in queryset:
+        trans.mark_as_rejected()
+        modeladmin.log_change(request, trans, 'Rejected')
     msg = _("%s selected transactions have been marked as rejected.") % queryset.count()
     modeladmin.message_user(request, msg)
 commit.url_name = 'commit'

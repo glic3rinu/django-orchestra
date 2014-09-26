@@ -1,6 +1,5 @@
 from django.conf import settings as djsettings
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.contacts import settings as contacts_settings
@@ -68,13 +67,13 @@ class Ticket(models.Model):
     priority = models.CharField(_("priority"), max_length=32, choices=PRIORITIES,
             default=MEDIUM)
     state = models.CharField(_("state"), max_length=32, choices=STATES, default=NEW)
-    created_on = models.DateTimeField(_("created on"), auto_now_add=True)
-    last_modified_on = models.DateTimeField(_("last modified on"), auto_now=True)
+    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("modified"), auto_now=True)
     cc = models.TextField("CC", help_text=_("emails to send a carbon copy to"),
             blank=True)
     
     class Meta:
-        ordering = ["-last_modified_on"]
+        ordering = ['-updated_at']
     
     def __unicode__(self):
         return unicode(self.pk)

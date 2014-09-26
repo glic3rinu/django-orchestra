@@ -1,7 +1,6 @@
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin

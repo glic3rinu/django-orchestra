@@ -1,8 +1,6 @@
 import textwrap
 
-from django.template import Template, Context
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
 from orchestra.apps.resources import ServiceMonitor

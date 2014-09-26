@@ -45,7 +45,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'orchestra.core.cache.RequestCacheMiddleware',
+    'orchestra.core.caches.RequestCacheMiddleware',
     'orchestra.apps.orchestration.middlewares.OperationsMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',

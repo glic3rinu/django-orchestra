@@ -77,21 +77,21 @@ class MysqlDisk(ServiceMonitor):
     verbose_name = _("MySQL disk")
     
     def exceeded(self, db):
-        context = self.get_context(obj)
+        context = self.get_context(db)
         self.append("mysql -e '"
             "UPDATE db SET Insert_priv=\"N\", Create_priv=\"N\""
             "   WHERE Db=\"%(db_name)s\";'" % context
         )
     
     def recovery(self, db):
-        context = self.get_context(obj)
+        context = self.get_context(db)
         self.append("mysql -e '"
             "UPDATE db SET Insert_priv=\"Y\", Create_priv=\"Y\""
             "   WHERE Db=\"%(db_name)s\";'" % context
         )
     
     def monitor(self, db):
-        context = self.get_context(obj)
+        context = self.get_context(db)
         self.append(
             "echo %(db_id)s $(mysql -B -e '"
             "   SELECT sum( data_length + index_length ) \"Size\"\n"

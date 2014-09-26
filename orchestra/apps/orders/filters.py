@@ -13,7 +13,6 @@ class ActiveOrderListFilter(SimpleListFilter):
         return (
             ('True', _("Active")),
             ('False', _("Inactive")),
-            ('None', _("All")),
         )
     
     def queryset(self, request, queryset):
@@ -22,12 +21,6 @@ class ActiveOrderListFilter(SimpleListFilter):
         elif self.value() == 'False':
             return queryset.inactive()
         return queryset
-
-    def choices(self, cl):
-        """ Remove default All """
-        choices = iter(super(ActiveOrderListFilter, self).choices(cl))
-        choices.next()
-        return choices
 
 
 class BilledOrderListFilter(SimpleListFilter):

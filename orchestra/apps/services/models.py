@@ -1,24 +1,18 @@
 import decimal
-import sys
 
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import Q
 from django.db.models.loading import get_model
-from django.db.models.signals import pre_delete, post_delete, post_save
-from django.dispatch import receiver
-from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import ValidationError
-from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import caches, services, accounts
 from orchestra.models import queryset
 from orchestra.utils.apps import autodiscover
-from orchestra.utils.python import import_class
 
-from . import helpers, settings, rating
+from . import settings, rating
 from .handlers import ServiceHandler
 
 
@@ -329,7 +323,7 @@ class Service(models.Model):
     def update_orders(self):
         order_model = get_model(settings.SERVICES_ORDER_MODEL)
         related_model = self.content_type.model_class()
-        for instance in related_model.objects.all():
+        for instance in related_model.objects.all().select_related('account__user'):
             order_model.update_orders(instance, service=self)
 
 

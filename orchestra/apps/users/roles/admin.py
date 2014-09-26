@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.admin.util import unquote, get_deleted_objects
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
-from django.core.urlresolvers import reverse
 from django.db import router
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse

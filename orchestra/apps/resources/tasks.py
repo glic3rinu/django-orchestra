@@ -1,6 +1,5 @@
 from celery import shared_task
 from django.db.models.loading import get_model
-from django.utils import timezone
 
 from orchestra.apps.orchestration.models import BackendOperation as Operation
 
@@ -34,7 +33,7 @@ def monitor(resource_id):
                 operations.append(op)
             elif data.used < data.allocated:
                 op = Operation.create(backend, obj, Operation.RECOVERY)
-                operation.append(op)
+                operations.append(op)
 #        data = ResourceData.get_or_create(obj, resource)
 #        current = data.get_used()
 #        if not resource.disable_trigger:

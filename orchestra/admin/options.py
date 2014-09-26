@@ -3,8 +3,9 @@ from django.conf.urls import patterns, url
 from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.forms.models import BaseInlineFormSet
+from django.shortcuts import render, redirect
 
-from .utils import set_url_query, action_to_view
+from .utils import set_url_query, action_to_view, wrap_admin_view
 
 
 class ChangeListDefaultFilter(object):
@@ -129,3 +130,58 @@ class ChangeAddFieldsMixin(object):
 
 class ExtendedModelAdmin(ChangeViewActionsMixin, ChangeAddFieldsMixin, admin.ModelAdmin):
     pass
+
+
+class SelectPluginAdminMixin(object):
+    plugin = None
+    plugin_field = None
+    
+    def get_form(self, request, obj=None, **kwargs):
+        if obj:
+            self.form = obj.method_class().get_form()
+        else:
+            self.form = self.plugin.get_plugin(self.plugin_value)().get_form()
+        return super(SelectPluginAdminMixin, self).get_form(request, obj=obj, **kwargs)
+    
+    def get_urls(self):
+        """ Hooks select account url """
+        urls = super(SelectPluginAdminMixin, self).get_urls()
+        opts = self.model._meta
+        info = opts.app_label, opts.model_name
+        select_urls = patterns("",
+            url("/select-plugin/$",
+                wrap_admin_view(self, self.select_plugin_view),
+                name='%s_%s_select_plugin' % info),
+        )
+        return select_urls + urls 
+    
+    def select_plugin_view(self, request):
+        opts = self.model._meta
+        context = {
+            'opts': opts,
+            'app_label': opts.app_label,
+            'field': self.plugin_field,
+            'field_name': opts.get_field_by_name(self.plugin_field)[0].verbose_name,
+            'plugins': self.plugin.get_plugin_choices(),
+        }
+        template = 'admin/orchestra/select_plugin.html'
+        return render(request, template, context)
+    
+    def add_view(self, request, form_url='', extra_context=None):
+        """ Redirects to select account view if required """
+        if request.user.is_superuser:
+            plugin_value = request.GET.get(self.plugin_field)
+            if plugin_value or self.plugin.get_plugins() == 1:
+                self.plugin_value = plugin_value
+                if not plugin_value:
+                    self.plugin_value = self.plugin.get_plugins()[0]
+                return super(SelectPluginAdminMixin, self).add_view(request,
+                        form_url=form_url, extra_context=extra_context)
+        # TODO add plugin name on title
+        return redirect('./select-plugin/?%s' % request.META['QUERY_STRING'])
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            setattr(obj, self.plugin_field, self.plugin_value)
+        obj.save()
+

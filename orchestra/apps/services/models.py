@@ -31,6 +31,9 @@ class ContractedPlan(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='plans')
     
+    class Meta:
+        verbose_name_plural = _("plans")
+    
     def __unicode__(self):
         return str(self.plan)
     

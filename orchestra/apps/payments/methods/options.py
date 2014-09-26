@@ -44,7 +44,7 @@ class PaymentMethod(plugins.Plugin):
 
 class PaymentSourceDataForm(forms.ModelForm):
     class Meta:
-        exclude = ('data',) # TODO add 'method'
+        exclude = ('data', 'method')
     
     def __init__(self, *args, **kwargs):
         super(PaymentSourceDataForm, self).__init__(*args, **kwargs)

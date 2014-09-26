@@ -98,4 +98,8 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * mail backend related_models = ('resources__content_type') ??
 * ignore orders
 
-* Redmine, BSCW and other applications management
+* Dropdown menu for Account services/management object-tools
+
+* Domain backend PowerDNS Bind validation support?
+
+* Maildir billing tests/ webdisk billing tests (avg metric)

@@ -78,6 +78,7 @@ INSTALLED_APPS = (
     'orchestra.apps.websites',
     'orchestra.apps.databases',
     'orchestra.apps.vps',
+    'orchestra.apps.saas',
     'orchestra.apps.issues',
     'orchestra.apps.services',
     'orchestra.apps.orders',
@@ -184,6 +185,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'databases/databaseuser': 'postgresql.png',
     'vps/vps': 'TuxBox.png',
     'miscellaneous/miscellaneous': 'applications-other.png',
+    'saas/saas': 'saas.png',
     # Accounts
     'accounts/account': 'Face-monkey.png',
     'contacts/contact': 'contact_book.png',

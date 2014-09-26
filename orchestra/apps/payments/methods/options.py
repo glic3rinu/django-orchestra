@@ -26,6 +26,7 @@ class PaymentMethod(plugins.Plugin):
     
     def get_form(self):
         self.form.plugin = self
+        self.form.plugin_field = 'method'
         return self.form
     
     def get_serializer(self):
@@ -40,24 +41,3 @@ class PaymentMethod(plugins.Plugin):
     
     def get_bill_message(self, source):
         return ''
-
-
-class PaymentSourceDataForm(forms.ModelForm):
-    class Meta:
-        exclude = ('data', 'method')
-    
-    def __init__(self, *args, **kwargs):
-        super(PaymentSourceDataForm, self).__init__(*args, **kwargs)
-        instance = kwargs.get('instance')
-        if instance:
-            for field in self.declared_fields:
-                initial = self.fields[field].initial
-                self.fields[field].initial = instance.data.get(field, initial)
-    
-    def save(self, commit=True):
-        plugin = self.plugin
-        self.instance.method = plugin.get_plugin_name()
-        self.instance.data = {
-            field: self.cleaned_data[field] for field in self.declared_fields
-        }
-        return super(PaymentSourceDataForm, self).save(commit=commit)

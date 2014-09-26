@@ -8,7 +8,7 @@ from .services import SoftwareService
 
 
 class SaaSAdmin(SelectPluginAdminMixin, AccountAdminMixin, admin.ModelAdmin):
-    list_display = ('id', 'service', 'account_link')
+    list_display = ('description', 'service', 'account_link')
     list_filter = ('service',)
     plugin = SoftwareService
     plugin_field = 'service'

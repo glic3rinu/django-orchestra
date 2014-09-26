@@ -2,10 +2,12 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from .options import PaymentSourceDataForm, PaymentMethod
+from orchestra.forms import PluginDataForm
+
+from .options import PaymentMethod
 
 
-class CreditCardForm(PaymentSourceDataForm):
+class CreditCardForm(PluginDataForm):
     label = forms.CharField(max_length=128, label=_("Label"),
             help_text=_("Use a name such as \"Jo's Visa\" to remember which "
                         "card it is."))

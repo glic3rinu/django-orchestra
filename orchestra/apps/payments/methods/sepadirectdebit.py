@@ -12,11 +12,13 @@ from django_iban.forms import IBANFormField
 from django_iban.validators import IBANValidator, IBAN_COUNTRY_CODE_LENGTH
 from rest_framework import serializers
 
+from orchestra.forms import PluginDataForm
+
 from .. import settings
-from .options import PaymentSourceDataForm, PaymentMethod
+from .options import PaymentMethod
 
 
-class SEPADirectDebitForm(PaymentSourceDataForm):
+class SEPADirectDebitForm(PluginDataForm):
     iban = IBANFormField(label='IBAN',
             widget=forms.TextInput(attrs={'size': '50'}))
     name = forms.CharField(max_length=128, label=_("Name"),

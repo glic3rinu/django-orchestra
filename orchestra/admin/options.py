@@ -138,7 +138,7 @@ class SelectPluginAdminMixin(object):
     
     def get_form(self, request, obj=None, **kwargs):
         if obj:
-            self.form = obj.method_class().get_form()
+            self.form = getattr(obj, '%s_class' % self.plugin_field)().get_form()
         else:
             self.form = self.plugin.get_plugin(self.plugin_value)().get_form()
         return super(SelectPluginAdminMixin, self).get_form(request, obj=obj, **kwargs)

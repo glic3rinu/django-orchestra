@@ -11,3 +11,4 @@ class BSCWForm(SoftwareServiceForm):
 class BSCWService(SoftwareService):
     verbose_name = "BSCW"
     form = BSCWForm
+    description_field = 'username'

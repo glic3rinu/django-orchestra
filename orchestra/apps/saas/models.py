@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
@@ -16,6 +17,14 @@ class SaaS(models.Model):
     class Meta:
         verbose_name = "SaaS"
         verbose_name_plural = "SaaS"
+    
+    @cached_property
+    def service_class(self):
+        return SoftwareService.get_plugin(self.service)
+    
+    @cached_property
+    def description(self):
+        return self.service_class().get_description(self.data)
 
 
 services.register(SaaS)

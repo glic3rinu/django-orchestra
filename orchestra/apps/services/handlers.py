@@ -18,6 +18,8 @@ class ServiceHandler(plugins.Plugin):
     """
     Separates all the logic of billing handling from the model allowing to better
     customize its behaviout
+    
+    Relax and enjoy the journey.
     """
     
     model = None
@@ -213,7 +215,6 @@ class ServiceHandler(plugins.Plugin):
                 compensations, used_compensations = helpers.compensate(interval, compensations)
                 order._compensations = used_compensations
                 for comp in used_compensations:
-                    # TODO get min right
                     comp.order.new_billed_until = min(comp.order.billed_until, comp.ini,
                             getattr(comp.order, 'new_billed_until', datetime.date.max))
         if options.get('commit', True):
@@ -337,7 +338,6 @@ class ServiceHandler(plugins.Plugin):
         #   In most cases:
         #       ini >= registered_date, end < registered_date
         # boundary lookup and exclude cancelled and billed
-        # TODO service.payment_style == self.POSTPAY  no discounts no shit on_cancel
         orders_ = []
         bp = None
         ini = datetime.date.max
@@ -359,7 +359,7 @@ class ServiceHandler(plugins.Plugin):
         
         # Compensation
         related_orders = account.orders.filter(service=self.service)
-        if self.on_cancel == self.COMPENSATE:
+        if self.payment_style == self.PREPAY and self.on_cancel == self.COMPENSATE:
             # Get orders pending for compensation
             givers = list(related_orders.givers(ini, end))
             givers.sort(cmp=helpers.cmp_billed_until_or_registered_on)
@@ -381,7 +381,6 @@ class ServiceHandler(plugins.Plugin):
                 # Periodic billing with no pricing period
                 lines = self.bill_concurrent_orders(account, porders, rates, ini, end)
             else:
-                # TODO compensation in this case?
                 # Periodic and one-time billing with pricing period
                 lines = self.bill_registered_or_renew_events(account, porders, rates)
         else:

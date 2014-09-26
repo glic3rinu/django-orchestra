@@ -3,6 +3,7 @@ import sys
 
 from django.db import models
 from django.db.models import F, Q
+from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_delete, post_save
 from django.dispatch import receiver
 from django.contrib.contenttypes import generic
@@ -324,6 +325,12 @@ class Service(models.Model):
     @property
     def rate_method(self):
         return self.RATE_METHODS[self.rate_algorithm]
+    
+    def update_orders(self):
+        order_model = get_model(settings.SERVICES_ORDER_MODEL)
+        related_model = self.content_type.model_class()
+        for instance in related_model.objects.all():
+            order_model.update_orders(instance, service=self)
 
 
 accounts.register(ContractedPlan)

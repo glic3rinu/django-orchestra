@@ -34,8 +34,9 @@ class JobBillingTest(BaseBillingTest):
         if not account:
             account = self.create_account()
         description = 'Random Job %s' % random_ascii(10)
-        service, __ = MiscService.objects.get_or_create(name='job', description=description, has_amount=True)
-        return Miscellaneous.objects.create(service=service, description=description, account=account, amount=amount)
+        service, __ = MiscService.objects.get_or_create(name='job', description=description,
+                has_amount=True)
+        return account.miscellaneous.create(service=service, description=description, amount=amount)
     
     def test_job(self):
         service = self.create_job_service()
@@ -48,5 +49,3 @@ class JobBillingTest(BaseBillingTest):
         job = self.create_job(100, account=account)
         bill = account.orders.bill(new_open=True)[0]
         self.assertEqual(100*15, bill.get_total())
-
-

@@ -42,11 +42,32 @@ def _compute(rates, metric):
     return value, steps
 
 
+def _prepend_missing(rates):
+    """
+    Support for incomplete rates
+    When first rate (quantity=5, price=10) defaults to nominal_price
+    """
+    if rates:
+        first = rates[0]
+        if first.quantity == 0:
+            first.quantity = 1
+        elif first.quantity > 1:
+            if not isinstance(rates, list):
+                rates = list(rates)
+            service = first.service
+            rate_class = type(first)
+            rates.insert(0,
+                rate_class(service=service, plan=first.plan, quantity=1, price=service.nominal_price)
+            )
+    return rates
+
+
 def step_price(rates, metric):
     # Step price
     group = []
     minimal = (sys.maxint, [])
     for plan, rates in rates.group_by('plan').iteritems():
+        rates = _prepend_missing(rates)
         value, steps = _compute(rates, metric)
         if plan.is_combinable:
             group.append(steps)
@@ -102,7 +123,8 @@ def match_price(rates, metric):
     candidates = []
     selected = False
     prev = None
-    for rate in rates.distinct():
+    rates = _prepend_missing(rates.distinct())
+    for rate in rates:
         if prev:
             if prev.plan != rate.plan:
                 if not selected and prev.quantity <= metric:

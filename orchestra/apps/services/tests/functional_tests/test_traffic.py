@@ -54,7 +54,8 @@ class BaseTrafficBillingTest(BaseBillingTest):
     def report_traffic(self, account, value):
         ct = ContentType.objects.get_for_model(Account)
         object_id = account.pk
-        MonitorData.objects.create(monitor='FTPTraffic', content_object=account.user, value=value, date=timezone.now())
+        MonitorData.objects.create(monitor='FTPTraffic', content_object=account.user,
+                value=value, date=timezone.now())
         data = ResourceData.get_or_create(account, self.resource)
         data.update()
 
@@ -85,11 +86,20 @@ class TrafficBillingTest(BaseTrafficBillingTest):
         resource = self.create_traffic_resource()
         account1 = self.create_account()
         account2 = self.create_account()
-        # TODO
+        self.report_traffic(account1, 10**10)
+        self.report_traffic(account2, 10**10*5)
+        with freeze_time(timezone.now()+relativedelta(months=1)):
+            bill1 = account1.orders.bill().pop()
+            bill2 = account2.orders.bill().pop()
+        self.assertNotEqual(bill1.get_total(), bill2.get_total())
 
 
 class TrafficPrepayBillingTest(BaseTrafficBillingTest):
-    METRIC = "max((account.resources.traffic.used or 0) - getattr(account.miscellaneous.filter(is_active=True, service__name='traffic prepay').last(), 'amount', 0), 0)"
+    METRIC = ("max("
+        "(account.resources.traffic.used or 0) - "
+            "getattr(account.miscellaneous.filter(is_active=True, service__name='traffic prepay').last(), 'amount', 0)"
+        ", 0)"
+    )
     
     def create_prepay_service(self):
         service = Service.objects.create(
@@ -114,8 +124,9 @@ class TrafficPrepayBillingTest(BaseTrafficBillingTest):
         if not account:
             account = self.create_account()
         name = 'traffic prepay'
-        service, __ = MiscService.objects.get_or_create(name='traffic prepay', description='Traffic prepay', has_amount=True)
-        return Miscellaneous.objects.create(service=service, description=name, account=account, amount=amount)
+        service, __ = MiscService.objects.get_or_create(name='traffic prepay',
+                description='Traffic prepay', has_amount=True)
+        return account.miscellaneous.create(service=service, description=name, amount=amount)
     
     def test_traffic_prepay(self):
         service = self.create_traffic_service()

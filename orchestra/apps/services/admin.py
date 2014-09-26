@@ -4,10 +4,12 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin import ChangeViewActionsMixin
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
+from .actions import update_orders
 from .models import Plan, ContractedPlan, Rate, Service
 
 
@@ -27,7 +29,7 @@ class ContractedPlanAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_filter = ('plan__name',)
 
 
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     list_display = (
         'description', 'content_type', 'handler_type', 'num_orders', 'is_active'
     )
@@ -49,6 +51,8 @@ class ServiceAdmin(admin.ModelAdmin):
         }),
     )
     inlines = [RateInline]
+    actions = [update_orders]
+    change_view_actions = actions
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Improve performance of account field and filter by account """

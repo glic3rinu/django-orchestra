@@ -98,6 +98,3 @@ class FTPBillingTest(BaseBillingTest):
         order = account.orders.order_by('-id').first()
         self.assertEqual(first_bp, order.billed_until)
         self.assertEqual(decimal.Decimal(0), bills[0].get_total())
-    
-    def test_ftp_account_with_rates(self):
-        pass

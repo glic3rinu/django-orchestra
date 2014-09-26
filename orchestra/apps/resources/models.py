@@ -101,6 +101,7 @@ class Resource(models.Model):
                 task.crontab = self.crontab
                 task.save()
         if created:
+            # This only work on tests because of multiprocessing used on real deployments
             create_resource_relation()
     
     def delete(self, *args, **kwargs):

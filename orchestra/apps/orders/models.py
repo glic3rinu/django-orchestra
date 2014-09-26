@@ -100,9 +100,13 @@ class Order(models.Model):
         return str(self.service)
     
     @classmethod
-    def update_orders(cls, instance):
-        Service = get_model(*settings.ORDERS_SERVICE_MODEL.split('.'))
-        for service in Service.get_services(instance):
+    def update_orders(cls, instance, service=None):
+        if service is None:
+            Service = get_model(*settings.ORDERS_SERVICE_MODEL.split('.'))
+            services = Service.get_services(instance)
+        else:
+            services = [service]
+        for service in services:
             orders = Order.objects.by_object(instance, service=service).active()
             if service.handler.matches(instance):
                 if not orders:

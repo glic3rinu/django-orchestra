@@ -313,6 +313,47 @@ class HandlerTests(BaseTestCase):
         self.assertEqual(decimal.Decimal('9.00'), results[0].price)
         self.assertEqual(30, results[0].quantity)
     
+    def test_incomplete_rates(self):
+        service = self.create_ftp_service()
+        account = self.create_account()
+        superplan = Plan.objects.create(
+            name='SUPER', allow_multiple=False, is_combinable=True)
+        service.rates.create(plan=superplan, quantity=4, price=9)
+        service.rates.create(plan=superplan, quantity=10, price=1)
+        account.plans.create(plan=superplan)
+        results = service.get_rates(account, cache=False)
+        results = service.rate_method(results, 30)
+        rates = [
+            {'price': decimal.Decimal('10.00'), 'quantity': 3},
+            {'price': decimal.Decimal('9.00'), 'quantity': 6},
+            {'price': decimal.Decimal('1.00'), 'quantity': 21}
+        ]
+        for rate, result in zip(rates, results):
+            self.assertEqual(rate['price'], result.price)
+            self.assertEqual(rate['quantity'], result.quantity)
+    
+    def test_zero_rates(self):
+        service = self.create_ftp_service()
+        account = self.create_account()
+        superplan = Plan.objects.create(
+            name='SUPER', allow_multiple=False, is_combinable=True)
+        service.rates.create(plan=superplan, quantity=0, price=0)
+        service.rates.create(plan=superplan, quantity=3, price=10)
+        service.rates.create(plan=superplan, quantity=4, price=9)
+        service.rates.create(plan=superplan, quantity=10, price=1)
+        account.plans.create(plan=superplan)
+        results = service.get_rates(account, cache=False)
+        results = service.rate_method(results, 30)
+        rates = [
+            {'price': decimal.Decimal('0.00'), 'quantity': 2},
+            {'price': decimal.Decimal('10.00'), 'quantity': 1},
+            {'price': decimal.Decimal('9.00'), 'quantity': 6},
+            {'price': decimal.Decimal('1.00'), 'quantity': 21}
+        ]
+        for rate, result in zip(rates, results):
+            self.assertEqual(rate['price'], result.price)
+            self.assertEqual(rate['quantity'], result.quantity)
+    
     def test_rates_allow_multiple(self):
         service = self.create_ftp_service()
         account = self.create_account()
@@ -352,20 +393,3 @@ class HandlerTests(BaseTestCase):
         for rate, result in zip(rates, results):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
-    
-    def test_generate_bill_lines_with_compensation(self):
-        service = self.create_ftp_service()
-        account = self.create_account()
-        now = timezone.now().date()
-        order = Order(
-            cancelled_on=now,
-            billed_until=now+relativedelta.relativedelta(years=2)
-        )
-        order1 = Order()
-        orders = [order, order1]
-        lines = service.handler.generate_bill_lines(orders, account, commit=False)
-        print lines
-        print len(lines)
-        # TODO
-
-    # TODO test incomplete rate 1 -> nominal_price 10 -> rate

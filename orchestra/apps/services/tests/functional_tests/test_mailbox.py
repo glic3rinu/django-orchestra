@@ -156,4 +156,3 @@ class MailboxBillingTest(BaseBillingTest):
         with freeze_time(now+relativedelta(months=6)):
             bills = service.orders.bill(new_open=True, **options)
             self.assertEqual([], bills)
-

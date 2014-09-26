@@ -36,8 +36,9 @@ class DomainBillingTest(BaseBillingTest):
         if not account:
             account = self.create_account()
         domain_name = '%s.es' % random_ascii(10)
-        domain_service, __ = MiscService.objects.get_or_create(name='domain .es', description='Domain .ES')
-        return Miscellaneous.objects.create(service=domain_service, description=domain_name, account=account)
+        domain_service, __ = MiscService.objects.get_or_create(name='domain .es',
+                description='Domain .ES')
+        return account.miscellaneous.create(service=domain_service, description=domain_name)
     
     def test_domain(self):
         service = self.create_domain_service()

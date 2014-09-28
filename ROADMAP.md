@@ -41,7 +41,6 @@ Note `*` _for sustancial progress_
 1. [x] Payment methods
   1. [x] SEPA Direct Debit
   2. [x] SEPA Credit Transfer
-1. [ ] Full documentation
 2. [ ] *Additional services
     2. [ ] *VPS with Proxmox/OpenVZ
     2. [ ] *SaaS (Software as a Service) Redmine/phpList/BSCW/Wordpress/Moodle/Drupal
@@ -53,6 +52,7 @@ Note `*` _for sustancial progress_
 
 1. [ ] Stabilize data model, internal APIs and REST API
 3. [ ] Translation to Spanish and Catalan
+1. [ ] Complete documentation for developers
 
 
 ### 2.0 Milestone
@@ -62,3 +62,4 @@ Note `*` _for sustancial progress_
 1. [ ] Object level permissions system
 2. [ ] REST API for superusers
 3. [ ] Responsive user interface
+4. [ ] Full documentation

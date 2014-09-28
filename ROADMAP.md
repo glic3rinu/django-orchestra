@@ -52,8 +52,13 @@ Note `*` _for sustancial progress_
 ### 1.0 Milestone (first stable release on Apr '15)
 
 1. [ ] Stabilize data model, internal APIs and REST API
-1. [ ] Integration with third-party service providers, e.g. Gandi
 3. [ ] Translation to Spanish and Catalan
+
+
+### 2.0 Milestone
+
+1. [ ] Integration with third-party service providers, e.g. Gandi
 2. [ ] Scheduling of service cancellations and deactivations
 1. [ ] Object level permissions system
-2. [ ] API access for superusers
+2. [ ] REST API for superusers
+3. [ ] Responsive user interface

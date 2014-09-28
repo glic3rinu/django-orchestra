@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.forms.models import BaseInlineFormSet
 from django.shortcuts import render, redirect
+from django.utils.text import camel_case_to_spaces
+from django.utils.translation import ugettext_lazy as _
 
 from .utils import set_url_query, action_to_view, wrap_admin_view
 
@@ -175,10 +177,23 @@ class SelectPluginAdminMixin(object):
                 self.plugin_value = plugin_value
                 if not plugin_value:
                     self.plugin_value = self.plugin.get_plugins()[0]
-                return super(SelectPluginAdminMixin, self).add_view(request,
-                        form_url=form_url, extra_context=extra_context)
-        # TODO add plugin name on title
+                context = {
+                    'title': _("Add new %s") % camel_case_to_spaces(self.plugin_value),
+                }
+                context.update(extra_context or {})
+                return super(SelectPluginAdminMixin, self).add_view(request, form_url=form_url,
+                        extra_context=context)
         return redirect('./select-plugin/?%s' % request.META['QUERY_STRING'])
+    
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        obj = self.get_object(request, unquote(object_id))
+        plugin_value = getattr(obj, self.plugin_field)
+        context = {
+            'title': _("Change %s") % camel_case_to_spaces(plugin_value),
+        }
+        context.update(extra_context or {})
+        return super(SelectPluginAdminMixin, self).change_view(request, object_id,
+                form_url=form_url, extra_context=context)
     
     def save_model(self, request, obj, form, change):
         if not change:

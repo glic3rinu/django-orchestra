@@ -64,11 +64,12 @@ class ResourceAdmin(ExtendedModelAdmin):
 
 class ResourceDataAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'resource', 'used', 'allocated', 'updated_at', 'content_object_link'
+        'id', 'resource_link', 'used', 'allocated', 'updated_at', 'content_object_link'
     )
     list_filter = ('resource',)
     readonly_fields = ('content_object_link',)
     
+    resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')
     
     def get_queryset(self, request):

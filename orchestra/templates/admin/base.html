@@ -37,9 +37,9 @@
 
     {% if not is_popup %}
     <!-- Header -->
-   {% block header-stetic %}<div id="header">{% endblock %}
+   {% block header-stetic %}<div id="header"><div id="header-wrapper">{% endblock %}
         <div id="branding">
-        {% block branding %}{% endblock %}
+            {% block branding %}{% endblock %}
         </div>
         {% if user.is_active and user.is_staff %}
         <div id="user-tools">
@@ -69,7 +69,7 @@
         </div>
         {% endif %}
         {% block nav-global %}{% endblock %}
-    </div>
+    </div></div>
     <!-- END Header -->
     {% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}
     {% endif %}

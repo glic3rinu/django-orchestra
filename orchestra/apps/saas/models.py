@@ -18,6 +18,9 @@ class SaaS(models.Model):
         verbose_name = "SaaS"
         verbose_name_plural = "SaaS"
     
+    def __unicode__(self):
+        return "%s (%s)" % (self.description, self.service_class.verbose_name)
+    
     @cached_property
     def service_class(self):
         return SoftwareService.get_plugin(self.service)

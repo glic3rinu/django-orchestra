@@ -76,7 +76,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
-
 * Transaction states: CREATED, PROCESSED, EXECUTED, COMMITED, ABORTED (SECURED, REJECTED?)
     * bill.send() -> transacction.EXECUTED when source=None
     * transaction.secured() -> bill.paid when bill.total == transaction.value else Error
@@ -84,8 +83,8 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     * bill.bad_debt() -> transaction.ABORTED
     * transaction.ABORTED -> bill.bad_debt
     - Issue new transaction when current transaction is ABORTED
-* underescore *every* private function
 
+* underescore *every* private function
 
 * create log file at /var/log/orchestra.log and rotate
 
@@ -93,7 +92,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     @property
     def register_on(self):
         return order.register_at.date()
-
 
 * mail backend related_models = ('resources__content_type') ??
 * ignore orders
@@ -103,3 +101,17 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Domain backend PowerDNS Bind validation support?
 
 * Maildir billing tests/ webdisk billing tests (avg metric)
+
+* move icons to apps, and use appconfig to cleanup config stuff
+
+* when using modeladmin to store shit like self.account, make sure to have a cleanslate in each request
+
+*jabber with mailbox accounts (dovecto mail notification)
+
+* rename accounts register to manager register
+
+* make accounts django auth users
+    - when an account is created a mirrored system user is created
+    - system users are independent users, so they can have different passwords and all.
+
+* take a look icons from ajenti ;)

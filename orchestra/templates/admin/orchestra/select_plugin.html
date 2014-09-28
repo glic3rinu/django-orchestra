@@ -9,7 +9,7 @@
     <div style="margin:20px;">
     <ul>
     {% for name, verbose in plugins %}
-        <li><a href="../?{{ field }}={{ name }}&{{ request.META.QUERY_STRING }}">{{ verbose }}</<a></li>
+        <li><a style="font-size:small;" href="../?{{ field }}={{ name }}&{{ request.META.QUERY_STRING }}">{{ verbose }}</<a></li>
     {% endfor %}
     </ul>
     </div>

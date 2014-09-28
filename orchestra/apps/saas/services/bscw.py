@@ -1,10 +1,14 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from .options import SoftwareService, SoftwareServiceForm
+from orchestra.forms import PluginDataForm
+
+from .options import SoftwareService
 
 
-class BSCWForm(SoftwareServiceForm):
+class BSCWForm(PluginDataForm):
+    username = forms.CharField(label=_("Username"), max_length=64)
+    password = forms.CharField(label=_("Password"), max_length=64)
     quota = forms.IntegerField(label=_("Quota"))
 
 

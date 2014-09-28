@@ -1,45 +1,58 @@
 # Roadmap
 
 
-### 1.0a1 Milestone (first alpha release on Sep '14)
+### 1.0a1 Milestone (first alpha release on Oct '14)
 
 1. [x] Automated deployment of the development environment
 2. [x] Automated installation and upgrading
-2. [ ] Testing framework for running unittests and functional tests
-2. [ ] Continuous integration environment
-2. [x] Admin interface based on django.contrib.admin foundations
-3. [x] REST API based on django-rest-framework foundations
+2. [ ] Testing framework for running unittests and functional tests with LXC containers
+2. [ ] Continuous integration with Jenkins
+2. [x] Admin interface based on django.contrib.admin
+3. [x] REST API for users
 2. [x] [Orchestra-orm](https://github.com/glic3rinu/orchestra-orm) a Python library for easily interacting with the REST API
 3. [x] Service orchestration framework
-4. [ ] Data model, input validation, admin and REST interfaces, permissions, unit and functional tests, service management, migration scripts and some documentation of:
-  1. [x] Web applications
-  2. [ ] FTP accounts
-  2. [ ] Databases 
-  1. [ ] Mail accounts, aliases, forwards
-  1. [x] DNS
-  1. [ ] Mailing lists
+4. [ ] Data model, input validation, admin and REST interfaces, permissions, unit and functional tests, service management, migration scripts and documentation of:
+    1. [x] PHP/static Web applications
+    1. [x] Websites with Apache
+    2. [-] FTP/rsync/scp/shell system accounts
+    2. [-] Databases and database users
+    1. [-] Mail accounts, aliases, forwards with Postfix and Dovecot
+    1. [x] DNS with Bind
+    1. [-] Mailing lists with Mailman
 1. [x] Contact management and service contraction
-1. [ ] Object level permissions system
-1. [ ] Unittests of all the logic
-2. [ ] Functional tests of all Admin and REST interations
+1. [-] Unittests of the bussines logic logic
+2. [-] Functional tests of all Admin UI and REST interations
 1. [ ] Initial documentation
 
 
-### 1.0b1 Milestone (first beta release on Nov '14)
+### 1.0b1 Milestone (first beta release on Dec '14)
 
-1. [x] Resource monitoring
-1. [ ] Orders
-2. [ ] Pricing
-3. [ ] Billing
-1. [ ] Payment methods
-2. [ ] Scheduling of service cancellations and deactivations
+1. [x] Resource allocation and monitoring
+1. [x] Order tracking
+2. [x] Service definition, service plans and pricing
+3. [-] Billing
+    3. [x] Invoice
+    3. [x] Membership fee
+    3. [-] Amendment invoice
+    3. [-] Amendment fee
+    3. [x] Pro Forma
+    3. [ ] Advanced bill handling (move lines, undo billing, ...)
+1. [x] Payment methods
+  1. [x] SEPA Direct Debit
+  2. [x] SEPA Credit Transfer
 1. [ ] Full documentation
+2. [-] Additional services
+    2. [-] VPS with Proxmox/OpenVZ
+    2. [-] SaaS (Software as a Service) Redmine/phpList/BSCW/Wordpress/Moodle/Drupal
+    2. [x] Miscellaneous services
+2. [x] Issue tracking system
 
 
-### 1.0 Milestone (first stable release on Feb '15)
+### 1.0 Milestone (first stable release on Apr '15)
 
 1. [ ] Stabilize data model, internal APIs and REST API
 1. [ ] Integration with third-party service providers, e.g. Gandi
-1. [ ] Support for additional services like VPS
-2. [ ] Issue tracking system
 3. [ ] Translation to Spanish and Catalan
+2. [ ] Scheduling of service cancellations and deactivations
+1. [ ] Object level permissions system
+2. [ ] API access for superusers

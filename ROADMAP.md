@@ -51,7 +51,7 @@ Note `*` _for sustancial progress_
 ### 1.0 Milestone (first stable release on Apr '15)
 
 1. [ ] Stabilize data model, internal APIs and REST API
-3. [ ] Translation to Spanish and Catalan
+3. [ ] Spanish and Catalan translations
 1. [ ] Complete documentation for developers
 
 

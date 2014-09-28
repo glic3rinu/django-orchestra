@@ -1,5 +1,6 @@
 # Roadmap
 
+Note `*` _for sustancial progress_
 
 ### 1.0a1 Milestone (first alpha release on Oct '14)
 
@@ -14,14 +15,14 @@
 4. [ ] Data model, input validation, admin and REST interfaces, permissions, unit and functional tests, service management, migration scripts and documentation of:
     1. [x] PHP/static Web applications
     1. [x] Websites with Apache
-    2. [-] FTP/rsync/scp/shell system accounts
-    2. [-] Databases and database users
-    1. [-] Mail accounts, aliases, forwards with Postfix and Dovecot
+    2. [ ] *FTP/rsync/scp/shell system accounts
+    2. [ ] *Databases and database users
+    1. [ ] *Mail accounts, aliases, forwards with Postfix and Dovecot
     1. [x] DNS with Bind
-    1. [-] Mailing lists with Mailman
+    1. [ ] *Mailing lists with Mailman
 1. [x] Contact management and service contraction
-1. [-] Unittests of the bussines logic logic
-2. [-] Functional tests of all Admin UI and REST interations
+1. [ ] *Unittests of the bussines logic logic
+2. [ ] *Functional tests of all Admin UI and REST interations
 1. [ ] Initial documentation
 
 
@@ -30,20 +31,20 @@
 1. [x] Resource allocation and monitoring
 1. [x] Order tracking
 2. [x] Service definition, service plans and pricing
-3. [-] Billing
+3. [ ] *Billing
     3. [x] Invoice
     3. [x] Membership fee
-    3. [-] Amendment invoice
-    3. [-] Amendment fee
+    3. [ ] *Amendment invoice
+    3. [ ] *Amendment fee
     3. [x] Pro Forma
-    3. [ ] Advanced bill handling (move lines, undo billing, ...)
+    3. [ ] *Advanced bill handling (move lines, undo billing, ...)
 1. [x] Payment methods
   1. [x] SEPA Direct Debit
   2. [x] SEPA Credit Transfer
 1. [ ] Full documentation
-2. [-] Additional services
-    2. [-] VPS with Proxmox/OpenVZ
-    2. [-] SaaS (Software as a Service) Redmine/phpList/BSCW/Wordpress/Moodle/Drupal
+2. [ ] *Additional services
+    2. [ ] *VPS with Proxmox/OpenVZ
+    2. [ ] *SaaS (Software as a Service) Redmine/phpList/BSCW/Wordpress/Moodle/Drupal
     2. [x] Miscellaneous services
 2. [x] Issue tracking system
 

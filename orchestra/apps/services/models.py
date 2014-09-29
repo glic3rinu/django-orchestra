@@ -326,7 +326,7 @@ class Service(models.Model):
     def update_orders(self):
         order_model = get_model(settings.SERVICES_ORDER_MODEL)
         related_model = self.content_type.model_class()
-        for instance in related_model.objects.all().select_related('account__user'):
+        for instance in related_model.objects.all().select_related('account'):
             order_model.update_orders(instance, service=self)
 
 

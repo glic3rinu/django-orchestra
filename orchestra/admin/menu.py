@@ -44,9 +44,6 @@ def get_accounts():
         items.MenuItem(_("Accounts"),
                        reverse('admin:accounts_account_changelist'))
     ]
-    if isinstalled('orchestra.apps.users'):
-        url = reverse('admin:users_user_changelist')
-        childrens.append(items.MenuItem(_("Users"), url))
     if isinstalled('orchestra.apps.payments'):
         url = reverse('admin:payments_transactionprocess_changelist')
         childrens.append(items.MenuItem(_("Transaction processes"), url))

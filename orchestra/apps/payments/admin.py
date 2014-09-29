@@ -73,7 +73,7 @@ class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdm
     
     def get_queryset(self, request):
         qs = super(TransactionAdmin, self).get_queryset(request)
-        return qs.select_related('source', 'bill__account__user')
+        return qs.select_related('source', 'bill__account')
     
     def get_change_view_actions(self, obj=None):
         actions = super(TransactionAdmin, self).get_change_view_actions()

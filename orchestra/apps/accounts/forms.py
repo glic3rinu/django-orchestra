@@ -23,16 +23,12 @@ class AccountCreationForm(auth.forms.UserCreationForm):
             return username
         raise forms.ValidationError(self.error_messages['duplicate_username'])
     
-    def save(self, commit=True):
-        account = super(auth.forms.UserCreationForm, self).save(commit=False)
-        user = User(username=self.cleaned_data['username'], is_admin=True)
-        user.set_password(self.cleaned_data['password1'])
-        user.account = account
-        account.user = user
-        if commit:
-            user.save()
-            account.save()
-        return account
+#    def save(self, commit=True):
+#        account = super(auth.forms.UserCreationForm, self).save(commit=False)
+#        account.set_password(self.cleaned_data['password1'])
+#        if commit:
+#            account.save()
+#        return account
 
 
 class AccountChangeForm(forms.ModelForm):
@@ -45,8 +41,8 @@ class AccountChangeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AccountChangeForm, self).__init__(*args, **kwargs)
         account = kwargs.get('instance')
-        self.fields['username'].widget = ReadOnlyWidget(account.user.username)
-        self.fields['password'].initial = account.user.password
+        self.fields['username'].widget = ReadOnlyWidget(account.username)
+        self.fields['password'].initial = account.password
     
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.

@@ -57,7 +57,7 @@ class PermissionInline(AccountAdminMixin, admin.TabularInline):
 class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'account_link')
     list_filter = ('type',)
-    search_fields = ['name', 'account__user__username']
+    search_fields = ['name', 'account__username']
     inlines = [UserInline]
     add_inlines = []
     change_readonly_fields = ('name', 'type')
@@ -102,7 +102,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
 class DatabaseUserAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'type', 'account_link')
     list_filter = ('type',)
-    search_fields = ['username', 'account__user__username']
+    search_fields = ['username', 'account__username']
     form = DatabaseUserChangeForm
     add_form = DatabaseUserCreationForm
     change_readonly_fields = ('username', 'type')

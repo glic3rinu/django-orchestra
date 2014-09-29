@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
@@ -52,7 +54,7 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
     inlines = [RecordInline, DomainInline]
     list_filter = [TopDomainListFilter]
     change_readonly_fields = ('name',)
-    search_fields = ['name', 'account__user__username']
+    search_fields = ['name', 'account__username']
     default_changelist_filters = (
         ('top_domain', 'True'),
     )
@@ -91,9 +93,12 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
         qs = super(DomainAdmin, self).get_queryset(request)
         qs = qs.select_related('top')
         # For some reason if we do this we know for sure that join table will be called T4
-        str(qs.query)
+        query = str(qs.query)
+        table = re.findall(r'(T\d+)\."account_id"', query)[0]
         qs = qs.extra(
-            select={'structured_name': 'CONCAT(T4.name, domains_domain.name)'},
+            select={
+                'structured_name': 'CONCAT({table}.name, domains_domain.name)'.format(table=table)
+            },
         ).order_by('structured_name')
         if apps.isinstalled('orchestra.apps.websites'):
             qs = qs.prefetch_related('websites')

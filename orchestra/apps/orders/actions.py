@@ -54,7 +54,7 @@ class BillSelectedOrders(object):
     
     def select_related(self, request):
         # TODO use changelist ?
-        related = self.queryset.get_related().select_related('account__user', 'service')
+        related = self.queryset.get_related().select_related('account', 'service')
         if not related:
             return self.confirmation(request)
         self.options['related_queryset'] = related

@@ -2,6 +2,7 @@ from django import forms
 from django.conf.urls import patterns, url
 from django.contrib import admin, messages
 from django.contrib.admin.util import unquote
+from django.contrib.auth import admin as auth
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.six.moves.urllib.parse import parse_qsl
@@ -17,8 +18,8 @@ from .forms import AccountCreationForm, AccountChangeForm
 from .models import Account
 
 
-class AccountAdmin(ExtendedModelAdmin):
-    list_display = ('name', 'user_link', 'type', 'is_active')
+class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
+    list_display = ('name', 'type', 'is_active')
     list_filter = (
         'type', 'is_active', HasMainUserListFilter
     )
@@ -32,23 +33,21 @@ class AccountAdmin(ExtendedModelAdmin):
     )
     fieldsets = (
         (_("User"), {
-            'fields': ('user_link', 'password',),
+            'fields': ('username', 'password',),
         }),
         (_("Account info"), {
             'fields': (('type', 'language'), 'comments'),
         }),
     )
-    readonly_fields = ('user_link',)
-    search_fields = ('users__username',)
+    search_fields = ('username',)
     add_form = AccountCreationForm
     form = AccountChangeForm
+    filter_horizontal = ()
     change_form_template = 'admin/accounts/account/change_form.html'
-    
-    user_link = admin_link('user', order='user__username')
     
     def name(self, account):
         return account.name
-    name.admin_order_field = 'user__username'
+    name.admin_order_field = 'username'
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -75,20 +74,10 @@ class AccountAdmin(ExtendedModelAdmin):
         return super(AccountAdmin, self).change_view(request, object_id,
                 form_url=form_url, extra_context=context)
     
-    def save_model(self, request, obj, form, change):
-        """ Save user and account, they are interdependent """
-        if change:
-            return super(AccountAdmin, self).save_model(request, obj, form, change)
-        obj.user.save()
-        obj.user_id = obj.user.pk
-        obj.save()
-        obj.user.account = obj
-        obj.user.save()
-    
     def get_queryset(self, request):
         """ Select related for performance """
         qs = super(AccountAdmin, self).get_queryset(request)
-        related = ('user', 'invoicecontact')
+        related = ('invoicecontact',)
         return qs.select_related(*related)
 
 
@@ -97,10 +86,10 @@ admin.site.register(Account, AccountAdmin)
 
 class AccountListAdmin(AccountAdmin):
     """ Account list to allow account selection when creating new services """
-    list_display = ('select_account', 'type', 'user')
+    list_display = ('select_account', 'type', 'username')
     actions = None
-    search_fields = ['user__username',]
-    ordering = ('user__username',)
+    search_fields = ['username',]
+    ordering = ('username',)
     
     def select_account(self, instance):
         # TODO get query string from request.META['QUERY_STRING'] to preserve filters
@@ -111,7 +100,7 @@ class AccountListAdmin(AccountAdmin):
         return '<a href="%(url)s">%(name)s</a>' % context
     select_account.short_description = _("account")
     select_account.allow_tags = True
-    select_account.order_admin_field = 'user__username'
+    select_account.order_admin_field = 'username'
     
     def changelist_view(self, request, extra_context=None):
         original_app_label = request.META['PATH_INFO'].split('/')[-5]
@@ -139,7 +128,7 @@ class AccountAdminMixin(object):
         return '<a href="%s">%s</a>' % (url, str(account))
     account_link.short_description = _("account")
     account_link.allow_tags = True
-    account_link.admin_order_field = 'account__user__username'
+    account_link.admin_order_field = 'account__username'
     
     def get_readonly_fields(self, request, obj=None):
         """ provide account for filter_by_account_fields """
@@ -150,13 +139,13 @@ class AccountAdminMixin(object):
     def get_queryset(self, request):
         """ Select related for performance """
         qs = super(AccountAdminMixin, self).get_queryset(request)
-        return qs.select_related('account__user')
+        return qs.select_related('account')
     
     def formfield_for_dbfield(self, db_field, **kwargs):
-        """ Improve performance of account field and filter by account """
-        if db_field.name == 'account':
-            qs = kwargs.get('queryset', db_field.rel.to.objects)
-            kwargs['queryset'] = qs.select_related('user')
+        """ Filter by account """
+#        if db_field.name == 'account':
+#            qs = kwargs.get('queryset', db_field.rel.to.objects)
+#            kwargs['queryset'] = qs.select_related('user')
         formfield = super(AccountAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
         if db_field.name in self.filter_by_account_fields:
             if hasattr(self, 'account'):

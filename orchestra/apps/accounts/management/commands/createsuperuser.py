@@ -7,6 +7,7 @@ from orchestra.apps.accounts.models import Account
 class Command(createsuperuser.Command):
     def handle(self, *args, **options):
         super(Command, self).handle(*args, **options)
+        raise NotImplementedError
         users = get_user_model().objects.filter()
         if len(users) == 1 and not Account.objects.all().exists():
             user = users[0]

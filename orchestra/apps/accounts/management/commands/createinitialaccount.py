@@ -18,7 +18,7 @@ class Command(BaseCommand):
         )
     
     option_list = BaseCommand.option_list
-    help = 'Used to create an initial account and its user.'
+    help = 'Used to create an initial account.'
     
     @transaction.atomic
     def handle(self, *args, **options):
@@ -27,5 +27,4 @@ class Command(BaseCommand):
             email = options.get('email')
             username = options.get('username')
             password = options.get('password')
-            account = Account.objects.create()
-            account.users.create_superuser(username, email, password, is_main=True)
+            Account.objects.create_user(username, email=email, password=password)

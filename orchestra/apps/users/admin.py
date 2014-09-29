@@ -2,7 +2,6 @@ from django.conf.urls import patterns, url
 from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.contrib.admin.util import unquote
-from django.contrib.auth import admin as auth
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -14,21 +13,15 @@ from .models import User
 from .roles.filters import role_list_filter_factory
 
 
-class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
+class UserAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'display_is_main')
-    list_filter = ('is_staff', 'is_superuser', 'is_active')
+    list_filter = ('is_active',)
     fieldsets = (
         (None, {
-            'fields': ('account', 'username', 'password')
+            'fields': ('account', 'username', 'password', 'is_active')
         }),
         (_("Personal info"), {
             'fields': ('first_name', 'last_name', 'email')
-        }),
-        (_("Permissions"), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'display_is_main')
-        }),
-        (_("Important dates"), {
-            'fields': ('last_login', 'date_joined')
         }),
     )
     add_fieldsets = (
@@ -37,7 +30,7 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
             'fields': ('username', 'password1', 'password2', 'account'),
         }),
     )
-    search_fields = ['username', 'account__user__username']
+    search_fields = ['username', 'account__username']
     readonly_fields = ('display_is_main', 'account_link')
     change_readonly_fields = ('username',)
     filter_horizontal = ()
@@ -101,10 +94,10 @@ class UserAdmin(AccountAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
         kwargs['extra_context'] = extra_context
         return super(UserAdmin, self).change_view(request, object_id, **kwargs)
     
-    def get_queryset(self, request):
-        """ Select related for performance """
-        related = ['account__user'] + [ role.name for role in self.roles ]
-        return super(UserAdmin, self).get_queryset(request).select_related(*related)
+#    def get_queryset(self, request):
+#        """ Select related for performance """
+#        related = ['account'] + [ role.name for role in self.roles ]
+#        return super(UserAdmin, self).get_queryset(request).select_related(*related)
 
 
 admin.site.register(User, UserAdmin)

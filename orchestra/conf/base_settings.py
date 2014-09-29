@@ -70,8 +70,8 @@ INSTALLED_APPS = (
     'orchestra.apps.domains',
     'orchestra.apps.users',
 #    'orchestra.apps.users.roles.mail',
-    'orchestra.apps.users.roles.jabber',
-    'orchestra.apps.users.roles.posix',
+#    'orchestra.apps.users.roles.jabber',
+#    'orchestra.apps.users.roles.posix',
     'orchestra.apps.mails',
     'orchestra.apps.lists',
     'orchestra.apps.webapps',
@@ -114,7 +114,7 @@ INSTALLED_APPS = (
 )
 
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'accounts.Account'
 
 
 AUTHENTICATION_BACKENDS = [
@@ -145,7 +145,6 @@ FLUENT_DASHBOARD_APP_GROUPS = (
         'models': (
             'orchestra.apps.accounts.models.Account',
             'orchestra.apps.contacts.models.Contact',
-            'orchestra.apps.users.models.User',
             'orchestra.apps.orders.models.Order',
             'orchestra.apps.services.models.ContractedPlan',
             'orchestra.apps.bills.models.Bill',

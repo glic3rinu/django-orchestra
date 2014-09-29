@@ -21,3 +21,13 @@ wget -O - http://apt.baruwa.org/baruwa-apt-keys.gpg | apt-key add -
 
 apt-get update
 apt-get install mailscanner
+
+
+
+
+apt-get install dovecot-core dovecot-imapd dovecot-pop3d dovecot-sieve
+apt-get install postfix
+
+
+mail_location = maildir:~/Maildir
+

@@ -3,7 +3,7 @@ from django.conf import settings
 
 EMAILS_DOMAIN_MODEL = getattr(settings, 'EMAILS_DOMAIN_MODEL', 'domains.Domain')
 
-EMAILS_HOME = getattr(settings, 'EMAILS_HOME', '/var/vmail/%(account)s/%(name)s/')
+EMAILS_HOME = getattr(settings, 'EMAILS_HOME', '/home/%(username)s/')
 
 EMAILS_SIEVETEST_PATH = getattr(settings, 'EMAILS_SIEVETEST_PATH', '/dev/shm')
 

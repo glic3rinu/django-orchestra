@@ -16,7 +16,7 @@ TODO
 * move invoice contact to invoices app?
 * PHPbBckendMiixin with get_php_ini
 * Apache: `IncludeOptional /etc/apache2/extra-vhos[t]/account-site-custom.con[f]`
-* rename account.user to primary_user
+* rename account.user to main_user
 * webmail identities and addresses
 * cached -> cached_property
 * user.roles.mailbox its awful when combined with addresses:
@@ -115,3 +115,15 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     - system users are independent users, so they can have different passwords and all.
 
 * take a look icons from ajenti ;)
+
+
+* Disable services is_active should be computed on the fly in order to distinguish account.is_active from service.is_active when reactivation.
+    * Perhaps it is time to create a ServiceModel ?
+
+
+* COpy account.main_user.username to account.name for performance
+
+* service backend execution dependency? first create user on NIS master then create directories on service server
+
+* prevent deletion of main user by the user itself
+

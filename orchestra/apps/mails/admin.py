@@ -29,7 +29,7 @@ class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_filter = ('use_custom_filtering', HasAddressListFilter)
     add_fieldsets = (
         (None, {
-            'fields': ('account', 'name'),
+            'fields': ('account', 'name', 'password'),
         }),
         (_("Filtering"), {
             'fields': ('use_custom_filtering', 'custom_filtering'),

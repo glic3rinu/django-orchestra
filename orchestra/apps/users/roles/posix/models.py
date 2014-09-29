@@ -17,5 +17,6 @@ class POSIX(models.Model):
     def __unicode__(self):
         return str(self.user)
 
+# TODO groups
 
 roles.register('posix', POSIX)

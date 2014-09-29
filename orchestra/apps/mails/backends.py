@@ -55,10 +55,10 @@ class MailSystemUserBackend(ServiceController):
         self.append("rm -fr %(home)s" % context)
     
     def get_context(self, mailbox):
-        user = mailbox.user
         context = {
-            'username': user.username,
-            'password': user.password if user.is_active else '*%s' % user.password,
+            'name': mailbox.nam,
+            'username': mailbox.name,
+            'password': mailbox.password if mailbox.is_active else '*%s' % mailbox.password,
             'group': self.DEFAULT_GROUP
         }
         context['home'] = settings.EMAILS_HOME % context

@@ -1,3 +1,5 @@
+import copy
+
 from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -24,15 +26,16 @@ class AutoresponseInline(admin.StackedInline):
 
 class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'name', 'account_link', 'use_custom_filtering', 'display_addresses'
+        'name', 'account_link', 'uses_custom_filtering', 'display_addresses'
     )
-    list_filter = ('use_custom_filtering', HasAddressListFilter)
+    list_filter = (HasAddressListFilter,)
     add_fieldsets = (
         (None, {
             'fields': ('account', 'name', 'password'),
         }),
         (_("Filtering"), {
-            'fields': ('use_custom_filtering', 'custom_filtering'),
+            'classes': ('collapse',),
+            'fields': ('custom_filtering',),
         }),
     )
     fieldsets = (
@@ -41,8 +44,8 @@ class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('account_link', 'name'),
         }),
         (_("Filtering"), {
-            'classes': ('wide',),
-            'fields': ('use_custom_filtering', 'custom_filtering'),
+            'classes': ('collapse',),
+            'fields': ('custom_filtering',),
         }),
         (_("Addresses"), {
             'classes': ('wide',),
@@ -59,6 +62,20 @@ class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return '<br>'.join(addresses)
     display_addresses.short_description = _("Addresses")
     display_addresses.allow_tags = True
+    
+    def uses_custom_filtering(self, mailbox):
+        return bool(mailbox.custom_filtering)
+    uses_custom_filtering.short_description = _("Custom filter")
+    uses_custom_filtering.boolean = True
+    uses_custom_filtering.admin_order_field = 'custom_filtering'
+    
+    def get_fieldsets(self, request, obj=None):
+        """ not collapsed filtering when exists """
+        fieldsets = super(MailboxAdmin, self).get_fieldsets(request, obj=obj)
+        if obj and obj.custom_filtering:
+            fieldsets = copy.deepcopy(fieldsets)
+            fieldsets[1][1]['classes'] = fieldsets[0][1]['fields'] + ('open',)
+        return fieldsets
     
     def addresses_field(self, mailbox):
         """ Address form field with "Add address" button """

@@ -16,11 +16,10 @@ class Mailbox(models.Model):
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='mailboxes')
-    use_custom_filtering = models.BooleanField(_("Use custom filtering"),
-            default=False)
     custom_filtering = models.TextField(_("filtering"), blank=True,
             validators=[validators.validate_sieve],
-            help_text=_("Arbitrary email filtering in sieve language."))
+            help_text=_("Arbitrary email filtering in sieve language. "
+                        "This overrides any automatic junk email filtering"))
     is_active = models.BooleanField(_("is active"), default=True)
 #    addresses = models.ManyToManyField('mails.Address',
 #            verbose_name=_("addresses"),

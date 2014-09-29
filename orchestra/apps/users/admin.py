@@ -18,10 +18,7 @@ class UserAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_filter = ('is_active',)
     fieldsets = (
         (None, {
-            'fields': ('account', 'username', 'password', 'is_active')
-        }),
-        (_("Personal info"), {
-            'fields': ('first_name', 'last_name', 'email')
+            'fields': ('account', 'username', 'password', 'home', 'shell', 'groups', 'is_active')
         }),
     )
     add_fieldsets = (
@@ -33,7 +30,8 @@ class UserAdmin(AccountAdminMixin, ExtendedModelAdmin):
     search_fields = ['username', 'account__username']
     readonly_fields = ('display_is_main', 'account_link')
     change_readonly_fields = ('username',)
-    filter_horizontal = ()
+    filter_horizontal = ('groups',)
+    filter_by_account_fields = ('groups',)
     add_form = UserCreationForm
     form = UserChangeForm
     roles = []
@@ -62,6 +60,7 @@ class UserAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return new_urls + urls
     
     def get_fieldsets(self, request, obj=None):
+        # TODO implement on AccountAdminMixin
         fieldsets = super(UserAdmin, self).get_fieldsets(request, obj=obj)
         if obj and obj.account:
             fieldsets[0][1]['fields'] = ('account_link',) + fieldsets[0][1]['fields'][1:]

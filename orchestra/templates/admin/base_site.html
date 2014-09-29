@@ -1,7 +1,13 @@
 {% extends "admin/base.html" %}
-{% load admin_tools_menu_tags utils %}
+{% load admin_tools_menu_tags utils static %}
 
 {% block title %}{% if header_title %}{{ header_title }}{% else %}{{ title }}{% endif %} | {{ SITE_VERBOSE_NAME }} {% endblock %}
+
+{% block blockbots %}
+{{ block.super }}
+{% comment %}This has to load after admin/js/collapse.js{% endcomment %}
+<script src="{% static "orchestra/js/collapse-open.js" %}" type="text/javascript"></script>
+{% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}

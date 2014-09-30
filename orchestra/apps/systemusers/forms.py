@@ -5,14 +5,9 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from orchestra.apps.accounts.models import Account
 from orchestra.core.validators import validate_password
 
-from .models import SystemUser
 
-
+# TODO orchestra.UserCretionForm
 class UserCreationForm(auth.forms.UserCreationForm):
-#    class Meta:
-#        model = SystemUser
-#        fields = ('username',)
-    
     def __init__(self, *args, **kwargs):
         super(UserCreationForm, self).__init__(*args, **kwargs)
         self.fields['password1'].validators.append(validate_password)
@@ -21,12 +16,13 @@ class UserCreationForm(auth.forms.UserCreationForm):
         # Since model.clean() will check this, this is redundant,
         # but it sets a nicer error message than the ORM and avoids conflicts with contrib.auth
         username = self.cleaned_data["username"]
-        account_model = SystemUser.account.field.rel.to
+        account_model = self._meta.model.account.field.rel.to
         if account_model.objects.filter(username=username).exists():
             raise forms.ValidationError(self.error_messages['duplicate_username'])
         return username
 
 
+# TODO orchestra.UserCretionForm
 class UserChangeForm(forms.ModelForm):
     password = auth.forms.ReadOnlyPasswordHashField(label=_("Password"),
         help_text=_("Raw passwords are not stored, so there is no way to see "

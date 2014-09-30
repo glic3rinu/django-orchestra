@@ -22,7 +22,7 @@ class PaymentSource(models.Model):
     method = models.CharField(_("method"), max_length=32,
             choices=PaymentMethod.get_plugin_choices())
     data = JSONField(_("data"))
-    is_active = models.BooleanField(_("is active"), default=True)
+    is_active = models.BooleanField(_("active"), default=True)
     
     objects = PaymentSourcesQueryset.as_manager()
     

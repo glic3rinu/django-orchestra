@@ -26,7 +26,7 @@ class SystemUser(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='systemusers')
     home = models.CharField(_("home"), max_length=256, blank=True,
-            help_text=_("Home directory relative to account's ~primary_user"))
+            help_text=_("Home directory relative to account's ~main_user"))
     shell = models.CharField(_("shell"), max_length=32,
             choices=settings.USERS_SHELLS, default=settings.USERS_DEFAULT_SHELL)
     groups = models.ManyToManyField('systemusers.Group', blank=True,

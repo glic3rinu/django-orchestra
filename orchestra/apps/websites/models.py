@@ -28,7 +28,7 @@ class Website(models.Model):
     domains = models.ManyToManyField(settings.WEBSITES_DOMAIN_MODEL,
             related_name='websites', verbose_name=_("domains"))
     contents = models.ManyToManyField('webapps.WebApp', through='websites.Content')
-    is_active = models.BooleanField(_("is active"), default=True)
+    is_active = models.BooleanField(_("active"), default=True)
     
     def __unicode__(self):
         return self.name

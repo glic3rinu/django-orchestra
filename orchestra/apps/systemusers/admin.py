@@ -17,7 +17,7 @@ class SystemUserAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_filter = ('is_active',)
     fieldsets = (
         (None, {
-            'fields': ('username', 'password', 'is_active', 'account_link')
+            'fields': ('username', 'password', 'account_link', 'is_active')
         }),
         (_("System"), {
             'fields': ('home', 'shell', 'groups'),

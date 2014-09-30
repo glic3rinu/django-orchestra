@@ -20,7 +20,7 @@ class Mailbox(models.Model):
             validators=[validators.validate_sieve],
             help_text=_("Arbitrary email filtering in sieve language. "
                         "This overrides any automatic junk email filtering"))
-    is_active = models.BooleanField(_("is active"), default=True)
+    is_active = models.BooleanField(_("active"), default=True)
 #    addresses = models.ManyToManyField('mails.Address',
 #            verbose_name=_("addresses"),
 #            related_name='mailboxes', blank=True)

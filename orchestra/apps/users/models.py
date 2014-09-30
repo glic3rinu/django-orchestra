@@ -7,8 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
 
-from . import settings
-
 
 class User(auth.AbstractBaseUser):
     username = models.CharField(_("username"), max_length=64, unique=True,
@@ -16,22 +14,19 @@ class User(auth.AbstractBaseUser):
                         "./-/_ only."),
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])
-    account = models.ForeignKey('accounts.Account', verbose_name=_("Account"), related_name='users')
+    account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
+            related_name='users')
     first_name = models.CharField(_("first name"), max_length=30, blank=True)
     last_name = models.CharField(_("last name"), max_length=30, blank=True)
-    email = models.EmailField(_("email address"), blank=True)
+    email = models.EmailField(_('email address'), blank=True)
     is_superuser = models.BooleanField(_("superuser status"), default=False,
-            help_text=_("Designates that this user has all permissions without "
-                        "explicitly assigning them."))
-    is_main = models.BooleanField(_("is main"), default=False)
-#    system_password = models.CharField(_("system password"), max_length=128)
-    home = models.CharField(_("home"), max_length=256, blank=True,
-            help_text=_("Home directory relative to account's ~primary_user"))
-    shell = models.CharField(_("shell"), max_length=32,
-            choices=settings.USERS_SHELLS, default=settings.USERS_DEFAULT_SHELL)
-    groups = models.ManyToManyField('self', blank=True,
-            help_text=_("A new group will be created for the user. "
-                        "Which additional groups would you like them to be a member of?"))
+        help_text=_("Designates that this user has all permissions without "
+                    "explicitly assigning them."))
+    is_staff = models.BooleanField(_("staff status"), default=False,
+            help_text=_("Designates whether the user can log into this admin "
+                        "site."))
+    is_admin = models.BooleanField(_("admin status"), default=False,
+            help_text=_("Designates whether the user can administrate its account."))
     is_active = models.BooleanField(_("active"), default=True,
             help_text=_("Designates whether this user should be treated as "
                         "active. Unselect this instead of deleting accounts."))
@@ -40,11 +35,11 @@ class User(auth.AbstractBaseUser):
     objects = auth.UserManager()
     
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['email']
     
     @property
-    def is_staff(self):
-        return self.is_superuser or self.is_main
+    def is_main(self):
+        return self.account.user == self
     
     def get_full_name(self):
         full_name = '%s %s' % (self.first_name, self.last_name)
@@ -92,9 +87,6 @@ class User(auth.AbstractBaseUser):
         if self.is_active and self.is_superuser:
             return True
         return auth._user_has_module_perms(self, app_label)
-#    
-#    def set_system_password(self, raw_password):
-#        self.system_password = make_password(raw_password)
 
 
-services.register(User)
+services.register(User, menu=False)

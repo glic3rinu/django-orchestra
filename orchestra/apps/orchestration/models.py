@@ -136,7 +136,7 @@ class Route(models.Model):
 #    async = models.BooleanField(default=False)
 #    method = models.CharField(_("method"), max_lenght=32, choices=method_choices,
 #            default=MethodBackend.get_default())
-    is_active = models.BooleanField(_("is active"), default=True)
+    is_active = models.BooleanField(_("active"), default=True)
     
     class Meta:
         unique_together = ('backend', 'host')

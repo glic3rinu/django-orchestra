@@ -18,9 +18,9 @@ from .handlers import ServiceHandler
 
 class Plan(models.Model):
     name = models.CharField(_("plan"), max_length=128)
-    is_default = models.BooleanField(_("is default"), default=False)
-    is_combinable = models.BooleanField(_("is combinable"), default=True)
-    allow_multiple = models.BooleanField(_("allow multipls"), default=False)
+    is_default = models.BooleanField(_("default"), default=False)
+    is_combinable = models.BooleanField(_("combinable"), default=True)
+    allow_multiple = models.BooleanField(_("allow multiple"), default=False)
     
     def __unicode__(self):
         return self.name
@@ -107,7 +107,7 @@ class Service(models.Model):
                         "enables customized behaviour far beyond what options "
                         "here allow to."),
             choices=ServiceHandler.get_plugin_choices())
-    is_active = models.BooleanField(_("is active"), default=True)
+    is_active = models.BooleanField(_("active"), default=True)
     # Billing
     billing_period = models.CharField(_("billing period"), max_length=16,
             help_text=_("Renewal period for recurring invoicing"),
@@ -133,7 +133,7 @@ class Service(models.Model):
 #                (ONE_MONTH, _("One month")),
 #            ),
 #            default=ONE_MONTH, blank=True)
-    is_fee = models.BooleanField(_("is fee"), default=False,
+    is_fee = models.BooleanField(_("fee"), default=False,
             help_text=_("Designates whether this service should be billed as "
                         " membership fee or not"))
     # Pricing

@@ -65,7 +65,7 @@ class Resource(models.Model):
     monitors = fields.MultiSelectField(_("monitors"), max_length=256, blank=True,
             choices=ServiceMonitor.get_plugin_choices(),
             help_text=_("Monitor backends used for monitoring this resource."))
-    is_active = models.BooleanField(_("is active"), default=True)
+    is_active = models.BooleanField(_("active"), default=True)
     
     objects = ResourceQuerySet.as_manager()
     

@@ -40,7 +40,7 @@ class Role(models.Model):
             related_name='roles')
     user = models.ForeignKey('databases.DatabaseUser', verbose_name=_("user"),
             related_name='roles')
-    is_owner = models.BooleanField(_("is owener"), default=False)
+    is_owner = models.BooleanField(_("owner"), default=False)
     
     class Meta:
         unique_together = ('database', 'user')

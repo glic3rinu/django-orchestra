@@ -119,22 +119,22 @@ class Transaction(models.Model):
     def mark_as_processed(self):
         assert self.state == self.WAITTING_PROCESSING
         self.state = self.WAITTING_EXECUTION
-        self.save()
+        self.save(update_fields=['state'])
     
     def mark_as_executed(self):
         assert self.state == self.WAITTING_EXECUTION
         self.state = self.EXECUTED
-        self.save()
+        self.save(update_fields=['state'])
     
     def mark_as_secured(self):
         assert self.state == self.EXECUTED
         self.state = self.SECURED
-        self.save()
+        self.save(update_fields=['state'])
     
     def mark_as_rejected(self):
         assert self.state == self.EXECUTED
         self.state = self.REJECTED
-        self.save()
+        self.save(update_fields=['state'])
 
 
 class TransactionProcess(models.Model):
@@ -169,21 +169,21 @@ class TransactionProcess(models.Model):
         self.state = self.EXECUTED
         for transaction in self.transactions.all():
             transaction.mark_as_executed()
-        self.save()
+        self.save(update_fields=['state'])
     
     def abort(self):
         assert self.state in [self.CREATED, self.EXCECUTED]
         self.state = self.ABORTED
         for transaction in self.transaction.all():
             transaction.mark_as_aborted()
-        self.save()
+        self.save(update_fields=['state'])
     
     def commit(self):
         assert self.state in [self.CREATED, self.EXECUTED]
         self.state = self.COMMITED
         for transaction in self.transactions.processing():
             transaction.mark_as_secured()
-        self.save()
+        self.save(update_fields=['state'])
 
 
 accounts.register(PaymentSource)

@@ -162,11 +162,11 @@ class Order(models.Model):
                     id=self.id, description=description, metric=metric))
         if self.description != description:
             self.description = description
-            self.save()
+            self.save(update_fields=['description'])
     
     def cancel(self):
         self.cancelled_on = timezone.now()
-        self.save()
+        self.save(update_fields=['cancelled_on'])
         logger.info("CANCELLED order id: {id}".format(id=self.id))
     
     def get_metric(self, *args, **kwargs):
@@ -230,7 +230,7 @@ class MetricStorage(models.Model):
                 cls.objects.create(order=order, value=value, updated_on=now)
             else:
                 metric.updated_on = now
-                metric.save()
+                metric.save(update_fields=['updated_on'])
 
 
 accounts.register(Order)

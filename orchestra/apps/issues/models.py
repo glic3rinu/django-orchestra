@@ -135,19 +135,19 @@ class Ticket(models.Model):
     
     def reject(self):
         self.state = Ticket.REJECTED
-        self.save()
+        self.save(update_fields=['state'])
     
     def resolve(self):
         self.state = Ticket.RESOLVED
-        self.save()
+        self.save(update_fields=['state'])
     
     def close(self):
         self.state = Ticket.CLOSED
-        self.save()
+        self.save(update_fields=['state'])
     
     def take(self, user):
         self.owner = user
-        self.save()
+        self.save(update_fields=['state'])
 
 
 class Message(models.Model):

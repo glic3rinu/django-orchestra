@@ -98,7 +98,7 @@ class Resource(models.Model):
                 task.delete()
             elif task.crontab != self.crontab:
                 task.crontab = self.crontab
-                task.save()
+                task.save(update_fields=['crontab'])
         if created:
             # This only work on tests because of multiprocessing used on real deployments
             create_resource_relation()
@@ -146,7 +146,7 @@ class ResourceData(models.Model):
             current = self.get_used()
         self.used = current or 0
         self.updated_at = timezone.now()
-        self.save()
+        self.save(update_fields=['used', 'updated_at'])
 
 
 class MonitorData(models.Model):

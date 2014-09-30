@@ -58,7 +58,7 @@ class Domain(models.Model):
             serial = str(self.serial)[:8] + '%.2d' % num
             serial = int(serial)
         self.serial = serial
-        self.save()
+        self.save(update_fields=['serial'])
     
     def render_records(self):
         types = {}
@@ -128,7 +128,7 @@ class Domain(models.Model):
             domains = Domain.objects.exclude(pk=self.pk)
             for domain in domains.filter(name__endswith=self.name):
                 domain.top = self
-                domain.save()
+                domain.save(update_fields=['top'])
         self.get_subdomains().update(account=self.account)
     
     def get_top(self):

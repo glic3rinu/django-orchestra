@@ -122,6 +122,6 @@ def set_default_queue(modeladmin, request, queryset):
     Queue.objects.filter(default=True).update(default=False)
     queue = queryset.get()
     queue.default = True
-    queue.save()
+    queue.save(update_fields=['default'])
     modeladmin.log_change(request, queue, _("Chosen as default."))
     messages.info(request, _("Chosen '%s' as default queue.") % queue)

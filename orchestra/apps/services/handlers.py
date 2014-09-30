@@ -222,7 +222,7 @@ class ServiceHandler(plugins.Plugin):
             for order in givers:
                 if hasattr(order, 'new_billed_until'):
                     order.billed_until = order.new_billed_until
-                    order.save()
+                    order.save(update_fields=['billed_until'])
     
     def apply_compensations(self, order, only_beyond=False):
         dsize = 0
@@ -481,5 +481,5 @@ class ServiceHandler(plugins.Plugin):
                 order = line.order
                 order.billed_on = now
                 order.billed_until = getattr(order, 'new_billed_until', order.billed_until)
-                order.save()
+                order.save(update_fields=['billed_on', 'billed_until'])
         return lines

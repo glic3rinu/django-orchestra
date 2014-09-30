@@ -156,7 +156,7 @@ class Bill(models.Model):
             ]
         )
         self.is_sent = True
-        self.save()
+        self.save(update_fields=['is_sent'])
     
     def render(self, payment=False):
         if payment is False:
@@ -281,7 +281,7 @@ class BillLine(models.Model):
         super(BillLine, self).save(*args, **kwargs)
         if self.bill.is_open:
             self.bill.total = self.bill.get_total()
-            self.bill.save()
+            self.bill.save(update_fields=['total'])
 
 
 class BillSubline(models.Model):
@@ -306,7 +306,7 @@ class BillSubline(models.Model):
         super(BillSubline, self).save(*args, **kwargs)
         if self.line.bill.is_open:
             self.line.bill.total = self.line.bill.get_total()
-            self.line.bill.save()
+            self.line.bill.save(update_fields=['total'])
 
 
 accounts.register(Bill)

@@ -24,7 +24,7 @@ class AccountCreationForm(auth.forms.UserCreationForm):
 
 
 class AccountChangeForm(forms.ModelForm):
-    username = forms.CharField()
+    username = forms.CharField(required=False)
     password = auth.forms.ReadOnlyPasswordHashField(label=_("Password"),
         help_text=_("Raw passwords are not stored, so there is no way to see "
                     "this user's password, but you can change the password "
@@ -33,7 +33,8 @@ class AccountChangeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AccountChangeForm, self).__init__(*args, **kwargs)
         account = kwargs.get('instance')
-        self.fields['username'].widget = ReadOnlyWidget(account.username)
+        username = '<b style="font-size:small">%s</b>' % account.username
+        self.fields['username'].widget = ReadOnlyWidget(username)
         self.fields['password'].initial = account.password
     
     def clean_password(self):

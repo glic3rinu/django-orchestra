@@ -178,7 +178,7 @@ class SEPADirectDebit(PaymentMethod):
             account = transaction.account
             data = transaction.source.data
             transaction.state = transaction.WAITTING_CONFIRMATION
-            transaction.save()
+            transaction.save(update_fields=['state'])
             yield E.DrctDbtTxInf(                           # Direct Debit Transaction Info
                 E.PmtId(                                    # Payment Id
                     E.EndToEndId(str(transaction.id))       # Payment Id/End to End
@@ -219,7 +219,7 @@ class SEPADirectDebit(PaymentMethod):
             account = transaction.account
             data = transaction.source.data
             transaction.state = transaction.WAITTING_CONFIRMATION
-            transaction.save()
+            transaction.save(update_fields=['state'])
             yield E.CdtTrfTxInf(                            # Credit Transfer Transaction Info
                 E.PmtId(                                    # Payment Id
                     E.EndToEndId(str(transaction.id))       # Payment Id/End to End
@@ -278,7 +278,7 @@ class SEPADirectDebit(PaymentMethod):
         sepa = etree.parse(StringIO(etree.tostring(sepa)))
         schema.assertValid(sepa)
         process.file = file_name
-        process.save()
+        process.save(update_fields=['file'])
         sepa.write(process.file.path,
                    pretty_print=True,
                    xml_declaration=True,

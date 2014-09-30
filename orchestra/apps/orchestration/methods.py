@@ -16,7 +16,7 @@ def BashSSH(backend, log, server, cmds):
     script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
     log.script = script
-    log.save()
+    log.save(update_fields=['script'])
     
     try:
         # Avoid "Argument list too long" on large scripts by genereting a file
@@ -34,7 +34,7 @@ def BashSSH(backend, log, server, cmds):
                         key_filename=settings.ORCHESTRATION_SSH_KEY_PATH)
         except socket.error:
             log.state = BackendLog.TIMEOUT
-            log.save()
+            log.save(update_fields=['state'])
             return
         transport = ssh.get_transport()
         channel = transport.open_session()
@@ -66,7 +66,7 @@ def BashSSH(backend, log, server, cmds):
                     log.stdout += channel.recv(1024)
                 if channel.recv_stderr_ready():
                     log.stderr += channel.recv_stderr(1024)
-                log.save()
+                log.save(update_fields=['stdout', 'stderr'])
                 if channel.exit_status_ready():
                     break
         log.exit_code = exit_code = channel.recv_exit_status()
@@ -85,7 +85,7 @@ def Python(backend, log, server, cmds):
     script = [ str(cmd.func.func_name) + str(cmd.args) for cmd in cmds ]
     script = json.dumps(script, indent=4).replace('"', '')
     log.script = '\n'.join([log.script, script])
-    log.save()
+    log.save(update_fields=['script'])
     stdout = ''
     try:
         for cmd in cmds:

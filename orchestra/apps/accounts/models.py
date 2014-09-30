@@ -68,8 +68,7 @@ class Account(auth.AbstractBaseUser):
     def send_email(self, template, context, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)
         email_to = contacts.values_list('email', flat=True)
-        send_email_template(template, context, email_to, html=html,
-                attachments=attachments)
+        send_email_template(template, context, email_to, html=html, attachments=attachments)
     
     def get_full_name(self):
         full_name = '%s %s' % (self.first_name, self.last_name)

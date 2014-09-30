@@ -22,3 +22,12 @@ ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE', 'en')
 
 
 ACCOUNTS_MAIN_PK = getattr(settings, 'ACCOUNTS_MAIN_PK', 1)
+
+
+ACCOUNTS_HOME = getattr(settings, 'ACCOUNTS_HOME', '/home/%(username)s')
+
+
+ACCOUNTS_FTP_LOG_PATH = getattr(settings, 'ACCOUNTS_FTP_LOG_PATH', '/var/log/vsftpd.log')
+
+
+ACCOUNTS_DEFAULT_SHELL = getattr(settings, 'ACCOUNTS_DEFAULT_SHELL', '/bin/false')

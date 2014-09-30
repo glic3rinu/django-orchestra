@@ -1,3 +1,4 @@
+import textwrap
 import os
 
 from django.utils import timezone
@@ -18,14 +19,13 @@ class MailSystemUserBackend(ServiceController):
     DEFAULT_GROUP = 'postfix'
     
     def create_user(self, context):
-        self.append(
-            "if [[ $( id %(username)s ) ]]; then \n"
-            "   usermod -p '%(password)s' %(username)s \n"
-            "else \n"
-            "   useradd %(username)s --password '%(password)s' \\\n"
-            "       --shell /dev/null \n"
-            "fi" % context
-        )
+        self.append(textwrap("""
+            if [[ $( id %(username)s ) ]]; then
+               usermod -p '%(password)s' %(username)s
+            else
+               useradd %(username)s --password '%(password)s' --shell /dev/null
+            fi""" % context
+        ))
         self.append("mkdir -p %(home)s" % context)
         self.append("chown %(username)s.%(group)s %(home)s" % context)
     
@@ -51,12 +51,12 @@ class MailSystemUserBackend(ServiceController):
             'quota': mailbox.resources.disk.allocated*1000*1000,
         })
         self.append("mkdir -p %(maildir_path)s" % context)
-        self.append(
-            "sed -i '1s/.*/%(quota)s,S/' %(maildirsize_path)s || {"
-            "   echo '%(quota)s,S' > %(maildirsize_path)s && "
-            "   chown %(username)s %(maildirsize_path)s;"
-            "}" % context
-        )
+        self.append(textwrap("""
+            sed -i '1s/.*/%(quota)s,S/' %(maildirsize_path)s || {
+               echo '%(quota)s,S' > %(maildirsize_path)s &&
+               chown %(username)s %(maildirsize_path)s;
+            }""" % context
+        ))
     
     def save(self, mailbox):
         context = self.get_context(mailbox)
@@ -98,26 +98,26 @@ class PostfixAddressBackend(ServiceController):
             self.append('sed -i "s/^%(domain)s//" %(virtdomains)s' % context)
     
     def update_virtusertable(self, context):
-        self.append(
-            'LINE="%(email)s\t%(destination)s"\n'
-            'if [[ ! $(grep "^%(email)s\s" %(virtusertable)s) ]]; then\n'
-            '   echo "$LINE" >> %(virtusertable)s\n'
-            '   UPDATED=1\n'
-            'else\n'
-            '   if [[ ! $(grep "^${LINE}$" %(virtusertable)s) ]]; then\n' 
-            '       sed -i "s/^%(email)s\s.*$/${LINE}/" %(virtusertable)s\n'
-            '       UPDATED=1\n'
-            '   fi\n'
-            'fi' % context
-        )
+        self.append(textwrap("""
+            LINE="%(email)s\t%(destination)s"
+            if [[ ! $(grep "^%(email)s\s" %(virtusertable)s) ]]; then
+               echo "$LINE" >> %(virtusertable)s
+               UPDATED=1
+            else
+               if [[ ! $(grep "^${LINE}$" %(virtusertable)s) ]]; then
+                   sed -i "s/^%(email)s\s.*$/${LINE}/" %(virtusertable)s
+                   UPDATED=1
+               fi
+            fi""" % context
+        ))
     
     def exclude_virtusertable(self, context):
-        self.append(
-            'if [[ $(grep "^%(email)s\s") ]]; then\n'
-            '   sed -i "s/^%(email)s\s.*$//" %(virtusertable)s\n'
-            '   UPDATED=1\n'
-            'fi'
-        )
+        self.append(textwrap("""
+            if [[ $(grep "^%(email)s\s") ]]; then
+               sed -i "s/^%(email)s\s.*$//" %(virtusertable)s
+               UPDATED=1
+            fi"""
+        ))
     
     def save(self, address):
         context = self.get_context(address)
@@ -131,10 +131,12 @@ class PostfixAddressBackend(ServiceController):
     
     def commit(self):
         context = self.get_context_files()
-        self.append('[[ $UPDATED == 1 ]] && { '
-                    'postmap %(virtdomains)s;'
-                    'postmap %(virtusertable)s;'
-                    '}' % context)
+        self.append(textwrap("""
+            [[ $UPDATED == 1 ]] && {
+                postmap %(virtdomains)s
+                postmap %(virtusertable)s
+            }""" % context
+        ))
     
     def get_context_files(self):
         return {

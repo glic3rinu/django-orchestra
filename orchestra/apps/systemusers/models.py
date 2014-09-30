@@ -13,7 +13,7 @@ class SystemUserQuerySet(models.QuerySet):
     def create_user(self, username, password='', **kwargs):
         user = super(SystemUserQuerySet, self).create(username=username, **kwargs)
         user.set_password(password)
-        user.save()
+        user.save(update_fields=['password'])
 
 
 class SystemUser(models.Model):
@@ -58,15 +58,6 @@ class SystemUser(models.Model):
     
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
-    
-    def check_password(self, raw_password):
-        """
-        Returns a boolean of whether the raw_password was correct. Handles
-        hashing formats behind the scenes.
-        """
-        def setter(raw_password):
-            self.set_password(raw_password)
-            self.save(update_fields=["password"])
     
     def get_is_active(self):
         return self.account.is_active and self.is_active

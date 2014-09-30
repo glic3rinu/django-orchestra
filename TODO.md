@@ -138,3 +138,5 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 
 * Redirect junk emails and delete every 30 days?
+
+* Complitely decouples scripts execution, billing, service definition

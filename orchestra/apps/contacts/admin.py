@@ -17,7 +17,7 @@ class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
     )
     list_filter = ('email_usage',)
     search_fields = (
-        'contact__user__username', 'short_name', 'full_name', 'phone', 'phone2',
+        'contact__account__name', 'short_name', 'full_name', 'phone', 'phone2',
         'email'
     )
     fieldsets = (

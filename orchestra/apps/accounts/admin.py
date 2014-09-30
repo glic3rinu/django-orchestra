@@ -9,8 +9,7 @@ from django.utils.six.moves.urllib.parse import parse_qsl
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import (wrap_admin_view, admin_link, set_url_query,
-        change_url)
+from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, change_url
 from orchestra.core import services, accounts
 
 from .filters import HasMainUserListFilter
@@ -19,7 +18,7 @@ from .models import Account
 
 
 class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
-    list_display = ('name', 'type', 'is_active')
+    list_display = ('username', 'type', 'is_active')
     list_filter = (
         'type', 'is_active', HasMainUserListFilter
     )
@@ -27,16 +26,28 @@ class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
         (_("User"), {
             'fields': ('username', 'password1', 'password2',),
         }),
-        (_("Account info"), {
-            'fields': (('type', 'language'), 'comments'),
+        (_("Personal info"), {
+            'fields': ('first_name', 'last_name', 'email', ('type', 'language'), 'comments'),
+        }),
+        (_("Permissions"), {
+            'fields': ('is_superuser', 'is_active')
+        }),
+        (_("Important dates"), {
+            'fields': ('last_login', 'date_joined')
         }),
     )
     fieldsets = (
         (_("User"), {
-            'fields': ('username', 'password',),
+            'fields': ('username', 'password',)
         }),
-        (_("Account info"), {
-            'fields': (('type', 'language'), 'comments'),
+        (_("Personal info"), {
+            'fields': ('first_name', 'last_name', 'email', ('type', 'language'), 'comments'),
+        }),
+        (_("Permissions"), {
+            'fields': ('is_superuser', 'is_active')
+        }),
+        (_("Important dates"), {
+            'fields': ('last_login', 'date_joined')
         }),
     )
     search_fields = ('username',)
@@ -44,10 +55,6 @@ class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
     form = AccountChangeForm
     filter_horizontal = ()
     change_form_template = 'admin/accounts/account/change_form.html'
-    
-    def name(self, account):
-        return account.name
-    name.admin_order_field = 'username'
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -95,7 +102,7 @@ class AccountListAdmin(AccountAdmin):
         # TODO get query string from request.META['QUERY_STRING'] to preserve filters
         context = {
             'url': '../?account=' + str(instance.pk),
-            'name': instance.name
+            'name': instance.username
         }
         return '<a href="%(url)s">%(name)s</a>' % context
     select_account.short_description = _("account")
@@ -143,9 +150,6 @@ class AccountAdminMixin(object):
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Filter by account """
-#        if db_field.name == 'account':
-#            qs = kwargs.get('queryset', db_field.rel.to.objects)
-#            kwargs['queryset'] = qs.select_related('user')
         formfield = super(AccountAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
         if db_field.name in self.filter_by_account_fields:
             if hasattr(self, 'account'):
@@ -197,7 +201,7 @@ class AccountAdminMixin(object):
                 context.update({
                     'all_selected': False,
                     'title': _("Select %s to change for %s") % (
-                        opts.verbose_name, account.name),
+                        opts.verbose_name, account.username),
                 })
             else:
                 request_copy = request.GET.copy()
@@ -247,7 +251,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
                 self.account = Account.objects.get(**kwargs)
                 opts = self.model._meta
                 context = {
-                    'title': _("Add %s for %s") % (opts.verbose_name, self.account.name),
+                    'title': _("Add %s for %s") % (opts.verbose_name, self.account.username),
                     'from_account': bool(from_account_id),
                     'account': self.account,
                     'account_opts': Account._meta,

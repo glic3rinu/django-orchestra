@@ -21,28 +21,20 @@
 
 {% block object-tools-items %}
 {% if services %}
+<li><select name="forma" onchange="location = this.options[this.selectedIndex].value;" style="margin: -3px 0 0 0;">
+     <option value="">{% trans "Services:" %}</option>
     {% for service in services %}
-        <li>
-            <a href="{% url service|admin_urlname:'changelist' %}?account={{ original.pk }}" class="historylink">{{ service.verbose_name_plural|capfirst }}</a>
-        </li>
+     <option value="{% url service|admin_urlname:'changelist' %}?account={{ original.pk }}">{{ service.verbose_name_plural|capfirst }}</option>
     {% endfor %}
-</ul>
-<h5 style="visibility:hidden; margin: 1.5em 1.5em 0;">Account</h5>
+</select></li>
 {% endif %}
 {% if accounts %}
-<ul class="object-tools">
+<li><select name="forma" onchange="location = this.options[this.selectedIndex].value;" style="margin: -3px 4px 0px 4px;">
+     <option value="">{% trans "Accounts:" %}</option>
     {% for account in accounts %}
-        <li>
-            <a href="{% url account|admin_urlname:'changelist' %}?account={{ original.pk }}" class="historylink">{{ account.verbose_name_plural|capfirst }}</a>
-        </li>
+     <option value="{% url account|admin_urlname:'changelist' %}?account={{ original.pk }}">{{ account.verbose_name_plural|capfirst }}</option>
     {% endfor %}
-</ul>
-<h5 style="visibility:hidden; margin: 1.5em 1.5em 0;">a</h5>
-<ul class="object-tools">
+</select></li>
 {% endif %}
-<li>
-    <a href="disable/" class="historylink">{% trans "Disable" %}</a>
-</li>
 {{ block.super }}
 {% endblock %}
-

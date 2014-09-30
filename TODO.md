@@ -127,3 +127,19 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * prevent deletion of main user by the user itself
 
+
+
+* AccountAdminMixin auto adds 'account__name' on searchfields and handle account_link on fieldsets
+
+* account defiition:
+    * identify a customer or a person
+    * has one main system user for running website
+    * pangea staff are different accounts
+    * An account identify a person
+    * Maybe merge users into accounts? again. Account contains main_users, users contains FTP shit
+            * Separate panel from server passwords?
+            * Store passwords on panel?
+
+
+
+* What fields we really need on contacts? name email phone and what more?

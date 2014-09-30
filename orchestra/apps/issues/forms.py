@@ -1,10 +1,10 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
-from orchestra.apps.users.models import User
 from orchestra.forms.widgets import ReadOnlyWidget
 
 from .models import Queue, Ticket
@@ -60,7 +60,7 @@ class UsersIterator(forms.models.ModelChoiceIterator):
     
     def __iter__(self):
         yield ('', '---------')
-        users = User.objects.exclude(is_active=False).order_by('name')
+        users = get_user_model().objects.exclude(is_active=False).order_by('name')
         superusers = users.filter(is_superuser=True)
         if superusers:
             yield ('Operators', list(superusers.values_list('pk', 'name')))

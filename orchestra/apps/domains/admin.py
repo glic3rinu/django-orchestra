@@ -54,7 +54,7 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
     inlines = [RecordInline, DomainInline]
     list_filter = [TopDomainListFilter]
     change_readonly_fields = ('name',)
-    search_fields = ['name', 'account__username']
+    search_fields = ['name',]
     default_changelist_filters = (
         ('top_domain', 'True'),
     )

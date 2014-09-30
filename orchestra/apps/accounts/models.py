@@ -16,16 +16,18 @@ class Account(auth.AbstractBaseUser):
             help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])
+    first_name = models.CharField(_("first name"), max_length=30, blank=True)
+    last_name = models.CharField(_("last name"), max_length=30, blank=True)
+    email = models.EmailField(_('email address'), help_text=_("Used for password recovery"))
     type = models.CharField(_("type"), choices=settings.ACCOUNTS_TYPES,
             max_length=32, default=settings.ACCOUNTS_DEFAULT_TYPE)
     language = models.CharField(_("language"), max_length=2,
             choices=settings.ACCOUNTS_LANGUAGES,
             default=settings.ACCOUNTS_DEFAULT_LANGUAGE)
-    registered_on = models.DateField(_("registered"), auto_now_add=True)
     comments = models.TextField(_("comments"), max_length=256, blank=True)
-    first_name = models.CharField(_("first name"), max_length=30, blank=True)
-    last_name = models.CharField(_("last name"), max_length=30, blank=True)
-    email = models.EmailField(_('email address'), blank=True)
+    is_superuser = models.BooleanField(_("superuser status"), default=False,
+            help_text=_("Designates that this user has all permissions without "
+                        "explicitly assigning them."))
     is_active = models.BooleanField(_("active"), default=True,
             help_text=_("Designates whether this account should be treated as active. "
                         "Unselect this instead of deleting accounts."))
@@ -44,10 +46,6 @@ class Account(auth.AbstractBaseUser):
         return self.username
     
     @property
-    def is_superuser(self):
-        return self.pk == settings.ACCOUNTS_MAIN_PK
-    
-    @property
     def is_staff(self):
         return self.is_superuser
     
@@ -55,11 +53,17 @@ class Account(auth.AbstractBaseUser):
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
     
+    def clean(self):
+        """ unique usernames between accounts and system users """
+        if not self.pk and hasattr(self, 'systemusers'):
+            if self.systemusers.model.objects.filter(username=self.username).exists():
+                raise validators.ValidationError(_("A user with this name already exists"))
+    
     def save(self, *args, **kwargs):
         created = not self.pk
         super(Account, self).save(*args, **kwargs)
-        if created:
-            self.users.create(username=self.username, password=self.password)
+        if created and hasattr(self, 'groups'):
+            self.groups.create(name=self.username, account=self)
     
     def send_email(self, template, context, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)

@@ -5,30 +5,27 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.core.validators import validate_password
 from orchestra.forms.widgets import ReadOnlyWidget
 
-User = auth.get_user_model()
+from .models import Account
 
 
 class AccountCreationForm(auth.forms.UserCreationForm):
+#    class Meta:
+#        model = Account
+#        fields = ("username",)
+    
     def __init__(self, *args, **kwargs):
         super(AccountCreationForm, self).__init__(*args, **kwargs)
         self.fields['password1'].validators.append(validate_password)
     
     def clean_username(self):
-        # Since User.username is unique, this check is redundant,
-        # but it sets a nicer error message than the ORM. See #13147.
+        # Since model.clean() will check this, this is redundant,
+        # but it sets a nicer error message than the ORM and avoids conflicts with contrib.auth
         username = self.cleaned_data["username"]
-        try:
-            User._default_manager.get(username=username)
-        except User.DoesNotExist:
-            return username
-        raise forms.ValidationError(self.error_messages['duplicate_username'])
-    
-#    def save(self, commit=True):
-#        account = super(auth.forms.UserCreationForm, self).save(commit=False)
-#        account.set_password(self.cleaned_data['password1'])
-#        if commit:
-#            account.save()
-#        return account
+        if hasattr(Account, 'systemusers'):
+            systemuser_model = Account.systemusers.related.model
+            if systemuser_model.objects.filter(username=username).exists():
+                raise forms.ValidationError(self.error_messages['duplicate_username'])
+        return username
 
 
 class AccountChangeForm(forms.ModelForm):

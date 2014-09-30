@@ -33,4 +33,3 @@ class UserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeriali
         if not obj.pk:
             obj.set_password(obj.password)
         super(UserSerializer, self).save_object(obj, **kwargs)
-

@@ -58,6 +58,26 @@ class OrderQuerySet(models.QuerySet):
             return self.exclude(**qs)
         return self.filter(**qs)
     
+    def get_related(self, **options):
+        Service = get_model(settings.ORDERS_SERVICE_MODEL)
+        conflictive = self.filter(service__metric='')
+        conflictive = conflictive.exclude(service__billing_period=Service.NEVER)
+        conflictive = conflictive.select_related('service').group_by('account_id', 'service')
+        qs = Q()
+        for account_id, services in conflictive.iteritems():
+            for service, orders in services.iteritems():
+                end = datetime.date.min
+                bp = None
+                for order in orders:
+                    bp = service.handler.get_billing_point(order, **options)
+                    end = max(end, bp)
+                qs = qs | Q(
+                    Q(service=service, account=account_id, registered_on__lt=end) &
+                        Q(Q(billed_until__isnull=True) | Q(billed_until__lt=end))
+                )
+        ids = self.values_list('id', flat=True)
+        return self.model.objects.filter(qs).exclude(id__in=ids)
+    
     def pricing_orders(self, ini, end):
         return self.filter(billed_until__isnull=False, billed_until__gt=ini,
             registered_on__lt=end)
@@ -103,7 +123,7 @@ class Order(models.Model):
     @classmethod
     def update_orders(cls, instance, service=None):
         if service is None:
-            Service = get_model(*settings.ORDERS_SERVICE_MODEL.split('.'))
+            Service = get_model(settings.ORDERS_SERVICE_MODEL)
             services = Service.get_services(instance)
         else:
             services = [service]

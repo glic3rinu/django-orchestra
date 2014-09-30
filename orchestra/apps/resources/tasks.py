@@ -14,7 +14,7 @@ def monitor(resource_id):
     # Execute monitors
     for monitor_name in resource.monitors:
         backend = ServiceMonitor.get_backend(monitor_name)
-        model = get_model(*backend.model.split('.'))
+        model = get_model(backend.model)
         operations = []
         # Execute monitor
         for obj in model.objects.all():

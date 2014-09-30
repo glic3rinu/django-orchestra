@@ -1,7 +1,9 @@
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -11,8 +13,7 @@ from orchestra.apps.accounts.admin import AccountAdminMixin
 from . import settings
 from .actions import download_bills, view_bill, close_bills, send_bills
 from .filters import BillTypeListFilter
-from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma,
-        BillLine)
+from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine
 
 
 PAYMENT_STATE_COLORS = {
@@ -144,14 +145,18 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         qs = qs.annotate(models.Count('lines'))
         qs = qs.prefetch_related('lines', 'lines__sublines')
         return qs
-
-#    def change_view(self, request, object_id, **kwargs):
-#        opts = self.model._meta
-#        if opts.module_name == 'bill':
-#            obj = self.get_object(request, unquote(object_id))
-#            return redirect(
-#                reverse('admin:bills_%s_change' % obj.type.lower(), args=[obj.pk]))
-#        return super(BillAdmin, self).change_view(request, object_id, **kwargs)
+    
+    def change_view(self, request, object_id, **kwargs):
+        bill = self.get_object(request, unquote(object_id))
+        # TODO raise404, here and everywhere
+        if not hasattr(bill.account, 'invoicecontact'):
+            create_link = reverse('admin:accounts_account_change', args=(bill.account_id,))
+            create_link += '#invoicecontact-group'
+            messages.warning(request, mark_safe(_(
+                'Be aware, related contact doesn\'t have a billing contact defined, '
+                'bill can not be generated until one is <a href="%s">provided</a>' % create_link
+            )))
+        return super(BillAdmin, self).change_view(request, object_id, **kwargs)
 
 
 admin.site.register(Bill, BillAdmin)

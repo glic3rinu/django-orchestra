@@ -29,7 +29,7 @@ class OrderAdmin(AccountAdminMixin, admin.ModelAdmin):
     def display_billed_until(self, order):
         value = order.billed_until
         color = ''
-        if value and value < timezone.now():
+        if value and value < timezone.now().date():
             color = 'style="color:red;"'
         return '<span title="{raw}" {color}>{human}</span>'.format(
             raw=escape(str(value)), color=color, human=escape(naturaldate(value)),

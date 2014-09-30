@@ -61,6 +61,9 @@ class InvoiceContact(models.Model):
     country = models.CharField(_("country"), max_length=20,
             default=settings.CONTACTS_DEFAULT_COUNTRY)
     vat = models.CharField(_("VAT number"), max_length=64)
+    
+    def __unicode__(self):
+        return self.name
 
 
 accounts.register(Contact)

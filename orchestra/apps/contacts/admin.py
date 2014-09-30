@@ -96,11 +96,7 @@ class ContactInline(InvoiceContactInline):
 
 
 def has_invoice(account):
-    try:
-        account.invoicecontact
-    except InvoiceContact.DoesNotExist:
-        return False
-    return True
+    return hasattr(account, 'invoicecontact')
 has_invoice.boolean = True
 has_invoice.admin_order_field = 'invoicecontact'
 

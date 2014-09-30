@@ -68,7 +68,7 @@ class BackendLog(models.Model):
     
     @property
     def execution_time(self):
-        return (self.last_update-self.created).total_seconds()
+        return (self.updated_at-self.created_at).total_seconds()
     
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)

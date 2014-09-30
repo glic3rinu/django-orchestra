@@ -30,10 +30,7 @@ class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
             'fields': ('first_name', 'last_name', 'email', ('type', 'language'), 'comments'),
         }),
         (_("Permissions"), {
-            'fields': ('is_superuser', 'is_active')
-        }),
-        (_("Important dates"), {
-            'fields': ('last_login', 'date_joined')
+            'fields': ('is_superuser',)
         }),
     )
     fieldsets = (
@@ -47,6 +44,7 @@ class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
             'fields': ('is_superuser', 'is_active')
         }),
         (_("Important dates"), {
+            'classes': ('collapse',),
             'fields': ('last_login', 'date_joined')
         }),
     )

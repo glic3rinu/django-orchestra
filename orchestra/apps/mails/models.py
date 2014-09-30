@@ -1,5 +1,6 @@
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
@@ -30,6 +31,10 @@ class Mailbox(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    @cached_property
+    def active(self):
+        return self.is_active and self.account.is_active
 
 
 class Address(models.Model):

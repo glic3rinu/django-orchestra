@@ -14,7 +14,7 @@ from .models import SystemUser
 
 class SystemUserAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'account_link', 'shell', 'home', 'is_active',)
-    list_filter = ('is_active',)
+    list_filter = ('is_active', 'shell')
     fieldsets = (
         (None, {
             'fields': ('username', 'password', 'account_link', 'is_active')

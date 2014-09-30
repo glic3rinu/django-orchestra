@@ -15,12 +15,12 @@ class BillSelectedOptionsForm(AdminFormMixin, forms.Form):
             label=_("Billing point"), widget=widgets.AdminDateWidget,
             help_text=_("Date you want to bill selected orders"))
     fixed_point = forms.BooleanField(initial=False, required=False,
-            label=_("fixed point"),
+            label=_("Fixed point"),
             help_text=_("Deisgnates whether you want the billing point to be an "
                         "exact date, or adapt it to the billing period."))
     is_proforma = forms.BooleanField(initial=False, required=False,
-            label=_("Pro-forma, billing simulation"),
-            help_text=_("O."))
+            label=_("Pro-forma (billing simulation)"),
+            help_text=_("Creates a Pro Forma instead of billing the orders."))
     new_open = forms.BooleanField(initial=False, required=False,
             label=_("Create a new open bill"),
             help_text=_("Deisgnates whether you want to put this orders on a new "

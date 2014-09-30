@@ -144,6 +144,7 @@ class Bill(models.Model):
         self.save()
     
     def send(self):
+        html = self.html or self.render()
         self.account.send_email(
             template=settings.BILLS_EMAIL_NOTIFICATION_TEMPLATE,
             context={
@@ -151,7 +152,7 @@ class Bill(models.Model):
             },
             contacts=(Contact.BILLING,),
             attachments=[
-                ('%s.pdf' % self.number, html_to_pdf(self.html), 'application/pdf')
+                ('%s.pdf' % self.number, html_to_pdf(html), 'application/pdf')
             ]
         )
         self.is_sent = True

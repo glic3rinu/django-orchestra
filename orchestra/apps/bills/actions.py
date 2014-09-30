@@ -3,8 +3,11 @@ import zipfile
 
 from django.contrib import messages
 from django.contrib.admin import helpers
-from django.http import HttpResponse
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseServerError
 from django.shortcuts import render
+from django.utils.encoding import force_text
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.forms import adminmodelformset_factory
@@ -12,6 +15,26 @@ from orchestra.admin.utils import get_object_from_url
 from orchestra.utils.html import html_to_pdf
 
 from .forms import SelectSourceForm
+
+def validate_contact(bill):
+    """ checks if all the preconditions for bill generation are met """
+    msg = ''
+    if not hasattr(bill.account, 'invoicecontact'):
+        account = force_text(bill.account)
+        link = reverse('admin:accounts_account_change', args=(bill.account_id,))
+        link += '#invoicecontact-group'
+        msg += _('Related account "%s" doesn\'t have a declared invoice contact\n') % account
+        msg += _('You should <a href="%s">provide</a> one') % link
+    main = type(bill).account.field.rel.to.get_main()
+    if not hasattr(main, 'invoicecontact'):
+        account = force_text(main)
+        link = reverse('admin:accounts_account_change', args=(main.id,))
+        link += '#invoicecontact-group'
+        msg += _('Main account "%s" doesn\'t have a declared invoice contact\n') % account
+        msg += _('You should <a href="%s">provide</a> one') % link
+    if msg:
+        # TODO custom template
+        return HttpResponseServerError(mark_safe(msg))
 
 
 def download_bills(modeladmin, request, queryset):
@@ -35,6 +58,9 @@ download_bills.url_name = 'download'
 
 def view_bill(modeladmin, request, queryset):
     bill = queryset.get()
+    error = validate_contact(bill)
+    if error:
+        return error
     html = bill.html or bill.render()
     return HttpResponse(html)
 view_bill.verbose_name = _("View")
@@ -46,6 +72,10 @@ def close_bills(modeladmin, request, queryset):
     if not queryset:
         messages.warning(request, _("Selected bills should be in open state"))
         return
+    for bill in queryset:
+        error = validate_contact(bill)
+        if error:
+            return error
     SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm, extra=0)
     formset = SelectSourceFormSet(queryset=queryset)
     if request.POST.get('post') == 'generic_confirmation':
@@ -79,6 +109,10 @@ close_bills.url_name = 'close'
 
 
 def send_bills(modeladmin, request, queryset):
+    for bill in queryset:
+        error = validate_contact(bill)
+        if error:
+            return error
     for bill in queryset:
         bill.send()
         modeladmin.log_change(request, bill, 'Sent')

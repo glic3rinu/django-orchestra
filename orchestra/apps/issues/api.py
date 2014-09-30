@@ -29,7 +29,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         qs = super(TicketViewSet, self).get_queryset()
         qs = qs.select_related('creator', 'queue')
         qs = qs.prefetch_related('messages__author')
-        return qs.filter(creator__account=self.request.user.account_id)
+        return qs.filter(creator=self.request.user)
 
 
 class QueueViewSet(mixins.ListModelMixin,

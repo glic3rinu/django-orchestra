@@ -22,18 +22,17 @@ class APIRoot(views.APIView):
                 singleton_pk = getattr(viewset, 'singleton_pk', False)
                 if singleton_pk:
                     url_name = detail_name.format(basename=basename)
-                    kwargs = { 'pk': singleton_pk(viewset(), request) }
+                    kwargs = {
+                        'pk': singleton_pk(viewset(), request)
+                    }
                 else:
                     url_name = list_name.format(basename=basename)
                     kwargs = {}
                 url = reverse(url_name, request=request, format=format, kwargs=kwargs)
                 links.append('<%s>; rel="%s"' % (url, url_name))
-            # Add user link
-            url_name = detail_name.format(basename='user')
-            kwargs = { 'pk': request.user.pk }
-            url = reverse(url_name, request=request, format=format, kwargs=kwargs)
-            links.append('<%s>; rel="%s"' % (url, url_name))
-        headers = { 'Link': ', '.join(links) }
+        headers = {
+            'Link': ', '.join(links)
+        }
         body = {
             name.lower(): getattr(settings, name, None) for name in self.names
         }

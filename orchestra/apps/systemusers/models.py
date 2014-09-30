@@ -29,10 +29,9 @@ class SystemUser(models.Model):
             help_text=_("Home directory relative to account's ~main_user"))
     shell = models.CharField(_("shell"), max_length=32,
             choices=settings.USERS_SHELLS, default=settings.USERS_DEFAULT_SHELL)
-    groups = models.ManyToManyField('systemusers.Group', blank=True,
+    groups = models.ManyToManyField('systemusers.SystemGroup', blank=True,
             help_text=_("A new group will be created for the user. "
                         "Which additional groups would you like them to be a member of?"))
-    is_main = models.BooleanField(_("is main"), default=False)
     is_active = models.BooleanField(_("active"), default=True,
             help_text=_("Designates whether this account should be treated as active. "
                         "Unselect this instead of deleting accounts."))
@@ -54,7 +53,7 @@ class SystemUser(models.Model):
         created = not self.pk
         super(SystemUser, self).save(*args, **kwargs)
         if created:
-            self.groups.get_or_create(name=self.username, account=self.account)
+            self.groups.create(name=self.username, account=self.account)
     
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
@@ -63,13 +62,13 @@ class SystemUser(models.Model):
         return self.account.is_active and self.is_active
 
 
-class Group(models.Model):
+class SystemGroup(models.Model):
     name = models.CharField(_("name"), max_length=64, unique=True,
             help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid group name."), 'invalid')])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
-            related_name='groups')
+            related_name='systemgroups')
     
     def __unicode__(self):
         return self.name

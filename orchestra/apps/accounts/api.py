@@ -19,7 +19,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         qs = super(AccountViewSet, self).get_queryset()
-        return qs.filter(id=self.request.user)
+        return qs.filter(id=self.request.user.pk)
 
 
 router.register(r'accounts', AccountViewSet)

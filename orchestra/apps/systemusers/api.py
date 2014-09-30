@@ -1,15 +1,15 @@
-from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 
 from orchestra.api import router, SetPasswordApiMixin
 from orchestra.apps.accounts.api import AccountApiMixin
 
-from .serializers import UserSerializer
+from .models import SystemUser
+from .serializers import SystemUserSerializer
 
 
-class UserViewSet(AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
-    model = get_user_model()
-    serializer_class = UserSerializer
+class SystemUserViewSet(AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
+    model = SystemUser
+    serializer_class = SystemUserSerializer
 
 
-router.register(r'users', UserViewSet)
+router.register(r'systemusers', SystemUserViewSet)

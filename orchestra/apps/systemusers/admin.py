@@ -6,13 +6,13 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import wrap_admin_view
-from orchestra.apps.accounts.admin import AccountAdminMixin
+from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 
 from .forms import UserCreationForm, UserChangeForm
 from .models import SystemUser
 
 
-class SystemUserAdmin(AccountAdminMixin, ExtendedModelAdmin):
+class SystemUserAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'account_link', 'shell', 'home', 'is_active',)
     list_filter = ('is_active', 'shell')
     fieldsets = (
@@ -32,7 +32,7 @@ class SystemUserAdmin(AccountAdminMixin, ExtendedModelAdmin):
         }),
     )
     search_fields = ['username']
-    readonly_fields = ('is_main', 'account_link',)
+    readonly_fields = ('account_link',)
     change_readonly_fields = ('username',)
     filter_horizontal = ('groups',)
     filter_by_account_fields = ('groups',)

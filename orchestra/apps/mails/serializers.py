@@ -18,10 +18,10 @@ class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
     
     def get_fields(self, *args, **kwargs):
         fields = super(AddressSerializer, self).get_fields(*args, **kwargs)
-        account = self.context['view'].request.user.account_id
+        account = self.context['view'].request.user.pk
         mailboxes = fields['mailboxes'].queryset
         fields['mailboxes'].queryset = mailboxes.filter(account=account)
         # TODO do it on permissions or in self.filter_by_account_field ?
         domain = fields['domain'].queryset
-        fields['domain'].queryset = domain  .filter(account=account)
+        fields['domain'].queryset = domain.filter(account=account)
         return fields

@@ -12,6 +12,10 @@ from xvfbwrapper import Xvfb
 from orchestra.apps.accounts.models import Account
 
 
+def random_ascii(length):
+    return ''.join([random.choice(string.hexdigits) for i in range(0, length)]).lower()
+
+
 class AppDependencyMixin(object):
     DEPENDENCIES = ()
     
@@ -49,13 +53,15 @@ class AppDependencyMixin(object):
 
 
 class BaseTestCase(TestCase, AppDependencyMixin):
-    pass
+    def create_account(self, superuser=False):
+        username = '%s_superaccount' % random_ascii(5)
+        password = 'orchestra'
+        if superuser:
+            return Account.objects.create_superuser(username, password=password, email='orchestra@orchestra.org')
+        return Account.objects.create_user(username, password=password, email='orchestra@orchestra.org')
 
 
 class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
-    ACCOUNT_USERNAME = 'orchestra'
-    ACCOUNT_PASSWORD = 'orchestra'
-    
     @classmethod
     def setUpClass(cls):
         cls.vdisplay = Xvfb()
@@ -70,11 +76,11 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         super(BaseLiveServerTestCase, cls).tearDownClass()
     
     def create_account(self, superuser=False):
+        username = '%s_superaccount' % random_ascii(5)
+        password = 'orchestra'
         if superuser:
-            return Account.objects.create_superuser(self.ACCOUNT_USERNAME,
-                    password=self.ACCOUNT_PASSWORD, email='orchestra@orchestra.org')
-        return Account.objects.create_user(self.ACCOUNT_USERNAME,
-                password=self.ACCOUNT_PASSWORD, email='orchestra@orchestra.org')
+            return Account.objects.create_superuser(username, password=password, email='orchestra@orchestra.org')
+        return Account.objects.create_user(username, password=password, email='orchestra@orchestra.org')
     
     def setUp(self):
         super(BaseLiveServerTestCase, self).setUp()
@@ -96,7 +102,3 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
     
     def rest_login(self):
         self.rest.login(username=self.ACCOUNT_USERNAME, password=self.ACCOUNT_PASSWORD)
-
-
-def random_ascii(length):
-    return ''.join([random.choice(string.hexdigits) for i in range(0, length)]).lower()

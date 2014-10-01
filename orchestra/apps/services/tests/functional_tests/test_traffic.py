@@ -13,7 +13,7 @@ from . import BaseBillingTest
 
 
 class BaseTrafficBillingTest(BaseBillingTest):
-    METRIC = 'account.resources.traffic.used'
+    TRAFFIC_METRIC = 'account.resources.traffic.used'
     
     def create_traffic_service(self):
         service = Service.objects.create(
@@ -23,7 +23,7 @@ class BaseTrafficBillingTest(BaseBillingTest):
             billing_period=Service.MONTHLY,
             billing_point=Service.FIXED_DATE,
             is_fee=False,
-            metric=self.METRIC,
+            metric=self.TRAFFIC_METRIC,
             pricing_period=Service.BILLING_PERIOD,
             rate_algorithm=Service.STEP_PRICE,
             on_cancel=Service.NOTHING,
@@ -50,7 +50,7 @@ class BaseTrafficBillingTest(BaseBillingTest):
         return self.resource
     
     def report_traffic(self, account, value):
-        MonitorData.objects.create(monitor='FTPTraffic', content_object=account.user, value=value)
+        MonitorData.objects.create(monitor='FTPTraffic', content_object=account.systemusers.get(), value=value)
         data = ResourceData.get_or_create(account, self.resource)
         data.update()
 
@@ -90,7 +90,7 @@ class TrafficBillingTest(BaseTrafficBillingTest):
 
 
 class TrafficPrepayBillingTest(BaseTrafficBillingTest):
-    METRIC = ("max("
+    TRAFFIC_METRIC = ("max("
         "(account.resources.traffic.used or 0) - "
             "getattr(account.miscellaneous.filter(is_active=True, service__name='traffic prepay').last(), 'amount', 0)"
         ", 0)"
@@ -126,8 +126,8 @@ class TrafficPrepayBillingTest(BaseTrafficBillingTest):
     def test_traffic_prepay(self):
         self.create_traffic_service()
         self.create_prepay_service()
-        account = self.create_account()
         self.create_traffic_resource()
+        account = self.create_account()
         now = timezone.now()
         
         self.create_prepay(10, account=account)

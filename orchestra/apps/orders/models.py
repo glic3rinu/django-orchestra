@@ -14,7 +14,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import accounts
+from orchestra.core import accounts, services
 from orchestra.models import queryset
 from orchestra.utils.python import import_class
 
@@ -71,6 +71,7 @@ class OrderQuerySet(models.QuerySet):
                 for order in orders:
                     bp = service.handler.get_billing_point(order, **options)
                     end = max(end, bp)
+                # FIXME exclude cancelled except cancelled and billed > ini
                 qs = qs | Q(
                     Q(service=service, account=account_id, registered_on__lt=end) &
                         Q(Q(billed_until__isnull=True) | Q(billed_until__lt=end))
@@ -236,27 +237,26 @@ class MetricStorage(models.Model):
 accounts.register(Order)
 
 
-_excluded_models = (MetricStorage, LogEntry, Order, ContentType, MigrationRecorder.Migration)
-
+# TODO build a cache hash table {model: related, model: None}
 @receiver(post_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
-    if sender not in _excluded_models:
+    if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
-        if hasattr(instance, 'account'):
+        if type(instance) in services:
             for order in Order.objects.by_object(instance).active():
                 order.cancel()
-        else:
+        elif not hasattr(instance, 'account'):
             related = helpers.get_related_objects(instance)
             if related and related != instance:
                 Order.update_orders(related)
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):
-    if sender not in _excluded_models:
+    if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
-        if hasattr(instance, 'account'):
+        if type(instance) in services:
             Order.update_orders(instance)
-        else:
+        elif not hasattr(instance, 'account'):
             related = helpers.get_related_objects(instance)
             if related and related != instance:
                 Order.update_orders(related)

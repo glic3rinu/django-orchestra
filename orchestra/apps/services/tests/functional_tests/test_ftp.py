@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
-from orchestra.apps.users.models import User
+from orchestra.apps.systemusers.models import SystemUser
 from orchestra.utils.tests import random_ascii
 
 from ... import settings
@@ -18,8 +18,8 @@ class FTPBillingTest(BaseBillingTest):
     def create_ftp_service(self):
         return Service.objects.create(
             description="FTP Account",
-            content_type=ContentType.objects.get_for_model(User),
-            match='not user.is_main and user.has_posix()',
+            content_type=ContentType.objects.get_for_model(SystemUser),
+            match='not systemuser.is_main',
             billing_period=Service.ANUAL,
             billing_point=Service.FIXED_DATE,
             is_fee=False,
@@ -36,10 +36,7 @@ class FTPBillingTest(BaseBillingTest):
         if not account:
             account = self.create_account()
         username = '%s_ftp' % random_ascii(10)
-        user = User.objects.create_user(username=username, account=account)
-        POSIX = user._meta.get_field_by_name('posix')[0].model
-        POSIX.objects.create(user=user)
-        return user
+        return SystemUser.objects.create_user(username, account=account)
     
     def test_ftp_account_1_year_fiexed(self):
         service = self.create_ftp_service()

@@ -177,8 +177,7 @@ def create_resource_relation():
                 data = self.obj.resource_set.get(resource__name=attr)
             except ResourceData.DoesNotExist:
                 model = self.obj._meta.model_name
-                resource = Resource.objects.get(content_type__model=model,
-                        name=attr, is_active=True)
+                resource = Resource.objects.get(content_type__model=model, name=attr, is_active=True)
                 data = ResourceData(content_object=self.obj, resource=resource)
             return data
         

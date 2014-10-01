@@ -2,6 +2,7 @@ from functools import partial
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from selenium.webdriver.support.select import Select
 
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.orchestration.models import Server, Route
@@ -9,6 +10,7 @@ from orchestra.utils.system import run
 from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii
 
 from ... import backends
+from ...models import SystemUser
 
 
 r = partial(run, silent=True, display=False)
@@ -40,6 +42,9 @@ class SystemUserMixin(object):
     def update(self):
         raise NotImplementedError
     
+    def disable(self):
+        raise NotImplementedError
+    
     def test_create_systemuser(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
@@ -55,7 +60,16 @@ class SystemUserMixin(object):
         self.assertEqual(0, r("id %s" % username).return_code)
         self.delete(username)
         self.assertEqual(1, r("id %s" % username, error_codes=[0,1]).return_code)
+    
+    def test_update_systemuser(self):
+        pass
+        # TODO
+    
+    def test_disable_systemuser(self):
+        pass
+        # TODO
 
+# TODO test with ftp and ssh clients?
 
 class RESTSystemUserMixin(SystemUserMixin):
     def setUp(self):
@@ -73,16 +87,38 @@ class RESTSystemUserMixin(SystemUserMixin):
         pass
 
 
-# TODO
 class AdminSystemUserMixin(SystemUserMixin):
     def setUp(self):
         super(AdminSystemUserMixin, self).setUp()
         self.admin_login()
     
     def add(self, username, password):
-        pass
+        url = self.live_server_url + reverse('admin:systemusers_systemuser_add')
+        self.selenium.get(url)
+        
+        username_field = self.selenium.find_element_by_id('id_username')
+        username_field.send_keys(username)
+        
+        password_field = self.selenium.find_element_by_id('id_password1')
+        password_field.send_keys(password)
+        password_field = self.selenium.find_element_by_id('id_password2')
+        password_field.send_keys(password)
+        
+        account_input = self.selenium.find_element_by_id('id_account')
+        account_select = Select(account_input)
+        account_select.select_by_value(str(self.account.pk))
+        
+        username_field.submit()
+        self.assertNotEqual(url, self.selenium.current_url)
     
     def delete(self, username):
+        user = SystemUser.objects.get(username=username)
+        url = self.live_server_url + reverse('admin:systemusers_systemuser_delete', args=(user.pk,))
+        self.selenium.get(url)
+        confirmation = self.selenium.find_element_by_name('post')
+        confirmation.submit()
+    
+    def disable(self, username):
         pass
     
     def update(self):

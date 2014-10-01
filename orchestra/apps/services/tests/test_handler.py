@@ -5,8 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from orchestra.apps.accounts.models import Account
-from orchestra.apps.users.models import User
-from orchestra.utils.tests import BaseTestCase
+from orchestra.apps.systemusers.models import SystemUser
+from orchestra.utils.tests import BaseTestCase, random_ascii
 
 from .. import helpers
 from ..models import Service, Plan
@@ -28,22 +28,14 @@ class Order(object):
 class HandlerTests(BaseTestCase):
     DEPENDENCIES = (
         'orchestra.apps.orders',
-        'orchestra.apps.users',
-        'orchestra.apps.users.roles.posix',
+        'orchestra.apps.systemusers',
     )
-    
-    def create_account(self):
-        account = Account.objects.create()
-        user = User.objects.create_user(username='rata_palida', account=account)
-        account.user = user
-        account.save()
-        return account
     
     def create_ftp_service(self):
         service = Service.objects.create(
             description="FTP Account",
-            content_type=ContentType.objects.get_for_model(User),
-            match='not user.is_main and user.has_posix()',
+            content_type=ContentType.objects.get_for_model(SystemUser),
+            match='not systemuser.is_main',
             billing_period=Service.ANUAL,
             billing_point=Service.FIXED_DATE,
             is_fee=False,

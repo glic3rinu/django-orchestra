@@ -1,4 +1,5 @@
 from orchestra.apps.accounts.models import Account
+from orchestra.core import services
 
 
 def get_related_objects(origin, max_depth=2):
@@ -9,7 +10,6 @@ def get_related_objects(origin, max_depth=2):
             flexibility. A more comprehensive approach may be considered if
             a use-case calls for it.
     """
-    
     def related_iterator(node):
         for field in node._meta.virtual_fields:
             if hasattr(field, 'ct_field'):
@@ -26,7 +26,7 @@ def get_related_objects(origin, max_depth=2):
             return None
         node = models[-1]
         if len(models) > 1:
-            if hasattr(node, 'account') or isinstance(node, Account):
+            if type(node) in services:
                 return node
         for related in related_iterator(node):
             if related and related not in models:

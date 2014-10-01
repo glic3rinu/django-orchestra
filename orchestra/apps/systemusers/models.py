@@ -15,6 +15,7 @@ class SystemUserQuerySet(models.QuerySet):
         user = super(SystemUserQuerySet, self).create(username=username, **kwargs)
         user.set_password(password)
         user.save(update_fields=['password'])
+        return user
 
 
 class SystemUser(models.Model):

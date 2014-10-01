@@ -48,7 +48,7 @@ class SystemUserAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
             # derived from monkeypatching formfield.widget.render on AccountAdminMinxin,
             # don't ask.
             formfield = form.base_fields['groups']
-            formfield.queryset = formfield.queryset.exclude(name=obj.username)
+            formfield.queryset = formfield.queryset.exclude(id=obj.id)
         return form
 
 

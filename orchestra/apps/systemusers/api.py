@@ -10,6 +10,7 @@ from .serializers import SystemUserSerializer
 class SystemUserViewSet(AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
     model = SystemUser
     serializer_class = SystemUserSerializer
+    filter_fields = ('username',)
 
 
 router.register(r'systemusers', SystemUserViewSet)

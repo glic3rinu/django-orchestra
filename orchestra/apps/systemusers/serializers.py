@@ -23,7 +23,7 @@ class SystemUserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelS
     
     def validate_password(self, attrs, source):
         """ POST only password """
-        if self.object.pk:
+        if self.object:
             if 'password' in attrs:
                 raise serializers.ValidationError(_("Can not set password"))
         elif 'password' not in attrs:

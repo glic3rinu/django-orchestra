@@ -230,6 +230,7 @@ class AdminDomainMixin(DomainTestMixin):
         return value_input
     
     def add(self, domain_name, records):
+        # TODO use reverse
         url = self.live_server_url + '/admin/domains/domain/add/'
         self.selenium.get(url)
         name = self.selenium.find_element_by_id('id_name')

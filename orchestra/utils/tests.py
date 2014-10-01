@@ -12,9 +12,6 @@ from xvfbwrapper import Xvfb
 from orchestra.apps.accounts.models import Account
 
 
-User = get_user_model()
-
-
 class AppDependencyMixin(object):
     DEPENDENCIES = ()
     
@@ -56,6 +53,9 @@ class BaseTestCase(TestCase, AppDependencyMixin):
 
 
 class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
+    ACCOUNT_USERNAME = 'orchestra'
+    ACCOUNT_PASSWORD = 'orchestra'
+    
     @classmethod
     def setUpClass(cls):
         cls.vdisplay = Xvfb()
@@ -69,19 +69,21 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         cls.vdisplay.stop()
         super(BaseLiveServerTestCase, cls).tearDownClass()
     
+    def create_account(self, superuser=False):
+        if superuser:
+            return Account.objects.create_superuser(self.ACCOUNT_USERNAME,
+                    password=self.ACCOUNT_PASSWORD, email='orchestra@orchestra.org')
+        return Account.objects.create_user(self.ACCOUNT_USERNAME,
+                password=self.ACCOUNT_PASSWORD, email='orchestra@orchestra.org')
+    
     def setUp(self):
         super(BaseLiveServerTestCase, self).setUp()
         self.rest = Api(self.live_server_url + '/api/')
-        self.account = Account.objects.create(name='orchestra')
-        self.username = 'orchestra'
-        self.password = 'orchestra'
-        self.user = User.objects.create_superuser(username='orchestra',
-                password='orchestra', email='orchestra@orchestra.org',
-                account=self.account)
+        self.account = self.create_account(superuser=True)
     
     def admin_login(self):
         session = SessionStore()
-        session[SESSION_KEY] = self.user.pk
+        session[SESSION_KEY] = self.account.pk
         session[BACKEND_SESSION_KEY] = settings.AUTHENTICATION_BACKENDS[0]
         session.save()
         ## to set a cookie we need to first visit the domain.
@@ -93,7 +95,7 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         ))
     
     def rest_login(self):
-        self.rest.login(username=self.username, password=self.password)
+        self.rest.login(username=self.ACCOUNT_USERNAME, password=self.ACCOUNT_PASSWORD)
 
 
 def random_ascii(length):

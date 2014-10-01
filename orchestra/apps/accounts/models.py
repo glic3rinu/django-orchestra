@@ -62,8 +62,8 @@ class Account(auth.AbstractBaseUser):
     def save(self, *args, **kwargs):
         created = not self.pk
         super(Account, self).save(*args, **kwargs)
-        if created and hasattr(self, 'systemgroups'):
-            self.systemgroups.create(name=self.username, account=self)
+        if created and hasattr(self, 'systemusers'):
+            self.systemusers.create_user(self.username, account=self, password=self.password, is_main=True)
     
     def send_email(self, template, context, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)

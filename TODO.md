@@ -142,3 +142,15 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Redirect junk emails and delete every 30 days?
 
 * Complitely decouples scripts execution, billing, service definition
+
+* Create SystemUser on account creation. username=username, is_main=True,
+    * Exclude is_main=True from queryset filter default is_main=False
+    * self referencing group.
+    * Unify all users
+
+
+* backend message with link
+
+* test fucking user
+
+* delete main user -> delete account or prevent delete main user

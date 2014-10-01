@@ -1,3 +1,4 @@
+import logging
 import threading
 
 from django import db
@@ -6,6 +7,9 @@ from orchestra.utils.python import import_class
 
 from . import settings
 from .helpers import send_report
+
+
+logger = logging.getLogger(__name__)
 
 
 def as_task(execute):
@@ -37,6 +41,7 @@ def execute(operations):
     scripts = {}
     cache = {}
     for operation in operations:
+        logger.info("Queued %s" % str(operation))
         servers = router.get_servers(operation, cache=cache)
         for server in servers:
             key = (server, operation.backend)
@@ -64,7 +69,9 @@ def execute(operations):
     logs = []
     for execution, operations in executions:
         for operation in operations:
+            logger.info("Executed %s" % str(operation))
             operation.log = execution.log
             operation.save()
+        logger.info(execution.log.stderr)
         logs.append(execution.log)
     return logs

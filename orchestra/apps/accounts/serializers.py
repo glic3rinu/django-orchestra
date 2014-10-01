@@ -13,5 +13,5 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
 
 class AccountSerializerMixin(object):
     def save_object(self, obj, **kwargs):
-        obj.account = self.context['request'].user.account
+        obj.account = self.context['request'].user
         super(AccountSerializerMixin, self).save_object(obj, **kwargs)

@@ -5,6 +5,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from orchestra.apps.accounts.models import Account
 from orchestra.core.validators import validate_password
 
+from .models import SystemUser
+
 
 # TODO orchestra.UserCretionForm
 class UserCreationForm(auth.forms.UserCreationForm):
@@ -16,10 +18,12 @@ class UserCreationForm(auth.forms.UserCreationForm):
         # Since model.clean() will check this, this is redundant,
         # but it sets a nicer error message than the ORM and avoids conflicts with contrib.auth
         username = self.cleaned_data["username"]
-        account_model = self._meta.model.account.field.rel.to
-        if account_model.objects.filter(username=username).exists():
-            raise forms.ValidationError(self.error_messages['duplicate_username'])
-        return username
+        try:
+            SystemUser._default_manager.get(username=username)
+        except SystemUser.DoesNotExist:
+            return username
+        raise forms.ValidationError(self.error_messages['duplicate_username'])
+
 
 
 # TODO orchestra.UserCretionForm

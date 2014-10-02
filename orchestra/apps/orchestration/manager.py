@@ -41,7 +41,7 @@ def execute(operations):
     scripts = {}
     cache = {}
     for operation in operations:
-        logger.info("Queued %s" % str(operation))
+        logger.debug("Queued %s" % str(operation))
         servers = router.get_servers(operation, cache=cache)
         for server in servers:
             key = (server, operation.backend)
@@ -72,6 +72,7 @@ def execute(operations):
             logger.info("Executed %s" % str(operation))
             operation.log = execution.log
             operation.save()
-        logger.info(execution.log.stderr)
+        logger.debug(execution.log.stdout)
+        logger.debug(execution.log.stderr)
         logs.append(execution.log)
     return logs

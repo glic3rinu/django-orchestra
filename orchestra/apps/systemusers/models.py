@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.hashers import make_password
 from django.core import validators
 from django.core.mail import send_mail
@@ -49,7 +51,26 @@ class SystemUser(models.Model):
     
     @cached_property
     def active(self):
-        return self.is_active and self.account.is_active
+        a = type(self).account.field.model
+        try:
+            return self.is_active and self.account.is_active
+        except type(self).account.field.rel.to.DoesNotExist:
+            return self.is_active
+    
+    def get_home(self):
+        if self.is_main:
+            context = {
+                'username': self.username,
+            }
+            basehome = settings.SYSTEMUSERS_HOME % context
+        else:
+            basehome = self.account.systemusers.get(is_main=True).get_home()
+        basehome = basehome.replace('/./', '/')
+        home = os.path.join(basehome, self.home)
+        # Chrooting
+        home = home.split('/')
+        home.insert(-2, '.')
+        return '/'.join(home)
 
 
 ## TODO user deletion and group handling.

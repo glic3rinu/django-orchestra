@@ -4,13 +4,13 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 
 SYSTEMUSERS_SHELLS = getattr(settings, 'SYSTEMUSERS_SHELLS', (
-    ('/bin/false', _("No shell, FTP only")),
-    ('/bin/rsync', _("No shell, SFTP/RSYNC only")),
+    ('/dev/null', _("No shell, FTP only")),
+    ('/bin/rssh', _("No shell, SFTP/RSYNC only")),
     ('/bin/bash', "/bin/bash"),
     ('/bin/sh', "/bin/sh"),
 ))
 
-SYSTEMUSERS_DEFAULT_SHELL = getattr(settings, 'SYSTEMUSERS_DEFAULT_SHELL', '/bin/false')
+SYSTEMUSERS_DEFAULT_SHELL = getattr(settings, 'SYSTEMUSERS_DEFAULT_SHELL', '/dev/null')
 
 
 SYSTEMUSERS_HOME = getattr(settings, 'SYSTEMUSERS_HOME', '/home/%(username)s')

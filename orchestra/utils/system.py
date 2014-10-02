@@ -46,7 +46,7 @@ def read_async(fd):
             return ''
 
 
-def run(command, display=True, error_codes=[0], silent=True, stdin=''):
+def run(command, display=True, error_codes=[0], silent=False, stdin=''):
     """ Subprocess wrapper for running commands """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)
@@ -96,9 +96,10 @@ def run(command, display=True, error_codes=[0], silent=True, stdin=''):
         out.failed = True
         msg = "\nrun() encountered an error (return code %s) while executing '%s'\n"
         msg = msg % (p.returncode, command)
-        sys.stderr.write("\n\033[1;31mCommandError: %s %s\033[m\n" % (msg, err))
+        if display:
+            sys.stderr.write("\n\033[1;31mCommandError: %s %s\033[m\n" % (msg, err))
         if not silent:
-            raise CommandError("\n%s\n %s\n" % (msg, err))
+            raise CommandError("%s %s" % (msg, err))
     
     out.succeeded = not out.failed
     return out

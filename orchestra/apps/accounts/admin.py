@@ -52,6 +52,7 @@ class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
     add_form = AccountCreationForm
     form = AccountChangeForm
     filter_horizontal = ()
+    change_readonly_fields = ('username',)
     change_form_template = 'admin/accounts/account/change_form.html'
     
     def formfield_for_dbfield(self, db_field, **kwargs):

@@ -53,8 +53,9 @@ class AppDependencyMixin(object):
 
 
 class BaseTestCase(TestCase, AppDependencyMixin):
-    def create_account(self, superuser=False):
-        username = '%s_superaccount' % random_ascii(5)
+    def create_account(self, username='', superuser=False):
+        if not username:
+            username = '%s_superaccount' % random_ascii(5)
         password = 'orchestra'
         if superuser:
             return Account.objects.create_superuser(username, password=password, email='orchestra@orchestra.org')
@@ -75,9 +76,11 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         cls.vdisplay.stop()
         super(BaseLiveServerTestCase, cls).tearDownClass()
     
-    def create_account(self, superuser=False):
-        username = '%s_superaccount' % random_ascii(5)
+    def create_account(self, username='', superuser=False):
+        if not username:
+            username = '%s_superaccount' % random_ascii(5)
         password = 'orchestra'
+        self.account_password = password
         if superuser:
             return Account.objects.create_superuser(username, password=password, email='orchestra@orchestra.org')
         return Account.objects.create_user(username, password=password, email='orchestra@orchestra.org')
@@ -101,4 +104,4 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         ))
     
     def rest_login(self):
-        self.rest.login(username=self.ACCOUNT_USERNAME, password=self.ACCOUNT_PASSWORD)
+        self.rest.login(username=self.account.username, password=self.account_password)

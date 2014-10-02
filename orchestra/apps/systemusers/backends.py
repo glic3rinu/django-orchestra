@@ -22,7 +22,7 @@ class SystemUserBackend(ServiceController):
             if [[ $( id %(username)s ) ]]; then
                usermod  %(username)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             else
-               useradd %(username)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+               useradd %(username)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
                usermod -a -G %(username)s %(mainusername)s
             fi
             mkdir -p %(home)s
@@ -35,10 +35,14 @@ class SystemUserBackend(ServiceController):
         self.append("killall -u %(username)s || true" % context)
         self.append("userdel %(username)s || true" % context)
         self.append("groupdel %(username)s || true" % context)
+        if user.is_main:
+            # TODO delete instead of this shit
+            context['deleted'] = context['home'][:-1]+'.deleted'
+            self.append("mv %(home)s %(deleted)s" % context)
     
     def get_groups(self, user):
         if user.is_main:
-            return user.account.systemusers.exclude(id=user.id).values_list('username', flat=True)
+            return user.account.systemusers.exclude(username=user.username).values_list('username', flat=True)
         groups = list(user.groups.values_list('username', flat=True))
         return groups
     
@@ -48,9 +52,8 @@ class SystemUserBackend(ServiceController):
             'password': user.password if user.active else '*%s' % user.password,
             'shell': user.shell,
             'mainusername': user.username if user.is_main else user.account.username,
+            'home': user.get_home()
         }
-        basehome = settings.SYSTEMUSERS_HOME % context
-        context['home'] = os.path.join(basehome, user.home)
         return context
 
 

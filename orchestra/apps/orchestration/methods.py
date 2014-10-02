@@ -37,8 +37,6 @@ def BashSSH(backend, log, server, cmds):
             log.save(update_fields=['state'])
             return
         transport = ssh.get_transport()
-        channel = transport.open_session()
-        
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.put(path, "%s.remote" % path)
         sftp.close()
@@ -51,9 +49,11 @@ def BashSSH(backend, log, server, cmds):
         cmd = (
             "[[ $(md5sum %(path)s|awk {'print $1'}) == %(digest)s ]] && bash %(path)s\n"
             "RETURN_CODE=$?\n"
-#            "rm -fr %(path)s\n"
+# TODO            "rm -fr %(path)s\n"
             "exit $RETURN_CODE" % context
         )
+        
+        channel = transport.open_session()
         channel.exec_command(cmd)
         if True: # TODO if not async
             log.stdout += channel.makefile('rb', -1).read().decode('utf-8')

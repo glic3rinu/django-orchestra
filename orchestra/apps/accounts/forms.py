@@ -24,21 +24,13 @@ class AccountCreationForm(auth.forms.UserCreationForm):
 
 
 class AccountChangeForm(forms.ModelForm):
-    username = forms.CharField(required=False)
     password = auth.forms.ReadOnlyPasswordHashField(label=_("Password"),
         help_text=_("Raw passwords are not stored, so there is no way to see "
                     "this user's password, but you can change the password "
                     "using <a href=\"password/\">this form</a>."))
     
-    def __init__(self, *args, **kwargs):
-        super(AccountChangeForm, self).__init__(*args, **kwargs)
-        account = kwargs.get('instance')
-        username = '<b style="font-size:small">%s</b>' % account.username
-        self.fields['username'].widget = ReadOnlyWidget(username)
-        self.fields['password'].initial = account.password
-    
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.
         # This is done here, rather than on the field, because the
         # field does not have access to the initial value
-        return self.fields['password'].initial
+        return self.initial["password"]

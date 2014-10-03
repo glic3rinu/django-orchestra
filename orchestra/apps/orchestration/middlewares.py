@@ -1,6 +1,7 @@
 import copy
 from threading import local
 
+from django.core.urlresolvers import resolve
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.http.response import HttpResponseServerError
@@ -92,6 +93,6 @@ class OperationsMiddleware(object):
             operations = type(self).get_pending_operations()
             if operations:
                 logs = Operation.execute(operations)
-                if logs:
+                if logs and resolve(request.path).app_name == 'admin':
                     message_user(request, logs)
         return response

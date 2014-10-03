@@ -132,4 +132,3 @@ class FTPTraffic(ServiceMonitor):
             'object_id': user.pk,
             'username': user.username,
         }
-    

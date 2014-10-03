@@ -105,6 +105,11 @@ def run(command, display=True, error_codes=[0], silent=False, stdin=''):
     return out
 
 
+def sshrun(addr, command, *args, **kwargs):
+    cmd = "ssh -o stricthostkeychecking=no root@%s -C '%s'" % (addr, command)
+    return run(cmd, *args, **kwargs)
+
+
 def get_default_celeryd_username():
     """ Introspect celeryd defaults file in order to get its username """
     user = None

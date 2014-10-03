@@ -141,7 +141,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * Redirect junk emails and delete every 30 days?
 
-* Complitely decouples scripts execution, billing, service definition
+* DOC: Complitely decouples scripts execution, billing, service definition
 
 * Create SystemUser on account creation. username=username, is_main=True,
     * Exclude is_main=True from queryset filter default is_main=False
@@ -149,8 +149,15 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     * Unify all users
 
 
-* backend message with link
-
-* test fucking user
+* backend admin message with link
 
 * delete main user -> delete account or prevent delete main user
+
+
+APPS app?
+
+* https://blog.flameeyes.eu/2011/01/mostly-unknown-openssh-tricks
+
+* Ansible orchestration *method* (methods.py)
+* interdependency user <-> account with the old usermodel
+

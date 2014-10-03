@@ -59,7 +59,8 @@ Note `*` _for sustancial progress_
 
 1. [ ] Integration with third-party service providers, e.g. Gandi
 2. [ ] Scheduling of service cancellations and deactivations
-1. [ ] Object level permissions system
-2. [ ] REST API for superusers
-3. [ ] Responsive user interface
+1. [ ] Object-level permission system
+2. [ ] REST API functionality for superusers
+3. [ ] Responsive user interface, based on a JS framework.
 4. [ ] Full documentation
+5. [ ] [http://www.ansible.com/home](Ansible) orchestration method, which synchronize the whole service config everytime instead of incremental changes.

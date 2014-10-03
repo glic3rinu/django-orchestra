@@ -33,7 +33,7 @@ class Bind9MasterDomainBackend(ServiceController):
                     "   { echo -e '%(conf)s' >> %(conf_path)s; UPDATED=1; }" % context)
         for subdomain in context['subdomains']:
             context['name'] = subdomain.name
-            self.delete_conf(context)
+            self.delete(subdomain)
     
     def delete(self, domain):
         context = self.get_context(domain)
@@ -56,7 +56,7 @@ class Bind9MasterDomainBackend(ServiceController):
         context = {
             'name': domain.name,
             'zone_path': settings.DOMAINS_ZONE_PATH % {'name': domain.name},
-            'subdomains': domain.get_subdomains(),
+            'subdomains': domain.subdomains.all(),
             'banner': self.get_banner(),
         }
         context.update({
@@ -92,7 +92,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
         context = {
             'name': domain.name,
             'masters': '; '.join(settings.DOMAINS_MASTERS),
-            'subdomains': domain.get_subdomains()
+            'subdomains': domain.subdomains.all()
         }
         context.update({
             'conf_path': settings.DOMAINS_SLAVES_PATH,

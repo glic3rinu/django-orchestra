@@ -12,6 +12,6 @@ Restricted Shell for SCP and Rsync
 
 2. Enable the shell
     ```bash
-    ln -s /usr/local/bin/rssh /bin/rssh
+    ln -s /usr/bin/rssh /bin/rssh
     echo /bin/rssh >> /etc/shells
     ```

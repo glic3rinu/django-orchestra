@@ -127,6 +127,7 @@ class AccountAdminMixin(object):
     filter_by_account_fields = []
     change_list_template = 'admin/accounts/account/change_list.html'
     change_form_template = 'admin/accounts/account/change_form.html'
+    account = None
     
     def account_link(self, instance):
         account = instance.account if instance.pk else self.account
@@ -151,7 +152,7 @@ class AccountAdminMixin(object):
         """ Filter by account """
         formfield = super(AccountAdminMixin, self).formfield_for_dbfield(db_field, **kwargs)
         if db_field.name in self.filter_by_account_fields:
-            if hasattr(self, 'account'):
+            if self.account:
                 # Hack widget render in order to append ?account=id to the add url
                 old_render = formfield.widget.render
                 def render(*args, **kwargs):
@@ -161,6 +162,11 @@ class AccountAdminMixin(object):
                 formfield.widget.render = render
                 # Filter related object by account
                 formfield.queryset = formfield.queryset.filter(account=self.account)
+        elif db_field.name == 'account':
+            if self.account:
+                formfield.initial = self.account.pk
+            elif Account.objects.count() == 1:
+                formfield.initial = 1
         return formfield
     
     def get_account_from_preserve_filters(self, request):
@@ -215,7 +221,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
     """ Provides support for accounts on ModelAdmin """
     def get_inline_instances(self, request, obj=None):
         inlines = super(AccountAdminMixin, self).get_inline_instances(request, obj=obj)
-        if hasattr(self, 'account'):
+        if self.account:
             account = self.account
         else:
             account = Account.objects.get(pk=request.GET['account'])

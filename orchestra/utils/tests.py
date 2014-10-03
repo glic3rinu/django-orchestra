@@ -1,5 +1,7 @@
+import datetime
 import string
 import random
+from functools import wraps
 
 from django.conf import settings
 from django.contrib.auth import BACKEND_SESSION_KEY, SESSION_KEY, get_user_model
@@ -105,3 +107,17 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
     
     def rest_login(self):
         self.rest.login(username=self.account.username, password=self.account_password)
+
+
+def snapshot_on_error(test):
+    @wraps(test)
+    def inner(*args, **kwargs):
+        try:
+            test(*args, **kwargs)
+        except:
+            self = args[0]
+            timestamp = datetime.datetime.now().isoformat().replace(':', '')
+            filename = '/tmp/screenshot_%s_%s.png' % (self.id(), timestamp)
+            self.selenium.save_screenshot(filename)
+            raise
+    return inner

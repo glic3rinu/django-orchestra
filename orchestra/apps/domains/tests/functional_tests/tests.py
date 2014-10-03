@@ -1,11 +1,14 @@
 import functools
 import os
 import time
+import socket
 
+from django.conf import settings as djsettings
+from django.core.urlresolvers import reverse
 from selenium.webdriver.support.select import Select
 
 from orchestra.apps.orchestration.models import Server, Route
-from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii
+from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error
 from orchestra.utils.system import run
 
 from ... import settings, utils, backends
@@ -16,10 +19,15 @@ run = functools.partial(run, display=False)
 
 
 class DomainTestMixin(object):
+    MASTER_SERVER = os.environ.get('ORCHESTRA_MASTER_SERVER', 'localhost')
+    SLAVE_SERVER = os.environ.get('ORCHESTRA_SLAVE_SERVER', 'localhost')
+    MASTER_SERVER_ADDR = socket.gethostbyname(MASTER_SERVER)
+    SLAVE_SERVER_ADDR = socket.gethostbyname(SLAVE_SERVER)
+    
     def setUp(self):
+        djsettings.DEBUG = True
+        settings.DOMAINS_MASTERS = [self.MASTER_SERVER_ADDR]
         super(DomainTestMixin, self).setUp()
-        self.MASTER_ADDR = os.environ['ORCHESTRA_DNS_MASTER_ADDR']
-        self.SLAVE_ADDR = os.environ['ORCHESTRA_DNS_SLAVE_ADDR']
         self.domain_name = 'orchestra%s.lan' % random_ascii(10)
         self.domain_records = (
             (Record.MX, '10 mail.orchestra.lan.'),
@@ -33,19 +41,19 @@ class DomainTestMixin(object):
             (Record.NS, 'ns1.%s.' % self.domain_name),
             (Record.NS, 'ns2.%s.' % self.domain_name),
         )
-        self.subdomain1_name = 'ns1.%s' % self.domain_name
-        self.subdomain1_records = (
-            (Record.A, '%s' % self.SLAVE_ADDR),
+        self.ns1_name = 'ns1.%s' % self.domain_name
+        self.ns1_records = (
+            (Record.A, '%s' % self.SLAVE_SERVER_ADDR),
         )
-        self.subdomain2_name = 'ns2.%s' % self.domain_name
-        self.subdomain2_records = (
-            (Record.A, '%s' % self.MASTER_ADDR),
+        self.ns2_name = 'ns2.%s' % self.domain_name
+        self.ns2_records = (
+            (Record.A, '%s' % self.MASTER_SERVER_ADDR),
         )
-        self.subdomain3_name = 'www.%s' % self.domain_name
-        self.subdomain3_records = (
+        self.www_name = 'www.%s' % self.domain_name
+        self.www_records = (
             (Record.CNAME, 'external.server.org.'),
         )
-        self.second_domain_name = 'django%s.lan' % random_ascii(10)
+        self.django_domain_name = 'django%s.lan' % random_ascii(10)
     
     def tearDown(self):
         try:
@@ -173,42 +181,47 @@ class DomainTestMixin(object):
         self.assertEqual('external.server.org.', cname[4])
     
     def test_add(self):
-        self.add(self.subdomain1_name, self.subdomain1_records)
-        self.add(self.subdomain2_name, self.subdomain2_records)
+        self.add(self.ns1_name, self.ns1_records)
+        self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
-        self.validate_add(self.MASTER_ADDR, self.domain_name)
-        self.validate_add(self.SLAVE_ADDR, self.domain_name)
+        self.validate_add(self.MASTER_SERVER_ADDR, self.domain_name)
+        time.sleep(0.5)
+        self.validate_add(self.SLAVE_SERVER_ADDR, self.domain_name)
     
     def test_delete(self):
-        self.add(self.subdomain1_name, self.subdomain1_records)
-        self.add(self.subdomain2_name, self.subdomain2_records)
+        self.add(self.ns1_name, self.ns1_records)
+        self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
         self.delete(self.domain_name)
-        for name in [self.domain_name, self.subdomain1_name, self.subdomain2_name]:
-            self.validate_delete(self.MASTER_ADDR, name)
-            self.validate_delete(self.SLAVE_ADDR, name)
+        for name in [self.domain_name, self.ns1_name, self.ns2_name]:
+            self.validate_delete(self.MASTER_SERVER_ADDR, name)
+            self.validate_delete(self.SLAVE_SERVER_ADDR, name)
     
     def test_update(self):
-        self.add(self.subdomain1_name, self.subdomain1_records)
-        self.add(self.subdomain2_name, self.subdomain2_records)
+        self.add(self.ns1_name, self.ns1_records)
+        self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
         self.update(self.domain_name, self.domain_update_records)
-        self.add(self.subdomain3_name, self.subdomain3_records)
-        self.validate_update(self.MASTER_ADDR, self.domain_name)
+        self.add(self.www_name, self.www_records)
+        self.validate_update(self.MASTER_SERVER_ADDR, self.domain_name)
         time.sleep(5)
-        self.validate_update(self.SLAVE_ADDR, self.domain_name)
+        self.validate_update(self.SLAVE_SERVER_ADDR, self.domain_name)
     
     def test_add_add_delete_delete(self):
-        self.add(self.subdomain1_name, self.subdomain1_records)
-        self.add(self.subdomain2_name, self.subdomain2_records)
+        self.add(self.ns1_name, self.ns1_records)
+        self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
-        self.add(self.second_domain_name, self.domain_records)
+        self.add(self.django_domain_name, self.domain_records)
         self.delete(self.domain_name)
-        self.validate_add(self.MASTER_ADDR, self.second_domain_name)
-        self.validate_add(self.SLAVE_ADDR, self.second_domain_name)
-        self.delete(self.second_domain_name)
-        self.validate_delete(self.MASTER_ADDR, self.second_domain_name)
-        self.validate_delete(self.SLAVE_ADDR, self.second_domain_name)
+        self.validate_add(self.MASTER_SERVER_ADDR, self.django_domain_name)
+        self.validate_add(self.SLAVE_SERVER_ADDR, self.django_domain_name)
+        self.delete(self.django_domain_name)
+        self.validate_delete(self.MASTER_SERVER_ADDR, self.django_domain_name)
+        self.validate_delete(self.SLAVE_SERVER_ADDR, self.django_domain_name)
+    
+    def test_bad_creation(self):
+        self.assertRaises((self.rest.ResponseStatusError, AssertionError),
+                self.add, self.domain_name, self.domain_records)
 
 
 class AdminDomainMixin(DomainTestMixin):
@@ -229,27 +242,38 @@ class AdminDomainMixin(DomainTestMixin):
             value_input.send_keys(value)
         return value_input
     
+    @snapshot_on_error
     def add(self, domain_name, records):
-        # TODO use reverse
-        url = self.live_server_url + '/admin/domains/domain/add/'
+        add = reverse('admin:domains_domain_add')
+        url = self.live_server_url + add
         self.selenium.get(url)
+        
         name = self.selenium.find_element_by_id('id_name')
         name.send_keys(domain_name)
+        
+        account_input = self.selenium.find_element_by_id('id_account')
+        account_select = Select(account_input)
+        account_select.select_by_value(str(self.account.pk))
+        
         value_input = self._add_records(records)
         value_input.submit()
         self.assertNotEqual(url, self.selenium.current_url)
     
+    @snapshot_on_error
     def delete(self, domain_name):
         domain = Domain.objects.get(name=domain_name)
-        url = self.live_server_url + '/admin/domains/domain/%d/delete/' % domain.pk
+        delete = reverse('admin:domains_domain_delete', args=(domain.pk,))
+        url = self.live_server_url + delete
         self.selenium.get(url)
         form = self.selenium.find_element_by_name('post')
         form.submit()
         self.assertNotEqual(url, self.selenium.current_url)
     
+    @snapshot_on_error
     def update(self, domain_name, records):
         domain = Domain.objects.get(name=domain_name)
-        url = self.live_server_url + '/admin/domains/domain/%d/' % domain.pk
+        change = reverse('admin:domains_domain_change', args=(domain.pk,))
+        url = self.live_server_url + change
         self.selenium.get(url)
         value_input = self._add_records(records)
         value_input.submit()
@@ -284,10 +308,10 @@ class Bind9BackendMixin(object):
     )
     
     def add_route(self):
-        master = Server.objects.create(name=self.MASTER_ADDR)
+        master = Server.objects.create(name=self.MASTER_SERVER, address=self.MASTER_SERVER_ADDR)
         backend = backends.Bind9MasterDomainBackend.get_name()
         Route.objects.create(backend=backend, match=True, host=master)
-        slave = Server.objects.create(name=self.SLAVE_ADDR)
+        slave = Server.objects.create(name=self.SLAVE_SERVER, address=self.SLAVE_SERVER_ADDR)
         backend = backends.Bind9SlaveDomainBackend.get_name()
         Route.objects.create(backend=backend, match=True, host=slave)
 
@@ -296,5 +320,5 @@ class RESTBind9BackendDomainTest(Bind9BackendMixin, RESTDomainMixin, BaseLiveSer
     pass
 
 
-class AdminBind9BackendDomainest(Bind9BackendMixin, AdminDomainMixin, BaseLiveServerTestCase):
+class AdminBind9BackendDomainTest(Bind9BackendMixin, AdminDomainMixin, BaseLiveServerTestCase):
     pass

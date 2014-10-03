@@ -158,7 +158,8 @@ function install_requirements () {
         PIP="${PIP} \
             selenium \
             xvfbwrapper \
-            freezegun"
+            freezegun \
+            coverage"
     fi
     
     # Make sure locales are in place before installing postgres

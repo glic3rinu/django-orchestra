@@ -14,7 +14,7 @@ class Domain(models.Model):
     name = models.CharField(_("name"), max_length=256, unique=True,
             validators=[validate_hostname, validators.validate_allowed_domain])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
-            related_name='domains', blank=True)
+            related_name='domains', blank=True, help_text=_("Automatically selected for subdomains"))
     top = models.ForeignKey('domains.Domain', null=True, related_name='subdomains')
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial,
             help_text=_("Serial number"))
@@ -22,29 +22,32 @@ class Domain(models.Model):
     def __unicode__(self):
         return self.name
     
-    @cached_property
+    @property
     def origin(self):
+        # Do not cache
         return self.top or self
     
-    @cached_property
+    @property
     def is_top(self):
+        # Do not cache
         return not bool(self.top)
     
     def get_records(self):
-        """ proxy method, needed for input validation """
+        """ proxy method, needed for input validation, see helpers.domain_for_validation """
         return self.records.all()
     
-    def get_topsubdomains(self):
-        """ proxy method, needed for input validation """
+    def get_top_subdomains(self):
+        """ proxy method, needed for input validation, see helpers.domain_for_validation """
         return self.origin.subdomains.all()
     
     def get_subdomains(self):
-        return self.get_topsubdomains().filter(name__regex=r'.%s$' % self.name)
+        """ proxy method, needed for input validation, see helpers.domain_for_validation """
+        return self.get_top_subdomains().filter(name__endswith=r'.%s' % self.name)
     
     def render_zone(self):
         origin = self.origin
         zone = origin.render_records()
-        for subdomain in origin.get_topsubdomains():
+        for subdomain in origin.get_top_subdomains():
             zone += subdomain.render_records()
         return zone
     
@@ -76,7 +79,7 @@ class Domain(models.Model):
                 records.append(
                     AttrDict(type=record.type, ttl=record.get_ttl(), value=record.value)
                 )
-        if not self.top:
+        if self.is_top:
             if Record.NS not in types:
                 for ns in settings.DOMAINS_DEFAULT_NS:
                     records.append(AttrDict(type=Record.NS, value=ns))
@@ -129,7 +132,7 @@ class Domain(models.Model):
             for domain in domains.filter(name__endswith=self.name):
                 domain.top = self
                 domain.save(update_fields=['top'])
-        self.get_subdomains().update(account=self.account)
+        self.subdomains.update(account=self.account)
     
     def get_top(self):
         split = self.name.split('.')

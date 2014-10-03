@@ -1,5 +1,7 @@
 import ftplib
+import os
 import re
+import socket
 from functools import partial
 
 import paramiko
@@ -10,19 +12,19 @@ from selenium.webdriver.support.select import Select
 
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.orchestration.models import Server, Route
-from orchestra.utils.system import run
-from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii
+from orchestra.utils.system import run, sshrun
+from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error
 
 from ... import backends, settings
 from ...models import SystemUser
 
 
 r = partial(run, silent=True, display=False)
+sshr = partial(sshrun, silent=True, display=False)
 
 
 class SystemUserMixin(object):
-    MASTER_ADDR = 'localhost'
-    ACCOUNT_USERNAME = '%s_account' % random_ascii(10)
+    MASTER_SERVER = os.environ.get('ORCHESTRA_MASTER_SERVER', 'localhost')
     DEPENDENCIES = (
         'orchestra.apps.orchestration',
         'orcgestra.apps.systemusers',
@@ -34,7 +36,7 @@ class SystemUserMixin(object):
         djsettings.DEBUG = True
     
     def add_route(self):
-        master = Server.objects.create(name=self.MASTER_ADDR)
+        master = Server.objects.create(name=self.MASTER_SERVER)
         backend = backends.SystemUserBackend.get_name()
         Route.objects.create(backend=backend, match=True, host=master)
     
@@ -57,7 +59,7 @@ class SystemUserMixin(object):
         raise NotImplementedError
     
     def validate_user(self, username):
-        idcmd = r("id %s" % username)
+        idcmd = sshr(self.MASTER_SERVER, "id %s" % username)
         self.assertEqual(0, idcmd.return_code)
         user = SystemUser.objects.get(username=username)
         groups = list(user.groups.values_list('username', flat=True))
@@ -68,18 +70,22 @@ class SystemUserMixin(object):
     
     def validate_delete(self, username):
         self.assertRaises(SystemUser.DoesNotExist, SystemUser.objects.get, username=username)
-        self.assertRaises(CommandError, run, 'id %s' % username, display=False)
-        self.assertRaises(CommandError, run, 'grep "^%s:" /etc/groups' % username, display=False)
-        self.assertRaises(CommandError, run, 'grep "^%s:" /etc/passwd' % username, display=False)
-        self.assertRaises(CommandError, run, 'grep "^%s:" /etc/shadow' % username, display=False)
+        self.assertRaises(CommandError,
+                sshrun, self.MASTER_SERVER,'id %s' % username, display=False)
+        self.assertRaises(CommandError,
+                sshrun, self.MASTER_SERVER, 'grep "^%s:" /etc/groups' % username, display=False)
+        self.assertRaises(CommandError,
+                sshrun, self.MASTER_SERVER, 'grep "^%s:" /etc/passwd' % username, display=False)
+        self.assertRaises(CommandError,
+                sshrun, self.MASTER_SERVER, 'grep "^%s:" /etc/shadow' % username, display=False)
     
     def validate_ftp(self, username, password):
-        connection = ftplib.FTP(self.MASTER_ADDR)
+        connection = ftplib.FTP(self.MASTER_SERVER)
         connection.login(user=username, passwd=password)
         connection.close()
         
     def validate_sftp(self, username, password):
-        transport = paramiko.Transport((self.MASTER_ADDR, 22))
+        transport = paramiko.Transport((self.MASTER_SERVER, 22))
         transport.connect(username=username, password=password)
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.listdir()
@@ -88,14 +94,14 @@ class SystemUserMixin(object):
     def validate_ssh(self, username, password):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(self.MASTER_ADDR, username=username, password=password)
+        ssh.connect(self.MASTER_SERVER, username=username, password=password)
         transport = ssh.get_transport()
         channel = transport.open_session()
         channel.exec_command('ls')
         self.assertEqual(0, channel.recv_exit_status())
         channel.close()
     
-    def test_create_systemuser(self):
+    def test_create(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password)
@@ -125,7 +131,7 @@ class SystemUserMixin(object):
         self.addCleanup(partial(self.delete, username))
         self.validate_ssh(username, password)
     
-    def test_delete_systemuser(self):
+    def test_delete(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%sppppP001' % random_ascii(5)
         self.add(username, password)
@@ -133,7 +139,7 @@ class SystemUserMixin(object):
         self.delete(username)
         self.validate_delete(username)
     
-    def test_add_group_systemuser(self):
+    def test_add_group(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password)
@@ -150,7 +156,7 @@ class SystemUserMixin(object):
         self.assertIn(username2, groups)
         self.validate_user(username)
     
-    def test_disable_systemuser(self):
+    def test_disable(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password, shell='/dev/null')
@@ -159,6 +165,10 @@ class SystemUserMixin(object):
         self.disable(username)
         self.validate_user(username)
         self.assertRaises(ftplib.error_perm, self.validate_ftp, username, password)
+    
+    def test_change_password(self):
+        pass
+        # TODO
 
 
 class RESTSystemUserMixin(SystemUserMixin):
@@ -200,6 +210,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         self.save(self.account.username)
         self.addCleanup(partial(self.delete, self.account.username))
     
+    @snapshot_on_error
     def add(self, username, password, shell='/dev/null'):
         url = self.live_server_url + reverse('admin:systemusers_systemuser_add')
         self.selenium.get(url)
@@ -223,6 +234,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         username_field.submit()
         self.assertNotEqual(url, self.selenium.current_url)
     
+    @snapshot_on_error
     def delete(self, username):
         user = SystemUser.objects.get(username=username)
         delete = reverse('admin:systemusers_systemuser_delete', args=(user.pk,))
@@ -232,6 +244,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         confirmation.submit()
         self.assertNotEqual(url, self.selenium.current_url)
     
+    @snapshot_on_error
     def disable(self, username):
         user = SystemUser.objects.get(username=username)
         change = reverse('admin:systemusers_systemuser_change', args=(user.pk,))
@@ -243,6 +256,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         save.submit()
         self.assertNotEqual(url, self.selenium.current_url)
     
+    @snapshot_on_error
     def add_group(self, username, groupname):
         user = SystemUser.objects.get(username=username)
         change = reverse('admin:systemusers_systemuser_change', args=(user.pk,))
@@ -254,6 +268,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         save.submit()
         self.assertNotEqual(url, self.selenium.current_url)
     
+    @snapshot_on_error
     def save(self, username):
         user = SystemUser.objects.get(username=username)
         change = reverse('admin:systemusers_systemuser_change', args=(user.pk,))
@@ -269,6 +284,7 @@ class RESTSystemUserTest(RESTSystemUserMixin, BaseLiveServerTestCase):
 
 
 class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
+    @snapshot_on_error
     def test_create_account(self):
         url = self.live_server_url + reverse('admin:accounts_account_add')
         self.selenium.get(url)
@@ -298,8 +314,9 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         account = Account.objects.get(username=account_username)
         self.addCleanup(account.delete)
         self.assertNotEqual(url, self.selenium.current_url)
-        self.assertEqual(0, r("id %s" % account.username).return_code)
+        self.assertEqual(0, sshr(self.MASTER_SERVER, "id %s" % account.username).return_code)
     
+    @snapshot_on_error
     def test_delete_account(self):
         home = self.account.systemusers.get(is_main=True).get_home()
         

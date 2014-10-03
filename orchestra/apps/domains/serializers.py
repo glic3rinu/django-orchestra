@@ -37,4 +37,3 @@ class DomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeria
                 self._errors = { 'all': err.message }
                 return None
         return instance
-        

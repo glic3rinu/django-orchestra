@@ -16,8 +16,8 @@ class DomainAdminForm(forms.ModelForm):
             top = domain.get_top()
             if not top:
                 # Fake an account to make django validation happy
-                Account = self.fields['account']._queryset.model
-                cleaned_data['account'] = Account()
+                account_model = self.fields['account']._queryset.model
+                cleaned_data['account'] = account_model()
                 msg = _("An account should be provided for top domain names")
                 raise ValidationError(msg)
             cleaned_data['account'] = top.account
@@ -37,20 +37,3 @@ class RecordInlineFormSet(forms.models.BaseInlineFormSet):
                     records.append(data)
             domain = domain_for_validation(self.instance, records)
             validators.validate_zone(domain.render_zone())
-
-
-class DomainIterator(forms.models.ModelChoiceIterator):
-    """ Group ticket owner by superusers, ticket.group and regular users """
-    def __init__(self, *args, **kwargs):
-        self.account = kwargs.pop('account')
-        self.domains = kwargs.pop('domains')
-        super(forms.models.ModelChoiceIterator, self).__init__(*args, **kwargs)
-
-    def __iter__(self):
-        yield ('', '---------')
-        account_domains = self.domains.filter(account=self.account)
-        account_domains = account_domains.values_list('pk', 'name')
-        yield (_("Account"), list(account_domains))
-        domains = self.domains.exclude(account=self.account)
-        domains = domains.values_list('pk', 'name')
-        yield (_("Other"), list(domains))

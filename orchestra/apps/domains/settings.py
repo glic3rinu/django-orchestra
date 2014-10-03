@@ -2,10 +2,10 @@ from django.conf import settings
 
 
 DOMAINS_DEFAULT_NAME_SERVER = getattr(settings, 'DOMAINS_DEFAULT_NAME_SERVER',
-        'ns.example.com')
+        'ns.orchestra.lan')
 
 DOMAINS_DEFAULT_HOSTMASTER = getattr(settings, 'DOMAINS_DEFAULT_HOSTMASTER',
-        'hostmaster@example.com')
+        'hostmaster@orchestra.lan')
 
 DOMAINS_DEFAULT_TTL = getattr(settings, 'DOMAINS_DEFAULT_TTL', '1h')
 

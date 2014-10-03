@@ -1,7 +1,9 @@
 from django.contrib import messages
 from django.core.mail import mail_admins
+from django.core.urlresolvers import reverse
 from django.utils.html import escape
-from django.utils.translation import ugettext_lazy as _
+from django.utils.safestring import mark_safe
+from django.utils.translation import ungettext, ugettext_lazy as _
 
 
 def send_report(method, args, log):
@@ -32,15 +34,27 @@ def send_report(method, args, log):
 
 
 def message_user(request, logs):
-    total = len(logs)
-    successes = [ log for log in logs if log.state == log.SUCCESS ]
-    successes = len(successes)
+    total, successes = 0, 0
+    ids = []
+    for log in logs:
+        total += 1
+        ids.append(log.pk)
+        if log.state == log.SUCCESS:
+            successes += 1
     errors = total-successes
-    if errors:
-        msg = 'backends have' if errors > 1 else 'backend has'
-        msg = _("%d out of %d {0} fail to execute".format(msg))
-        messages.warning(request, msg % (errors, total))
+    if total > 1:
+        url = reverse('admin:orchestration_backendlog_changelist')
+        url += '?id__in=%s' ','.join(map(str, ids))
     else:
-        msg = 'backends have' if successes > 1 else 'backend has'
-        msg = _("%d {0} been successfully executed".format(msg))
-        messages.success(request, msg % successes)
+        url = reverse('admin:orchestration_backendlog_change', args=ids)
+    if errors:
+        msg = ungettext(
+            _('{errors} out of {total} <a href="{url}">banckends</a> has fail to execute.'),
+            _('{errors} out of {total} <a href="{url}">banckends</a> have fail to execute.'),
+            errors)
+    else:
+        msg = ungettext(
+            _('{total} <a href="{url}">banckend</a> has been executed.'),
+            _('{total} <a href="{url}">banckends</a> have been executed.'),
+            total)
+    messages.warning(request, mark_safe(msg.format(errors=errors, total=total, url=url)))

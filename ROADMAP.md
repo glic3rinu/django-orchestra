@@ -15,7 +15,7 @@ Note `*` _for sustancial progress_
 4. [ ] Data model, crazy input validation, admin and REST interfaces, permissions, unit and functional tests, service management, migration scripts and documentation of:
     1. [x] PHP/static Web applications
     1. [x] Websites with Apache
-    2. [ ] *FTP/rsync/scp/shell system accounts
+    2. [x] FTP/rsync/scp/shell system accounts
     2. [ ] *Databases and database users with MySQL
     1. [ ] *Mail accounts, aliases, forwards with Postfix and Dovecot
     1. [x] DNS with Bind
@@ -63,4 +63,4 @@ Note `*` _for sustancial progress_
 2. [ ] REST API functionality for superusers
 3. [ ] Responsive user interface, based on a JS framework.
 4. [ ] Full documentation
-5. [ ] [http://www.ansible.com/home](Ansible) orchestration method, which synchronize the whole service config everytime instead of incremental changes.
+5. [ ] [Ansible](http://www.ansible.com/home) orchestration method, which synchronizes the whole service config everytime instead of incremental changes.

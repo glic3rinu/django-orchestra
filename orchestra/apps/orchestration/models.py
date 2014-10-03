@@ -1,8 +1,11 @@
+import socket
+
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core.validators import validate_ip_address, ValidationError
 from orchestra.models.fields import NullableCharField
 from orchestra.utils.apps import autodiscover
 
@@ -27,6 +30,16 @@ class Server(models.Model):
         if self.address:
             return self.address
         return self.name
+    
+    def get_ip(self):
+        if self.address:
+            return self.address
+        try:
+            validate_ip_address(self.name)
+        except ValidationError:
+            return socket.gethostbyname(self.name)
+        else:
+            return self.name
 
 
 class BackendLog(models.Model):

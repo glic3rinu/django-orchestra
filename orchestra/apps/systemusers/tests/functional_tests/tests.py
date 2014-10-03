@@ -1,7 +1,6 @@
 import ftplib
 import os
 import re
-import socket
 from functools import partial
 
 import paramiko

@@ -124,6 +124,7 @@ class Domain(models.Model):
             top = self.get_top()
             if top:
                 self.top = top
+                self.account_id = self.account_id or top.account_id
             else:
                 update = True
         super(Domain, self).save(*args, **kwargs)
@@ -132,7 +133,7 @@ class Domain(models.Model):
             for domain in domains.filter(name__endswith=self.name):
                 domain.top = self
                 domain.save(update_fields=['top'])
-        self.subdomains.update(account=self.account)
+        self.subdomains.update(account_id=self.account_id)
     
     def get_top(self):
         split = self.name.split('.')

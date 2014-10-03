@@ -29,6 +29,14 @@ def validate_ipv6_address(value):
         raise ValidationError(msg)
 
 
+def validate_ip_address(value):
+    msg = _("%s is not a valid IP address") % value
+    try:
+        ip = IP(value)
+    except:
+        raise ValidationError(msg)
+
+
 def validate_name(value):
     """
     A single non-empty line of free-form text with no whitespace.

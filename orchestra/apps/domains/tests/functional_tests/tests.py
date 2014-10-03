@@ -26,7 +26,6 @@ class DomainTestMixin(object):
     
     def setUp(self):
         djsettings.DEBUG = True
-        settings.DOMAINS_MASTERS = [self.MASTER_SERVER_ADDR]
         super(DomainTestMixin, self).setUp()
         self.domain_name = 'orchestra%s.lan' % random_ascii(10)
         self.domain_records = (

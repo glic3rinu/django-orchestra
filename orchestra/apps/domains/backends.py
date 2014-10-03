@@ -1,8 +1,10 @@
+import textwrap
+
 from django.utils.translation import ugettext_lazy as _
 
-from . import settings
-
 from orchestra.apps.orchestration import ServiceController
+
+from . import settings
 
 
 class Bind9MasterDomainBackend(ServiceController):
@@ -52,20 +54,31 @@ class Bind9MasterDomainBackend(ServiceController):
         """ reload bind if needed """
         self.append('[[ $UPDATED == 1 ]] && service bind9 reload')
     
+    def get_servers(self, domain, backend):
+        from orchestra.apps.orchestration.models import Route, BackendOperation as Operation
+        operation = Operation(backend=backend, action='save', instance=domain)
+        servers = []
+        for server in Route.get_servers(operation):
+            servers.append(server.get_ip())
+        return servers
+    
     def get_context(self, domain):
         context = {
             'name': domain.name,
             'zone_path': settings.DOMAINS_ZONE_PATH % {'name': domain.name},
             'subdomains': domain.subdomains.all(),
             'banner': self.get_banner(),
+            'slaves': '; '.join(self.get_servers(domain, Bind9SlaveDomainBackend)),
         }
         context.update({
             'conf_path': settings.DOMAINS_MASTERS_PATH,
-            'conf': 'zone "%(name)s" {\n'
-                    '    // %(banner)s\n'
-                    '    type master;\n'
-                    '    file "%(zone_path)s";\n'
-                    '};\n' % context
+            'conf': textwrap.dedent("""
+                zone "%(name)s" {
+                    // %(banner)s
+                    type master;
+                    file "%(zone_path)s";
+                    allow-transfer { %(slaves)s; };
+                };""" % context)
         })
         return context
 
@@ -91,15 +104,19 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     def get_context(self, domain):
         context = {
             'name': domain.name,
-            'masters': '; '.join(settings.DOMAINS_MASTERS),
-            'subdomains': domain.subdomains.all()
+            'banner': self.get_banner(),
+            'subdomains': domain.subdomains.all(),
+            'masters': '; '.join(self.get_servers(domain, Bind9MasterDomainBackend)),
         }
         context.update({
             'conf_path': settings.DOMAINS_SLAVES_PATH,
-            'conf': 'zone "%(name)s" {\n'
-                    '    type slave;\n'
-                    '    file "%(name)s";\n'
-                    '    masters { %(masters)s; };\n'
-                    '};\n' % context
+            'conf': textwrap.dedent("""
+                zone "%(name)s" {
+                    // %(banner)s
+                    type slave;
+                    file "%(name)s";
+                    masters { %(masters)s; };
+                    allow-notify { %(masters)s; };
+                };""" % context)
         })
         return context

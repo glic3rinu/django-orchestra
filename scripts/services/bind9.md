@@ -12,13 +12,3 @@ Bind9 Master and Slave
     mkdir /etc/bind/master
     chown bind.bind /etc/bind/master
     ```
-
-2. Allow zone transfer on master by adding the following line to `named.conf.options`
-    ```bash
-    allow-transfer { slave-ip; };
-    ```
-
-3. Addlow notifications on the slave server by adding the following line to `named.conf.options`
-    ```bash
-    allow-notify { master-ip; };
-    ```

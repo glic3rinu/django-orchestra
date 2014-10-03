@@ -159,7 +159,8 @@ function install_requirements () {
             selenium \
             xvfbwrapper \
             freezegun \
-            coverage"
+            coverage \
+            orchestra-orm==dev"
     fi
     
     # Make sure locales are in place before installing postgres

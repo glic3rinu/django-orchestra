@@ -14,6 +14,8 @@ from . import settings
 
 logger = logging.getLogger(__name__)
 
+transports = {}
+
 
 def BashSSH(backend, log, server, cmds):
     from .models import BackendLog
@@ -29,6 +31,7 @@ def BashSSH(backend, log, server, cmds):
         path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_PATH, digest)
         with open(path, 'w') as script_file:
             script_file.write(script)
+        
         # ssh connection
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -41,12 +44,14 @@ def BashSSH(backend, log, server, cmds):
             log.save(update_fields=['state'])
             return
         transport = ssh.get_transport()
+        
+        # Copy script to remote server
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.put(path, "%s.remote" % path)
-        logger.debug('%s copied on %s' % (backend, server))
         sftp.close()
         os.remove(path)
         
+        # Execute it
         context = {
             'path': "%s.remote" % path,
             'digest': digest
@@ -57,9 +62,10 @@ def BashSSH(backend, log, server, cmds):
 # TODO            "rm -fr %(path)s\n"
             "exit $RETURN_CODE" % context
         )
-        
         channel = transport.open_session()
         channel.exec_command(cmd)
+        
+        # Log results
         logger.debug('%s running on %s' % (backend, server))
         if True: # TODO if not async
             log.stdout += channel.makefile('rb', -1).read().decode('utf-8')
@@ -78,14 +84,16 @@ def BashSSH(backend, log, server, cmds):
         log.exit_code = exit_code = channel.recv_exit_status()
         log.state = BackendLog.SUCCESS if exit_code == 0 else BackendLog.FAILURE
         logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
-        channel.close()
-        ssh.close()
         log.save()
     except:
-        logger.error('Exception while executing %s on %s' % (backend, server))
         log.state = BackendLog.ERROR
         log.traceback = ExceptionInfo(sys.exc_info()).traceback
+        logger.error('Exception while executing %s on %s' % (backend, server))
+        logger.debug(log.traceback)
         log.save()
+    finally:
+        channel.close()
+        ssh.close()
 
 
 def Python(backend, log, server, cmds):

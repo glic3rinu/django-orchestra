@@ -144,7 +144,7 @@ function install_requirements () {
          Markdown==2.4 \
          django-debug-toolbar==1.2.1 \
          djangorestframework==2.3.14 \
-         paramiko==1.12.1 \
+         paramiko==1.15.1 \
          Pygments==1.6 \
          django-filter==0.7 \
          passlib==1.6.2 \

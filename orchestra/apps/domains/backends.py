@@ -3,6 +3,7 @@ import textwrap
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
+from orchestra.utils.python import AttrDict
 
 from . import settings
 
@@ -45,8 +46,8 @@ class Bind9MasterDomainBackend(ServiceController):
     def delete_conf(self, context):
         self.append(textwrap.dedent("""
             awk -v s=%(name)s 'BEGIN {
-                RS=""; s="zone \""s"\""
-            } $0!~s{ print $0"\n" }' %(conf_path)s > %(conf_path)s.tmp""" % context
+                RS=""; s="zone \\""s"\\""
+            } $0!~s{ print $0"\\n" }' %(conf_path)s > %(conf_path)s.tmp""" % context
         ))
         self.append('diff -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)
         self.append('mv %(conf_path)s.tmp %(conf_path)s' % context)
@@ -56,8 +57,8 @@ class Bind9MasterDomainBackend(ServiceController):
         self.append('[[ $UPDATED == 1 ]] && service bind9 reload')
     
     def get_servers(self, domain, backend):
-        from orchestra.apps.orchestration.models import Route, BackendOperation as Operation
-        operation = Operation(backend=backend, action='save', instance=domain)
+        from orchestra.apps.orchestration.models import Route
+        operation = AttrDict(backend=backend, action='save', instance=domain)
         servers = []
         for server in Route.get_servers(operation):
             servers.append(server.get_ip())

@@ -1,4 +1,5 @@
 import datetime
+import os
 import string
 import random
 from functools import wraps
@@ -118,7 +119,8 @@ def snapshot_on_error(test):
         except:
             self = args[0]
             timestamp = datetime.datetime.now().isoformat().replace(':', '')
-            filename = '/tmp/screenshot_%s_%s.png' % (self.id(), timestamp)
-            self.selenium.save_screenshot(filename)
+            filename = 'screenshot_%s_%s.png' % (self.id(), timestamp)
+            path = '/home/orchestra/snapshots'
+            self.selenium.save_screenshot(os.path.join(path, filename))
             raise
     return inner

@@ -1,4 +1,4 @@
-import MySQLdb
+#import MySQLdb
 from functools import partial
 
 from django.conf import settings as djsettings

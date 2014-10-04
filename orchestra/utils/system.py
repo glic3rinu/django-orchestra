@@ -99,7 +99,7 @@ def run(command, display=True, error_codes=[0], silent=False, stdin=''):
         if display:
             sys.stderr.write("\n\033[1;31mCommandError: %s %s\033[m\n" % (msg, err))
         if not silent:
-            raise CommandError("%s %s" % (msg, err))
+            raise CommandError("%s %s %s" % (msg, err, out))
     
     out.succeeded = not out.failed
     return out

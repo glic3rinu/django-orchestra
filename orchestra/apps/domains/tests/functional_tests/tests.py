@@ -1,7 +1,7 @@
-import functools
 import os
 import time
 import socket
+from functools import partial
 
 from django.conf import settings as djsettings
 from django.core.urlresolvers import reverse
@@ -15,7 +15,7 @@ from ... import settings, utils, backends
 from ...models import Domain, Record
 
 
-run = functools.partial(run, display=False)
+run = partial(run, display=False)
 
 
 class DomainTestMixin(object):
@@ -53,13 +53,6 @@ class DomainTestMixin(object):
             (Record.CNAME, 'external.server.org.'),
         )
         self.django_domain_name = 'django%s.lan' % random_ascii(10)
-    
-    def tearDown(self):
-        try:
-            self.delete(self.domain_name)
-        except Domain.DoesNotExist:
-            pass
-        super(DomainTestMixin, self).tearDown()
     
     def add_route(self):
         raise NotImplementedError
@@ -183,8 +176,9 @@ class DomainTestMixin(object):
         self.add(self.ns1_name, self.ns1_records)
         self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
+        self.addCleanup(partial(self.delete, self.domain_name))
         self.validate_add(self.MASTER_SERVER_ADDR, self.domain_name)
-        time.sleep(0.5)
+        time.sleep(1)
         self.validate_add(self.SLAVE_SERVER_ADDR, self.domain_name)
     
     def test_delete(self):
@@ -200,6 +194,7 @@ class DomainTestMixin(object):
         self.add(self.ns1_name, self.ns1_records)
         self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
+        self.addCleanup(partial(self.delete, self.domain_name))
         self.update(self.domain_name, self.domain_update_records)
         self.add(self.www_name, self.www_records)
         self.validate_update(self.MASTER_SERVER_ADDR, self.domain_name)

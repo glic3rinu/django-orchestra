@@ -24,30 +24,35 @@ class Domain(models.Model):
     
     @property
     def origin(self):
-        # Do not cache
         return self.top or self
     
     @property
     def is_top(self):
-        # Do not cache
+        # don't cache, don't replace by top_id
         return not bool(self.top)
     
     def get_records(self):
         """ proxy method, needed for input validation, see helpers.domain_for_validation """
         return self.records.all()
     
-    def get_top_subdomains(self):
+    def get_subdomains(self):
         """ proxy method, needed for input validation, see helpers.domain_for_validation """
         return self.origin.subdomains.all()
     
-    def get_subdomains(self):
-        """ proxy method, needed for input validation, see helpers.domain_for_validation """
-        return self.get_top_subdomains().filter(name__endswith=r'.%s' % self.name)
+    def get_top(self):
+        split = self.name.split('.')
+        top = None
+        for i in range(1, len(split)-1):
+            name = '.'.join(split[i:])
+            domain = Domain.objects.filter(name=name)
+            if domain:
+                top = domain.get()
+        return top
     
     def render_zone(self):
         origin = self.origin
         zone = origin.render_records()
-        for subdomain in origin.get_top_subdomains():
+        for subdomain in origin.get_subdomains():
             zone += subdomain.render_records()
         return zone
     
@@ -134,16 +139,6 @@ class Domain(models.Model):
                 domain.top = self
                 domain.save(update_fields=['top'])
         self.subdomains.update(account_id=self.account_id)
-    
-    def get_top(self):
-        split = self.name.split('.')
-        top = None
-        for i in range(1, len(split)-1):
-            name = '.'.join(split[i:])
-            domain = Domain.objects.filter(name=name)
-            if domain:
-                top = domain.get()
-        return top
 
 
 class Record(models.Model):

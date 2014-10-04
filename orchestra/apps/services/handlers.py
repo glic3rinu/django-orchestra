@@ -46,7 +46,9 @@ class ServiceHandler(plugins.Plugin):
     
     def matches(self, instance):
         safe_locals = {
-            instance._meta.model_name: instance
+            'instance': instance,
+            'obj': instance,
+            instance._meta.model_name: instance,
         }
         return eval(self.match, safe_locals)
     

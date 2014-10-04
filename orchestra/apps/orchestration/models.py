@@ -176,7 +176,10 @@ class Route(models.Model):
             for route in cls.objects.filter(is_active=True, backend=backend.get_name()):
                 for action in backend.get_actions():
                     _key = (route.backend, action)
-                    cache[_key] = [route]
+                    try:
+                        cache[_key].append(route)
+                    except KeyError:
+                        cache[_key] = [route]
             routes = cache[key]
         for route in routes:
             if route.matches(operation.instance):
@@ -185,7 +188,9 @@ class Route(models.Model):
     
     def matches(self, instance):
         safe_locals = {
-            'instance': instance
+            'instance': instance,
+            'obj': instance,
+            instance._meta.model_name: instance,
         }
         return eval(self.match, safe_locals)
     

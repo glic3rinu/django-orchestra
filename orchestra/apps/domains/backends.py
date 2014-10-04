@@ -43,10 +43,11 @@ class Bind9MasterDomainBackend(ServiceController):
         self.delete_conf(context)
     
     def delete_conf(self, context):
-        self.append('awk -v s=%(name)s \'BEGIN {'
-                    '  RS=""; s="zone \\""s"\\""'
-                    '} $0!~s{ print $0"\\n" }\' %(conf_path)s > %(conf_path)s.tmp'
-                    % context)
+        self.append(textwrap.dedent("""
+            awk -v s=%(name)s 'BEGIN {
+                RS=""; s="zone \""s"\""
+            } $0!~s{ print $0"\n" }' %(conf_path)s > %(conf_path)s.tmp""" % context
+        ))
         self.append('diff -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)
         self.append('mv %(conf_path)s.tmp %(conf_path)s' % context)
     
@@ -62,13 +63,16 @@ class Bind9MasterDomainBackend(ServiceController):
             servers.append(server.get_ip())
         return servers
     
+    def get_slaves(self, domain):
+        return self.get_servers(domain, Bind9SlaveDomainBackend)
+    
     def get_context(self, domain):
         context = {
             'name': domain.name,
             'zone_path': settings.DOMAINS_ZONE_PATH % {'name': domain.name},
             'subdomains': domain.subdomains.all(),
             'banner': self.get_banner(),
-            'slaves': '; '.join(self.get_servers(domain, Bind9SlaveDomainBackend)),
+            'slaves': '; '.join(self.get_slaves(domain)) or 'none',
         }
         context.update({
             'conf_path': settings.DOMAINS_MASTERS_PATH,
@@ -96,17 +100,20 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     def delete(self, domain):
         context = self.get_context(domain)
         self.delete_conf(context)
-
+    
     def commit(self):
         """ ideally slave should be restarted after master """
         self.append('[[ $UPDATED == 1 ]] && { sleep 1 && service bind9 reload; } &')
+    
+    def get_masters(self, domain):
+        return self.get_servers(domain, Bind9MasterDomainBackend)
     
     def get_context(self, domain):
         context = {
             'name': domain.name,
             'banner': self.get_banner(),
             'subdomains': domain.subdomains.all(),
-            'masters': '; '.join(self.get_servers(domain, Bind9MasterDomainBackend)),
+            'masters': '; '.join(self.get_masters(domain)) or 'none',
         }
         context.update({
             'conf_path': settings.DOMAINS_SLAVES_PATH,

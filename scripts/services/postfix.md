@@ -1,5 +1,3 @@
-apt-get install postfix
-
 
 # http://www.postfix.org/VIRTUAL_README.html#virtual_mailbox
 # https://help.ubuntu.com/community/PostfixVirtualMailBoxClamSmtpHowto
@@ -9,15 +7,17 @@ apt-get install postfix
 
 
 apt-get install dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-sieve
-sed -i "s#^mail_location = mbox.*#mail_location = maildir:~/Maildir#" /etc/dovecot/conf.d/10-mail.conf
-echo 'auth_username_format = %n' >> /etc/dovecot/conf.d/10-auth.conf
-echo 'service lmtp {
+
+echo 'mail_location = maildir:~/Maildir
+mail_plugins = quota
+auth_username_format = %n
+service lmtp {
  unix_listener /var/spool/postfix/private/dovecot-lmtp {
    group = postfix
    mode = 0600
    user = postfix
   }
-}' >> /etc/dovecot/conf.d/10-master.conf
+}' > /etc/dovecot/local.conf
 
 
 cat > /etc/apt/sources.list.d/mailscanner.list << 'EOF'
@@ -35,6 +35,7 @@ apt-get install mailscanner
 apt-get install postfix
 echo 'home_mailbox = Maildir/' >> /etc/postfix/main.cf
 echo 'mailbox_transport = lmtp:unix:private/dovecot-lmtp' >> /etc/postfix/main.cf
+
 
 
 

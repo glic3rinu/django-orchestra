@@ -1,33 +1,38 @@
 import copy
+from functools import partial
 
 from .models import Domain, Record
 
 
 def domain_for_validation(instance, records):
-    """ Create a fake zone in order to generate the whole zone file and check it """
+    """
+    Since the new data is not yet on the database, we update it on the fly,
+    so when validation calls render_zone() it will use the new provided data
+    """
     domain = copy.copy(instance)
-    if not domain.pk:
-        domain.top = domain.get_top()
+    
     def get_records():
         for data in records:
             yield Record(type=data['type'], value=data['value'])
     domain.get_records = get_records
     
-    def get_top_subdomains(exclude=None):
-        subdomains = []
-        for subdomain in Domain.objects.filter(name__endswith='.%s' % domain.origin.name):
-            if exclude != subdomain.pk:
-                subdomain.top = domain
+    def get_subdomains(replace=None, make_top=False):
+        for subdomain in Domain.objects.filter(name__endswith='.%s' % domain.name):
+            if replace == subdomain.pk:
+                # domain is a subdomain, yield our copy
+                yield domain
+            else:
+                if make_top:
+                    subdomain.top = domain
                 yield subdomain
-    domain.get_top_subdomains = get_top_subdomains
     
+    if not domain.pk:
+        # top domain lookup for new domains
+        domain.top = domain.get_top()
     if domain.top:
-        subdomains = domain.get_top_subdomains(exclude=instance.pk)
-        domain.top.get_subdomains = lambda: list(subdomains) + [domain]
+        # is a subdomains
+        domain.top.get_subdomains = partial(get_subdomains, replace=domain.pk)
     elif not domain.pk:
-        subdomains = []
-        for subdomain in Domain.objects.filter(name__endswith=domain.name):
-            subdomain.top = domain
-            subdomains.append(subdomain)
-        domain.get_subdomains = get_top_subdomains
+        # is top domain
+        domain.get_subdomains = partial(get_subdomains, make_top=True)
     return domain

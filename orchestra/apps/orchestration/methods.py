@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import os
 import socket
 import sys
@@ -11,13 +12,16 @@ from celery.datastructures import ExceptionInfo
 from . import settings
 
 
+logger = logging.getLogger(__name__)
+
+
 def BashSSH(backend, log, server, cmds):
     from .models import BackendLog
     script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
     log.script = script
     log.save(update_fields=['script'])
-    
+    logger.debug('%s is going to be executed on %s' % (backend, server))
     try:
         # Avoid "Argument list too long" on large scripts by genereting a file
         # and scping it to the remote server
@@ -30,15 +34,16 @@ def BashSSH(backend, log, server, cmds):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         addr = server.get_address()
         try:
-            ssh.connect(addr, username='root',
-                        key_filename=settings.ORCHESTRATION_SSH_KEY_PATH)
+            ssh.connect(addr, username='root', key_filename=settings.ORCHESTRATION_SSH_KEY_PATH)
         except socket.error:
+            logger.error('%s timed out on %s' % (backend, server))
             log.state = BackendLog.TIMEOUT
             log.save(update_fields=['state'])
             return
         transport = ssh.get_transport()
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.put(path, "%s.remote" % path)
+        logger.debug('%s copied on %s' % (backend, server))
         sftp.close()
         os.remove(path)
         
@@ -55,6 +60,7 @@ def BashSSH(backend, log, server, cmds):
         
         channel = transport.open_session()
         channel.exec_command(cmd)
+        logger.debug('%s running on %s' % (backend, server))
         if True: # TODO if not async
             log.stdout += channel.makefile('rb', -1).read().decode('utf-8')
             log.stderr += channel.makefile_stderr('rb', -1).read().decode('utf-8')
@@ -71,10 +77,12 @@ def BashSSH(backend, log, server, cmds):
                     break
         log.exit_code = exit_code = channel.recv_exit_status()
         log.state = BackendLog.SUCCESS if exit_code == 0 else BackendLog.FAILURE
+        logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
         channel.close()
         ssh.close()
         log.save()
     except:
+        logger.error('Exception while executing %s on %s' % (backend, server))
         log.state = BackendLog.ERROR
         log.traceback = ExceptionInfo(sys.exc_info()).traceback
         log.save()

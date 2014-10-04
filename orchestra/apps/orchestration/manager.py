@@ -37,9 +37,9 @@ def close_connection(execute):
 def execute(operations):
     """ generates and executes the operations on the servers """
     router = import_class(settings.ORCHESTRATION_ROUTER)
-    # Generate scripts per server+backend
     scripts = {}
     cache = {}
+    # Generate scripts per server+backend
     for operation in operations:
         logger.debug("Queued %s" % str(operation))
         servers = router.get_servers(operation, cache=cache)
@@ -50,6 +50,7 @@ def execute(operations):
                 scripts[key][0].prepare()
             else:
                 scripts[key][1].append(operation)
+            # Get and call backend action method
             method = getattr(scripts[key][0], operation.action)
             method(operation.instance)
     # Execute scripts on each server
@@ -67,12 +68,15 @@ def execute(operations):
         executions.append((execute, operations))
     [ thread.join() for thread in threads ]
     logs = []
+    # collect results
     for execution, operations in executions:
         for operation in operations:
             logger.info("Executed %s" % str(operation))
             operation.log = execution.log
             operation.save()
-        logger.debug(execution.log.stdout)
-        logger.debug(execution.log.stderr)
+        stdout = execution.log.stdout.strip()
+        stdout and logger.debug('STDOUT %s', stdout)
+        stderr = execution.log.stderr.strip()
+        stderr and logger.debug('STDERR %s', stderr)
         logs.append(execution.log)
     return logs

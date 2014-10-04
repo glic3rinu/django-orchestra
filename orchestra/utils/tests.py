@@ -90,6 +90,7 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
     def setUp(self):
         super(BaseLiveServerTestCase, self).setUp()
         self.rest = Api(self.live_server_url + '/api/')
+        self.rest.enable_logging()
         self.account = self.create_account(superuser=True)
     
     def admin_login(self):

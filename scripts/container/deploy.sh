@@ -44,8 +44,9 @@ if [[ ! $CURRENT_VERSION ]]; then
     run "git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra"
     echo $HOME/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
     sudo cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/
-    sudo orchestra-admin install_requirements
 fi
+
+sudo orchestra-admin install_requirements
 
 if [[ ! -e $BASE_DIR ]]; then
     cd $HOME

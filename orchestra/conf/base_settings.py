@@ -253,6 +253,3 @@ PASSLIB_CONFIG = (
     "superuser__django_pbkdf2_sha256__default_rounds = 15000\n"
     "superuser__sha512_crypt__default_rounds = 120000\n"
 )
-
-
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

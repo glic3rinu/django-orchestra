@@ -144,7 +144,6 @@ function install_requirements () {
          kombu==3.0.23 \
          billiard==3.3.0.18 \
          Markdown==2.4 \
-         django-debug-toolbar==1.2.1 \
          djangorestframework==2.3.14 \
          paramiko==1.15.1 \
          ecdsa==0.11 \
@@ -153,7 +152,6 @@ function install_requirements () {
          passlib==1.6.2 \
          jsonfield==0.9.22 \
          lxml==3.3.5 \
-         django-nose==1.2 \
          python-dateutil==2.2 \
          django-iban==0.3.0"
     
@@ -165,7 +163,10 @@ function install_requirements () {
             xvfbwrapper \
             freezegun \
             coverage \
-            orchestra-orm==dev"
+            orchestra-orm==dev \
+            django-debug-toolbar==1.2.1 \
+            django-nose==1.2 \
+            sqlparse"
     fi
     
     # Make sure locales are in place before installing postgres

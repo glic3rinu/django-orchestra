@@ -170,6 +170,9 @@ class SystemUserMixin(object):
         # TODO
 
 
+# TODO test resources
+
+
 class RESTSystemUserMixin(SystemUserMixin):
     def setUp(self):
         super(RESTSystemUserMixin, self).setUp()

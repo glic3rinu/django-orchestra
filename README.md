@@ -37,8 +37,7 @@ If you are planing to do some development or perhaps just checking out this proj
     ```bash
     wget -O /tmp/create.sh \
            https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh
-    chmod +x /tmp/create.sh
-    sudo /tmp/create.sh
+    sudo bash /tmp/create.sh
     sudo lxc-start -n orchestra
     ```
 
@@ -46,9 +45,8 @@ If you are planing to do some development or perhaps just checking out this proj
     ```bash
     wget -O /tmp/deploy.sh \
            https://raw2.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh
-    chmod +x /tmp/deploy.sh
     cd /tmp/ # Moving away from /root before running deploy.sh
-    /tmp/deploy.sh
+    bash /tmp/deploy.sh
     ```
     Django-orchestra source code should be now under `~orchestra/django-orchestra` and an Orchestra instance called _panel_ under `~orchestra/panel`
 

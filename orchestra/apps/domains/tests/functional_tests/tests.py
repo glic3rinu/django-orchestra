@@ -197,7 +197,7 @@ class DomainTestMixin(object):
         self.addCleanup(partial(self.delete, self.domain_name))
         self.update(self.domain_name, self.domain_update_records)
         self.add(self.www_name, self.www_records)
-        time.sleep(1)
+        time.sleep(0.5)
         self.validate_update(self.MASTER_SERVER_ADDR, self.domain_name)
         time.sleep(5)
         self.validate_update(self.SLAVE_SERVER_ADDR, self.domain_name)

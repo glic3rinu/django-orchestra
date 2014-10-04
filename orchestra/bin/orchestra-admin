@@ -195,14 +195,18 @@ function install_requirements () {
     run update-rc.d rabbitmq-server defaults
     
     # Patch passlib
-    from collections import OrderedDict
-    
     IMPORT="from django.contrib.auth.hashers import mask_hash, _"
     COLLECTIONS="from collections import OrderedDict"
     sed -i "s/${IMPORT}, SortedDict/${IMPORT}\n        ${COLLECTIONS}/" \
         /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py
     sed -i "s/SortedDict/OrderedDict/g" \
         /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py
+    
+    # Patch dateutil
+    sed -i "s/elif not isinstance(dt2, datetime.datetime):/else:/" \
+        /usr/local/lib/python2.7/dist-packages/dateutil/relativedelta.py
+    sed -i "s/if not type(dt1) == type(dt2): #isinstance(dt1, type(dt2)):/if not isinstance(dt2, type(dt1)):/" \
+        /usr/local/lib/python2.7/dist-packages/dateutil/relativedelta.py
 }
 export -f install_requirements
 

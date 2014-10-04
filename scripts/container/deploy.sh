@@ -59,7 +59,7 @@ MANAGE="$BASE_DIR/manage.py"
 if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$') ]]; then
     # orchestra database does not esists
     # Speeding up tests, don't do this in production!
-    POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | cut -d'.' -f1,2)
+    POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | sed -r "s/(^[0-9\.]*).*/\1/")
     sudo sed -i "s/^#fsync =\s*.*/fsync = off/" \
             /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
     sudo sed -i "s/^#full_page_writes =\s*.*/full_page_writes = off/" \

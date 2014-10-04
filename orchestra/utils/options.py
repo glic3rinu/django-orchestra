@@ -41,3 +41,7 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
 
 def running_syncdb():
     return 'migrate' in sys.argv or 'syncdb' in sys.argv or 'makemigrations' in sys.argv
+
+
+def database_ready():
+    return not running_syncdb() and 'setuppostgres' not in sys.argv

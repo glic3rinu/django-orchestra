@@ -161,3 +161,5 @@ APPS app?
 * Ansible orchestration *method* (methods.py)
 * interdependency user <-> account with the old usermodel
 
+
+* replace running_syncdb() by db_ready()

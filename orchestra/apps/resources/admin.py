@@ -7,7 +7,6 @@ from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date
 from orchestra.core import services
-from orchestra.utils import running_syncdb
 
 from .forms import ResourceForm
 from .models import Resource, ResourceData, MonitorData
@@ -136,8 +135,8 @@ def resource_inline_factory(resources):
     
     return ResourceInline
 
-if not running_syncdb():
-    # not run during syncdb
+
+def insert_resource_inlines():
     for ct, resources in Resource.objects.group_by('content_type').iteritems():
         inline = resource_inline_factory(resources)
         model = ct.model_class()

@@ -126,6 +126,7 @@ function install_requirements () {
          python-dev \
          bind9utils \
          python-cracklib \
+         libz-dev \
          libxml2-dev \
          libxslt1-dev \
          wkhtmltopdf \
@@ -140,17 +141,21 @@ function install_requirements () {
          django-transaction-signals==1.0.0 \
          django-celery==3.1.10 \
          celery==3.1.13 \
-         kombu==3.0.8 \
+         kombu==3.0.23 \
+         billiard==3.3.0.18 \
          Markdown==2.4 \
          django-debug-toolbar==1.2.1 \
          djangorestframework==2.3.14 \
          paramiko==1.15.1 \
+         ecdsa==0.11 \
          Pygments==1.6 \
          django-filter==0.7 \
          passlib==1.6.2 \
          jsonfield==0.9.22 \
          lxml==3.3.5 \
-         python-dateutil==2.2"
+         django-nose==1.2 \
+         python-dateutil==2.2 \
+         django-iban==0.3.0"
     
     if $testing; then
         APT="${APT} \

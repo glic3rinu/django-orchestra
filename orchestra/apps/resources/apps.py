@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from orchestra.utils import running_syncdb
+from orchestra.utils import database_ready
 
 
 class ResourcesConfig(AppConfig):
@@ -8,6 +8,8 @@ class ResourcesConfig(AppConfig):
     verbose_name = 'Resources'
     
     def ready(self):
-        if not running_syncdb():
+        if database_ready():
+            from .admin import insert_resource_inlines
             from .models import create_resource_relation
             create_resource_relation()
+            insert_resource_inlines()

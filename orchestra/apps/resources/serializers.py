@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from orchestra.api import router
-from orchestra.utils import running_syncdb
+from orchestra.utils import database_ready
 
 from .models import Resource, ResourceData
 
@@ -23,7 +23,7 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 # Monkey-patching section
 
-if not running_syncdb():
+if database_ready():
     # TODO why this is even loaded during syncdb?
     # Create nested serializers on target models
     for ct, resources in Resource.objects.group_by('content_type').iteritems():

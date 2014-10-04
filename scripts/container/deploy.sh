@@ -40,7 +40,7 @@ CURRENT_VERSION=$(python -c "from orchestra import get_version; print get_versio
 
 if [[ ! $CURRENT_VERSION ]]; then
     # First Orchestra installation
-    run "apt-get -y install git python-pip"
+    sudo apt-get -y install git python-pip
     run "git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra"
     echo $HOME/django-orchestra/ | sudo tee /usr/local/lib/python2.7/dist-packages/orchestra.pth
     sudo cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/

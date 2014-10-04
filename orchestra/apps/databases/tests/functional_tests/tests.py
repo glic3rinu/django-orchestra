@@ -12,7 +12,7 @@ from orchestra.utils.system import run
 from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii
 
 from ... import backends, settings
-from ...models import Satabase
+from ...models import Database
 
 
 class DatabaseTestMixin(object):

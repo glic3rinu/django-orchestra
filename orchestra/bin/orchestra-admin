@@ -157,7 +157,8 @@ function install_requirements () {
     
     if $testing; then
         APT="${APT} \
-            iceweasel"
+            iceweasel \
+            dnsutils"
         PIP="${PIP} \
             selenium \
             xvfbwrapper \
@@ -178,12 +179,30 @@ function install_requirements () {
     
     run apt-get update
     run apt-get install -y $APT
-    run pip install $PIP
+    run pip install $PIP --allow-external orchestra-orm --allow-unverified orchestra-orm
     
+    # Install ca certificates
+    if [[ ! -e  /usr/local/share/ca-certificates/cacert.org ]]; then
+        mkdir -p /usr/local/share/ca-certificates/cacert.org
+        wget -P /usr/local/share/ca-certificates/cacert.org \
+            http://www.cacert.org/certs/root.crt \
+            http://www.cacert.org/certs/class3.crt
+        update-ca-certificates
+    fi
     # Some versions of rabbitmq-server will not start automatically by default unless ...
     sed -i "s/# Default-Start:.*/# Default-Start:     2 3 4 5/" /etc/init.d/rabbitmq-server
     sed -i "s/# Default-Stop:.*/# Default-Stop:      0 1 6/" /etc/init.d/rabbitmq-server
     run update-rc.d rabbitmq-server defaults
+    
+    # Patch passlib
+    from collections import OrderedDict
+    
+    IMPORT="from django.contrib.auth.hashers import mask_hash, _"
+    COLLECTIONS="from collections import OrderedDict"
+    sed -i "s/${IMPORT}, SortedDict/${IMPORT}\n        ${COLLECTIONS}/" \
+        /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py
+    sed -i "s/SortedDict/OrderedDict/g" \
+        /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py
 }
 export -f install_requirements
 

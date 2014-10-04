@@ -51,7 +51,7 @@ if [[ ! $CURRENT_VERSION ]]; then
     run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
 fi
 
-sudo orchestra-admin install_requirements
+sudo orchestra-admin install_requirements --testing
 
 if [[ ! -e $BASE_DIR ]]; then
     cd $HOME

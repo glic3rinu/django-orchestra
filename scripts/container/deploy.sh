@@ -16,7 +16,7 @@ normal=$(tput sgr0)
 }
 
 USER='orchestra'
-PASSWORD="orchestra"
+PASSWORD='orchestra'
 HOME="/home/$USER"
 PROJECT_NAME='panel'
 BASE_DIR="$HOME/$PROJECT_NAME"
@@ -99,9 +99,9 @@ run "python $MANAGE restartservices"
 # Create a orchestra user
 cat <<- EOF | python $MANAGE shell
 from orchestra.apps.accounts.models import Account
-if not Account.objects.filter(username=$USER).exists():
+if not Account.objects.filter(username="$USER").exists():
     print 'Creating orchestra superuser'
-    Account.objects.create_superuser($USER, "'$USER@localhost'", $PASSWORD)
+    __ = Account.objects.create_superuser("$USER", "'$USER@localhost'", "$PASSWORD")
 
 EOF
 

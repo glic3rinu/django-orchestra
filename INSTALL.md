@@ -41,11 +41,6 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
     python manage.py migrate
     ```
 
-6. Create a panel administrator
-    ```bash
-    python manage.py createsuperuser
-    ```
-
 7. Configure celeryd
     ```bash
     sudo python manage.py setupcelery --username orchestra

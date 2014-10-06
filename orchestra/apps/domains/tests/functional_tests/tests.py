@@ -42,11 +42,11 @@ class DomainTestMixin(object):
         )
         self.ns1_name = 'ns1.%s' % self.domain_name
         self.ns1_records = (
-            (Record.A, '%s' % self.SLAVE_SERVER_ADDR),
+            (Record.A, self.SLAVE_SERVER_ADDR),
         )
         self.ns2_name = 'ns2.%s' % self.domain_name
         self.ns2_records = (
-            (Record.A, '%s' % self.MASTER_SERVER_ADDR),
+            (Record.A, self.MASTER_SERVER_ADDR),
         )
         self.www_name = 'www.%s' % self.domain_name
         self.www_records = (

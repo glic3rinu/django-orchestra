@@ -8,16 +8,17 @@ from django.utils.safestring import mark_safe
 from django.utils.six.moves.urllib.parse import parse_qsl
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, change_url
 from orchestra.core import services, accounts
+from orchestra.forms import UserChangeForm
 
 from .filters import HasMainUserListFilter
-from .forms import AccountCreationForm, AccountChangeForm
+from .forms import AccountCreationForm
 from .models import Account
 
 
-class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
+class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
     list_display = ('username', 'type', 'is_active')
     list_filter = (
         'type', 'is_active', HasMainUserListFilter
@@ -50,7 +51,7 @@ class AccountAdmin(auth.UserAdmin, ExtendedModelAdmin):
     )
     search_fields = ('username',)
     add_form = AccountCreationForm
-    form = AccountChangeForm
+    form = UserChangeForm
     filter_horizontal = ()
     change_readonly_fields = ('username',)
     change_form_template = 'admin/accounts/account/change_form.html'

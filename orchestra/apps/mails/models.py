@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.functional import cached_property
@@ -7,6 +8,7 @@ from orchestra.core import services
 
 from . import validators, settings
 
+# TODO rename app to mailboxes
 
 class Mailbox(models.Model):
     name = models.CharField(_("name"), max_length=64, unique=True,
@@ -35,19 +37,30 @@ class Mailbox(models.Model):
     @cached_property
     def active(self):
         return self.is_active and self.account.is_active
+    
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+    
+    def get_home(self):
+        context = {
+            'name': self.name,
+            'username': self.name,
+        }
+        home = settings.MAILS_HOME % context
+        return home.rstrip('/')
 
 
 class Address(models.Model):
     name = models.CharField(_("name"), max_length=64,
             validators=[validators.validate_emailname])
-    domain = models.ForeignKey(settings.EMAILS_DOMAIN_MODEL,
+    domain = models.ForeignKey(settings.MAILS_DOMAIN_MODEL,
             verbose_name=_("domain"),
             related_name='addresses')
     mailboxes = models.ManyToManyField(Mailbox,
             verbose_name=_("mailboxes"),
             related_name='addresses', blank=True)
     forward = models.CharField(_("forward"), max_length=256, blank=True,
-            validators=[validators.validate_forward])
+            validators=[validators.validate_forward], help_text=_("Space separated email addresses"))
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='addresses')
     
@@ -61,6 +74,13 @@ class Address(models.Model):
     @property
     def email(self):
         return "%s@%s" % (self.name, self.domain)
+    
+    @property
+    def destination(self):
+        destinations = list(self.mailboxes.values_list('name', flat=True))
+        if self.forward:
+            destinations.append(self.forward)
+        return ' '.join(destinations)
 
 
 class Autoresponse(models.Model):

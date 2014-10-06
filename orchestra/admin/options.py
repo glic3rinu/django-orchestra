@@ -1,13 +1,26 @@
 from django import forms
 from django.conf.urls import patterns, url
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.utils import unquote
+from django.contrib.auth import update_session_auth_hash
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect, Http404
 from django.forms.models import BaseInlineFormSet
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.response import TemplateResponse
+from django.utils.decorators import method_decorator
+from django.utils.html import escape
 from django.utils.text import camel_case_to_spaces
 from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.debug import sensitive_post_parameters
 
+from .forms import AdminPasswordChangeForm
+#from django.contrib.auth.forms import AdminPasswordChangeForm
 from .utils import set_url_query, action_to_view, wrap_admin_view
+
+
+sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())
 
 
 class ChangeListDefaultFilter(object):
@@ -200,3 +213,94 @@ class SelectPluginAdminMixin(object):
             setattr(obj, self.plugin_field, self.plugin_value)
         obj.save()
 
+
+class ChangePasswordAdminMixin(object):
+    change_password_form = AdminPasswordChangeForm
+    change_user_password_template = 'admin/orchestra/change_password.html'
+    
+    def get_urls(self):
+        opts = self.model._meta
+        info = opts.app_label, opts.model_name
+        return patterns('',
+            url(r'^(\d+)/password/$',
+                self.admin_site.admin_view(self.change_password),
+                name='%s_%s_change_password' % info),
+        ) + super(ChangePasswordAdminMixin, self).get_urls()
+    
+    @sensitive_post_parameters_m
+    def change_password(self, request, id, form_url=''):
+        if not self.has_change_permission(request):
+            raise PermissionDenied
+        # TODO use this insetad of self.get_object()
+        user = get_object_or_404(self.get_queryset(request), pk=id)
+        
+        related = []
+        try:
+            # don't know why getattr(user, 'username', user.name) doesn't work
+            username = user.username
+        except AttributeError:
+            username = user.name
+        if hasattr(user, 'account'):
+            account = user.account
+            if user.account.username == username:
+                related.append(user.account)
+        else:
+            account = user
+        # TODO plugability
+        if user._meta.model_name != 'systemuser':
+            rel = account.systemusers.filter(username=username).first()
+            if rel:
+                related.append(rel)
+        if user._meta.model_name != 'mailbox':
+            rel = account.mailboxes.filter(name=username).first()
+            if rel:
+                related.append(rel)
+        
+        if request.method == 'POST':
+            form = self.change_password_form(user, request.POST, related=related)
+            if form.is_valid():
+                form.save()
+                change_message = self.construct_change_message(request, form, None)
+                self.log_change(request, user, change_message)
+                msg = _('Password changed successfully.')
+                messages.success(request, msg)
+                update_session_auth_hash(request, form.user) # This is safe
+                return HttpResponseRedirect('..')
+        else:
+            form = self.change_password_form(user, related=related)
+        
+        fieldsets = [
+            (user._meta.verbose_name.capitalize(), {
+                'classes': ('wide',),
+                'fields': ('password1', 'password2')
+            }),
+        ]
+        for ix, rel in enumerate(related):
+            fieldsets.append((rel._meta.verbose_name.capitalize(), {
+                'classes': ('wide',),
+                'fields': ('password1_%i' % ix, 'password2_%i' % ix)
+            }))
+        
+        adminForm = admin.helpers.AdminForm(form, fieldsets, {})
+        
+        context = {
+            'title': _('Change password: %s') % escape(username),
+            'adminform': adminForm,
+            'errors': admin.helpers.AdminErrorList(form, []),
+            'form_url': form_url,
+            'is_popup': (IS_POPUP_VAR in request.POST or
+                         IS_POPUP_VAR in request.GET),
+            'add': True,
+            'change': False,
+            'has_delete_permission': False,
+            'has_change_permission': True,
+            'has_absolute_url': False,
+            'opts': self.model._meta,
+            'original': user,
+            'save_as': False,
+            'show_save': True,
+        }
+        context.update(admin.site.each_context())
+        return TemplateResponse(request,
+            self.change_user_password_template,
+            context, current_app=self.admin_site.name)

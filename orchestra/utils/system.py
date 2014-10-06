@@ -106,7 +106,8 @@ def run(command, display=True, error_codes=[0], silent=False, stdin=''):
 
 
 def sshrun(addr, command, *args, **kwargs):
-    cmd = "ssh -o stricthostkeychecking=no root@%s -C '%s'" % (addr, command)
+    command = command.replace("'", """'"'"'""")
+    cmd = "ssh -o stricthostkeychecking=no -C root@%s '%s'" % (addr, command)
     return run(cmd, *args, **kwargs)
 
 

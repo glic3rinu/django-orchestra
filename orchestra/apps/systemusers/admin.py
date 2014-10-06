@@ -2,17 +2,18 @@ from django.conf.urls import patterns, url
 from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.contrib.admin.util import unquote
+from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import wrap_admin_view
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
+from orchestra.forms import UserCreationForm, UserChangeForm
 
-from .forms import UserCreationForm, UserChangeForm
 from .models import SystemUser
 
 
-class SystemUserAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
+class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'account_link', 'shell', 'home', 'is_active',)
     list_filter = ('is_active', 'shell')
     fieldsets = (

@@ -1,6 +1,7 @@
 import ftplib
 import os
 import re
+import time
 from functools import partial
 
 import paramiko
@@ -100,7 +101,7 @@ class SystemUserMixin(object):
         self.assertEqual(0, channel.recv_exit_status())
         channel.close()
     
-    def test_create(self):
+    def test_add(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password)
@@ -166,9 +167,14 @@ class SystemUserMixin(object):
         self.assertRaises(ftplib.error_perm, self.validate_ftp, username, password)
     
     def test_change_password(self):
-        pass
-        # TODO
-
+        username = '%s_systemuser' % random_ascii(10)
+        password = '@!?%spppP001' % random_ascii(5)
+        self.add(username, password)
+        self.addCleanup(partial(self.delete, username))
+        self.validate_ftp(username, password)
+        new_password = '@!?%spppP001' % random_ascii(5)
+        self.change_password(username, new_password)
+        self.validate_ftp(username, new_password)
 
 # TODO test resources
 
@@ -191,7 +197,7 @@ class RESTSystemUserMixin(SystemUserMixin):
     def add_group(self, username, groupname):
         user = self.rest.systemusers.retrieve(username=username).get()
         group = self.rest.systemusers.retrieve(username=groupname).get()
-        user.groups.append(group) # TODO how to do it with the api?
+        user.groups.append(group) # TODO
         user.save()
     
     def disable(self, username):
@@ -202,6 +208,10 @@ class RESTSystemUserMixin(SystemUserMixin):
     def save(self, username):
         user = self.rest.systemusers.retrieve(username=username).get()
         user.save()
+    
+    def change_password(self, username, password):
+        user = self.rest.systemusers.retrieve(username=username).get()
+        user.change_password(password)
 
 
 class AdminSystemUserMixin(SystemUserMixin):
@@ -266,6 +276,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         self.selenium.get(url)
         groups = self.selenium.find_element_by_id('id_groups_add_all_link')
         groups.click()
+        time.sleep(0.5)
         save = self.selenium.find_element_by_name('_save')
         save.submit()
         self.assertNotEqual(url, self.selenium.current_url)
@@ -279,7 +290,21 @@ class AdminSystemUserMixin(SystemUserMixin):
         save = self.selenium.find_element_by_name('_save')
         save.submit()
         self.assertNotEqual(url, self.selenium.current_url)
-
+    
+    @snapshot_on_error
+    def change_password(self, username, password):
+        user = SystemUser.objects.get(username=username)
+        change_password = reverse('admin:systemusers_systemuser_change_password', args=(user.pk,))
+        url = self.live_server_url + change_password
+        self.selenium.get(url)
+        
+        password_field = self.selenium.find_element_by_id('id_password1')
+        password_field.send_keys(password)
+        password_field = self.selenium.find_element_by_id('id_password2')
+        password_field.send_keys(password)
+        password_field.submit()
+        
+        self.assertNotEqual(url, self.selenium.current_url)
 
 class RESTSystemUserTest(RESTSystemUserMixin, BaseLiveServerTestCase):
     pass

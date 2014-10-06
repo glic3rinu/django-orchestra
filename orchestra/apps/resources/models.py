@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.apps import apps
 from django.core import validators
 from django.db import models
 from django.utils import timezone
@@ -101,7 +102,7 @@ class Resource(models.Model):
                 task.save(update_fields=['crontab'])
         if created:
             # This only work on tests because of multiprocessing used on real deployments
-            create_resource_relation()
+            apps.get_app_config('resources').reload_relations()
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
@@ -132,11 +133,14 @@ class ResourceData(models.Model):
     def get_or_create(cls, obj, resource):
         ct = ContentType.objects.get_for_model(type(obj))
         try:
-            return cls.objects.get(content_type=ct, object_id=obj.pk,
-                    resource=resource)
+            return cls.objects.get(content_type=ct, object_id=obj.pk, resource=resource)
         except cls.DoesNotExist:
             return cls.objects.create(content_object=obj, resource=resource,
                     allocated=resource.default_allocation)
+    
+    @property
+    def unit(self):
+        return self.resource.unit
     
     def get_used(self):
         return helpers.compute_resource_usage(self)
@@ -177,8 +181,10 @@ def create_resource_relation():
                 data = self.obj.resource_set.get(resource__name=attr)
             except ResourceData.DoesNotExist:
                 model = self.obj._meta.model_name
-                resource = Resource.objects.get(content_type__model=model, name=attr, is_active=True)
-                data = ResourceData(content_object=self.obj, resource=resource)
+                resource = Resource.objects.get(content_type__model=model, name=attr,
+                        is_active=True)
+                data = ResourceData(content_object=self.obj, resource=resource,
+                        allocated=resource.default_allocation)
             return data
         
         def __get__(self, obj, cls):

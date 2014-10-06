@@ -8,7 +8,23 @@ from .models import Mailbox, Address
 class MailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Mailbox
-        fields = ('url', 'name', 'use_custom_filtering', 'custom_filtering', 'addresses')
+        # TODO 'use_custom_filtering', 
+        fields = ('url', 'name', 'password', 'custom_filtering', 'addresses')
+    
+    def validate_password(self, attrs, source):
+        """ POST only password """
+        if self.object:
+            if 'password' in attrs:
+                raise serializers.ValidationError(_("Can not set password"))
+        elif 'password' not in attrs:
+            raise serializers.ValidationError(_("Password required"))
+        return attrs
+    
+    def save_object(self, obj, **kwargs):
+        # FIXME this method will be called when saving nested serializers :(
+        if not obj.pk:
+            obj.set_password(obj.password)
+        super(MailboxSerializer, self).save_object(obj, **kwargs)
 
 
 class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
@@ -25,3 +41,9 @@ class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
         domain = fields['domain'].queryset
         fields['domain'].queryset = domain.filter(account=account)
         return fields
+    
+    def validate(self, attrs):
+        if not attrs['mailboxes'] and not attrs['forward']:
+            raise serializers.ValidationError("mailboxes or forward should be provided")
+        return attrs
+

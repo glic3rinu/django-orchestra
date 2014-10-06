@@ -140,4 +140,15 @@ def insert_resource_inlines():
     for ct, resources in Resource.objects.group_by('content_type').iteritems():
         inline = resource_inline_factory(resources)
         model = ct.model_class()
-        insertattr(model, 'inlines', inline)
+        modeladmin = get_modeladmin(model)
+        inserted = False
+        inlines = []
+        for existing in getattr(modeladmin, 'inlines', []):
+            if type(inline) == type(existing):
+                existing = inline
+                inserted = True
+            inlines.append(existing)
+        if inserted:
+            modeladmin.inlines = inlines
+        else:
+            insertattr(model, 'inlines', inline)

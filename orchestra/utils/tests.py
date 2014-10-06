@@ -109,6 +109,12 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
     
     def rest_login(self):
         self.rest.login(username=self.account.username, password=self.account_password)
+    
+    def take_screenshot(self):
+        timestamp = datetime.datetime.now().isoformat().replace(':', '')
+        filename = 'screenshot_%s_%s.png' % (self.id(), timestamp)
+        path = '/home/orchestra/snapshots'
+        self.selenium.save_screenshot(os.path.join(path, filename))
 
 
 def snapshot_on_error(test):
@@ -118,9 +124,23 @@ def snapshot_on_error(test):
             test(*args, **kwargs)
         except:
             self = args[0]
-            timestamp = datetime.datetime.now().isoformat().replace(':', '')
-            filename = 'screenshot_%s_%s.png' % (self.id(), timestamp)
-            path = '/home/orchestra/snapshots'
-            self.selenium.save_screenshot(os.path.join(path, filename))
+            self.take_screenshot()
             raise
     return inner
+
+
+def save_response_on_error(test):
+    @wraps(test)
+    def inner(*args, **kwargs):
+        try:
+            test(*args, **kwargs)
+        except:
+            self = args[0]
+            timestamp = datetime.datetime.now().isoformat().replace(':', '')
+            filename = '%s_%s.html' % (self.id(), timestamp)
+            path = '/home/orchestra/snapshots'
+            with open(os.path.join(path, filename), 'w') as dumpfile:
+                dumpfile.write(self.rest.last_response.content)
+            raise
+    return inner
+

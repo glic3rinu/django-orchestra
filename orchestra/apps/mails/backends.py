@@ -1,6 +1,7 @@
 import textwrap
 import os
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -10,24 +11,30 @@ from orchestra.apps.resources import ServiceMonitor
 from . import settings
 from .models import Address
 
+# TODO http://wiki2.dovecot.org/HowTo/SimpleVirtualInstall
+# TODO http://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
+# TODO Set first/last_valid_uid/gid settings to contain only the range actually used by mail processes
+# TODO Insert "/./" inside the returned home directory, eg.: home=/home/./user to chroot into /home, or home=/home/user/./ to chroot into /home/user.
+# TODO mount the filesystem with "nosuid" option
 
-class MailSystemUserBackend(ServiceController):
-    verbose_name = _("Mail system user")
+
+class PasswdVirtualUserBackend(ServiceController):
+    verbose_name = _("Mail virtual user (passwd-file)")
     model = 'mails.Mailbox'
     # TODO related_models = ('resources__content_type') ?? needed for updating disk usage from resource.data
     
     DEFAULT_GROUP = 'postfix'
     
-    def create_user(self, context):
-        self.append(textwrap("""
-            if [[ $( id %(username)s ) ]]; then
-               usermod -p '%(password)s' %(username)s
+    def set_user(self, context):
+        self.append(textwrap.dedent("""
+            if [[ $( grep "^%(username)s:" %(passwd_path)s ) ]]; then
+               sed -i "s/^%(username)s:.*/%(passwd)s/" %(passwd_path)s
             else
-               useradd %(username)s --password '%(password)s' --shell /dev/null
+               echo '%(passwd)s' >> %(passwd_path)s
             fi""" % context
         ))
         self.append("mkdir -p %(home)s" % context)
-        self.append("chown %(username)s.%(group)s %(home)s" % context)
+        self.append("chown %(uid)s.%(gid)s %(home)s" % context)
     
     def generate_filter(self, mailbox, context):
         now = timezone.now().strftime("%B %d, %Y, %H:%M")
@@ -38,7 +45,7 @@ class MailSystemUserBackend(ServiceController):
         if mailbox.custom_filtering:
             context['filtering'] += mailbox.custom_filtering
         else:
-            context['filtering'] += settings.EMAILS_DEFAUL_FILTERING
+            context['filtering'] += settings.MAILS_DEFAUL_FILTERING
         context['filter_path'] = os.path.join(context['home'], '.orchestra.sieve')
         self.append("echo '%(filtering)s' > %(filter_path)s" % context)
     
@@ -51,7 +58,7 @@ class MailSystemUserBackend(ServiceController):
             'quota': mailbox.resources.disk.allocated*1000*1000,
         })
         self.append("mkdir -p %(maildir_path)s" % context)
-        self.append(textwrap("""
+        self.append(textwrap.dedent("""
             sed -i '1s/.*/%(quota)s,S/' %(maildirsize_path)s || {
                echo '%(quota)s,S' > %(maildirsize_path)s &&
                chown %(username)s %(maildirsize_path)s;
@@ -60,25 +67,42 @@ class MailSystemUserBackend(ServiceController):
     
     def save(self, mailbox):
         context = self.get_context(mailbox)
-        self.create_user(context)
-        self.set_quota(mailbox, context)
+        self.set_user(context)
         self.generate_filter(mailbox, context)
     
     def delete(self, mailbox):
         context = self.get_context(mailbox)
-        self.append("{ sleep 2 && killall -u %(username)s -s KILL; } &" % context)
-        self.append("killall -u %(username)s" % context)
-        self.append("userdel %(username)s" % context)
+        self.append("{ sleep 2 && killall -u %(uid)s -s KILL; } &" % context)
+        self.append("killall -u %(uid)s" % context)
+        self.append("sed -i '/^%(username)s:.*/d' %(passwd_path)s" % context)
         self.append("rm -fr %(home)s" % context)
+    
+    def get_extra_fields(self, mailbox, context):
+        context['quota'] = self.get_quota(mailbox)
+        return 'userdb_mail=maildir:~/Maildir {quota}'.format(**context)
+    
+    def get_quota(self, mailbox):
+        try:
+            quota = mailbox.resources.disk.allocated
+        except (AttributeError, ObjectDoesNotExist):
+            return ''
+        unit = mailbox.resources.disk.unit[0].upper()
+        return 'userdb_quota_rule=*:bytes=%i%s' % (quota, unit)
     
     def get_context(self, mailbox):
         context = {
             'name': mailbox.name,
             'username': mailbox.name,
-            'password': mailbox.password if mailbox.is_active else '*%s' % mailbox.password,
-            'group': self.DEFAULT_GROUP
+            'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
+            'uid': 10000 + mailbox.pk,
+            'gid': 10000 + mailbox.pk,
+            'group': self.DEFAULT_GROUP,
+            'quota': self.get_quota(mailbox),
+            'passwd_path': settings.MAILS_PASSWD_PATH,
+            'home': mailbox.get_home(),
         }
-        context['home'] = settings.EMAILS_HOME % context
+        context['extra_fields'] = self.get_extra_fields(mailbox, context)
+        context['passwd'] = '{username}:{password}:{uid}:{gid}:,,,:{home}:{extra_fields}'.format(**context)
         return context
 
 
@@ -89,7 +113,7 @@ class PostfixAddressBackend(ServiceController):
     def include_virtdomain(self, context):
         self.append(
             '[[ $(grep "^\s*%(domain)s\s*$" %(virtdomains)s) ]]'
-            '   || { echo "%(domain)s" >> %(virtdomains)s; UPDATED=1; }' % context
+            '   || { echo "%(domain)s" >> %(virtdomains)s; UPDATED_VIRTDOMAINS=1; }' % context
         )
     
     def exclude_virtdomain(self, context):
@@ -98,21 +122,21 @@ class PostfixAddressBackend(ServiceController):
             self.append('sed -i "s/^%(domain)s//" %(virtdomains)s' % context)
     
     def update_virtusertable(self, context):
-        self.append(textwrap("""
+        self.append(textwrap.dedent("""
             LINE="%(email)s\t%(destination)s"
             if [[ ! $(grep "^%(email)s\s" %(virtusertable)s) ]]; then
-               echo "$LINE" >> %(virtusertable)s
-               UPDATED=1
+               echo "${LINE}" >> %(virtusertable)s
+               UPDATED_VIRTUSERTABLE=1
             else
                if [[ ! $(grep "^${LINE}$" %(virtusertable)s) ]]; then
                    sed -i "s/^%(email)s\s.*$/${LINE}/" %(virtusertable)s
-                   UPDATED=1
+                   UPDATED_VIRTUSERTABLE=1
                fi
             fi""" % context
         ))
     
     def exclude_virtusertable(self, context):
-        self.append(textwrap("""
+        self.append(textwrap.dedent("""
             if [[ $(grep "^%(email)s\s") ]]; then
                sed -i "s/^%(email)s\s.*$//" %(virtusertable)s
                UPDATED=1
@@ -131,17 +155,17 @@ class PostfixAddressBackend(ServiceController):
     
     def commit(self):
         context = self.get_context_files()
-        self.append(textwrap("""
-            [[ $UPDATED == 1 ]] && {
-                postmap %(virtdomains)s
-                postmap %(virtusertable)s
-            }""" % context
+        self.append(textwrap.dedent("""
+            [[ $UPDATED_VIRTUSERTABLE == 1 ]] && { postmap %(virtusertable)s; }
+            # TODO not sure if always needed
+            [[ $UPDATED_VIRTDOMAINS == 1 ]] && { /etc/init.d/postfix reload; }
+            """ % context
         ))
     
     def get_context_files(self):
         return {
-            'virtdomains': settings.EMAILS_VIRTDOMAINS_PATH,
-            'virtusertable': settings.EMAILS_VIRTUSERTABLE_PATH,
+            'virtdomains': settings.MAILS_VIRTDOMAINS_PATH,
+            'virtusertable': settings.MAILS_VIRTUSERTABLE_PATH,
         }
     
     def get_context(self, address):
@@ -173,7 +197,8 @@ class MaildirDisk(ServiceMonitor):
     
     def get_context(self, mailbox):
         context = MailSystemUserBackend().get_context(mailbox)
-        context['home'] = settings.EMAILS_HOME % context
-        context['rr_path'] = os.path.join(context['home'], 'Maildir/maildirsize')
-        context['object_id'] = mailbox.pk
+        context.update({
+            'rr_path': os.path.join(context['home'], 'Maildir/maildirsize'),
+            'object_id': mailbox.pk
+        })
         return context

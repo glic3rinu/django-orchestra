@@ -6,11 +6,13 @@ from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin, AccountAdminMixin
+from orchestra.forms import UserCreationForm, UserChangeForm
 
 from .filters import HasMailboxListFilter, HasForwardListFilter, HasAddressListFilter
+from .forms import MailboxCreationForm, AddressForm
 from .models import Mailbox, Address, Autoresponse
 
 
@@ -24,14 +26,14 @@ class AutoresponseInline(admin.StackedInline):
         return super(AutoresponseInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
+class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'name', 'account_link', 'uses_custom_filtering', 'display_addresses'
     )
     list_filter = (HasAddressListFilter,)
     add_fieldsets = (
         (None, {
-            'fields': ('account', 'name', 'password'),
+            'fields': ('account', 'name', 'password1', 'password2'),
         }),
         (_("Filtering"), {
             'classes': ('collapse',),
@@ -41,7 +43,7 @@ class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
     fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('account_link', 'name'),
+            'fields': ('account_link', 'name', 'password'),
         }),
         (_("Filtering"), {
             'classes': ('collapse',),
@@ -53,6 +55,9 @@ class MailboxAdmin(AccountAdminMixin, ExtendedModelAdmin):
         }),
     )
     readonly_fields = ('account_link', 'display_addresses', 'addresses_field')
+    change_readonly_fields = ('name',)
+    add_form = MailboxCreationForm
+    form = UserChangeForm
     
     def display_addresses(self, mailbox):
         addresses = []
@@ -108,6 +113,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     readonly_fields = ('account_link', 'domain_link', 'email_link')
     filter_by_account_fields = ('domain', 'mailboxes')
     filter_horizontal = ['mailboxes']
+    form = AddressForm
     
     domain_link = admin_link('domain', order='domain__name')
     

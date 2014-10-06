@@ -14,6 +14,12 @@ class ResourceSerializer(serializers.ModelSerializer):
         fields = ('name', 'used', 'allocated')
         read_only_fields = ('used',)
     
+    def from_native(self, raw_data, files=None):
+        data = super(ResourceSerializer, self).from_native(raw_data, files=files)
+        if not data.resource_id:
+            data.resource = Resource.objects.get(name=raw_data['name'])
+        return data
+    
     def get_name(self, instance):
         return instance.resource.name
     
@@ -23,8 +29,7 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 # Monkey-patching section
 
-if database_ready():
-    # TODO why this is even loaded during syncdb?
+def insert_resource_serializers():
     # Create nested serializers on target models
     for ct, resources in Resource.objects.group_by('content_type').iteritems():
         model = ct.model_class()
@@ -32,7 +37,7 @@ if database_ready():
             router.insert(model, 'resources', ResourceSerializer, required=False, many=True, source='resource_set')
         except KeyError:
             continue
-        
+        # TODO this is a fucking workaround, reimplement this on the proper place
         def validate_resources(self, attrs, source, _resources=resources):
             """ Creates missing resources """
             posted = attrs.get(source, [])
@@ -70,3 +75,6 @@ if database_ready():
             ]
             return ret
         viewset.metadata = metadata
+
+if database_ready():
+    insert_resource_serializers()

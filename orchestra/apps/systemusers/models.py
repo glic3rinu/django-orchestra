@@ -46,9 +46,6 @@ class SystemUser(models.Model):
     def __unicode__(self):
         return self.username
     
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)
-    
     @cached_property
     def active(self):
         a = type(self).account.field.model
@@ -56,6 +53,9 @@ class SystemUser(models.Model):
             return self.is_active and self.account.is_active
         except type(self).account.field.rel.to.DoesNotExist:
             return self.is_active
+    
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
     
     def get_home(self):
         if self.is_main:

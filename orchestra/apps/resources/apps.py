@@ -13,3 +13,11 @@ class ResourcesConfig(AppConfig):
             from .models import create_resource_relation
             create_resource_relation()
             insert_resource_inlines()
+    
+    def reload_relations(self):
+        from .admin import insert_resource_inlines
+        from .models import create_resource_relation
+        from .serializers import insert_resource_serializers
+        create_resource_relation()
+        insert_resource_inlines()
+        insert_resource_serializers()

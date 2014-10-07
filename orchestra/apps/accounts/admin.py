@@ -13,6 +13,7 @@ from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, ch
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
 
+from .actions import disable
 from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm
 from .models import Account
@@ -55,6 +56,8 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     filter_horizontal = ()
     change_readonly_fields = ('username',)
     change_form_template = 'admin/accounts/account/change_form.html'
+    actions = [disable]
+    change_view_actions = actions
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """

@@ -348,3 +348,22 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         self.account = self.create_account(username=self.account.username, superuser=True)
         self.selenium.delete_all_cookies()
         self.admin_login()
+    
+    @snapshot_on_error
+    def test_disable_account(self):
+        username = '%s_systemuser' % random_ascii(10)
+        password = '@!?%spppP001' % random_ascii(5)
+        self.add(username, password)
+        self.addCleanup(self.delete, username)
+        self.validate_ftp(username, password)
+        self.disable(username)
+        self.validate_user(username)
+        
+        disable = reverse('admin:accounts_account_disable', args=(self.account.pk,))
+        url = self.live_server_url + disable
+        self.selenium.get(url)
+        confirmation = self.selenium.find_element_by_name('post')
+        confirmation.submit()
+        self.assertNotEqual(url, self.selenium.current_url)
+        
+        self.assertRaises(ftplib.error_perm, self.validate_ftp, username, password)

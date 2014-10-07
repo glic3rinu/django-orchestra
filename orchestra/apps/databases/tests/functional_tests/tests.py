@@ -14,7 +14,7 @@ from orchestra.utils.tests import (BaseLiveServerTestCase, random_ascii, save_re
         snapshot_on_error)
 
 from ... import backends, settings
-from ...models import Database
+from ...models import Database, DatabaseUser
 
 
 class DatabaseTestMixin(object):
@@ -119,6 +119,16 @@ class AdminDatabaseMixin(DatabaseTestMixin):
         
         name_field.submit()
         self.assertNotEqual(url, self.selenium.current_url)
+    
+    @snapshot_on_error
+    def delete(self, dbname):
+        db = Database.objects.get(name=dbname)
+        self.admin_delete(db)
+
+    @snapshot_on_error
+    def delete_user(self, username):
+        user = DatabaseUser.objects.get(username=username)
+        self.admin_delete(user)
 
 
 class RESTMysqlDatabaseTest(MySQLBackendMixin, RESTDatabaseMixin, BaseLiveServerTestCase):

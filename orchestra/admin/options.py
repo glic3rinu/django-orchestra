@@ -73,9 +73,9 @@ class ChangeViewActionsMixin(object):
             new_urls += patterns('',
                 url('^(\d+)/%s/$' % action.url_name,
                     admin_site.admin_view(action),
-                    name='%s_%s_%s' % (opts.app_label,
-                                       opts.model_name,
-                                       action.url_name)))
+                    name='%s_%s_%s' % (opts.app_label, opts.model_name, action.url_name)
+                )
+            )
         return new_urls + urls
     
     def get_change_view_actions(self, obj=None):

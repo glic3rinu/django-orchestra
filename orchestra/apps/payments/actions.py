@@ -27,7 +27,7 @@ def process_transactions(modeladmin, request, queryset):
             procs = method.process(transactions)
             processes += procs
             for trans in transactions:
-                modeladmin.log_change(request, trans, 'Processed')
+                modeladmin.log_change(request, trans, _("Processed"))
     if not processes:
         return
     opts = modeladmin.model._meta
@@ -46,7 +46,7 @@ def process_transactions(modeladmin, request, queryset):
 def mark_as_executed(modeladmin, request, queryset, extra_context={}):
     for trans in queryset:
         trans.mark_as_executed()
-        modeladmin.log_change(request, trans, 'Executed')
+        modeladmin.log_change(request, trans, _("Executed"))
     msg = _("%s selected transactions have been marked as executed.") % queryset.count()
     modeladmin.message_user(request, msg)
 mark_as_executed.url_name = 'execute'
@@ -58,7 +58,7 @@ mark_as_executed.verbose_name = _("Mark as executed")
 def mark_as_secured(modeladmin, request, queryset):
     for trans in queryset:
         trans.mark_as_secured()
-        modeladmin.log_change(request, trans, 'Secured')
+        modeladmin.log_change(request, trans, _("Secured"))
     msg = _("%s selected transactions have been marked as secured.") % queryset.count()
     modeladmin.message_user(request, msg)
 mark_as_secured.url_name = 'secure'
@@ -70,7 +70,7 @@ mark_as_secured.verbose_name = _("Mark as secured")
 def mark_as_rejected(modeladmin, request, queryset):
     for trans in queryset:
         trans.mark_as_rejected()
-        modeladmin.log_change(request, trans, 'Rejected')
+        modeladmin.log_change(request, trans, _("Rejected"))
     msg = _("%s selected transactions have been marked as rejected.") % queryset.count()
     modeladmin.message_user(request, msg)
 mark_as_rejected.url_name = 'reject'
@@ -105,7 +105,7 @@ _format_commit = partial(_format_display_objects, related=('all', 'secured'))
 def mark_process_as_executed(modeladmin, request, queryset):
     for process in queryset:
         process.mark_as_executed()
-        modeladmin.log_change(request, process, 'Executed')
+        modeladmin.log_change(request, process, _("Executed"))
     msg = _("%s selected processes have been marked as executed.") % queryset.count()
     modeladmin.message_user(request, msg)
 mark_process_as_executed.url_name = 'executed'
@@ -117,7 +117,7 @@ mark_process_as_executed.verbose_name = _("Mark as executed")
 def abort(modeladmin, request, queryset):
     for process in queryset:
         process.abort()
-        modeladmin.log_change(request, process, 'Aborted')
+        modeladmin.log_change(request, process, _("Aborted"))
     msg = _("%s selected processes have been aborted.") % queryset.count()
     modeladmin.message_user(request, msg)
 abort.url_name = 'abort'
@@ -129,7 +129,7 @@ abort.verbose_name = _("Abort")
 def commit(modeladmin, request, queryset):
     for trans in queryset:
         trans.mark_as_rejected()
-        modeladmin.log_change(request, trans, 'Rejected')
+        modeladmin.log_change(request, trans, _("Rejected"))
     msg = _("%s selected transactions have been marked as rejected.") % queryset.count()
     modeladmin.message_user(request, msg)
 commit.url_name = 'commit'

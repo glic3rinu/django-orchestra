@@ -65,6 +65,20 @@ class Account(auth.AbstractBaseUser):
         if created and hasattr(self, 'systemusers'):
             self.systemusers.create_user(self.username, account=self, password=self.password, is_main=True)
     
+    def disable(self):
+        self.is_active = False
+#        self.save(update_fields=['is_active'])
+        for rel in self._meta.get_all_related_objects():
+            if not rel.model in services:
+                continue
+            try:
+                rel.model._meta.get_field_by_name('is_active')
+            except models.FieldDoesNotExist: 
+                continue
+            else:
+                for obj in getattr(self, rel.get_accessor_name()).all():
+                    obj.save(update_fields=[])
+    
     def send_email(self, template, context, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)
         email_to = contacts.values_list('email', flat=True)

@@ -73,13 +73,16 @@ class OperationsMiddleware(object):
                 else:
                     update_fields = kwargs.get('update_fields', None)
                     if update_fields:
-                        append = False
-                        for field in kwargs.get('update_fields', [None]):
-                            if field not in backend.ignore_fields:
-                                append = True
-                                break
-                        if not append:
-                            continue
+                        # "update_fileds=[]" is a convention for explicitly executing backend
+                        # i.e. account.disable()
+                        if not update_fields == []:
+                            execute = False
+                            for field in update_fields:
+                                if field not in backend.ignore_fields:
+                                    execute = True
+                                    break
+                            if not execute:
+                                continue
                 instance = copy.copy(instance)
                 pending_operations.add(Operation.create(backend, instance, action))
     

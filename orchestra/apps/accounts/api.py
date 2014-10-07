@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from orchestra.api import router
+from orchestra.api import router, SetPasswordApiMixin
 
 from .models import Account
 from .serializers import AccountSerializer
@@ -12,7 +12,7 @@ class AccountApiMixin(object):
         return qs.filter(account=self.request.user.pk)
 
 
-class AccountViewSet(viewsets.ModelViewSet):
+class AccountViewSet(SetPasswordApiMixin, viewsets.ModelViewSet):
     model = Account
     serializer_class = AccountSerializer
     singleton_pk = lambda _,request: request.user.pk

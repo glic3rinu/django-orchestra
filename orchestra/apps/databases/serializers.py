@@ -14,7 +14,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('user', 'is_owner',)
 
 
-class PermissionSerializer(serializers.HyperlinkedModelSerializer):
+class RoleSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Role
         fields = ('database', 'is_owner',)
@@ -32,9 +32,9 @@ class DatabaseUserSerializer(AccountSerializerMixin, serializers.HyperlinkedMode
     password = serializers.CharField(max_length=128, label=_('Password'),
             validators=[validate_password], write_only=True,
             widget=widgets.PasswordInput)
-    permission = PermissionSerializer(source='roles', many=True)
+    roles = RoleSerializer(many=True, read_only=True)
     
     class Meta:
         model = DatabaseUser
-        fields = ('url', 'username', 'password', 'type', 'permission')
+        fields = ('url', 'username', 'password', 'type', 'roles')
         write_only_fields = ('username',)

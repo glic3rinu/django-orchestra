@@ -25,8 +25,8 @@ urlpatterns = patterns('',
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}
     )
-
 )
+
 
 if settings.DEBUG:
     import debug_toolbar

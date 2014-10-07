@@ -1,8 +1,9 @@
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.module_loading import autodiscover_modules
 from rest_framework.routers import DefaultRouter, Route, flatten, replace_methodname
 
 from orchestra import settings
-from orchestra.utils.apps import autodiscover as module_autodiscover
+#from orchestra.utils.apps import autodiscover as module_autodiscover
 from orchestra.utils.python import import_class
 
 from .helpers import insert_links, replace_collectionmethodname
@@ -99,16 +100,16 @@ class LinkHeaderRouter(DefaultRouter):
     def insert(self, prefix_or_model, name, field, **kwargs):
         """ Dynamically add new fields to an existing serializer """
         viewset = self.get_viewset(prefix_or_model)
-        setattr(viewset, 'inserted', getattr(viewset, 'inserted', []))
+#        setattr(viewset, 'inserted', getattr(viewset, 'inserted', []))
         if viewset.serializer_class is None:
             viewset.serializer_class = viewset().get_serializer_class()
         viewset.serializer_class.base_fields.update({name: field(**kwargs)})
-        if not name in viewset.inserted:
-            viewset.serializer_class.Meta.fields += (name,)
-            viewset.inserted.append(name)
+#        if not name in viewset.inserted:
+        viewset.serializer_class.Meta.fields += (name,)
+#            viewset.inserted.append(name)
 
 
 # Create a router and register our viewsets with it.
 router = LinkHeaderRouter()
 
-autodiscover = lambda: (module_autodiscover('api'), module_autodiscover('serializers'))
+autodiscover = lambda: (autodiscover_modules('api'), autodiscover_modules('serializers'))

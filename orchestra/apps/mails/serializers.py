@@ -9,7 +9,7 @@ class MailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
     class Meta:
         model = Mailbox
         # TODO 'use_custom_filtering', 
-        fields = ('url', 'name', 'password', 'custom_filtering', 'addresses')
+        fields = ('url', 'name', 'password', 'custom_filtering', 'addresses', 'is_active')
     
     def validate_password(self, attrs, source):
         """ POST only password """
@@ -44,6 +44,6 @@ class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
     
     def validate(self, attrs):
         if not attrs['mailboxes'] and not attrs['forward']:
-            raise serializers.ValidationError("mailboxes or forward should be provided")
+            raise serializers.ValidationError("mailboxes or forward addresses should be provided")
         return attrs
 

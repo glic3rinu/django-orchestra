@@ -48,7 +48,6 @@ class SystemUser(models.Model):
     
     @cached_property
     def active(self):
-        a = type(self).account.field.model
         try:
             return self.is_active and self.account.is_active
         except type(self).account.field.rel.to.DoesNotExist:

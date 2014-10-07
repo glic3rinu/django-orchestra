@@ -7,6 +7,7 @@ from functools import wraps
 from django.conf import settings
 from django.contrib.auth import BACKEND_SESSION_KEY, SESSION_KEY, get_user_model
 from django.contrib.sessions.backends.db import SessionStore
+from django.core.urlresolvers import reverse
 from django.test import LiveServerTestCase, TestCase
 from orm.api import Api
 from selenium.webdriver.firefox.webdriver import WebDriver
@@ -115,7 +116,43 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         filename = 'screenshot_%s_%s.png' % (self.id(), timestamp)
         path = '/home/orchestra/snapshots'
         self.selenium.save_screenshot(os.path.join(path, filename))
-
+    
+    def admin_delete(self, obj):
+        opts = obj._meta
+        app_label, model_name = opts.app_label, opts.model_name
+        delete = reverse('admin:%s_%s_delete' % (app_label, model_name), args=(obj.pk,))
+        url = self.live_server_url + delete
+        self.selenium.get(url)
+        confirmation = self.selenium.find_element_by_name('post')
+        confirmation.submit()
+        self.assertNotEqual(url, self.selenium.current_url)
+    
+    def admin_disable(self, obj):
+        opts = obj._meta
+        app_label, model_name = opts.app_label, opts.model_name
+        change = reverse('admin:%s_%s_change' % (app_label, model_name), args=(obj.pk,))
+        url = self.live_server_url + change
+        self.selenium.get(url)
+        is_active = self.selenium.find_element_by_id('id_is_active')
+        is_active.click()
+        save = self.selenium.find_element_by_name('_save')
+        save.submit()
+        self.assertNotEqual(url, self.selenium.current_url)
+    
+    def admin_change_password(self, obj, password):
+        opts = obj._meta
+        app_label, model_name = opts.app_label, opts.model_name
+        change_password = reverse('admin:%s_%s_change_password' % (app_label, model_name), args=(obj.pk,))
+        url = self.live_server_url + change_password
+        self.selenium.get(url)
+        
+        password_field = self.selenium.find_element_by_id('id_password1')
+        password_field.send_keys(password)
+        password_field = self.selenium.find_element_by_id('id_password2')
+        password_field.send_keys(password)
+        password_field.submit()
+        
+        self.assertNotEqual(url, self.selenium.current_url)
 
 def snapshot_on_error(test):
     @wraps(test)

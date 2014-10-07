@@ -6,7 +6,7 @@ from orchestra.apps.resources import ServiceMonitor
 from . import settings
 
 
-class MySQLDBBackend(ServiceController):
+class MySQLBackend(ServiceController):
     verbose_name = "MySQL database"
     model = 'databases.Database'
     

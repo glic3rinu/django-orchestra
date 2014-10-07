@@ -36,7 +36,10 @@ class Mailbox(models.Model):
     
     @cached_property
     def active(self):
-        return self.is_active and self.account.is_active
+        try:
+            return self.is_active and self.account.is_active
+        except type(self).account.field.rel.to.DoesNotExist:
+            return self.is_active
     
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

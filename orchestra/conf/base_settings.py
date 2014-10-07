@@ -107,7 +107,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
+    'django.contrib.admin.apps.SimpleAdminConfig',
     
     'orchestra.apps.accounts',
     'orchestra.apps.contacts',

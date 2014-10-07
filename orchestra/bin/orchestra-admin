@@ -130,7 +130,8 @@ function install_requirements () {
          libxml2-dev \
          libxslt1-dev \
          wkhtmltopdf \
-         xvfb"
+         xvfb \
+         python-mysqldb"
     
     PIP="django==1.7 \
          django-celery-email==1.0.4 \

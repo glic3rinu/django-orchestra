@@ -6,11 +6,12 @@ from django.db.models.loading import get_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import ValidationError
 from django.utils.functional import cached_property
+from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import caches, services, accounts
 from orchestra.models import queryset
-from orchestra.utils.apps import autodiscover
+#from orchestra.utils.apps import autodiscover
 
 from . import settings, rating
 from .handlers import ServiceHandler
@@ -70,7 +71,7 @@ class Rate(models.Model):
         return "{}-{}".format(str(self.price), self.quantity)
 
 
-autodiscover('handlers')
+autodiscover_modules('handlers')
 
 
 class Service(models.Model):

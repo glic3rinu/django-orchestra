@@ -111,14 +111,15 @@ class AdminPasswordChangeForm(forms.Form):
         if password:
             self.user.set_password(password)
             if commit:
-                self.user.save()
+                self.user.save(update_fields=['password'])
         for ix, rel in enumerate(self.related):
             password = self.cleaned_data['password1_%s' % ix]
             if password:
+                print password
                 set_password = getattr(rel, 'set_password')
                 set_password(password)
                 if commit:
-                    rel.save()
+                    rel.save(update_fields=['password'])
         return self.user
     
     def _get_changed_data(self):

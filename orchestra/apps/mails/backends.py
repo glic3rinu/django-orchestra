@@ -28,7 +28,7 @@ class PasswdVirtualUserBackend(ServiceController):
     def set_user(self, context):
         self.append(textwrap.dedent("""
             if [[ $( grep "^%(username)s:" %(passwd_path)s ) ]]; then
-               sed -i "s/^%(username)s:.*/%(passwd)s/" %(passwd_path)s
+               sed -i 's#^%(username)s:.*#%(passwd)s#' %(passwd_path)s
             else
                echo '%(passwd)s' >> %(passwd_path)s
             fi""" % context
@@ -49,22 +49,6 @@ class PasswdVirtualUserBackend(ServiceController):
         context['filter_path'] = os.path.join(context['home'], '.orchestra.sieve')
         self.append("echo '%(filtering)s' > %(filter_path)s" % context)
     
-    def set_quota(self, mailbox, context):
-        if not hasattr(mailbox, 'resources'):
-            return
-        context.update({
-            'maildir_path': '~%(username)s/Maildir' % context,
-            'maildirsize_path': '~%(username)s/Maildir/maildirsize' % context,
-            'quota': mailbox.resources.disk.allocated*1000*1000,
-        })
-        self.append("mkdir -p %(maildir_path)s" % context)
-        self.append(textwrap.dedent("""
-            sed -i '1s/.*/%(quota)s,S/' %(maildirsize_path)s || {
-               echo '%(quota)s,S' > %(maildirsize_path)s &&
-               chown %(username)s %(maildirsize_path)s;
-            }""" % context
-        ))
-    
     def save(self, mailbox):
         context = self.get_context(mailbox)
         self.set_user(context)
@@ -73,9 +57,11 @@ class PasswdVirtualUserBackend(ServiceController):
     def delete(self, mailbox):
         context = self.get_context(mailbox)
         self.append("{ sleep 2 && killall -u %(uid)s -s KILL; } &" % context)
-        self.append("killall -u %(uid)s" % context)
+        self.append("killall -u %(uid)s || true" % context)
         self.append("sed -i '/^%(username)s:.*/d' %(passwd_path)s" % context)
-        self.append("rm -fr %(home)s" % context)
+        # TODO delete
+        context['deleted'] = context['home'].rstrip('/') + '.deleted'
+        self.append("mv %(home)s %(deleted)s" % context)
     
     def get_extra_fields(self, mailbox, context):
         context['quota'] = self.get_quota(mailbox)

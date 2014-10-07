@@ -31,6 +31,7 @@ class Resource(models.Model):
         (MONTHLY_SUM, _("Monthly Sum")),
         (MONTHLY_AVG, _("Monthly Average")),
     )
+    _related = set() # keeps track of related models for resource cleanup
     
     name = models.CharField(_("name"), max_length=32,
             help_text=_('Required. 32 characters or fewer. Lowercase letters, '
@@ -102,6 +103,7 @@ class Resource(models.Model):
                 task.save(update_fields=['crontab'])
         if created:
             # This only work on tests because of multiprocessing used on real deployments
+            print 'saved'
             apps.get_app_config('resources').reload_relations()
     
     def delete(self, *args, **kwargs):
@@ -192,8 +194,21 @@ def create_resource_relation():
             self.obj = obj
             return self
     
+    # Clean previous state
+    for related in Resource._related:
+        try:
+            delattr(related, 'resource_set')
+            delattr(related, 'resources')
+        except AttributeError:
+            pass
+        else:
+            related._meta.virtual_fields = [
+                field for field in related._meta.virtual_fields if field.rel.to != ResourceData
+            ]
+    
     relation = GenericRelation('resources.ResourceData')
     for ct, resources in Resource.objects.group_by('content_type').iteritems():
         model = ct.model_class()
         model.add_to_class('resource_set', relation)
         model.resources = ResourceHandler()
+        Resource._related.add(model)

@@ -257,12 +257,7 @@ class AdminDomainMixin(DomainTestMixin):
     @snapshot_on_error
     def delete(self, domain_name):
         domain = Domain.objects.get(name=domain_name)
-        delete = reverse('admin:domains_domain_delete', args=(domain.pk,))
-        url = self.live_server_url + delete
-        self.selenium.get(url)
-        form = self.selenium.find_element_by_name('post')
-        form.submit()
-        self.assertNotEqual(url, self.selenium.current_url)
+        self.admin_delete(domain)
     
     @snapshot_on_error
     def update(self, domain_name, records):

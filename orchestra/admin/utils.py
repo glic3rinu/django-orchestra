@@ -33,28 +33,28 @@ def get_modeladmin(model, import_module=True):
 
 def insertattr(model, name, value, weight=0):
     """ Inserts attribute to a modeladmin """
-    modeladmin = model
+    modeladmin_class = model
     if models.Model in model.__mro__:
-        modeladmin = type(get_modeladmin(model))
+        modeladmin_class = type(get_modeladmin(model))
     # Avoid inlines defined on parent class be shared between subclasses
     # Seems that if we use tuples they are lost in some conditions like changing
     # the tuple in modeladmin.__init__
-    if not getattr(modeladmin, name):
-        setattr(type(modeladmin), name, [])
+    if not getattr(modeladmin_class, name):
+        setattr(modeladmin_class, name, [])
     
-    inserted_attrs = getattr(modeladmin, '__inserted_attrs__', {})
+    inserted_attrs = getattr(modeladmin_class, '__inserted_attrs__', {})
     if not name in inserted_attrs:
         weights = {}
-        if hasattr(modeladmin, 'weights') and name in modeladmin.weights:
-            weights = modeladmin.weights.get(name)
+        if hasattr(modeladmin_class, 'weights') and name in modeladmin_class.weights:
+            weights = modeladmin_class.weights.get(name)
         inserted_attrs[name] = [
-            (attr, weights.get(attr, 0)) for attr in getattr(modeladmin, name)
+            (attr, weights.get(attr, 0)) for attr in getattr(modeladmin_class, name)
         ]
     
     inserted_attrs[name].append((value, weight))
     inserted_attrs[name].sort(key=lambda a: a[1])
-    setattr(modeladmin, name, [ attr[0] for attr in inserted_attrs[name] ])
-    setattr(modeladmin, '__inserted_attrs__', inserted_attrs)
+    setattr(modeladmin_class, name, [ attr[0] for attr in inserted_attrs[name] ])
+    setattr(modeladmin_class, '__inserted_attrs__', inserted_attrs)
 
 
 def wrap_admin_view(modeladmin, view):

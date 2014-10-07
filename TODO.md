@@ -163,3 +163,6 @@ APPS app?
 
 
 * pip upgrade or install
+
+
+* disable account triggers save on cascade to execute backends save(update_field=[])

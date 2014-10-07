@@ -13,7 +13,8 @@ from selenium.webdriver.support.select import Select
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.orchestration.models import Server, Route
 from orchestra.utils.system import run, sshrun
-from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error
+from orchestra.utils.tests import (BaseLiveServerTestCase, random_ascii, snapshot_on_error,
+        save_response_on_error)
 
 from ... import backends, settings
 from ...models import SystemUser
@@ -71,13 +72,14 @@ class SystemUserMixin(object):
     def validate_delete(self, username):
         self.assertRaises(SystemUser.DoesNotExist, SystemUser.objects.get, username=username)
         self.assertRaises(CommandError,
-                sshrun, self.MASTER_SERVER,'id %s' % username, display=False)
+                sshrun, self.MASTER_SERVER, 'id %s' % username, display=False)
         self.assertRaises(CommandError,
                 sshrun, self.MASTER_SERVER, 'grep "^%s:" /etc/groups' % username, display=False)
         self.assertRaises(CommandError,
                 sshrun, self.MASTER_SERVER, 'grep "^%s:" /etc/passwd' % username, display=False)
         self.assertRaises(CommandError,
                 sshrun, self.MASTER_SERVER, 'grep "^%s:" /etc/shadow' % username, display=False)
+        # Home will be deleted on account delete, see test_delete_account
     
     def validate_ftp(self, username, password):
         connection = ftplib.FTP(self.MASTER_SERVER)
@@ -105,22 +107,24 @@ class SystemUserMixin(object):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password)
-        self.addCleanup(partial(self.delete, username))
+        self.addCleanup(self.delete, username)
         self.validate_user(username)
     
     def test_ftp(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password, shell='/dev/null')
-        self.addCleanup(partial(self.delete, username))
-        self.assertRaises(paramiko.AuthenticationException, self.validate_sftp, username, password)
-        self.assertRaises(paramiko.AuthenticationException, self.validate_ssh, username, password)
+        self.addCleanup(self.delete, username)
+        self.assertRaises(paramiko.AuthenticationException,
+                self.validate_sftp, username, password)
+        self.assertRaises(paramiko.AuthenticationException,
+                self.validate_ssh, username, password)
     
     def test_sftp(self):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password, shell='/bin/rssh')
-        self.addCleanup(partial(self.delete, username))
+        self.addCleanup(self.delete, username)
         self.validate_sftp(username, password)
         self.assertRaises(AssertionError, self.validate_ssh, username, password)
     
@@ -128,7 +132,7 @@ class SystemUserMixin(object):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password, shell='/bin/bash')
-        self.addCleanup(partial(self.delete, username))
+        self.addCleanup(self.delete, username)
         self.validate_ssh(username, password)
     
     def test_delete(self):
@@ -143,12 +147,12 @@ class SystemUserMixin(object):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password)
-        self.addCleanup(partial(self.delete, username))
+        self.addCleanup(self.delete, username)
         self.validate_user(username)
         username2 = '%s_systemuser' % random_ascii(10)
         password2 = '@!?%spppP001' % random_ascii(5)
         self.add(username2, password2)
-        self.addCleanup(partial(self.delete, username2))
+        self.addCleanup(self.delete, username2)
         self.validate_user(username2)
         self.add_group(username, username2)
         user = SystemUser.objects.get(username=username)
@@ -160,7 +164,7 @@ class SystemUserMixin(object):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password, shell='/dev/null')
-        self.addCleanup(partial(self.delete, username))
+        self.addCleanup(self.delete, username)
         self.validate_ftp(username, password)
         self.disable(username)
         self.validate_user(username)
@@ -170,7 +174,7 @@ class SystemUserMixin(object):
         username = '%s_systemuser' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password)
-        self.addCleanup(partial(self.delete, username))
+        self.addCleanup(self.delete, username)
         self.validate_ftp(username, password)
         new_password = '@!?%spppP001' % random_ascii(5)
         self.change_password(username, new_password)
@@ -185,33 +189,38 @@ class RESTSystemUserMixin(SystemUserMixin):
         self.rest_login()
         # create main user
         self.save(self.account.username)
-        self.addCleanup(partial(self.delete, self.account.username))
+        self.addCleanup(self.delete, self.account.username)
     
+    @save_response_on_error
     def add(self, username, password, shell='/dev/null'):
         self.rest.systemusers.create(username=username, password=password, shell=shell)
     
+    @save_response_on_error
     def delete(self, username):
         user = self.rest.systemusers.retrieve(username=username).get()
         user.delete()
     
+    @save_response_on_error
     def add_group(self, username, groupname):
         user = self.rest.systemusers.retrieve(username=username).get()
-        group = self.rest.systemusers.retrieve(username=groupname).get()
-        user.groups.append(group) # TODO
+        user.groups.append({'username': groupname})
         user.save()
     
+    @save_response_on_error
     def disable(self, username):
         user = self.rest.systemusers.retrieve(username=username).get()
         user.is_active = False
         user.save()
     
+    @save_response_on_error
     def save(self, username):
         user = self.rest.systemusers.retrieve(username=username).get()
         user.save()
     
+    @save_response_on_error
     def change_password(self, username, password):
         user = self.rest.systemusers.retrieve(username=username).get()
-        user.change_password(password)
+        user.set_password(password)
 
 
 class AdminSystemUserMixin(SystemUserMixin):
@@ -220,7 +229,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         self.admin_login()
         # create main user
         self.save(self.account.username)
-        self.addCleanup(partial(self.delete, self.account.username))
+        self.addCleanup(self.delete, self.account.username)
     
     @snapshot_on_error
     def add(self, username, password, shell='/dev/null'):
@@ -249,24 +258,12 @@ class AdminSystemUserMixin(SystemUserMixin):
     @snapshot_on_error
     def delete(self, username):
         user = SystemUser.objects.get(username=username)
-        delete = reverse('admin:systemusers_systemuser_delete', args=(user.pk,))
-        url = self.live_server_url + delete
-        self.selenium.get(url)
-        confirmation = self.selenium.find_element_by_name('post')
-        confirmation.submit()
-        self.assertNotEqual(url, self.selenium.current_url)
+        self.admin_delete(user)
     
     @snapshot_on_error
     def disable(self, username):
         user = SystemUser.objects.get(username=username)
-        change = reverse('admin:systemusers_systemuser_change', args=(user.pk,))
-        url = self.live_server_url + change
-        self.selenium.get(url)
-        is_active = self.selenium.find_element_by_id('id_is_active')
-        is_active.click()
-        save = self.selenium.find_element_by_name('_save')
-        save.submit()
-        self.assertNotEqual(url, self.selenium.current_url)
+        self.admin_disable(user)
     
     @snapshot_on_error
     def add_group(self, username, groupname):
@@ -294,17 +291,8 @@ class AdminSystemUserMixin(SystemUserMixin):
     @snapshot_on_error
     def change_password(self, username, password):
         user = SystemUser.objects.get(username=username)
-        change_password = reverse('admin:systemusers_systemuser_change_password', args=(user.pk,))
-        url = self.live_server_url + change_password
-        self.selenium.get(url)
-        
-        password_field = self.selenium.find_element_by_id('id_password1')
-        password_field.send_keys(password)
-        password_field = self.selenium.find_element_by_id('id_password2')
-        password_field.send_keys(password)
-        password_field.submit()
-        
-        self.assertNotEqual(url, self.selenium.current_url)
+        self.admin_change_password(user, password)
+
 
 class RESTSystemUserTest(RESTSystemUserMixin, BaseLiveServerTestCase):
     pass
@@ -337,10 +325,10 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         email = self.selenium.find_element_by_id('id_contacts-0-email')
         email.send_keys(account_email)
         email.submit()
+        self.assertNotEqual(url, self.selenium.current_url)
         
         account = Account.objects.get(username=account_username)
-        self.addCleanup(account.delete)
-        self.assertNotEqual(url, self.selenium.current_url)
+        self.addCleanup(self.delete, account_username)
         self.assertEqual(0, sshr(self.MASTER_SERVER, "id %s" % account.username).return_code)
     
     @snapshot_on_error

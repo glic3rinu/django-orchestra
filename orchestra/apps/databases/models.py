@@ -32,7 +32,7 @@ class Database(models.Model):
     
     @property
     def owner(self):
-        self.users.get(is_owner=True)
+        return self.roles.get(is_owner=True).user
 
 
 class Role(models.Model):
@@ -52,6 +52,11 @@ class Role(models.Model):
         if self.user.type != self.database.type:
             msg = _("Database and user type doesn't match")
             raise validators.ValidationError(msg)
+        roles = self.database.roles.values('id')
+        print roles
+        if not roles or (len(roles) == 1 and roles[0].id == self.id):
+            print 'seld'
+            self.is_owner = True
 
 
 class DatabaseUser(models.Model):

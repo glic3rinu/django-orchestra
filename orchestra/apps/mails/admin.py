@@ -43,7 +43,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdm
     fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('account_link', 'name', 'password'),
+            'fields': ('name', 'password', 'is_active', 'account_link'),
         }),
         (_("Filtering"), {
             'classes': ('collapse',),

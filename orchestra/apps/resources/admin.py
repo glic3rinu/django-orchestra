@@ -132,23 +132,26 @@ def resource_inline_factory(resources):
         def has_add_permission(self, *args, **kwargs):
             """ Hidde add another """
             return False
-    
     return ResourceInline
 
 
+from orchestra.utils import database_ready
 def insert_resource_inlines():
+    # Clean previous state
+    for related in Resource._related:
+        modeladmin = get_modeladmin(related)
+        modeladmin_class = type(modeladmin)
+        for inline in getattr(modeladmin_class, 'inlines', []):
+            if inline.__name__ == 'ResourceInline':
+                modeladmin_class.inlines.remove(inline)
+        modeladmin.inlines = modeladmin_class.inlines
+    
     for ct, resources in Resource.objects.group_by('content_type').iteritems():
         inline = resource_inline_factory(resources)
         model = ct.model_class()
         modeladmin = get_modeladmin(model)
-        inserted = False
-        inlines = []
-        for existing in getattr(modeladmin, 'inlines', []):
-            if type(inline) == type(existing):
-                existing = inline
-                inserted = True
-            inlines.append(existing)
-        if inserted:
-            modeladmin.inlines = inlines
-        else:
-            insertattr(model, 'inlines', inline)
+        insertattr(model, 'inlines', inline)
+        modeladmin.inlines = type(modeladmin).inlines
+
+if database_ready():
+    insert_resource_inlines()

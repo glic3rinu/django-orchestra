@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from orchestra.api import router
+from orchestra.api import router, SetPasswordApiMixin
 from orchestra.apps.accounts.api import AccountApiMixin
 
 from .models import Address, Mailbox
@@ -13,7 +13,7 @@ class AddressViewSet(AccountApiMixin, viewsets.ModelViewSet):
 
 
 
-class MailboxViewSet(AccountApiMixin, viewsets.ModelViewSet):
+class MailboxViewSet(SetPasswordApiMixin, AccountApiMixin, viewsets.ModelViewSet):
     model = Mailbox
     serializer_class = MailboxSerializer
 

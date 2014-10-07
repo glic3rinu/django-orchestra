@@ -3,11 +3,12 @@ import socket
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_ip_address, ValidationError
 from orchestra.models.fields import NullableCharField
-from orchestra.utils.apps import autodiscover
+#from orchestra.utils.apps import autodiscover
 
 from . import settings, manager
 from .backends import ServiceBackend
@@ -133,7 +134,7 @@ class BackendOperation(models.Model):
         return ServiceBackend.get_backend(self.backend)
 
 
-autodiscover('backends')
+autodiscover_modules('backends')
 
 
 class Route(models.Model):

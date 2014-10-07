@@ -37,7 +37,7 @@ class SystemUserBackend(ServiceController):
         self.append("groupdel %(username)s || true" % context)
         if user.is_main:
             # TODO delete instead of this shit
-            context['deleted'] = context['home'][:-1]+'.deleted'
+            context['deleted'] = context['home'].rstrip('/') + '.deleted'
             self.append("mv %(home)s %(deleted)s" % context)
     
     def get_groups(self, user):

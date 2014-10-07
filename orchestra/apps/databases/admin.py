@@ -42,7 +42,7 @@ class PermissionInline(AccountAdminMixin, admin.TabularInline):
         """ Make value input widget bigger """
         formfield = super(PermissionInline, self).formfield_for_dbfield(db_field, **kwargs)
         if db_field.name == 'database':
-            # Hack widget render in order to append ?account=id to the add url
+            # Hack widget render in order to append ?type='db_type' to the add url
             db_type = self.parent_object.type
             old_render = formfield.widget.render
             def render(*args, **kwargs):

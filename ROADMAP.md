@@ -17,7 +17,7 @@ Note `*` _for sustancial progress_
     1. [x] Websites with Apache
     2. [x] FTP/rsync/scp/shell system accounts
     2. [ ] *Databases and database users with MySQL
-    1. [ ] *Mail accounts, aliases, forwards with Postfix and Dovecot
+    1. [x] Mail accounts, aliases, forwards with Postfix and Dovecot
     1. [x] DNS with Bind
     1. [ ] *Mailing lists with Mailman
 1. [x] Contact management and service contraction

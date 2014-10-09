@@ -9,10 +9,9 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin, AccountAdminMixin
-from orchestra.forms import UserCreationForm, UserChangeForm
 
 from .filters import HasMailboxListFilter, HasForwardListFilter, HasAddressListFilter
-from .forms import MailboxCreationForm, AddressForm
+from .forms import MailboxCreationForm, MailboxChangeForm, AddressForm
 from .models import Mailbox, Address, Autoresponse
 
 
@@ -28,36 +27,34 @@ class AutoresponseInline(admin.StackedInline):
 
 class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'name', 'account_link', 'uses_custom_filtering', 'display_addresses'
+        'name', 'account_link', 'filtering', 'display_addresses'
     )
-    list_filter = (HasAddressListFilter,)
+    list_filter = (HasAddressListFilter, 'filtering')
     add_fieldsets = (
         (None, {
-            'fields': ('account', 'name', 'password1', 'password2'),
+            'fields': ('account', 'name', 'password1', 'password2', 'filtering'),
         }),
-        (_("Filtering"), {
+        (_("Custom filtering"), {
             'classes': ('collapse',),
             'fields': ('custom_filtering',),
         }),
     )
     fieldsets = (
         (None, {
-            'classes': ('wide',),
-            'fields': ('name', 'password', 'is_active', 'account_link'),
+            'fields': ('name', 'password', 'is_active', 'account_link', 'filtering'),
         }),
-        (_("Filtering"), {
+        (_("Custom filtering"), {
             'classes': ('collapse',),
             'fields': ('custom_filtering',),
         }),
         (_("Addresses"), {
-            'classes': ('wide',),
             'fields': ('addresses_field',)
         }),
     )
     readonly_fields = ('account_link', 'display_addresses', 'addresses_field')
     change_readonly_fields = ('name',)
     add_form = MailboxCreationForm
-    form = UserChangeForm
+    form = MailboxChangeForm
     
     def display_addresses(self, mailbox):
         addresses = []
@@ -68,16 +65,10 @@ class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdm
     display_addresses.short_description = _("Addresses")
     display_addresses.allow_tags = True
     
-    def uses_custom_filtering(self, mailbox):
-        return bool(mailbox.custom_filtering)
-    uses_custom_filtering.short_description = _("Custom filter")
-    uses_custom_filtering.boolean = True
-    uses_custom_filtering.admin_order_field = 'custom_filtering'
-    
     def get_fieldsets(self, request, obj=None):
         """ not collapsed filtering when exists """
         fieldsets = super(MailboxAdmin, self).get_fieldsets(request, obj=obj)
-        if obj and obj.custom_filtering:
+        if obj and obj.filtering == obj.CUSTOM:
             fieldsets = copy.deepcopy(fieldsets)
             fieldsets[1][1]['classes'] = fieldsets[0][1]['fields'] + ('open',)
         return fieldsets
@@ -97,7 +88,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdm
             name = '%s@%s' % (name, domain)
             value += '<li><a href="%s">%s</a></li>' % (url, name)
         value = '<ul>%s</ul>' % value
-        return mark_safe('<div style="padding-left: 100px;">%s</div>' % value)
+        return mark_safe('<div style="padding-left: 10px;">%s</div>' % value)
     addresses_field.short_description = _("Addresses")
     addresses_field.allow_tags = True
 

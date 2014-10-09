@@ -1,5 +1,6 @@
 import MySQLdb
 import os
+import time
 from functools import partial
 
 from django.conf import settings as djsettings
@@ -52,7 +53,7 @@ class DatabaseTestMixin(object):
     
     def test_add(self):
         dbname = '%s_database' % random_ascii(5)
-        username = '%s_dbuser' % random_ascii(10)
+        username = '%s_dbuser' % random_ascii(5)
         password = '@!?%spppP001' % random_ascii(5)
         self.add(dbname, username, password)
         self.validate_create_table(dbname, username, password)
@@ -60,6 +61,10 @@ class DatabaseTestMixin(object):
 
 class MySQLBackendMixin(object):
     db_type = 'mysql'
+    
+    def setUp(self):
+        super(MySQLBackendMixin, self).setUp()
+        settings.DATABASES_DEFAULT_HOST = '10.228.207.207'
     
     def add_route(self):
         server = Server.objects.create(name=self.MASTER_SERVER)
@@ -73,12 +78,11 @@ class MySQLBackendMixin(object):
     def validate_create_table(self, name, username, password):
         db = MySQLdb.connect(host=self.MASTER_SERVER, port=3306, user=username, passwd=password, db=name)
         cur = db.cursor()
-        cur.execute('CREATE TABLE test;')
+        cur.execute('CREATE TABLE test ( id INT ) ;')
     
     def validate_delete(self, name, username, password):
         self.asseRaises(MySQLdb.ConnectionError,
                 self.validate_create_table, name, username, password)
-
 
 
 class RESTDatabaseMixin(DatabaseTestMixin):
@@ -89,7 +93,8 @@ class RESTDatabaseMixin(DatabaseTestMixin):
     @save_response_on_error
     def add(self, dbname, username, password):
         user = self.rest.databaseusers.create(username=username, password=password)
-        self.rest.databases.create(name=dbname, user=user, type=self.db_type)
+        # TODO fucking nested objects
+        self.rest.databases.create(name=dbname, roles=[{'user': user.url}], type=self.db_type)
 
 
 class AdminDatabaseMixin(DatabaseTestMixin):

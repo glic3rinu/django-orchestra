@@ -8,7 +8,7 @@ from orchestra.core.validators import validate_password
 from .models import Database, DatabaseUser, Role
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserRoleSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Role
         fields = ('user', 'is_owner',)
@@ -21,11 +21,11 @@ class RoleSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class DatabaseSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
-    users = UserSerializer(source='roles', many=True)
+    roles = UserRoleSerializer(many=True)
     
     class Meta:
         model = Database
-        fields = ('url', 'name', 'type', 'users')
+        fields = ('url', 'name', 'type', 'roles')
 
 
 class DatabaseUserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):

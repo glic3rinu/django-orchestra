@@ -89,7 +89,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         if not change:
             user = form.cleaned_data['user']
             if not user:
-                user = DatabaseUser.objects.create(
+                user = DatabaseUser(
                     username=form.cleaned_data['username'],
                     type=obj.type,
                     account_id = obj.account.pk,

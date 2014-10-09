@@ -6,7 +6,7 @@
 
 
 
-apt-get install dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-sieve
+apt-get install dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-sieve dovecot-managesieved
 
 echo 'mail_location = maildir:~/Maildir
 mail_plugins = quota
@@ -42,3 +42,6 @@ echo 'mailbox_transport = lmtp:unix:private/dovecot-lmtp' >> /etc/postfix/main.c
 /etc/init.d/dovecot restart
 /etc/init.d/postfix restart
 
+# TODO check postfix and dovecot configs
+
+# TODO crontab that deletes message +30 days on spam folders

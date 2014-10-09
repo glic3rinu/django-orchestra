@@ -230,10 +230,11 @@ class Service(models.Model):
     def get_services(cls, instance):
         cache = caches.get_request_cache()
         ct = ContentType.objects.get_for_model(instance)
-        services = cache.get(ct)
+        key = 'services.Service-%i' % ct.pk
+        services = cache.get(key)
         if services is None:
             services = cls.objects.filter(content_type=ct, is_active=True)
-            cache.set(ct, services)
+            cache.set(key, services)
         return services
     
     # FIXME some times caching is nasty, do we really have to? make get_plugin more efficient?

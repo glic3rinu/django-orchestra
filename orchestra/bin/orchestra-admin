@@ -130,8 +130,7 @@ function install_requirements () {
          libxml2-dev \
          libxslt1-dev \
          wkhtmltopdf \
-         xvfb \
-         python-mysqldb"
+         xvfb"
     
     PIP="django==1.7 \
          django-celery-email==1.0.4 \
@@ -159,7 +158,8 @@ function install_requirements () {
     if $testing; then
         APT="${APT} \
             iceweasel \
-            dnsutils"
+            dnsutils \
+            python-mysqldb"
         PIP="${PIP} \
             selenium \
             xvfbwrapper \

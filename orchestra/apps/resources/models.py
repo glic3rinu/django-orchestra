@@ -101,10 +101,9 @@ class Resource(models.Model):
             elif task.crontab != self.crontab:
                 task.crontab = self.crontab
                 task.save(update_fields=['crontab'])
-        if created:
-            # This only work on tests because of multiprocessing used on real deployments
-            print 'saved'
-            apps.get_app_config('resources').reload_relations()
+        # This only work on tests (multiprocessing used on real deployments)
+        apps.get_app_config('resources').reload_relations()
+        # TODO touch wsgi.py for code reloading?
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)

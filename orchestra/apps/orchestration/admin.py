@@ -46,8 +46,8 @@ class RouteAdmin(admin.ModelAdmin):
 
 class BackendOperationInline(admin.TabularInline):
     model = BackendOperation
-    fields = ('action', 'instance_link')
-    readonly_fields = ('action', 'instance_link')
+    fields = ('action', 'content_object_link')
+    readonly_fields = ('action', 'content_object_link')
     extra = 0
     can_delete = False
     
@@ -56,22 +56,22 @@ class BackendOperationInline(admin.TabularInline):
             'all': ('orchestra/css/hide-inline-id.css',)
         }
     
-    def instance_link(self, operation):
+    def content_object_link(self, operation):
         try:
-            return admin_link('instance')(self, operation)
+            return admin_link('content_object')(self, operation)
         except:
             return _("deleted {0} {1}").format(
                 escape(operation.content_type), escape(operation.object_id)
             )
-    instance_link.allow_tags = True
-    instance_link.short_description = _("Instance")
+    content_object_link.allow_tags = True
+    content_object_link.short_description = _("Content_object")
     
     def has_add_permission(self, *args, **kwargs):
         return False
     
     def get_queryset(self, request):
         queryset = super(BackendOperationInline, self).get_queryset(request)
-        return queryset.prefetch_related('instance')
+        return queryset.prefetch_related('content_object')
 
 
 def display_mono(field):

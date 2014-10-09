@@ -166,3 +166,7 @@ APPS app?
 
 
 * disable account triggers save on cascade to execute backends save(update_field=[])
+
+
+* validate database user names
+* multiple domains creation; line separated domains

@@ -13,7 +13,7 @@ class Database(models.Model):
     MYSQL = 'mysql'
     POSTGRESQL = 'postgresql'
     
-    name = models.CharField(_("name"), max_length=128,
+    name = models.CharField(_("name"), max_length=64, # MySQL limit
             validators=[validators.validate_name])
     users = models.ManyToManyField('databases.DatabaseUser',
             verbose_name=_("users"),
@@ -53,9 +53,7 @@ class Role(models.Model):
             msg = _("Database and user type doesn't match")
             raise validators.ValidationError(msg)
         roles = self.database.roles.values('id')
-        print roles
         if not roles or (len(roles) == 1 and roles[0].id == self.id):
-            print 'seld'
             self.is_owner = True
 
 
@@ -63,9 +61,9 @@ class DatabaseUser(models.Model):
     MYSQL = 'mysql'
     POSTGRESQL = 'postgresql'
     
-    username = models.CharField(_("username"), max_length=128,
+    username = models.CharField(_("username"), max_length=16, # MySQL usernames 16 char long
             validators=[validators.validate_name])
-    password = models.CharField(_("password"), max_length=128)
+    password = models.CharField(_("password"), max_length=256)
     type = models.CharField(_("type"), max_length=32,
             choices=settings.DATABASES_TYPE_CHOICES,
             default=settings.DATABASES_DEFAULT_TYPE)
@@ -87,8 +85,7 @@ class DatabaseUser(models.Model):
             # MySQL stores sha1(sha1(password).binary).hex
             binary = hashlib.sha1(password).digest()
             hexdigest = hashlib.sha1(binary).hexdigest()
-            password = '*%s' % hexdigest.upper()
-            self.password = password
+            self.password = '*%s' % hexdigest.upper()
         else:
             raise TypeError("Database type '%s' not supported" % self.type)
 

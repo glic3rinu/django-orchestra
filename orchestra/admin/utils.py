@@ -1,4 +1,5 @@
 import datetime
+import inspect
 from functools import wraps
 
 from django.conf import settings
@@ -31,30 +32,26 @@ def get_modeladmin(model, import_module=True):
         return get_modeladmin(model, import_module=False)
 
 
-def insertattr(model, name, value, weight=0):
+def insertattr(model, name, value):
     """ Inserts attribute to a modeladmin """
-    modeladmin_class = model
+    modeladmin = None
     if models.Model in model.__mro__:
-        modeladmin_class = type(get_modeladmin(model))
+        modeladmin = get_modeladmin(model)
+        modeladmin_class = type(modeladmin)
+    elif not inspect.isclass(model):
+        modeladmin = model
+        modeladmin_class = type(modeladmin)
+    else:
+        modeladmin_class = model
     # Avoid inlines defined on parent class be shared between subclasses
     # Seems that if we use tuples they are lost in some conditions like changing
     # the tuple in modeladmin.__init__
     if not getattr(modeladmin_class, name):
         setattr(modeladmin_class, name, [])
-    
-    inserted_attrs = getattr(modeladmin_class, '__inserted_attrs__', {})
-    if not name in inserted_attrs:
-        weights = {}
-        if hasattr(modeladmin_class, 'weights') and name in modeladmin_class.weights:
-            weights = modeladmin_class.weights.get(name)
-        inserted_attrs[name] = [
-            (attr, weights.get(attr, 0)) for attr in getattr(modeladmin_class, name)
-        ]
-    
-    inserted_attrs[name].append((value, weight))
-    inserted_attrs[name].sort(key=lambda a: a[1])
-    setattr(modeladmin_class, name, [ attr[0] for attr in inserted_attrs[name] ])
-    setattr(modeladmin_class, '__inserted_attrs__', inserted_attrs)
+    setattr(modeladmin_class, name, list(getattr(modeladmin_class, name))+[value])
+    if modeladmin:
+        # make sure class and object share the same attribute, to avoid wierd bugs
+        setattr(modeladmin, name, getattr(modeladmin_class, name))
 
 
 def wrap_admin_view(modeladmin, view):
@@ -84,7 +81,7 @@ def action_to_view(action, modeladmin):
         response = action(modeladmin, request, queryset)
         if not response:
             opts = modeladmin.model._meta
-            url = 'admin:%s_%s_change' % (opts.app_label, opts.module_name)
+            url = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
             return redirect(url, object_id)
         return response
     return action_view

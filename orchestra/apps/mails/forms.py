@@ -1,9 +1,23 @@
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 
-from orchestra.forms import UserCreationForm
+from orchestra.forms import UserCreationForm, UserChangeForm
 
 
-class MailboxCreationForm(UserCreationForm):
+class CleanCustomFilteringMixin(object):
+    def clean_custom_filtering(self):
+        filtering = self.cleaned_data['filtering']
+        custom_filtering = self.cleaned_data['custom_filtering']
+        if filtering == self._meta.model.CUSTOM and not custom_filtering:
+            raise forms.ValidationError(_("You didn't provide any custom filtering"))
+        return custom_filtering
+
+
+class MailboxChangeForm(CleanCustomFilteringMixin, UserChangeForm):
+    pass
+
+
+class MailboxCreationForm(CleanCustomFilteringMixin, UserCreationForm):
     def clean_name(self):
         # Since model.clean() will check this, this is redundant,
         # but it sets a nicer error message than the ORM and avoids conflicts with contrib.auth

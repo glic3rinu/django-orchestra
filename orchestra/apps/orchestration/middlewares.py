@@ -84,7 +84,12 @@ class OperationsMiddleware(object):
                             if not execute:
                                 continue
                 instance = copy.copy(instance)
-                pending_operations.add(Operation.create(backend, instance, action))
+                operation = Operation.create(backend, instance, action)
+                if action != Operation.DELETE:
+                    # usually we expect to be using last object state,
+                    # except when we are deleting it
+                    pending_operations.discard(operation)
+                pending_operations.add(operation)
     
     def process_request(self, request):
         """ Store request on a thread local variable """

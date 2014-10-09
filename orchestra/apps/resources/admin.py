@@ -7,6 +7,7 @@ from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date
 from orchestra.core import services
+from orchestra.utils import database_ready
 
 from .forms import ResourceForm
 from .models import Resource, ResourceData, MonitorData
@@ -135,7 +136,6 @@ def resource_inline_factory(resources):
     return ResourceInline
 
 
-from orchestra.utils import database_ready
 def insert_resource_inlines():
     # Clean previous state
     for related in Resource._related:
@@ -144,14 +144,12 @@ def insert_resource_inlines():
         for inline in getattr(modeladmin_class, 'inlines', []):
             if inline.__name__ == 'ResourceInline':
                 modeladmin_class.inlines.remove(inline)
-        modeladmin.inlines = modeladmin_class.inlines
     
     for ct, resources in Resource.objects.group_by('content_type').iteritems():
         inline = resource_inline_factory(resources)
         model = ct.model_class()
-        modeladmin = get_modeladmin(model)
         insertattr(model, 'inlines', inline)
-        modeladmin.inlines = type(modeladmin).inlines
+
 
 if database_ready():
     insert_resource_inlines()

@@ -115,7 +115,6 @@ class AdminPasswordChangeForm(forms.Form):
         for ix, rel in enumerate(self.related):
             password = self.cleaned_data['password1_%s' % ix]
             if password:
-                print password
                 set_password = getattr(rel, 'set_password')
                 set_password(password)
                 if commit:

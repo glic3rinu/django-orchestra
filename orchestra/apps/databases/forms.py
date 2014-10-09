@@ -30,9 +30,9 @@ class DatabaseUserCreationForm(forms.ModelForm):
     
     def save(self, commit=True):
         user = super(DatabaseUserCreationForm, self).save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
-        if commit:
-            user.save()
+#        user.set_password(self.cleaned_data["password1"])
+#        if commit:
+#            user.save()
         return user
 
 
@@ -89,16 +89,16 @@ class DatabaseCreationForm(DatabaseUserCreationForm):
     
     def save(self, commit=True):
         db = super(DatabaseUserCreationForm, self).save(commit=False)
-        user = self.cleaned_data['user']
-        if commit:
-            if not user:
-                user = DatabaseUser(
-                    username=self.cleaned_data['username'],
-                    type=self.cleaned_data['type'],
-                )
-                user.set_password(self.cleaned_data["password1"])
-            user.save()
-            role, __ = Role.objects.get_or_create(database=db, user=user)
+#        if commit:
+#            user = self.cleaned_data['user']
+#            if not user:
+#                user = DatabaseUser(
+#                    username=self.cleaned_data['username'],
+#                    type=self.cleaned_data['type'],
+#                )
+#                user.set_password(self.cleaned_data["password1"])
+#            user.save()
+#            role, __ = Role.objects.get_or_create(database=db, user=user)
         return db
 
 

@@ -1,15 +1,23 @@
+from django.forms import widgets
+from django.utils.translation import ugettext, ugettext_lazy as _
 from rest_framework import serializers
 
 from orchestra.apps.accounts.serializers import AccountSerializerMixin
+from orchestra.core.validators import validate_password
 
 from .models import Mailbox, Address
 
 
 class MailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+    password = serializers.CharField(max_length=128, label=_('Password'),
+            validators=[validate_password], write_only=True, required=False,
+            widget=widgets.PasswordInput)
+    
     class Meta:
         model = Mailbox
-        # TODO 'use_custom_filtering', 
-        fields = ('url', 'name', 'password', 'custom_filtering', 'addresses', 'is_active')
+        fields = (
+            'url', 'name', 'password', 'filtering', 'custom_filtering', 'addresses', 'is_active'
+        )
     
     def validate_password(self, attrs, source):
         """ POST only password """

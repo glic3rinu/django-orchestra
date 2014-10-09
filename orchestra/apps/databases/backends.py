@@ -41,28 +41,28 @@ class MySQLUserBackend(ServiceController):
     verbose_name = "MySQL user"
     model = 'databases.DatabaseUser'
     
-    def save(self, database):
-        if database.type == database.MYSQL:
-            context = self.get_context(database)
+    def save(self, user):
+        if user.type == user.MYSQL:
+            context = self.get_context(user)
             self.append(
-                "mysql -e 'CREATE USER \"%(username)s\"@\"%(host)s\";'" % context
+                "mysql -e 'CREATE USER \"%(username)s\"@\"%(host)s\";' || true" % context
             )
             self.append(
                 "mysql -e 'UPDATE mysql.user SET Password=\"%(password)s\" "
                 "  WHERE User=\"%(username)s\";'" % context
             )
     
-    def delete(self, database):
-        if database.type == database.MYSQL:
+    def delete(self, user):
+        if user.type == user.MYSQL:
             context = self.get_context(database)
             self.append(
                 "mysql -e 'DROP USER \"%(username)s\"@\"%(host)s\";'" % context
             )
     
-    def get_context(self, database):
+    def get_context(self, user):
         return {
-            'username': database.username,
-            'password': database.password,
+            'username': user.username,
+            'password': user.password,
             'host': settings.DATABASES_DEFAULT_HOST,
         }
 

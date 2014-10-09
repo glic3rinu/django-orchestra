@@ -6,11 +6,92 @@ from orchestra.apps.orchestration import ServiceController
 from orchestra.apps.resources import ServiceMonitor
 
 from . import settings
+from .models import List
 
 
 class MailmanBackend(ServiceController):
     verbose_name = "Mailman"
     model = 'lists.List'
+    
+    def include_virtual_alias_domain(self, context):
+        if context['address_domain']:
+            self.append(textwrap.dedent("""
+                [[ $(grep "^\s*%(address_domain)s\s*$" %(virtual_alias_domains)s) ]] || {
+                    echo "%(address_domain)s" >> %(virtual_alias_domains)s
+                    UPDATED_VIRTUAL_ALIAS_DOMAINS=1
+                }""" % context
+            ))
+    
+    def exclude_virtual_alias_domain(self, context):
+        address_domain = context['address_domain']
+        if not List.objects.filter(address_domain=address_domain).exists():
+            self.append('sed -i "/^%(address_domain)s\s*/d" %(virtual_alias_domains)s' % context)
+    
+    def get_virtual_aliases(self, context):
+        aliases = []
+        addresses = [
+            '',
+            '-admin',
+            '-bounces',
+            '-confirm',
+            '-join',
+            '-leave',
+            '-owner',
+            '-request',
+            '-subscribe',
+            '-unsubscribe'
+        ]
+        for address in addresses:
+            context['address'] = address
+            aliases.append("%(address_name)s%(address)s@%(domain)s\t%(name)s%(address)s" % context)
+        return '\n'.join(aliases)
+    
+    def save(self, mail_list):
+        if not getattr(mail_list, 'password', None):
+            # TODO
+            # Create only support for now
+            return
+        context = self.get_context(mail_list)
+        self.append("newlist --quiet --emailhost='%(domain)s' '%(name)s' '%(admin)s' '%(password)s'" % context)
+        if mail_list.address:
+            context['aliases'] = self.get_virtual_aliases(context)
+            self.append(
+                "if [[ ! $(grep '^\s*%(name)s\s' %(virtual_alias)s) ]]; then\n"
+                "   echo '# %(banner)s\n%(aliases)s\n' >> %(virtual_alias)s\n"
+                "   UPDATED_VIRTUAL_ALIAS=1\n"
+                "fi" % context
+            )
+        self.include_virtual_alias_domain(context)
+    
+    def delete(self, mail_list):
+        pass
+    
+    def commit(self):
+        context = self.get_context_files()
+        self.append(textwrap.dedent("""
+            [[ $UPDATED_VIRTUAL_ALIAS == 1 ]] && { postmap %(virtual_alias)s; }
+            [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { /etc/init.d/postfix reload; }
+            """ % context
+        ))
+    
+    def get_context_files(self):
+        return {
+            'virtual_alias': settings.LISTS_VIRTUAL_ALIAS_PATH,
+            'virtual_alias_domains': settings.MAILS_VIRTUAL_ALIAS_DOMAINS_PATH,
+        }
+    
+    def get_context(self, mail_list):
+        context = self.get_context_files()
+        context.update({
+            'banner': self.get_banner(),
+            'name': mail_list.name,
+            'password': mail_list.password,
+            'domain': mail_list.address_domain or settings.LISTS_DEFAULT_DOMAIN,
+            'address_name': mail_list.address_name,
+            'address_domain': mail_list.address_domain,
+            'admin': mail_list.admin_email,
+        })
+        return context
 
 
 class MailmanTraffic(ServiceMonitor):

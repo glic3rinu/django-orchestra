@@ -14,9 +14,12 @@ logger = logging.getLogger(__name__)
 
 def as_task(execute):
     def wrapper(*args, **kwargs):
-        with db.transaction.commit_manually():
+        db.transaction.set_autocommit(False)
+        try:
             log = execute(*args, **kwargs)
+        finally:
             db.transaction.commit()
+            db.transaction.set_autocommit(True)
         if log.state != log.SUCCESS:
             send_report(execute, args, log)
         return log
@@ -25,7 +28,6 @@ def as_task(execute):
 
 def close_connection(execute):
     """ Threads have their own connection pool, closing it when finishing """
-    # TODO rewrite as context manager
     def wrapper(*args, **kwargs):
         log = execute(*args, **kwargs)
         db.connection.close()

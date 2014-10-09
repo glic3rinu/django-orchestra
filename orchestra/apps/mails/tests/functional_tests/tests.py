@@ -4,8 +4,10 @@ import os
 import poplib
 import smtplib
 import time
+import textwrap
 from email.mime.text import MIMEText
 
+from django.apps import apps
 from django.conf import settings as djsettings
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import CommandError
@@ -33,8 +35,6 @@ class MailboxMixin(object):
     def setUp(self):
         super(MailboxMixin, self).setUp()
         self.add_route()
-        # TODO fix this
-        from django.apps import apps
         # clean resource relation from other tests
         apps.get_app_config('resources').reload_relations()
         djsettings.DEBUG = True
@@ -92,7 +92,7 @@ class MailboxMixin(object):
     def send_email(self, to, token):
         msg = MIMEText(token)
         msg['To'] = to
-        msg['From'] = 'orchestra@test.orchestra.lan'
+        msg['From'] = 'orchestra@%s' % self.MASTER_SERVER
         msg['Subject'] = 'test'
         server = smtplib.SMTP(self.MASTER_SERVER, 25)
         try:
@@ -176,7 +176,7 @@ class MailboxMixin(object):
         password = '@!?%spppP001' % random_ascii(5)
         self.add(username, password)
         self.validate_mailbox(username)
-        self.addCleanup(self.delete, username)
+#        self.addCleanup(self.delete, username)
         imap = self.login_imap(username, password)
         self.disable(username)
         self.assertRaises(imap.error, self.login_imap, username, password)
@@ -211,6 +211,27 @@ class MailboxMixin(object):
         self.delete_address(username)
         self.send_email("%s@%s" % (name, domain), token)
         self.validate_email(username, token)
+    
+    def test_custom_filtering(self):
+        username = '%s_mailbox' % random_ascii(10)
+        password = '@!?%spppP001' % random_ascii(5)
+        folder = random_ascii(5)
+        filtering = textwrap.dedent("""
+            require "fileinto";
+            if true { 
+                fileinto "%s";
+                stop;
+            }""" % folder)
+        self.add(username, password, filtering=filtering)
+        self.addCleanup(self.delete, username)
+        imap = self.login_imap(username, password)
+        imap.create(folder)
+        self.validate_mailbox(username)
+        token = random_ascii(100)
+        self.send_email("%s@%s" % (username, settings.MAILS_VIRTUAL_MAILBOX_DEFAULT_DOMAIN), token)
+        home = Mailbox.objects.get(name=username).get_home()
+        sshrun(self.MASTER_SERVER,
+               "grep '%s' %s/Maildir/.%s/new/*" % (token, home, folder), display=False)
 
 
 class RESTMailboxMixin(MailboxMixin):
@@ -219,17 +240,22 @@ class RESTMailboxMixin(MailboxMixin):
         self.rest_login()
     
     @save_response_on_error
-    def add(self, username, password, quota=None):
+    def add(self, username, password, quota=None, filtering=None):
         extra = {}
         if quota:
-            extra = {
+            extra.update({
                 "resources": [
                     {
                         "name": "disk",
                         "allocated": quota
                     },
                 ]
-            }
+            })
+        if filtering:
+            extra.update({
+                'filtering': 'CUSTOM',
+                'custom_filtering': filtering,
+            })
         self.rest.mailboxes.create(name=username, password=password, **extra)
     
     @save_response_on_error
@@ -270,7 +296,7 @@ class AdminMailboxMixin(MailboxMixin):
         self.admin_login()
     
     @snapshot_on_error
-    def add(self, username, password, quota=None):
+    def add(self, username, password, quota=None, filtering=None):
         url = self.live_server_url + reverse('admin:mails_mailbox_add')
         self.selenium.get(url)
         
@@ -285,16 +311,22 @@ class AdminMailboxMixin(MailboxMixin):
         password_field.send_keys(password)
         password_field = self.selenium.find_element_by_id('id_password2')
         password_field.send_keys(password)
+        
         if quota is not None:
-            from orchestra.admin.utils import get_modeladmin
-            m = get_modeladmin(Mailbox)
-            print 't', type(m).inlines
-            print 'm', m.inlines
-            self.take_screenshot()
-            quota_field = self.selenium.find_element_by_id(
-                'id_resources-resourcedata-content_type-object_id-0-allocated')
+            quota_id = 'id_resources-resourcedata-content_type-object_id-0-allocated'
+            quota_field = self.selenium.find_element_by_id(quota_id)
             quota_field.clear()
             quota_field.send_keys(quota)
+        
+        if filtering is not None:
+            filtering_input = self.selenium.find_element_by_id('id_filtering')
+            filtering_select = Select(filtering_input)
+            filtering_select.select_by_value("CUSTOM")
+            filtering_inline = self.selenium.find_element_by_id('fieldsetcollapser0')
+            filtering_inline.click()
+            time.sleep(0.5)
+            filtering_field = self.selenium.find_element_by_id('id_custom_filtering')
+            filtering_field.send_keys(filtering)
         
         name_field.submit()
         self.assertNotEqual(url, self.selenium.current_url)

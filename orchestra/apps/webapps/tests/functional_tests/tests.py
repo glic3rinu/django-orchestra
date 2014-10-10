@@ -93,15 +93,9 @@ class PHPFcidWebAppMixin(StaticWebAppMixin):
     )
 
 
-class PHPFPMWebAppMixin(StaticWebAppMixin):
+class PHPFPMWebAppMixin(PHPFcidWebAppMixin):
     backend = backends.phpfpm.PHPFPMBackend
     type_value = 'php5.5'
-    token = random_ascii(100)
-    page = (
-        'index.php',
-        '<?php print("Hello World! %s");\n?>\n' % token,
-        'Hello World! %s' % token,
-    )
 
 
 class RESTWebAppMixin(object):
@@ -170,7 +164,15 @@ class AdminWebAppMixin(WebAppMixin):
         self.assertNotEqual(url, self.selenium.current_url)
 
 
+class RESTWebAppTest(StaticWebAppMixin, RESTWebAppMixin, WebAppMixin, BaseLiveServerTestCase):
+    pass
+
+
 class RESTWebAppTest(PHPFcidWebAppMixin, RESTWebAppMixin, WebAppMixin, BaseLiveServerTestCase):
+    pass
+
+
+class RESTWebAppTest(PHPFPMWebAppMixin, RESTWebAppMixin, WebAppMixin, BaseLiveServerTestCase):
     pass
 
 

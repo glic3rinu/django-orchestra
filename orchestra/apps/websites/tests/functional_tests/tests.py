@@ -71,14 +71,12 @@ class RESTWebsiteMixin(RESTWebAppMixin):
         self.rest.websites.create(name=name, domains=[domain.url], contents=[{'webapp': webapp.url}])
 
 
+class RESTWebsiteTest(RESTWebsiteMixin, StaticWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
+    pass
 
-#class RESTWebsiteTest(RESTWebsiteMixin, StaticWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
-#    pass
 
-
-PHPFPMWebAppMixin
-#class RESTWebsiteTest(RESTWebsiteMixin, PHPFcidWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
-#    pass
+class RESTWebsiteTest(RESTWebsiteMixin, PHPFcidWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
+    pass
 
 
 class RESTWebsiteTest(RESTWebsiteMixin, PHPFPMWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):

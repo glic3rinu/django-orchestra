@@ -102,23 +102,19 @@ class BackendOperation(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    instance = generic.GenericForeignKey('content_type', 'object_id')
     
     class Meta:
         verbose_name = _("Operation")
         verbose_name_plural = _("Operations")
     
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop('instance', None)
-        super(BackendOperation, self).__init__(*args, **kwargs)
-    
     def __unicode__(self):
-        return '%s.%s(%s)' % (self.backend, self.action, self.instance or self.content_object)
+        return '%s.%s(%s)' % (self.backend, self.action, self.instance)
     
     def __hash__(self):
         """ set() """
         backend = getattr(self, 'backend', self.backend)
-        return hash(backend) + hash(self.instance or self.content_object) + hash(self.action)
+        return hash(backend) + hash(self.instance) + hash(self.action)
     
     def __eq__(self, operation):
         """ set() """
@@ -126,7 +122,7 @@ class BackendOperation(models.Model):
     
     @classmethod
     def create(cls, backend, instance, action):
-        op = cls(backend=backend.get_name(), instance=instance, content_object=instance, action=action)
+        op = cls(backend=backend.get_name(), instance=instance, action=action)
         op.backend = backend
         return op
     

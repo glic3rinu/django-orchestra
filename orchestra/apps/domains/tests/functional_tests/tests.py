@@ -194,13 +194,13 @@ class DomainTestMixin(object):
         self.add(self.ns1_name, self.ns1_records)
         self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
-#        self.addCleanup(partial(self.delete, self.domain_name))
+        self.addCleanup(partial(self.delete, self.domain_name))
         self.update(self.domain_name, self.domain_update_records)
-#        self.add(self.www_name, self.www_records)
+        self.add(self.www_name, self.www_records)
         time.sleep(0.5)
         self.validate_update(self.MASTER_SERVER_ADDR, self.domain_name)
-#        time.sleep(5)
-#        self.validate_update(self.SLAVE_SERVER_ADDR, self.domain_name)
+        time.sleep(5)
+        self.validate_update(self.SLAVE_SERVER_ADDR, self.domain_name)
     
     def test_add_add_delete_delete(self):
         self.add(self.ns1_name, self.ns1_records)

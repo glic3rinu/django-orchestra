@@ -124,7 +124,6 @@ class DomainTestMixin(object):
             self.assertNotEqual(hostmaster, soa[5])
     
     def validate_update(self, server_addr, domain_name):
-        Domain.objects.get(name=domain_name)
         context = {
             'domain_name': domain_name,
             'server_addr': server_addr
@@ -163,6 +162,11 @@ class DomainTestMixin(object):
         self.assertIn(mx[4], ['30', '40'])
         self.assertIn(mx[5], ['mail3.orchestra.lan.', 'mail4.orchestra.lan.'])
         
+    def validate_www_update(self, server_addr, domain_name):
+        context = {
+            'domain_name': domain_name,
+            'server_addr': server_addr
+        }
         dig_cname = 'dig @%(server_addr)s www.%(domain_name)s CNAME | grep "\sCNAME\s"'
         cname = run(dig_cname % context).stdout.split()
         # testdomain.org. 3600 IN MX 10 orchestra.lan.
@@ -196,11 +200,15 @@ class DomainTestMixin(object):
         self.add(self.domain_name, self.domain_records)
         self.addCleanup(partial(self.delete, self.domain_name))
         self.update(self.domain_name, self.domain_update_records)
-        self.add(self.www_name, self.www_records)
         time.sleep(0.5)
         self.validate_update(self.MASTER_SERVER_ADDR, self.domain_name)
         time.sleep(5)
         self.validate_update(self.SLAVE_SERVER_ADDR, self.domain_name)
+        self.add(self.www_name, self.www_records)
+        time.sleep(0.5)
+        self.validate_www_update(self.MASTER_SERVER_ADDR, self.domain_name)
+        time.sleep(5)
+        self.validate_www_update(self.SLAVE_SERVER_ADDR, self.domain_name)
     
     def test_add_add_delete_delete(self):
         self.add(self.ns1_name, self.ns1_records)

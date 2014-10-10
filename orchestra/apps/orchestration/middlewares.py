@@ -92,10 +92,6 @@ class OperationsMiddleware(object):
                     # except when we are deleting it
                     pending_operations.discard(operation)
                 pending_operations.add(operation)
-        try:
-            print kwargs['instance'], good_action
-        except:
-            pass
 
     def process_request(self, request):
         """ Store request on a thread local variable """

@@ -34,6 +34,8 @@ class DomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeria
             try:
                 validators.validate_zone(domain.render_zone())
             except ValidationError as err:
-                self._errors = { 'all': err.message }
+                self._errors = {
+                    'all': err.message
+                }
                 return None
         return instance

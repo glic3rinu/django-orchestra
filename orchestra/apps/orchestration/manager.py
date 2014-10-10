@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 def as_task(execute):
     def wrapper(*args, **kwargs):
+        """ failures on the backend execution doesn't fuck the request transaction atomicity """
         db.transaction.set_autocommit(False)
         try:
             log = execute(*args, **kwargs)

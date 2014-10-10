@@ -64,7 +64,7 @@ class ListMixin(object):
         backend = backends.MailmanBackend.get_name()
         Route.objects.create(backend=backend, match=True, host=server)
     
-    def atest_add(self):
+    def test_add(self):
         name = '%s_list' % random_ascii(10)
         password = '@!?%spppP001' % random_ascii(5)
         admin_email = 'root@test3.orchestra.lan'
@@ -100,8 +100,8 @@ class RESTListMixin(ListMixin):
         self.rest.lists.create(name=name, password=password, admin_email=admin_email, **extra)
     
     @save_response_on_error
-    def delete(self, username):
-        list = self.rest.lists.retrieve(name=username).get()
+    def delete(self, name):
+        list = self.rest.lists.retrieve(name=name).get()
         list.delete()
 
 

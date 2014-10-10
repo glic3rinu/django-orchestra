@@ -57,7 +57,7 @@ class WebApp(models.Model):
         return init_vars
     
     def get_fpm_port(self):
-        return settings.WEBAPPS_FPM_START_PORT + self.account.user.pk
+        return settings.WEBAPPS_FPM_START_PORT + self.account.pk
     
     def get_method(self):
         method = settings.WEBAPPS_TYPES[self.type]
@@ -66,7 +66,7 @@ class WebApp(models.Model):
     
     def get_path(self):
         context = {
-            'user': self.account.user,
+            'user': self.account.username,
             'app_name': self.name,
         }
         return settings.WEBAPPS_BASE_ROOT % context

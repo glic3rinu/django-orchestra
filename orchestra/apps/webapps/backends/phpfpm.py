@@ -36,8 +36,8 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
         })
         context['fpm_listen'] = settings.WEBAPPS_FPM_LISTEN % context
         fpm_config = Template(
-            "[{{ user }}]\n"
             ";; {{ banner }}\n"
+            "[{{ user }}]\n"
             "user = {{ user }}\n"
             "group = {{ group }}\n\n"
             "listen = {{ fpm_listen | safe }}\n"

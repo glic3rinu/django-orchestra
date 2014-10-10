@@ -82,9 +82,9 @@ class SystemUserMixin(object):
         # Home will be deleted on account delete, see test_delete_account
     
     def validate_ftp(self, username, password):
-        connection = ftplib.FTP(self.MASTER_SERVER)
-        connection.login(user=username, passwd=password)
-        connection.close()
+        ftp = ftplib.FTP(self.MASTER_SERVER)
+        ftp.login(user=username, passwd=password)
+        ftp.close()
         
     def validate_sftp(self, username, password):
         transport = paramiko.Transport((self.MASTER_SERVER, 22))

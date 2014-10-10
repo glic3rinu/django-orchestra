@@ -30,15 +30,13 @@ class Apache2Backend(ServiceController):
         apache_conf = Template(textwrap.dedent("""\
             # {{ banner }}
             <VirtualHost *:{{ site.port }}>
-                ServerName {{ site.domains.all|first }}
+                ServerName {{ site.domains.all|first }}\
             {% if site.domains.all|slice:"1:" %}
-                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}
-            {% endif %}
+                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}
                 CustomLog {{ logs }} common
-                SuexecUserGroup {{ user }} {{ group }}
-            {% for line in extra_conf.splitlines %}"
-                {{ line | safe }}
-            {% endfor %}
+                SuexecUserGroup {{ user }} {{ group }}\
+            {% for line in extra_conf.splitlines %}
+                {{ line | safe }}{% endfor %}
             </VirtualHost>"""
         ))
         apache_conf = apache_conf.render(Context(context))
@@ -83,13 +81,13 @@ class Apache2Backend(ServiceController):
         context = self.get_content_context(content)
         context['fcgid_path'] = fcgid_path % context
         fcgid = self.get_alias_directives(content)
-        fcgid += (
-            "ProxyPass %(location)s !\n"
-            "<Directory %(app_path)s>\n"
-            "    Options +ExecCGI\n"
-            "    AddHandler fcgid-script .php\n"
-            "    FcgidWrapper %(fcgid_path)s\n"
-        ) % context
+        fcgid += textwrap.dedent("""\
+            ProxyPass %(location)s !
+            <Directory %(app_path)s>
+                Options +ExecCGI
+                AddHandler fcgid-script .php
+                FcgidWrapper %(fcgid_path)s
+            """ % context)
         for option in content.webapp.options.filter(name__startswith='Fcgid'):
             fcgid += "    %s %s\n" % (option.name, option.value)
         fcgid += "</Directory>\n"
@@ -100,11 +98,11 @@ class Apache2Backend(ServiceController):
         custom_cert = site.options.filter(name='ssl')
         if custom_cert:
             cert = tuple(custom_cert[0].value.split())
-        directives = (
-            "SSLEngine on\n"
-            "SSLCertificateFile %s\n"
-            "SSLCertificateKeyFile %s\n"
-        ) % cert
+        directives = textwrap.dedent("""\
+            SSLEngine on
+            SSLCertificateFile %s
+            SSLCertificateKeyFile %s""" % cert
+        )
         return directives
     
     def get_security(self, site):
@@ -129,17 +127,17 @@ class Apache2Backend(ServiceController):
             path, name, passwd = re.match(regex, protection.value).groups()
             path = os.path.join(context['root'], path)
             passwd = os.path.join(self.USER_HOME % context, passwd)
-            protections += ("\n"
-                "<Directory %s>\n"
-                "    AllowOverride All\n"
-#                "    AuthPAM_Enabled off\n"
-                "    AuthType Basic\n"
-                "    AuthName %s\n"
-                "    AuthUserFile %s\n"
-                "    <Limit GET POST>\n"
-                "        require valid-user\n"
-                "    </Limit>\n"
-                "</Directory>\n" % (path, name, passwd)
+            protections += textwrap.dedent("""
+                <Directory %s>
+                    AllowOverride All
+                    #AuthPAM_Enabled off
+                    AuthType Basic
+                    AuthName %s
+                    AuthUserFile %s
+                    <Limit GET POST>
+                        require valid-user
+                    </Limit>
+                </Directory>""" % (path, name, passwd)
             )
         return protections
     
@@ -161,8 +159,8 @@ class Apache2Backend(ServiceController):
             'site': site,
             'site_name': site.name,
             'site_unique_name': site.unique_name,
-            'user': site.account.user.username,
-            'group': site.account.user.username,
+            'user': site.account.username,
+            'group': site.account.username,
             'sites_enabled': sites_enabled,
             'sites_available': "%s.conf" % os.path.join(sites_available, site.unique_name),
             'logs': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
@@ -190,7 +188,7 @@ class Apache2Traffic(ServiceMonitor):
     def prepare(self):
         current_date = timezone.localtime(self.current_date)
         current_date = current_date.strftime("%Y%m%d%H%M%S")
-        self.append(textwrap.dedent("""
+        self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
                 INI_DATE=$2

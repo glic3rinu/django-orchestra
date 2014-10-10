@@ -28,12 +28,14 @@ The goal of this setup is having a high-performance state-of-the-art deployment 
     apt-get install apache2-mpm-event php5-fpm libapache2-mod-fcgid apache2-suexec-custom php5-cgi
     ```
 
+# TODO libapache2-mod-auth-pam is no longer part of the debian distribution,
+#       replace with libapache2-mod-authnz-external pwauth
 
 2. Enable some convinient Apache modules
     ```bash
     a2enmod suexec
     a2enmod ssl
-    a2enmod auth_pam
+    #a2enmod auth_pam
     a2enmod proxy_fcgi
     a2emmod userdir
     ```
@@ -55,15 +57,18 @@ The goal of this setup is having a high-performance state-of-the-art deployment 
     ```
 
 
+
+
+
 5. Restart Apache
     ```bash
     service apache2 restart
     ```
 
 
-* TODO 
-    libapache2-mod-auth-pam
-    https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=710770
+
+
+
 
 
 * ExecCGI
@@ -72,6 +77,11 @@ The goal of this setup is having a high-performance state-of-the-art deployment 
         Options +ExecCGI
     </Directory>
     ```
+
+* Permissions
+<Directory /home/*/webapps>
+        Require all granted
+</Directory>
 
 
 TODO CHRoot

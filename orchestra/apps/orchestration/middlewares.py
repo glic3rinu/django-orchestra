@@ -49,6 +49,7 @@ class OperationsMiddleware(object):
         request = getattr(cls.thread_locals, 'request', None)
         if request is None:
             return
+        good_action = action
         pending_operations = cls.get_pending_operations()
         for backend in ServiceBackend.get_backends():
             instance = None
@@ -75,7 +76,7 @@ class OperationsMiddleware(object):
                     if update_fields:
                         # "update_fileds=[]" is a convention for explicitly executing backend
                         # i.e. account.disable()
-                        if not update_fields == []:
+                        if update_fields != []:
                             execute = False
                             for field in update_fields:
                                 if field not in backend.ignore_fields:
@@ -84,13 +85,18 @@ class OperationsMiddleware(object):
                             if not execute:
                                 continue
                 instance = copy.copy(instance)
+                good = instance
                 operation = Operation.create(backend, instance, action)
                 if action != Operation.DELETE:
                     # usually we expect to be using last object state,
                     # except when we are deleting it
                     pending_operations.discard(operation)
                 pending_operations.add(operation)
-    
+        try:
+            print kwargs['instance'], good_action
+        except:
+            pass
+
     def process_request(self, request):
         """ Store request on a thread local variable """
         type(self).thread_locals.request = request

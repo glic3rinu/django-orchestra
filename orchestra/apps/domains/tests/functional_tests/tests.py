@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from selenium.webdriver.support.select import Select
 
 from orchestra.apps.orchestration.models import Server, Route
-from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error
+from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error, save_response_on_error
 from orchestra.utils.system import run
 
 from ... import settings, utils, backends
@@ -129,7 +129,7 @@ class DomainTestMixin(object):
             'domain_name': domain_name,
             'server_addr': server_addr
         }
-        dig_soa = 'dig @%(server_addr)s %(domain_name)s SOA|grep "\sSOA\s"'
+        dig_soa = 'dig @%(server_addr)s %(domain_name)s SOA | grep "\sSOA\s"'
         soa = run(dig_soa % context).stdout.split()
         # testdomain.org. 3600 IN SOA ns.example.com. hostmaster.example.com. 2014021100 86400 7200 2419200 3600
         self.assertEqual('%(domain_name)s.' % context, soa[0])
@@ -140,7 +140,7 @@ class DomainTestMixin(object):
         hostmaster = utils.format_hostmaster(settings.DOMAINS_DEFAULT_HOSTMASTER)
         self.assertEqual(hostmaster, soa[5])
         
-        dig_ns = 'dig @%(server_addr)s %(domain_name)s NS|grep "\sNS\s"'
+        dig_ns = 'dig @%(server_addr)s %(domain_name)s NS  |grep "\sNS\s"'
         name_servers = run(dig_ns % context).stdout
         ns_records = ['ns1.%s.' % self.domain_name, 'ns2.%s.' % self.domain_name]
         self.assertEqual(2, len(name_servers.splitlines()))
@@ -153,7 +153,7 @@ class DomainTestMixin(object):
             self.assertEqual('NS', ns[3])
             self.assertIn(ns[4], ns_records)
         
-        dig_mx = 'dig @%(server_addr)s %(domain_name)s MX|grep "\sMX\s"'
+        dig_mx = 'dig @%(server_addr)s %(domain_name)s MX | grep "\sMX\s"'
         mx = run(dig_mx % context).stdout.split()
         # testdomain.org. 3600 IN MX 10 orchestra.lan.
         self.assertEqual('%(domain_name)s.' % context, mx[0])
@@ -163,7 +163,7 @@ class DomainTestMixin(object):
         self.assertIn(mx[4], ['30', '40'])
         self.assertIn(mx[5], ['mail3.orchestra.lan.', 'mail4.orchestra.lan.'])
         
-        dig_cname = 'dig @%(server_addr)s www.%(domain_name)s CNAME|grep "\sCNAME\s"'
+        dig_cname = 'dig @%(server_addr)s www.%(domain_name)s CNAME | grep "\sCNAME\s"'
         cname = run(dig_cname % context).stdout.split()
         # testdomain.org. 3600 IN MX 10 orchestra.lan.
         self.assertEqual('www.%(domain_name)s.' % context, cname[0])
@@ -194,13 +194,13 @@ class DomainTestMixin(object):
         self.add(self.ns1_name, self.ns1_records)
         self.add(self.ns2_name, self.ns2_records)
         self.add(self.domain_name, self.domain_records)
-        self.addCleanup(partial(self.delete, self.domain_name))
+#        self.addCleanup(partial(self.delete, self.domain_name))
         self.update(self.domain_name, self.domain_update_records)
-        self.add(self.www_name, self.www_records)
+#        self.add(self.www_name, self.www_records)
         time.sleep(0.5)
         self.validate_update(self.MASTER_SERVER_ADDR, self.domain_name)
-        time.sleep(5)
-        self.validate_update(self.SLAVE_SERVER_ADDR, self.domain_name)
+#        time.sleep(5)
+#        self.validate_update(self.SLAVE_SERVER_ADDR, self.domain_name)
     
     def test_add_add_delete_delete(self):
         self.add(self.ns1_name, self.ns1_records)
@@ -276,15 +276,18 @@ class RESTDomainMixin(DomainTestMixin):
         self.rest_login()
         self.add_route()
     
+    @save_response_on_error
     def add(self, domain_name, records):
         records = [ dict(type=type, value=value) for type,value in records ]
         self.rest.domains.create(name=domain_name, records=records)
     
+    @save_response_on_error
     def delete(self, domain_name):
         domain = Domain.objects.get(name=domain_name)
         domain = self.rest.domains.retrieve(id=domain.pk)
         domain.delete()
     
+    @save_response_on_error
     def update(self, domain_name, records):
         records = [ dict(type=type, value=value) for type,value in records ]
         domains = self.rest.domains.retrieve(name=domain_name)

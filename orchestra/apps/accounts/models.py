@@ -49,6 +49,10 @@ class Account(auth.AbstractBaseUser):
     def is_staff(self):
         return self.is_superuser
     
+    @property
+    def main_systemuser(self):
+        return self.systemusers.get(is_main=True)
+    
     @classmethod
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
@@ -63,7 +67,8 @@ class Account(auth.AbstractBaseUser):
         created = not self.pk
         super(Account, self).save(*args, **kwargs)
         if created and hasattr(self, 'systemusers'):
-            self.systemusers.create_user(self.username, account=self, password=self.password, is_main=True)
+            self.systemusers.create(username=self.username, account=self,
+                    password=self.password, is_main=True)
     
     def disable(self):
         self.is_active = False

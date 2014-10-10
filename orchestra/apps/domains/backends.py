@@ -15,6 +15,7 @@ class Bind9MasterDomainBackend(ServiceController):
         ('domains.Record', 'domain__origin'),
         ('domains.Domain', 'origin'),
     )
+    ignore_fields = ['serial']
     
     @classmethod
     def is_main(cls, obj):
@@ -25,6 +26,7 @@ class Bind9MasterDomainBackend(ServiceController):
     def save(self, domain):
         context = self.get_context(domain)
         domain.refresh_serial()
+        print domain.render_zone()
         context['zone'] = ';; %(banner)s\n' % context
         context['zone'] += domain.render_zone()
         self.append("{ echo -e '%(zone)s' | diff -N -I'^;;' %(zone_path)s - ; } ||"

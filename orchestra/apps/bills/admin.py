@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib import admin, messages
+from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -11,7 +11,7 @@ from orchestra.admin.utils import admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from . import settings
-from .actions import download_bills, view_bill, close_bills, send_bills
+from .actions import download_bills, view_bill, close_bills, send_bills, validate_contact
 from .filters import BillTypeListFilter
 from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine
 
@@ -55,9 +55,9 @@ class BillLineInline(admin.TabularInline):
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'number', 'type_link', 'account_link', 'created_on_display',
-        'num_lines', 'display_total', 'display_payment_state', 'is_open'
+        'num_lines', 'display_total', 'display_payment_state', 'is_open', 'is_sent'
     )
-    list_filter = (BillTypeListFilter, 'is_open',)
+    list_filter = (BillTypeListFilter, 'is_open', 'is_sent')
     add_fields = ('account', 'type', 'is_open', 'due_on', 'comments')
     fieldsets = (
         (None, {
@@ -97,9 +97,14 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     type_link.admin_order_field = 'type'
     
     def display_payment_state(self, bill):
-        topts = bill.transactions.model._meta
-        url = reverse('admin:%s_%s_changelist' % (topts.app_label, topts.module_name))
-        url += '?bill=%i' % bill.pk
+        t_opts = bill.transactions.model._meta
+        transactions = bill.transactions.all()
+        if len(transactions) == 1:
+            args = (transactions[0].pk,)
+            url = reverse('admin:%s_%s_change' % (t_opts.app_label, t_opts.module_name), args=args)
+        else:
+            url = reverse('admin:%s_%s_changelist' % (t_opts.app_label, t_opts.module_name))
+            url += '?bill=%i' % bill.pk
         state = bill.get_payment_state_display().upper()
         color = PAYMENT_STATE_COLORS.get(bill.payment_state, 'grey')
         return '<a href="{url}" style="color:{color}">{name}</a>'.format(
@@ -120,7 +125,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return fieldsets
     
     def get_change_view_actions(self, obj=None):
-        actions = super(BillAdmin, self).get_change_view_actions()
+        actions = super(BillAdmin, self).get_change_view_actions(obj=obj)
         exclude = []
         if obj:
             if not obj.is_open:
@@ -143,19 +148,13 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def get_queryset(self, request):
         qs = super(BillAdmin, self).get_queryset(request)
         qs = qs.annotate(models.Count('lines'))
-        qs = qs.prefetch_related('lines', 'lines__sublines')
+        qs = qs.prefetch_related('lines', 'lines__sublines', 'transactions')
         return qs
     
     def change_view(self, request, object_id, **kwargs):
-        bill = self.get_object(request, unquote(object_id))
         # TODO raise404, here and everywhere
-        if not hasattr(bill.account, 'invoicecontact'):
-            create_link = reverse('admin:accounts_account_change', args=(bill.account_id,))
-            create_link += '#invoicecontact-group'
-            messages.warning(request, mark_safe(_(
-                'Be aware, related contact doesn\'t have a billing contact defined, '
-                'bill can not be generated until one is <a href="%s">provided</a>' % create_link
-            )))
+        bill = self.get_object(request, unquote(object_id))
+        validate_contact(request, bill, error=False)
         return super(BillAdmin, self).change_view(request, object_id, **kwargs)
 
 

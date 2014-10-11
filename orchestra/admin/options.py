@@ -86,8 +86,11 @@ class ChangeViewActionsMixin(object):
                 action = getattr(self, action)
             view = action_to_view(action, self)
             view.url_name = getattr(action, 'url_name', action.__name__)
-            view.verbose_name = getattr(action, 'verbose_name',
+            verbose_name = getattr(action, 'verbose_name',
                     view.url_name.capitalize().replace('_', ' '))
+            if hasattr(verbose_name, '__call__'):
+                verbose_name = verbose_name(obj)
+            view.verbose_name = verbose_name
             view.css_class = getattr(action, 'css_class', 'historylink')
             view.description = getattr(action, 'description', '')
             views.append(view)
@@ -186,7 +189,7 @@ class SelectPluginAdminMixin(object):
     def add_view(self, request, form_url='', extra_context=None):
         """ Redirects to select account view if required """
         if request.user.is_superuser:
-            plugin_value = request.GET.get(self.plugin_field)
+            plugin_value = request.GET.get(self.plugin_field) or request.POST.get(self.plugin_field)
             if plugin_value or self.plugin.get_plugins() == 1:
                 self.plugin_value = plugin_value
                 if not plugin_value:

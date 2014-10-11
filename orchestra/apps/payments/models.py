@@ -104,7 +104,7 @@ class Transaction(models.Model):
     objects = TransactionQuerySet.as_manager()
     
     def __unicode__(self):
-        return "Transaction {}".format(self.id)
+        return "Transaction #{}".format(self.id)
     
     @property
     def account(self):
@@ -162,7 +162,7 @@ class TransactionProcess(models.Model):
         verbose_name_plural = _("Transaction processes")
     
     def __unicode__(self):
-        return str(self.id)
+        return '#%i' % self.id
     
     def mark_as_executed(self):
         assert self.state == self.CREATED

@@ -175,10 +175,10 @@ class SEPADirectDebit(PaymentMethod):
     def get_debt_transactions(cls, transactions, process):
         for transaction in transactions:
             transaction.process = process
+            transaction.state = transaction.WAITTING_EXECUTION
+            transaction.save(update_fields=['state', 'process'])
             account = transaction.account
             data = transaction.source.data
-            transaction.state = transaction.WAITTING_CONFIRMATION
-            transaction.save(update_fields=['state'])
             yield E.DrctDbtTxInf(                           # Direct Debit Transaction Info
                 E.PmtId(                                    # Payment Id
                     E.EndToEndId(str(transaction.id))       # Payment Id/End to End
@@ -191,7 +191,7 @@ class SEPADirectDebit(PaymentMethod):
                     E.MndtRltdInf(                          # Mandate Related Info
                         E.MndtId(str(account.id)),          # Mandate Id
                         E.DtOfSgntr(                        # Date of Signature
-                            account.register_date.strftime("%Y-%m-%d")
+                            account.date_joined.strftime("%Y-%m-%d")
                         )
                     )
                 ),
@@ -216,10 +216,10 @@ class SEPADirectDebit(PaymentMethod):
     def get_credit_transactions(transactions, process):
         for transaction in transactions:
             transaction.process = process
+            transaction.state = transaction.WAITTING_EXECUTION
+            transaction.save(update_fields=['state', 'process'])
             account = transaction.account
             data = transaction.source.data
-            transaction.state = transaction.WAITTING_CONFIRMATION
-            transaction.save(update_fields=['state'])
             yield E.CdtTrfTxInf(                            # Credit Transfer Transaction Info
                 E.PmtId(                                    # Payment Id
                     E.EndToEndId(str(transaction.id))       # Payment Id/End to End

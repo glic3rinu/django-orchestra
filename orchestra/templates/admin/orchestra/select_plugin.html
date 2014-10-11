@@ -28,7 +28,7 @@
     {% else %}
         <ul>
         {% for plugin in plugins %}
-            <li><a style="font-size:small;" href="../?{{ field }}={{ plugin.get_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</<a></li>
+            <li><a style="font-size:small;" href="../?{{ field }}={{ plugin.get_plugin_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</<a></li>
         {% endfor %}
         </ul>
     {% endif %}

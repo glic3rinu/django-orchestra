@@ -90,7 +90,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * mail backend related_models = ('resources__content_type') ??
 
-* ignore orders (mark orders as ignored)
+* ignore orders (mark orders as ignored), ignore orchestra related orders by default (or do not generate them on the first place) ignore superuser orders?
 
 * Domain backend PowerDNS Bind validation support?
 
@@ -114,8 +114,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * AccountAdminMixin auto adds 'account__name' on searchfields and handle account_link on fieldsets
 
 * Separate panel from server passwords?  Store passwords on panel? set_password special backend operation?
-
-* be more explicit about which backends are resources and which are service handling
 
 * What fields we really need on contacts? name email phone and what more?
 

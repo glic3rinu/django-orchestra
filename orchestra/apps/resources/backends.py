@@ -3,6 +3,7 @@ import datetime
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.functional import cached_property
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceBackend
 
@@ -13,15 +14,19 @@ class ServiceMonitor(ServiceBackend):
     MEMORY = 'memory'
     CPU = 'cpu'
     # TODO UNITS
-    
     actions = ('monitor', 'exceeded', 'recovery')
+    abstract = True
     
     @classmethod
     def get_backends(cls):
-        """ filter monitor classes """
-        for backend in cls.plugins:
-            if backend != ServiceMonitor and ServiceMonitor in backend.__mro__:
-                yield backend
+        """ filter controller classes """
+        return [
+            plugin for plugin in cls.plugins if ServiceMonitor in plugin.__mro__
+        ]
+    
+    @classmethod
+    def get_verbose_name(cls):
+        return _("[M] %s") % super(ServiceMonitor, cls).get_verbose_name()
     
     @cached_property
     def current_date(self):

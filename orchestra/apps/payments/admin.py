@@ -92,7 +92,7 @@ class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdm
 
 class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     list_display = ('id', 'file_url', 'display_transactions', 'created_at')
-    fields = ('data', 'file_url', 'display_transactions', 'created_at')
+    fields = ('data', 'file_url', 'created_at')
     readonly_fields = ('file_url', 'display_transactions', 'created_at')
     inlines = [TransactionInline]
     actions = (actions.mark_process_as_executed, actions.abort, actions.commit)
@@ -111,16 +111,17 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         # Because of values_list this query doesn't benefit from prefetch_related
         tx_ids = process.transactions.values_list('id', flat=True)
         for tx_id in tx_ids:
-            ids.append(str(tx_id))
+            ids.append('#%i' % tx_id)
             counter += 1
             if counter > 10:
                 counter = 0
                 lines.append(','.join(ids))
                 ids = []
         lines.append(','.join(ids))
+        transactions = '<br'.join(lines)
         url = reverse('admin:payments_transaction_changelist')
         url += '?processes=%i' % process.id
-        return '<a href="%s">%s</a>' % (url, '<br>'.join(lines))
+        return '<a href="%s">%s</a>' % (url, transactions)
     display_transactions.short_description = _("Transactions")
     display_transactions.allow_tags = True
     

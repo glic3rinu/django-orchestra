@@ -2,9 +2,10 @@ from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext
+from django.utils.translation import ungettext, ugettext_lazy as _
 from django.shortcuts import render
+
+from orchestra.admin.utils import change_url
 
 from .forms import (BillSelectedOptionsForm, BillSelectConfirmationForm,
         BillSelectRelatedForm)
@@ -38,7 +39,7 @@ class BillSelectedOrders(object):
                 self.options = dict(
                     billing_point=form.cleaned_data['billing_point'],
                     fixed_point=form.cleaned_data['fixed_point'],
-                    is_proforma=form.cleaned_data['is_proforma'],
+                    proforma=form.cleaned_data['proforma'],
                     new_open=form.cleaned_data['new_open'],
                 )
                 if int(request.POST.get('step')) != 3:
@@ -78,14 +79,18 @@ class BillSelectedOrders(object):
         if int(request.POST.get('step')) >= 3:
             bills = self.queryset.bill(commit=True, **self.options)
             for order in self.queryset:
-                self.modeladmin.log_change(request, order, 'Billed')
+                self.modeladmin.log_change(request, order, _("Billed"))
             if not bills:
                 msg = _("Selected orders do not have pending billing")
                 self.modeladmin.message_user(request, msg, messages.WARNING)
             else:
-                ids = ','.join([str(bill.id) for bill in bills])
-                url = reverse('admin:bills_bill_changelist')
-                url += '?id__in=%s' % ids
+                num = len(bills)
+                if num == 1:
+                    url = change_url(bills[0])
+                else:
+                    url = reverse('admin:bills_bill_changelist')
+                    ids = ','.join([str(bill.id) for bill in bills])
+                    url += '?id__in=%s' % ids
                 num = len(bills)
                 msg = ungettext(
                     '<a href="{url}">One bill</a> has been created.',

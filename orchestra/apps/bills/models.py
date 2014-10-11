@@ -81,7 +81,7 @@ class Bill(models.Model):
     
     @cached_property
     def payment_state(self):
-        if self.is_open:
+        if self.is_open or self.get_type() == self.PROFORMA:
             return self.OPEN
         secured = self.transactions.secured().amount()
         if secured >= self.total:
@@ -136,12 +136,14 @@ class Bill(models.Model):
             self.due_on = self.get_due_date(payment=payment)
         self.total = self.get_total()
         self.html = self.render(payment=payment)
+        transaction = None
         if self.get_type() != self.PROFORMA:
-            self.transactions.create(bill=self, source=payment, amount=self.total)
+            transaction = self.transactions.create(bill=self, source=payment, amount=self.total)
         self.closed_on = timezone.now()
         self.is_open = False
         self.is_sent = False
         self.save()
+        return transaction
     
     def send(self):
         html = self.html or self.render()

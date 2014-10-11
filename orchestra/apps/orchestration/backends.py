@@ -1,6 +1,7 @@
 from functools import partial
 
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.utils import plugins
 
@@ -111,6 +112,11 @@ class ServiceBackend(plugins.Plugin):
 
 class ServiceController(ServiceBackend):
     actions = ('save', 'delete')
+    abstract = True
+    
+    @classmethod
+    def get_verbose_name(cls):
+        return _("[S] %s") % super(ServiceController, cls).get_verbose_name()
     
     @classmethod
     def get_backends(cls):

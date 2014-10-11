@@ -14,8 +14,8 @@ from .models import SystemUser
 
 
 class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('username', 'account_link', 'shell', 'home', 'is_active',)
-    list_filter = ('is_active', 'shell')
+    list_display = ('username', 'account_link', 'shell', 'home', 'is_active', 'is_main')
+    list_filter = ('is_active', 'is_main', 'shell')
     fieldsets = (
         (None, {
             'fields': ('username', 'password', 'account_link', 'is_active')

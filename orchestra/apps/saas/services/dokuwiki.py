@@ -17,3 +17,4 @@ class DokuwikiService(SoftwareService):
     verbose_name = "Dowkuwiki"
     form = DowkuwikiForm
     description_field = 'site_name'
+    icon = 'saas/icons/Dokuwiki.png'

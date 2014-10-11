@@ -15,6 +15,7 @@ class WordpressForm(PluginDataForm):
 
 
 class WordpressService(SoftwareService):
-    verbose_name = "Wordpress"
+    verbose_name = "WordPress"
     form = WordpressForm
     description_field = 'site_name'
+    icon = 'saas/icons/WordPress.png'

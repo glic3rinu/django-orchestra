@@ -42,26 +42,26 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
         _("This creates a Static application under ~/webapps/<app_name>\n"
           "Apache2 will be used to serve static content and execute CGI files.")
     ),
-    'wordpressmu': (
-        _("Wordpress (shared)"),
-        'fpm', ('fcgi://127.0.0.1:8990/home/httpd/wordpress-mu/',),
-        _("This creates a Wordpress site into a shared Wordpress server\n"
-          "By default this blog will be accessible via http://<app_name>.blogs.example.com")
-        
-    ),
-    'dokuwikimu': (
-        _("DokuWiki (shared)"),
-        'alias', ('/home/httpd/wikifarm/farm/',),
-        _("This create a Dokuwiki wiki into a shared Dokuwiki server\n")
-    ),
-    'drupalmu': (
-        _("Drupdal (shared)"),
-        'fpm', ('fcgi://127.0.0.1:8991/home/httpd/drupal-mu/',),
-        _("This creates a Drupal site into a shared Drupal server\n"
-          "The installation will be completed after visiting "
-          "http://<app_name>.drupal.example.com/install.php?profile=standard&locale=ca\n"
-          "By default this site will be accessible via http://<app_name>.drupal.example.com")
-    ),
+#    'wordpress': (
+#        _("Wordpress"),
+#        'fpm', ('fcgi://127.0.0.1:8990/home/httpd/wordpress-mu/',),
+#        _("This creates a Wordpress site into a shared Wordpress server\n"
+#          "By default this blog will be accessible via http://<app_name>.blogs.example.com")
+#        
+#    ),
+#    'dokuwiki': (
+#        _("DokuWiki"),
+#        'alias', ('/home/httpd/wikifarm/farm/',),
+#        _("This create a Dokuwiki wiki into a shared Dokuwiki server\n")
+#    ),
+#    'drupal': (
+#        _("Drupdal"),
+#        'fpm', ('fcgi://127.0.0.1:8991/home/httpd/drupal-mu/',),
+#        _("This creates a Drupal site into a shared Drupal server\n"
+#          "The installation will be completed after visiting "
+#          "http://<app_name>.drupal.example.com/install.php?profile=standard&locale=ca\n"
+#          "By default this site will be accessible via http://<app_name>.drupal.example.com")
+#    ),
     'webalizer': (
         _("Webalizer"),
         'alias', ('%(app_path)s%(site_name)s',),

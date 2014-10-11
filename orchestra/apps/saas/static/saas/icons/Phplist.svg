@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   x="0px"
+   y="0px"
+   width="207px"
+   height="207px"
+   viewBox="-0.976 -0.977 207 207"
+   overflow="visible"
+   enable-background="new -0.976 -0.977 207 207"
+   xml:space="preserve"
+   id="svg2"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="phplist-coin-black.svg"
+   inkscape:export-filename="/home/glic3/orchestra/django-orchestra/orchestra/apps/saas/static/saas/icons/Phplist.png"
+   inkscape:export-xdpi="20.870001"
+   inkscape:export-ydpi="20.870001"><metadata
+   id="metadata12"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1920"
+   inkscape:window-height="1024"
+   id="namedview10"
+   showgrid="false"
+   inkscape:zoom="1.1400966"
+   inkscape:cx="103.5"
+   inkscape:cy="103.5"
+   inkscape:window-x="0"
+   inkscape:window-y="27"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="svg2" />
+<defs
+   id="defs4">
+</defs>
+<circle
+   cx="102.524"
+   cy="102.523"
+   r="102.5"
+   id="circle6"
+   sodipodi:cx="102.524"
+   sodipodi:cy="102.523"
+   sodipodi:rx="102.5"
+   sodipodi:ry="102.5"
+   transform="matrix(0.8829268,0,0,0.8829268,12.00281,12.002692)"
+   style="fill:#2c2c2c" />
+<path
+   stroke-miterlimit="10"
+   d="m 87.955712,164.76935 c -12.657644,0 -22.956104,-10.29759 -22.956104,-22.95615 0,-4.28744 1.152216,-8.43636 3.333052,-11.99716 l 0.275472,-0.44938 13.332196,-13.28274 -58.107184,-58.52044 c 0,-1.516868 3.356004,-6.800296 4.980592,-7.684104 L 88.194984,109.85305 110.00772,88.120694 97.614048,75.750888 97.409204,75.468352 c -2.797116,-3.846904 -4.156816,-8.137936 -4.156816,-13.118528 0,-12.657632 10.298412,-22.956092 22.956092,-22.956092 12.65856,0 22.95608,10.29846 22.95608,22.956092 0,5.46444 -1.85236,10.393824 -5.50504,14.649524 l -0.23392,0.25252 -10.9148,10.874128 59.10316,58.971524 c -0.0962,1.13112 -3.5256,7.0008 -4.7784,7.4308 l -60.57944,-60.16974 -21.847104,21.76594 11.701424,11.85764 c 3.1406,4.10392 4.80052,8.88672 4.80052,13.83192 8.8e-4,12.65768 -10.29764,22.95527 -22.955248,22.95527 z m -12.34156,-29.91887 c -1.168996,2.07836 -1.785276,4.47384 -1.785276,6.9636 0,7.78928 6.337652,14.12692 14.126836,14.12692 7.789172,0 14.126848,-6.33764 14.126848,-14.12692 0,-2.94892 -0.94912,-5.724 -2.822744,-8.2536 L 88.155252,122.3562 75.614152,134.85048 z M 104.36316,70.010988 116.26326,81.889 127.06584,71.126124 c 2.20028,-2.613464 3.27032,-5.485629 3.27032,-8.775408 0,-7.789184 -6.33764,-14.126836 -14.1268,-14.126836 -7.78916,0 -14.1268,6.337652 -14.1268,14.126836 0,2.972812 0.72576,5.416752 2.2806,7.660272 z"
+   id="path8"
+   inkscape:connector-curvature="0"
+   style="fill:#ffffff;stroke:#f1f2f2;stroke-width:1.76585388;stroke-miterlimit:10" />
+</svg>

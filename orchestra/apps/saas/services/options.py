@@ -12,6 +12,8 @@ class SoftwareService(plugins.Plugin):
     description_field = ''
     form = None
     serializer = None
+    icon = 'orchestra/icons/apps.png'
+    class_verbose_name = _("Software as a Service")
     
     @classmethod
     @cached

@@ -3,6 +3,9 @@ from .functional import cached
 
 class Plugin(object):
     verbose_name = None
+    # Used on select plugin view
+    class_verbose_name = None
+    icon = None
     
     @classmethod
     def get_plugin_name(cls):

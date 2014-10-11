@@ -14,3 +14,4 @@ class PHPListService(SoftwareService):
     verbose_name = "phpList"
     form = PHPListForm
     description_field = 'email'
+    icon = 'saas/icons/Phplist.png'

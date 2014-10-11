@@ -17,3 +17,4 @@ class DrupalService(SoftwareService):
     verbose_name = "Drupal"
     form = DrupalForm
     description_field = 'site_name'
+    icon = 'saas/icons/Drupal.png'

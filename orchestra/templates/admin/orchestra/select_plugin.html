@@ -1,5 +1,10 @@
 {% extends "admin/orchestra/generic_confirmation.html" %}
-{% load i18n l10n staticfiles admin_urls %}
+{% load i18n l10n staticfiles admin_urls admin_tools_dashboard_tags %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% block dashboard_css %}{% admin_tools_render_dashboard_css %}{% endblock %}
+{% endblock %}
 
 
 {% block content %}
@@ -7,11 +12,26 @@
     <form action="" method="post">{% csrf_token %}
     <div>
     <div style="margin:20px;">
-    <ul>
-    {% for name, verbose in plugins %}
-        <li><a style="font-size:small;" href="../?{{ field }}={{ name }}&{{ request.META.QUERY_STRING }}">{{ verbose }}</<a></li>
-    {% endfor %}
-    </ul>
+    {% if plugin.icon %}
+        <div id="module_2" class="dashboard-module" style="display: inline-block;">
+            <h2>Software as a Service</h2>
+            <div class="dashboard-module-content">
+                <ul class="fluent-dashboard-appiconlist clearfix" style="padding: 0">
+                    {% for plugin in plugins %}
+                    <li><a class="fluent-dashboard-icon" href="../?{{ field }}={{ plugin.get_plugin_name }}&{{ request.META.QUERY_STRING }}">
+                        <img src="{% static plugin.icon %}" width="48" height="48" alt="{{ plugin.get_name }}"></a>
+                        <a class="fluent-dashboard-icon-caption" href="../?{{ field }}={{ plugin.get_plugin_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        <ul>
+        {% for plugin in plugins %}
+            <li><a style="font-size:small;" href="../?{{ field }}={{ plugin.get_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</<a></li>
+        {% endfor %}
+        </ul>
+    {% endif %}
     </div>
 {% endblock %}
 

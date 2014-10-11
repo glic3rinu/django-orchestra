@@ -100,7 +100,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * when using modeladmin to store shit like self.account, make sure to have a cleanslate in each request
 
-*jabber with mailbox accounts (dovecto mail notification)
+* jabber with mailbox accounts (dovecto mail notification)
 
 * rename accounts register to manager register or accounttools, accountutils
 

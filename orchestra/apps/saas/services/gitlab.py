@@ -17,3 +17,4 @@ class GitLabService(SoftwareService):
     verbose_name = "GitLab"
     form = GitLabForm
     description_field = 'project_name'
+    icon = 'saas/icons/gitlab.png'

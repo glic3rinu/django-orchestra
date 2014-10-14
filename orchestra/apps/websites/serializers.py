@@ -10,6 +10,9 @@ class ContentSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Content
         fields = ('webapp', 'path')
+    
+    def get_identity(self, data):
+        return '%s-%s' % (data.get('website'), data.get('path'))
 
 
 class WebsiteSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):

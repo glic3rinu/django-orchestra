@@ -72,7 +72,8 @@ class Account(auth.AbstractBaseUser):
     
     def disable(self):
         self.is_active = False
-#        self.save(update_fields=['is_active'])
+        self.save(update_fields=['is_active'])
+        # Trigger save() on related objects that depend on this account
         for rel in self._meta.get_all_related_objects():
             if not rel.model in services:
                 continue

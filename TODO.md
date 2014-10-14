@@ -138,3 +138,12 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * DN: Transaction atomicity and backend failure
 
 * SaaS Icons
+
+* offer to create mailbox on account creation
+
+* init.d celery scripts
+    -# Required-Start:    $network $local_fs $remote_fs postgresql celeryd
+    -# Required-Stop:     $network $local_fs $remote_fs postgresql celeryd
+
+
+* POST only fields (account, username, name) etc

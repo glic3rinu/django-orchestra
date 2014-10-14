@@ -112,11 +112,11 @@ class Apache2Backend(ServiceController):
                 directives += "SecRuleRemoveById %d" % rule
         
         for modsecurity in site.options.filter(name='sec_rule_off'):
-            directives += (
-                "<LocationMatch %s>\n"
-                "    SecRuleEngine Off\n"
-                "</LocationMatch>\n" % modsecurity.value
-            )
+            directives += textwrap.dedent("""\
+                <LocationMatch %s>
+                    SecRuleEngine Off
+                </LocationMatch>
+                """ % modsecurity.value)
         return directives
     
     def get_protections(self, site):

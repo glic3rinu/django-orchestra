@@ -9,10 +9,16 @@ WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
 #    '/var/run/%(user)s-%(app_name)s.sock')
     '127.0.0.1:%(fpm_port)s')
 
+
 WEBAPPS_FPM_START_PORT = getattr(settings, 'WEBAPPS_FPM_START_PORT', 10000)
 
+
+WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
+    '/etc/php5/fpm/pool.d/%(app_name)s.conf')
+
+
 WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
-    '/home/httpd/fcgid/%(user)s/%(type)s-wrapper')
+    '/home/httpd/fcgid/%(app_name)s-wrapper')
 
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
@@ -166,10 +172,26 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
 
 
 WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTION', [
-    'exec',  'passthru', 'shell_exec', 'system', 'proc_open', 'popen', 'curl_exec',
-    'curl_multi_exec', 'show_source', 'pcntl_exec', 'proc_close',
-    'proc_get_status', 'proc_nice', 'proc_terminate', 'ini_alter', 'virtual',
-    'openlog', 'escapeshellcmd', 'escapeshellarg', 'dl'
+    'exec',
+    'passthru',
+    'shell_exec',
+    'system',
+    'proc_open',
+    'popen',
+    'curl_exec',
+    'curl_multi_exec',
+    'show_source',
+    'pcntl_exec',
+    'proc_close',
+    'proc_get_status',
+    'proc_nice',
+    'proc_terminate',
+    'ini_alter',
+    'virtual',
+    'openlog',
+    'escapeshellcmd',
+    'escapeshellarg',
+    'dl'
 ])
 
 
@@ -179,9 +201,6 @@ WEBAPPS_WORDPRESSMU_BASE_URL = getattr(settings, 'WEBAPPS_WORDPRESSMU_BASE_URL',
 
 WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD = getattr(settings, 'WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD',
     'secret')
-
-
-
 
 
 WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH = setattr(settings, 'WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH',
@@ -195,6 +214,3 @@ WEBAPPS_DOKUWIKIMU_FARM_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_FARM_PATH',
 WEBAPPS_DRUPAL_SITES_PATH = getattr(settings, 'WEBAPPS_DRUPAL_SITES_PATH',
     '/home/httpd/htdocs/drupal-mu/sites/%(app_name)s')
 
-
-WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
-    '/etc/php5/fpm/pool.d')

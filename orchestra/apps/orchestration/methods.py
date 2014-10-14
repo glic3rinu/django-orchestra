@@ -37,7 +37,8 @@ def BashSSH(backend, log, server, cmds):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         addr = server.get_address()
         try:
-            ssh.connect(addr, username='root', key_filename=settings.ORCHESTRATION_SSH_KEY_PATH)
+            # TODO timeout
+            ssh.connect(addr, username='root', key_filename=settings.ORCHESTRATION_SSH_KEY_PATH, timeout=10)
         except socket.error:
             logger.error('%s timed out on %s' % (backend, server))
             log.state = BackendLog.TIMEOUT

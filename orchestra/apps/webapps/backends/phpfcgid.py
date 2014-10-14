@@ -10,6 +10,7 @@ from .. import settings
 
 
 class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
+    """ Per-webapp fcgid application """
     verbose_name = _("PHP-Fcgid")
     
     def save(self, webapp):
@@ -27,6 +28,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     
     def delete(self, webapp):
         context = self.get_context(webapp)
+        self.append("rm '%(wrapper_path)s'" % context)
         self.delete_webapp_dir(context)
     
     def commit(self):
@@ -35,7 +37,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     
     def get_context(self, webapp):
         context = super(PHPFcgidBackend, self).get_context(webapp)
-        init_vars = webapp.get_php_init_vars()
+        init_vars = self.get_php_init_vars(webapp)
         if init_vars:
             init_vars = [ '%s="%s"' % (k,v) for v,k in init_vars.iteritems() ]
             init_vars = ', -d '.join(init_vars)

@@ -5,36 +5,47 @@ from rest_framework import serializers
 from orchestra.apps.accounts.serializers import AccountSerializerMixin
 from orchestra.core.validators import validate_password
 
-from .models import Database, DatabaseUser, Role
+from .models import Database, DatabaseUser
 
 
-class UserRoleSerializer(serializers.HyperlinkedModelSerializer):
+class RelatedDatabaseUserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Role
-        fields = ('user', 'is_owner',)
-
-
-class RoleSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Role
-        fields = ('database', 'is_owner',)
+        model = DatabaseUser
+        fields = ('url', 'username')
+    
+    def from_native(self, data, files=None):
+        return DatabaseUser.objects.get(username=data['username'])
 
 
 class DatabaseSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
-    roles = UserRoleSerializer(many=True)
+    users = RelatedDatabaseUserSerializer(many=True, allow_add_remove=True)
     
     class Meta:
         model = Database
-        fields = ('url', 'name', 'type', 'roles')
+        fields = ('url', 'name', 'type', 'users')
+
+
+class RelatedDatabaseSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Database
+        fields = ('url', 'name',)
+    
+    def from_native(self, data, files=None):
+        return Database.objects.get(name=data['name'])
 
 
 class DatabaseUserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     password = serializers.CharField(max_length=128, label=_('Password'),
             validators=[validate_password], write_only=True,
             widget=widgets.PasswordInput)
-    roles = RoleSerializer(many=True, read_only=True)
+    databases = RelatedDatabaseSerializer(many=True, allow_add_remove=True, required=False)
     
     class Meta:
         model = DatabaseUser
-        fields = ('url', 'username', 'password', 'type', 'roles')
-        write_only_fields = ('username',)
+        fields = ('url', 'username', 'password', 'type', 'databases')
+    
+    def save_object(self, obj, **kwargs):
+        # FIXME this method will be called when saving nested serializers :(
+        if not obj.pk:
+            obj.set_password(obj.password)
+        super(DatabaseUserSerializer, self).save_object(obj, **kwargs)

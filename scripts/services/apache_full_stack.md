@@ -84,6 +84,12 @@ The goal of this setup is having a high-performance state-of-the-art deployment 
 </Directory>
 
 
+
+# TODO pool per website or pool per user? memory consumption 
+events.mechanism = epoll
+# TODO multiple master processes, opcache is held in master, and reload/restart affects all pools
+# http://mattiasgeniar.be/2014/04/09/a-better-way-to-run-php-fpm/
+
 TODO CHRoot
     https://andrewbevitt.com/tutorials/apache-varnish-chrooted-php-fpm-wordpress-virtual-host/
 
@@ -92,10 +98,10 @@ TODO CHRoot
     [vhost]
     istemplate = 1
     listen.mode = 0660
+    pm = ondemand
     pm.max_children = 5
-    pm.start_servers = 1
-    pm.min_spare_servers = 1
-    pm.max_spare_servers = 2
+    pm.process_idle_timeout = 10s
+    pm.max_requests = 200
     ' > /etc/php5/fpm/conf.d/vhost-template.conf
     ```
 

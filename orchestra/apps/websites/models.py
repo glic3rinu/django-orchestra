@@ -39,7 +39,9 @@ class Website(models.Model):
     
     @cached
     def get_options(self):
-        return { opt.name: opt.value for opt in self.options.all() }
+        return {
+            opt.name: opt.value for opt in self.options.all()
+        }
     
     @property
     def protocol(self):
@@ -81,12 +83,15 @@ class Content(models.Model):
     class Meta:
         unique_together = ('website', 'path')
     
+    def __unicode__(self):
+        try:
+            return self.website.name + self.path
+        except Website.DoesNotExist:
+            return self.path
+    
     def clean(self):
         if not self.path.startswith('/'):
             self.path = '/' + self.path
-    
-    def __unicode__(self):
-        return self.website.name + self.path
 
 
 services.register(Website)

@@ -39,23 +39,6 @@ class WebApp(models.Model):
     def get_options(self):
         return { opt.name: opt.value for opt in self.options.all() }
     
-    def get_php_init_vars(self):
-        init_vars = []
-        options = WebAppOption.objects.filter(webapp__type=self.type)
-        for opt in options.filter(webapp__account=self.account):
-            name = opt.name.replace('PHP-', '')
-            value = "%s" % opt.value
-            init_vars.append((name, value))
-        enabled_functions = self.options.filter(name='enabled_functions')
-        if enabled_functions:
-            enabled_functions = enabled_functions.get().value.split(',')
-            disabled_functions = []
-            for function in settings.WEBAPPS_PHP_DISABLED_FUNCTIONS:
-                if function not in enabled_functions:
-                    disabled_functions.append(function)
-            init_vars.append(('dissabled_functions', ','.join(disabled_functions)))
-        return init_vars
-    
     def get_fpm_port(self):
         return settings.WEBAPPS_FPM_START_PORT + self.account.pk
     

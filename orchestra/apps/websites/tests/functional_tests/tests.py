@@ -38,9 +38,9 @@ class WebsiteMixin(WebAppMixin):
         super(WebsiteMixin, self).add_route()
         server = Server.objects.get()
         backend = backends.apache.Apache2Backend.get_name()
-        Route.objects.create(backend=backend, match=True, host=server)
+        Route.objects.get_or_create(backend=backend, match=True, host=server)
         backend = Bind9MasterDomainBackend.get_name()
-        Route.objects.create(backend=backend, match=True, host=server)
+        Route.objects.get_or_create(backend=backend, match=True, host=server)
     
     def validate_add_website(self, name, domain):
         url = 'http://%s/%s' % (domain.name, self.page[0])
@@ -54,9 +54,11 @@ class WebsiteMixin(WebAppMixin):
         self.save_domain(domain)
         webapp = '%s_%s_webapp' % (random_ascii(10), self.type_value)
         self.add_webapp(webapp)
-        self.validate_add_webapp(webapp)
+        self.addCleanup(self.delete_webapp, webapp)
+        self.upload_webapp(webapp)
         website = '%s_website' % random_ascii(10)
         self.add_website(website, domain, webapp)
+        self.addCleanup(self.delete_website, website)
         self.validate_add_website(website, domain)
 
 
@@ -65,21 +67,82 @@ class RESTWebsiteMixin(RESTWebAppMixin):
     def save_domain(self, domain):
         self.rest.domains.retrieve().get().save()
     
-    def add_website(self, name, domain, webapp):
-        domain = self.rest.domains.retrieve().get()
-        webapp = self.rest.webapps.retrieve().get()
-        self.rest.websites.create(name=name, domains=[domain.url], contents=[{'webapp': webapp.url}])
+    @save_response_on_error
+    def add_website(self, name, domain, webapp, path='/'):
+        domain = self.rest.domains.retrieve(name=domain).get()
+        webapp = self.rest.webapps.retrieve(name=webapp).get()
+        contents = [{
+            'webapp': webapp.url,
+            'path': path
+        }]
+        self.rest.websites.create(name=name, domains=[domain.url], contents=contents)
+    
+    @save_response_on_error
+    def delete_website(self, name):
+        print 'hola'
+        pass
+        self.rest.websites.retrieve(name=name).delete()
+#        self.rest.websites.retrieve(name=name).delete()
+    
+    @save_response_on_error
+    def add_content(self, website, webapp, path):
+        website = self.rest.websites.retrieve(name=website).get()
+        webapp = self.rest.webapps.retrieve(name=webapp).get()
+        website.contents.append({
+            'webapp': webapp.url,
+            'path': path,
+        })
+        website.save()
 
 
-class RESTWebsiteTest(RESTWebsiteMixin, StaticWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
+class StaticRESTWebsiteTest(RESTWebsiteMixin, StaticWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
+    def test_mix_webapps(self):
+        domain_name = '%sdomain.lan' % random_ascii(10)
+        domain = Domain.objects.create(name=domain_name, account=self.account)
+        domain.records.create(type=Record.A, value=self.MASTER_SERVER_ADDR)
+        self.save_domain(domain)
+        webapp = '%s_%s_webapp' % (random_ascii(10), self.type_value)
+        self.add_webapp(webapp)
+        self.addCleanup(self.delete_webapp, webapp)
+        self.upload_webapp(webapp)
+        website = '%s_website' % random_ascii(10)
+        self.add_website(website, domain, webapp)
+        self.addCleanup(self.delete_website, website)
+        self.validate_add_website(website, domain)
+        
+        self.type_value = PHPFcidWebAppMixin.type_value
+        self.backend = PHPFcidWebAppMixin.backend
+        self.page = PHPFcidWebAppMixin.page
+        self.add_route()
+        webapp = '%s_%s_webapp' % (random_ascii(10), self.type_value)
+        self.add_webapp(webapp)
+        self.addCleanup(self.delete_webapp, webapp)
+        self.upload_webapp(webapp)
+        path = '/%s' % webapp
+        self.add_content(website, webapp, path)
+        url = 'http://%s%s/%s' % (domain.name, path, self.page[0])
+        self.assertEqual(self.page[2], requests.get(url).content)
+        
+        self.type_value = PHPFPMWebAppMixin.type_value
+        self.backend = PHPFPMWebAppMixin.backend
+        self.page = PHPFPMWebAppMixin.page
+        self.add_route()
+        webapp = '%s_%s_webapp' % (random_ascii(10), self.type_value)
+        self.add_webapp(webapp)
+        self.addCleanup(self.delete_webapp, webapp)
+        self.upload_webapp(webapp)
+        path = '/%s' % webapp
+        
+        self.add_content(website, webapp, path)
+        url = 'http://%s%s/%s' % (domain.name, path, self.page[0])
+        self.assertEqual(self.page[2], requests.get(url).content)
+
+
+class PHPFcidRESTWebsiteTest(RESTWebsiteMixin, PHPFcidWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
     pass
 
 
-class RESTWebsiteTest(RESTWebsiteMixin, PHPFcidWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
-    pass
-
-
-class RESTWebsiteTest(RESTWebsiteMixin, PHPFPMWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
+class PHPFPMRESTWebsiteTest(RESTWebsiteMixin, PHPFPMWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):
     pass
 
 #class AdminWebsiteTest(AdminWebsiteMixin, BaseLiveServerTestCase):

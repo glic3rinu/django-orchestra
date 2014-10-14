@@ -1,5 +1,6 @@
 import MySQLdb
 import os
+import socket
 import time
 from functools import partial
 
@@ -57,6 +58,17 @@ class DatabaseTestMixin(object):
         password = '@!?%spppP001' % random_ascii(5)
         self.add(dbname, username, password)
         self.validate_create_table(dbname, username, password)
+    
+    def test_change_password(self):
+        dbname = '%s_database' % random_ascii(5)
+        username = '%s_dbuser' % random_ascii(5)
+        password = '@!?%spppP001' % random_ascii(5)
+        self.add(dbname, username, password)
+        self.validate_create_table(dbname, username, password)
+        new_password = '@!?%spppP001' % random_ascii(5)
+        self.change_password(username, new_password)
+        self.validate_login_error(dbname, username, password)
+        self.validate_create_table(dbname, username, new_password)
 
 
 class MySQLBackendMixin(object):
@@ -64,7 +76,11 @@ class MySQLBackendMixin(object):
     
     def setUp(self):
         super(MySQLBackendMixin, self).setUp()
-        settings.DATABASES_DEFAULT_HOST = '10.228.207.207'
+        # Get local ip address used to reach self.MASTER_SERVER
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect((self.MASTER_SERVER, 22))
+        settings.DATABASES_DEFAULT_HOST = s.getsockname()[0]
+        s.close()
     
     def add_route(self):
         server = Server.objects.create(name=self.MASTER_SERVER)
@@ -78,7 +94,11 @@ class MySQLBackendMixin(object):
     def validate_create_table(self, name, username, password):
         db = MySQLdb.connect(host=self.MASTER_SERVER, port=3306, user=username, passwd=password, db=name)
         cur = db.cursor()
-        cur.execute('CREATE TABLE test ( id INT ) ;')
+        cur.execute('CREATE TABLE %s ( id INT ) ;' % random_ascii(20))
+    
+    def validate_login_error(self, dbname, username, password):
+        self.assertRaises(MySQLdb.OperationalError,
+            self.validate_create_table, dbname, username, password)
     
     def validate_delete(self, name, username, password):
         self.asseRaises(MySQLdb.ConnectionError,
@@ -92,9 +112,16 @@ class RESTDatabaseMixin(DatabaseTestMixin):
     
     @save_response_on_error
     def add(self, dbname, username, password):
-        user = self.rest.databaseusers.create(username=username, password=password)
-        # TODO fucking nested objects
-        self.rest.databases.create(name=dbname, roles=[{'user': user.url}], type=self.db_type)
+        user = self.rest.databaseusers.create(username=username, password=password, type=self.db_type)
+        users = [{
+            'username': user.username
+        }]
+        self.rest.databases.create(name=dbname, users=users, type=self.db_type)
+    
+    @save_response_on_error
+    def change_password(self, username, password):
+        user = self.rest.databaseusers.retrieve(username=username).get()
+        user.set_password(password)
 
 
 class AdminDatabaseMixin(DatabaseTestMixin):
@@ -129,11 +156,16 @@ class AdminDatabaseMixin(DatabaseTestMixin):
     def delete(self, dbname):
         db = Database.objects.get(name=dbname)
         self.admin_delete(db)
-
+    
     @snapshot_on_error
     def delete_user(self, username):
         user = DatabaseUser.objects.get(username=username)
         self.admin_delete(user)
+    
+    @snapshot_on_error
+    def change_password(self, username, password):
+        user = DatabaseUser.objects.get(username=username)
+        self.admin_change_password(user, password)
 
 
 class RESTMysqlDatabaseTest(MySQLBackendMixin, RESTDatabaseMixin, BaseLiveServerTestCase):

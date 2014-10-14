@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_password
 
-from .models import DatabaseUser, Database, Role
+from .models import DatabaseUser, Database
 
 
 class DatabaseUserCreationForm(forms.ModelForm):
@@ -27,13 +27,6 @@ class DatabaseUserCreationForm(forms.ModelForm):
             msg = _("The two password fields didn't match.")
             raise forms.ValidationError(msg)
         return password2
-    
-    def save(self, commit=True):
-        user = super(DatabaseUserCreationForm, self).save(commit=False)
-#        user.set_password(self.cleaned_data["password1"])
-#        if commit:
-#            user.save()
-        return user
 
 
 class DatabaseCreationForm(DatabaseUserCreationForm):
@@ -86,20 +79,6 @@ class DatabaseCreationForm(DatabaseUserCreationForm):
             elif not (cleaned_data['username'] or cleaned_data['user']):
                 raise forms.ValidationError(msg)
         return cleaned_data
-    
-    def save(self, commit=True):
-        db = super(DatabaseUserCreationForm, self).save(commit=False)
-#        if commit:
-#            user = self.cleaned_data['user']
-#            if not user:
-#                user = DatabaseUser(
-#                    username=self.cleaned_data['username'],
-#                    type=self.cleaned_data['type'],
-#                )
-#                user.set_password(self.cleaned_data["password1"])
-#            user.save()
-#            role, __ = Role.objects.get_or_create(database=db, user=user)
-        return db
 
 
 class ReadOnlySQLPasswordHashField(ReadOnlyPasswordHashField):

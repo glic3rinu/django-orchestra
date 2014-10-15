@@ -168,7 +168,8 @@ function install_requirements () {
             orchestra-orm==dev \
             django-debug-toolbar==1.2.1 \
             django-nose==1.2 \
-            sqlparse"
+            sqlparse
+            requests"
     fi
     
     # Make sure locales are in place before installing postgres

@@ -233,6 +233,9 @@ class MailboxMixin(object):
         sshrun(self.MASTER_SERVER,
                "grep '%s' %s/Maildir/.%s/new/*" % (token, home, folder), display=False)
 
+# TODO test update shit
+# TODO test autoreply
+
 
 class RESTMailboxMixin(MailboxMixin):
     def setUp(self):

@@ -1,3 +1,4 @@
+import re
 import textwrap
 
 from django.utils import timezone
@@ -12,8 +13,23 @@ from .models import List
 class MailmanBackend(ServiceController):
     verbose_name = "Mailman"
     model = 'lists.List'
+    addresses = [
+        '',
+        '-admin',
+        '-bounces',
+        '-confirm',
+        '-join',
+        '-leave',
+        '-owner',
+        '-request',
+        '-subscribe',
+        '-unsubscribe'
+    ]
     
     def include_virtual_alias_domain(self, context):
+        # TODO  for list virtual_domains cleaning up we need to know the old domain name when a list changes its address
+        #       domain, but this is not possible with the current design.
+        #       sync the whole file everytime?
         if context['address_domain']:
             self.append(textwrap.dedent("""
                 [[ $(grep "^\s*%(address_domain)s\s*$" %(virtual_alias_domains)s) ]] || {
@@ -29,42 +45,62 @@ class MailmanBackend(ServiceController):
     
     def get_virtual_aliases(self, context):
         aliases = []
-        addresses = [
-            '',
-            '-admin',
-            '-bounces',
-            '-confirm',
-            '-join',
-            '-leave',
-            '-owner',
-            '-request',
-            '-subscribe',
-            '-unsubscribe'
-        ]
-        for address in addresses:
+        for address in self.addresses:
             context['address'] = address
             aliases.append("%(address_name)s%(address)s@%(domain)s\t%(name)s%(address)s" % context)
         return '\n'.join(aliases)
     
     def save(self, mail_list):
-        if not getattr(mail_list, 'password', None):
-            # TODO
-            # Create only support for now
-            return
         context = self.get_context(mail_list)
-        self.append("newlist --quiet --emailhost='%(domain)s' '%(name)s' '%(admin)s' '%(password)s'" % context)
+        # Create list
+        self.append(textwrap.dedent("""\
+            [[ ! -e %(mailman_root)s/lists/%(name)s ]] && {
+                newlist --quiet --emailhost='%(domain)s' '%(name)s' '%(admin)s' '%(password)s'
+            }""" % context))
+        # Custom domain
         if mail_list.address:
-            context['aliases'] = self.get_virtual_aliases(context)
-            self.append(
-                "if [[ ! $(grep '^\s*%(name)s\s' %(virtual_alias)s) ]]; then\n"
-                "   echo '# %(banner)s\n%(aliases)s\n' >> %(virtual_alias)s\n"
-                "   UPDATED_VIRTUAL_ALIAS=1\n"
-                "fi" % context
-            )
+            aliases = self.get_virtual_aliases(context)
+            # Preserve indentation
+            spaces = '    '*4
+            context['aliases'] = spaces + aliases.replace('\n', '\n'+spaces)
+            self.append(textwrap.dedent("""\
+                if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
+                    echo '# %(banner)s\n%(aliases)s
+                    ' >> %(virtual_alias)s
+                    UPDATED_VIRTUAL_ALIAS=1
+                else
+                    if [[ ! $(grep '^\s*%(address_name)s@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
+                        sed -i "s/^.*\s%(name)s\s*$//" %(virtual_alias)s
+                        echo '# %(banner)s\n%(aliases)s
+                        ' >> %(virtual_alias)s
+                        UPDATED_VIRTUAL_ALIAS=1
+                    fi
+                fi""" % context
+            ))
+            self.append('echo "require_explicit_destination = 0" | '
+                        '%(mailman_root)s/bin/config_list -i /dev/stdin %(name)s' % context)
+            self.append(textwrap.dedent("""\
+                echo "host_name = '%(address_domain)s'" | \
+                    %(mailman_root)s/bin/config_list -i /dev/stdin %(name)s""" % context))
+        else:
+            # Cleanup shit
+            self.append(textwrap.dedent("""\
+                if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
+                    sed -i "s/^.*\s%(name)s\s*$//" %(virtual_alias)s
+                fi""" % context
+            ))
+        # Update
+        if context['password'] is not None:
+            self.append('%(mailman_root)s/bin/change_pw --listname="%(name)s" --password="%(password)s"' % context)
         self.include_virtual_alias_domain(context)
     
     def delete(self, mail_list):
-        pass
+        context = self.get_context(mail_list)
+        self.exclude_virtual_alias_domain(context)
+        for address in self.addresses:
+            context['address'] = address
+            self.append('sed -i "s/^.*\s%(name)s%(address)s\s*$//" %(virtual_alias)s' % context)
+        self.append("rmlist -a %(name)s" % context)
     
     def commit(self):
         context = self.get_context_files()
@@ -77,7 +113,7 @@ class MailmanBackend(ServiceController):
     def get_context_files(self):
         return {
             'virtual_alias': settings.LISTS_VIRTUAL_ALIAS_PATH,
-            'virtual_alias_domains': settings.MAILS_VIRTUAL_ALIAS_DOMAINS_PATH,
+            'virtual_alias_domains': settings.LISTS_VIRTUAL_ALIAS_DOMAINS_PATH,
         }
     
     def get_context(self, mail_list):
@@ -90,6 +126,7 @@ class MailmanBackend(ServiceController):
             'address_name': mail_list.address_name,
             'address_domain': mail_list.address_domain,
             'admin': mail_list.admin_email,
+            'mailman_root': settings.LISTS_MAILMAN_ROOT_PATH,
         })
         return context
 
@@ -101,7 +138,7 @@ class MailmanTraffic(ServiceMonitor):
     def prepare(self):
         current_date = timezone.localtime(self.current_date)
         current_date = current_date.strftime("%b %d %H:%M:%S")
-        self.append(textwrap.dedent("""
+        self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
                 LAST_DATE=$2

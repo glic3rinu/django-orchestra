@@ -79,10 +79,7 @@ class RESTWebsiteMixin(RESTWebAppMixin):
     
     @save_response_on_error
     def delete_website(self, name):
-        print 'hola'
-        pass
         self.rest.websites.retrieve(name=name).delete()
-#        self.rest.websites.retrieve(name=name).delete()
     
     @save_response_on_error
     def add_content(self, website, webapp, path):
@@ -93,6 +90,12 @@ class RESTWebsiteMixin(RESTWebAppMixin):
             'path': path,
         })
         website.save()
+
+    # TODO test disable
+    # TODO test https (refactor ssl)
+    # TODO test php options
+    # TODO read php-version /fpm/fcgid
+    # TODO max_processes, timeouts, memory...
 
 
 class StaticRESTWebsiteTest(RESTWebsiteMixin, StaticWebAppMixin, WebsiteMixin, BaseLiveServerTestCase):

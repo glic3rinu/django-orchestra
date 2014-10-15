@@ -21,6 +21,8 @@ class List(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='lists')
     
+    password = None
+    
     class Meta:
         unique_together = ('address_name', 'address_domain')
     

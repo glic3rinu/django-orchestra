@@ -74,6 +74,7 @@ class MySQLUserBackend(ServiceController):
         }
 
 
+# TODO https://docs.djangoproject.com/en/1.7/ref/signals/#m2m-changed
 class MySQLPermissionBackend(ServiceController):
     model = 'databases.UserDatabaseRelation'
     verbose_name = "MySQL permission"

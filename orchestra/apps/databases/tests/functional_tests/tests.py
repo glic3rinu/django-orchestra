@@ -70,6 +70,9 @@ class DatabaseTestMixin(object):
         self.validate_login_error(dbname, username, password)
         self.validate_create_table(dbname, username, new_password)
 
+    # TODO test add user
+    # TODO remove user
+    # TODO remove all users
 
 class MySQLBackendMixin(object):
     db_type = 'mysql'

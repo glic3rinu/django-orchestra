@@ -1,3 +1,4 @@
+import copy
 import socket
 
 from django.contrib.contenttypes import generic
@@ -124,6 +125,9 @@ class BackendOperation(models.Model):
     def create(cls, backend, instance, action):
         op = cls(backend=backend.get_name(), instance=instance, action=action)
         op.backend = backend
+        # instance should maintain any dynamic attribute until backend execution
+        # deep copy is prefered over copy otherwise objects will share same atributes (queryset cache)
+        op.instance = copy.deepcopy(instance)
         return op
     
     @classmethod

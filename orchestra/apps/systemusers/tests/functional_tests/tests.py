@@ -10,6 +10,7 @@ from django.core.management.base import CommandError
 from django.core.urlresolvers import reverse
 from selenium.webdriver.support.select import Select
 
+from orchestra.admin.utils import change_url
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.orchestration.models import Server, Route
 from orchestra.utils.system import run, sshrun
@@ -268,8 +269,7 @@ class AdminSystemUserMixin(SystemUserMixin):
     @snapshot_on_error
     def add_group(self, username, groupname):
         user = SystemUser.objects.get(username=username)
-        change = reverse('admin:systemusers_systemuser_change', args=(user.pk,))
-        url = self.live_server_url + change
+        url = self.live_server_url + change_url(user)
         self.selenium.get(url)
         groups = self.selenium.find_element_by_id('id_groups_add_all_link')
         groups.click()
@@ -281,8 +281,7 @@ class AdminSystemUserMixin(SystemUserMixin):
     @snapshot_on_error
     def save(self, username):
         user = SystemUser.objects.get(username=username)
-        change = reverse('admin:systemusers_systemuser_change', args=(user.pk,))
-        url = self.live_server_url + change
+        url = self.live_server_url + change_url(user)
         self.selenium.get(url)
         save = self.selenium.find_element_by_name('_save')
         save.submit()
@@ -367,3 +366,10 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         self.assertNotEqual(url, self.selenium.current_url)
         
         self.assertRaises(ftplib.error_perm, self.validate_ftp, username, password)
+        self.selenium.get(url)
+        self.assertNotEqual(url, self.selenium.current_url)
+        
+        # Reenable for test cleanup
+        self.account.is_active = True
+        self.account.save()
+#        self.admin_login()

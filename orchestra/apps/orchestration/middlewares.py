@@ -1,4 +1,3 @@
-import copy
 from threading import local
 
 from django.core.urlresolvers import resolve
@@ -16,12 +15,12 @@ from .models import BackendOperation as Operation
 
 @receiver(post_save, dispatch_uid='orchestration.post_save_collector')
 def post_save_collector(sender, *args, **kwargs):
-    if sender != BackendLog:
+    if sender not in [BackendLog, Operation]:
         OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
 @receiver(pre_delete, dispatch_uid='orchestration.pre_delete_collector')
 def pre_delete_collector(sender, *args, **kwargs):
-    if sender != BackendLog:
+    if sender not in [BackendLog, Operation]:
         OperationsMiddleware.collect(Operation.DELETE, **kwargs)
 
 
@@ -49,7 +48,6 @@ class OperationsMiddleware(object):
         request = getattr(cls.thread_locals, 'request', None)
         if request is None:
             return
-        good_action = action
         pending_operations = cls.get_pending_operations()
         for backend in ServiceBackend.get_backends():
             instance = None
@@ -84,15 +82,13 @@ class OperationsMiddleware(object):
                                     break
                             if not execute:
                                 continue
-                instance = copy.copy(instance)
-                good = instance
                 operation = Operation.create(backend, instance, action)
                 if action != Operation.DELETE:
                     # usually we expect to be using last object state,
                     # except when we are deleting it
                     pending_operations.discard(operation)
                 pending_operations.add(operation)
-
+    
     def process_request(self, request):
         """ Store request on a thread local variable """
         type(self).thread_locals.request = request

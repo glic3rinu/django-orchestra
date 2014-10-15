@@ -147,3 +147,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 
 * POST only fields (account, username, name) etc
+
+* for list virtual_domains cleaning up we need to know the old domain name when a list changes its address domain, but this is not possible with the current design.
+
+* update_fields=[] doesn't trigger post save!

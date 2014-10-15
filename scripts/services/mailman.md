@@ -46,3 +46,9 @@ sed -i "s/DEFAULT_EMAIL_HOST\s*=\s*.*/DEFAULT_EMAIL_HOST = 'lists.orchestra.lan'
 sed -i "s/DEFAULT_URL_HOST\s*=\s*.*/DEFAULT_URL_HOST   = 'lists.orchestra.lan'/" /etc/mailman/mm_cfg.py
 
 
+# apache
+cp /etc/mailman/apache.conf /etc/apache2/sites-available/mailman.conf
+a2ensite mailman.conf
+/etc/init.d/apache2 restart
+
+

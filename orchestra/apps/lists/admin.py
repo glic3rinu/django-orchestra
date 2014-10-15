@@ -3,7 +3,7 @@ from django.conf.urls import patterns
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 
@@ -11,7 +11,7 @@ from .forms import ListCreationForm, ListChangeForm
 from .models import List
 
 
-class ListAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
+class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'address_name', 'address_domain_link', 'account_link')
     add_fieldsets = (
         (None, {
@@ -38,7 +38,7 @@ class ListAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         }),
         (_("Admin"), {
             'classes': ('wide',),
-            'fields': ('admin_email', 'password',),
+            'fields': ('password',),
         }),
     )
     readonly_fields = ('account_link',)

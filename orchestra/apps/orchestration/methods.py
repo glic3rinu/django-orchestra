@@ -24,6 +24,8 @@ def BashSSH(backend, log, server, cmds):
     log.script = script
     log.save(update_fields=['script'])
     logger.debug('%s is going to be executed on %s' % (backend, server))
+    channel = None
+    ssh = None
     try:
         # Avoid "Argument list too long" on large scripts by genereting a file
         # and scping it to the remote server
@@ -93,8 +95,10 @@ def BashSSH(backend, log, server, cmds):
         logger.debug(log.traceback)
         log.save()
     finally:
-        channel.close()
-        ssh.close()
+        if channel is not None:
+            channel.close()
+        if ssh is not None:
+            ssh.close()
 
 
 def Python(backend, log, server, cmds):

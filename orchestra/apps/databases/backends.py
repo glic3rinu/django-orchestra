@@ -13,27 +13,31 @@ class MySQLBackend(ServiceController):
     model = 'databases.Database'
     
     def save(self, database):
-        if database.type == database.MYSQL:
-            context = self.get_context(database)
-            self.append(
-                "mysql -e 'CREATE DATABASE `%(database)s`;' || true" % context
-            )
+        context = self.get_context(database)
+        # Not available on delete()
+        context['owner'] = database.owner
+        self.append(
+            "mysql -e 'CREATE DATABASE `%(database)s`;' || true" % context
+        )
+        for user in database.users.all():
+            context.update({
+                'username': user.username,
+                'grant': 'WITH GRANT OPTION' if user == context['owner'] else ''
+            })
             self.append(textwrap.dedent("""\
-                mysql -e 'GRANT ALL PRIVILEGES ON `%(database)s`.* TO "%(owner)s"@"%(host)s" WITH GRANT OPTION;' \
+                mysql -e 'GRANT ALL PRIVILEGES ON `%(database)s`.* TO "%(username)s"@"%(host)s" %(grant)s;' \
                 """ % context
             ))
     
     def delete(self, database):
-        if database.type == database.MYSQL:
-            context = self.get_context(database)
-            self.append("mysql -e 'DROP DATABASE `%(database)s`;'" % context)
+        context = self.get_context(database)
+        self.append("mysql -e 'DROP DATABASE `%(database)s`;'" % context)
         
     def commit(self):
         self.append("mysql -e 'FLUSH PRIVILEGES;'")
     
     def get_context(self, database):
         return {
-            'owner': database.owner.username,
             'database': database.name,
             'host': settings.DATABASES_DEFAULT_HOST,
         }
@@ -44,24 +48,22 @@ class MySQLUserBackend(ServiceController):
     model = 'databases.DatabaseUser'
     
     def save(self, user):
-        if user.type == user.MYSQL:
-            context = self.get_context(user)
-            self.append(textwrap.dedent("""\
-                mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true \
-                """ % context
-            ))
-            self.append(textwrap.dedent("""\
-                mysql -e 'UPDATE mysql.user SET Password="%(password)s" WHERE User="%(username)s";' \
-                """ % context
-            ))
+        context = self.get_context(user)
+        self.append(textwrap.dedent("""\
+            mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true \
+            """ % context
+        ))
+        self.append(textwrap.dedent("""\
+            mysql -e 'UPDATE mysql.user SET Password="%(password)s" WHERE User="%(username)s";' \
+            """ % context
+        ))
     
     def delete(self, user):
-        if user.type == user.MYSQL:
-            context = self.get_context(database)
-            self.append(textwrap.dedent("""\
-                mysql -e 'DROP USER "%(username)s"@"%(host)s";' \
-                """ % context
-            ))
+        context = self.get_context(user)
+        self.append(textwrap.dedent("""\
+            mysql -e 'DROP USER "%(username)s"@"%(host)s";' \
+            """ % context
+        ))
     
     def commit(self):
         self.append("mysql -e 'FLUSH PRIVILEGES;'")
@@ -72,12 +74,6 @@ class MySQLUserBackend(ServiceController):
             'password': user.password,
             'host': settings.DATABASES_DEFAULT_HOST,
         }
-
-
-# TODO https://docs.djangoproject.com/en/1.7/ref/signals/#m2m-changed
-class MySQLPermissionBackend(ServiceController):
-    model = 'databases.UserDatabaseRelation'
-    verbose_name = "MySQL permission"
 
 
 class MysqlDisk(ServiceMonitor):

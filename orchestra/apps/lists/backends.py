@@ -30,6 +30,7 @@ class MailmanBackend(ServiceController):
         # TODO  for list virtual_domains cleaning up we need to know the old domain name when a list changes its address
         #       domain, but this is not possible with the current design.
         #       sync the whole file everytime?
+        # TODO same for mailbox virtual domains
         if context['address_domain']:
             self.append(textwrap.dedent("""
                 [[ $(grep "^\s*%(address_domain)s\s*$" %(virtual_alias_domains)s) ]] || {

@@ -2,13 +2,14 @@ from django.forms import widgets
 from django.utils.translation import ugettext, ugettext_lazy as _
 from rest_framework import serializers
 
+from orchestra.api.serializers import HyperlinkedModelSerializer
 from orchestra.apps.accounts.serializers import AccountSerializerMixin
 from orchestra.core.validators import validate_password
 
 from .models import Mailbox, Address
 
 
-class MailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class MailboxSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     password = serializers.CharField(max_length=128, label=_('Password'),
             validators=[validate_password], write_only=True, required=False,
             widget=widgets.PasswordInput)
@@ -18,6 +19,7 @@ class MailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
         fields = (
             'url', 'name', 'password', 'filtering', 'custom_filtering', 'addresses', 'is_active'
         )
+        postonly_fields = ('name',)
     
     def validate_password(self, attrs, source):
         """ POST only password """
@@ -54,4 +56,3 @@ class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
         if not attrs['mailboxes'] and not attrs['forward']:
             raise serializers.ValidationError("mailboxes or forward addresses should be provided")
         return attrs
-

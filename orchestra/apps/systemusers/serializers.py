@@ -3,6 +3,7 @@ from django.forms import widgets
 from django.utils.translation import ugettext, ugettext_lazy as _
 from rest_framework import serializers
 
+from orchestra.api.serializers import HyperlinkedModelSerializer
 from orchestra.apps.accounts.serializers import AccountSerializerMixin
 from orchestra.core.validators import validate_password
 
@@ -18,7 +19,7 @@ class GroupSerializer(serializers.ModelSerializer):
         return SystemUser.objects.get(username=data['username'])
 
 
-class SystemUserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class SystemUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     password = serializers.CharField(max_length=128, label=_('Password'),
             validators=[validate_password], write_only=True, required=False,
             widget=widgets.PasswordInput)
@@ -29,6 +30,7 @@ class SystemUserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelS
         fields = (
             'url', 'username', 'password', 'home', 'shell', 'groups', 'is_active',
         )
+        postonly_fields = ('username',)
     
     def validate_password(self, attrs, source):
         """ POST only password """

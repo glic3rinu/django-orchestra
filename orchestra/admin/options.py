@@ -235,7 +235,7 @@ class ChangePasswordAdminMixin(object):
     def change_password(self, request, id, form_url=''):
         if not self.has_change_permission(request):
             raise PermissionDenied
-        # TODO use this insetad of self.get_object()
+        # TODO use this insetad of self.get_object(), in other places
         user = get_object_or_404(self.get_queryset(request), pk=id)
         
         related = []

@@ -165,6 +165,8 @@ class MySQLBackendMixin(object):
             """mysql mysql -e 'SELECT * FROM db WHERE db="%(name)s";'""" % context, display=False).stdout)
         self.assertEqual('', sshrun(self.MASTER_SERVER,
             """mysql mysql -e 'SELECT * FROM user WHERE user="%(username)s";'""" % context, display=False).stdout)
+    
+    # TODO remove used from database
 
 
 class RESTDatabaseMixin(DatabaseTestMixin):

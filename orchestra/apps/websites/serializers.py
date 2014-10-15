@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from orchestra.api.fields import OptionField
+from orchestra.api.serializers import HyperlinkedModelSerializer
 from orchestra.apps.accounts.serializers import AccountSerializerMixin
 
 from .models import Website, Content
@@ -15,7 +16,7 @@ class ContentSerializer(serializers.HyperlinkedModelSerializer):
         return '%s-%s' % (data.get('website'), data.get('path'))
 
 
-class WebsiteSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     contents = ContentSerializer(required=False, many=True, allow_add_remove=True,
             source='content_set')
     options = OptionField(required=False)
@@ -23,3 +24,4 @@ class WebsiteSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
     class Meta:
         model = Website
         fields = ('url', 'name', 'port', 'domains', 'is_active', 'contents', 'options')
+        postonly_fileds = ('name',)

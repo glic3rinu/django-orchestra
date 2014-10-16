@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from orchestra.api.fields import OptionField
@@ -7,7 +8,29 @@ from orchestra.apps.accounts.serializers import AccountSerializerMixin
 from .models import Website, Content
 
 
+class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Website.domains.field.rel.to
+        fields = ('url', 'name')
+    
+    def from_native(self, data, files=None):
+        queryset = self.opts.model.objects.filter(account=self.account)
+        return get_object_or_404(queryset, name=data['name'])
+
+
+class RelatedWebAppSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Content.webapp.field.rel.to
+        fields = ('url', 'name', 'type')
+    
+    def from_native(self, data, files=None):
+        queryset = self.opts.model.objects.filter(account=self.account)
+        return get_object_or_404(queryset, name=data['name'])
+
+
 class ContentSerializer(serializers.HyperlinkedModelSerializer):
+    webapp = RelatedWebAppSerializer()
+    
     class Meta:
         model = Content
         fields = ('webapp', 'path')
@@ -17,6 +40,7 @@ class ContentSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
+    domains = RelatedDomainSerializer(many=True, allow_add_remove=True, required=False)
     contents = ContentSerializer(required=False, many=True, allow_add_remove=True,
             source='content_set')
     options = OptionField(required=False)

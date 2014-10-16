@@ -141,7 +141,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     -# Required-Stop:     $network $local_fs $remote_fs postgresql celeryd
 
 
-* POST only fields (account, username, name) etc http://inka-labs.com/blog/2013/04/18/post-only-fields-django-rest-framework/
 * for list virtual_domains cleaning up we need to know the old domain name when a list changes its address domain, but this is not possible with the current design.
 * regenerate virtual_domains every time (configure a separate file for orchestra on postfix)
 * update_fields=[] doesn't trigger post save!

@@ -1,4 +1,5 @@
 from django.forms import widgets
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext, ugettext_lazy as _
 from rest_framework import serializers
 
@@ -37,20 +38,33 @@ class MailboxSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         super(MailboxSerializer, self).save_object(obj, **kwargs)
 
 
+class RelatedMailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Mailbox
+        fields = ('url', 'name')
+    
+    def from_native(self, data, files=None):
+        queryset = self.opts.model.objects.filter(account=self.account)
+        return get_object_or_404(queryset, name=data['name'])
+
+
+class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Address.domain.field.rel.to
+        fields = ('url', 'name')
+    
+    def from_native(self, data, files=None):
+        queryset = self.opts.model.objects.filter(account=self.account)
+        return get_object_or_404(queryset, name=data['name'])
+
+
 class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+    domain = RelatedDomainSerializer()
+    mailboxes = RelatedMailboxSerializer(many=True, allow_add_remove=True, required=False)
+    
     class Meta:
         model = Address
         fields = ('url', 'name', 'domain', 'mailboxes', 'forward')
-    
-    def get_fields(self, *args, **kwargs):
-        fields = super(AddressSerializer, self).get_fields(*args, **kwargs)
-        account = self.context['view'].request.user.pk
-        mailboxes = fields['mailboxes'].queryset
-        fields['mailboxes'].queryset = mailboxes.filter(account=account)
-        # TODO do it on permissions or in self.filter_by_account_field ?
-        domain = fields['domain'].queryset
-        fields['domain'].queryset = domain.filter(account=account)
-        return fields
     
     def validate(self, attrs):
         if not attrs['mailboxes'] and not attrs['forward']:

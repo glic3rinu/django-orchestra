@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.forms import widgets
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext, ugettext_lazy as _
 from rest_framework import serializers
 
@@ -10,13 +11,14 @@ from orchestra.core.validators import validate_password
 from .models import SystemUser
 
 
-class GroupSerializer(serializers.ModelSerializer):
+class GroupSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = SystemUser
-        fields = ('username',)
+        fields = ('url', 'username',)
     
     def from_native(self, data, files=None):
-        return SystemUser.objects.get(username=data['username'])
+        queryset = self.opts.model.objects.filter(account=self.account)
+        return get_object_or_404(queryset, username=data['username'])
 
 
 class SystemUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
@@ -41,7 +43,14 @@ class SystemUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             raise serializers.ValidationError(_("Password required"))
         return attrs
     
-    # TODO validate gruops != self
+    def validate_groups(self, attrs, source):
+        groups = attrs.get(source)
+        if groups:
+            for group in groups:
+                if group.username == attrs['username']:
+                    raise serializers.ValidationError(
+                        _("Do not make the user member of its group"))
+        return attrs
     
     def save_object(self, obj, **kwargs):
         # FIXME this method will be called when saving nested serializers :(

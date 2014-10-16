@@ -4,11 +4,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
 
-from . import WebAppServiceMixin
+from . import SaaSServiceMixin
 from .. import settings
 
 
-class DokuWikiMuBackend(WebAppServiceMixin, ServiceController):
+class DokuWikiMuBackend(SaaSServiceMixin, ServiceController):
     verbose_name = _("DokuWiki multisite")
     
     def save(self, webapp):

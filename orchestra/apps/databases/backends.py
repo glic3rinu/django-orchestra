@@ -19,6 +19,8 @@ class MySQLBackend(ServiceController):
         self.append(
             "mysql -e 'CREATE DATABASE `%(database)s`;' || true" % context
         )
+        # clean previous privileges
+        self.append("""mysql mysql -e 'DELETE FROM db WHERE db = "%(database)s";'""" % context)
         for user in database.users.all():
             context.update({
                 'username': user.username,

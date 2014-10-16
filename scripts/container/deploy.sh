@@ -101,7 +101,7 @@ cat <<- EOF | python $MANAGE shell
 from orchestra.apps.accounts.models import Account
 if not Account.objects.filter(username="$USER").exists():
     print 'Creating orchestra superuser'
-    __ = Account.objects.create_superuser("$USER", "'$USER@localhost'", "$PASSWORD")
+    __ = Account.objects.create_superuser("$USER", "$USER@localhost", "$PASSWORD")
 
 EOF
 

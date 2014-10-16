@@ -115,10 +115,28 @@ class DatabaseTestMixin(object):
         self.add_user(username2, password2)
         self.add_user_to_db(username2, dbname)
         self.delete_user(username)
+        self.validate_delete_user(username, password)
         self.validate_login_error(dbname, username, password)
         self.validate_create_table(dbname, username2, password2)
         self.delete_user(username2)
         self.validate_login_error(dbname, username2, password2)
+        self.validate_delete_user(username2, password2)
+    
+    def test_swap_user(self):
+        dbname = '%s_database' % random_ascii(5)
+        username = '%s_dbuser' % random_ascii(5)
+        password = '@!?%spppP001' % random_ascii(5)
+        self.add(dbname, username, password)
+        self.addCleanup(self.delete, dbname)
+        self.addCleanup(self.delete_user, username)
+        self.validate_create_table(dbname, username, password)
+        username2 = '%s_dbuser' % random_ascii(5)
+        password2 = '@!?%spppP001' % random_ascii(5)
+        self.add_user(username2, password2)
+        self.addCleanup(self.delete_user, username2)
+        self.swap_user(username, username2, dbname)
+        self.validate_login_error(dbname, username, password)
+        self.validate_create_table(dbname, username2, password2)
 
 
 class MySQLBackendMixin(object):
@@ -151,10 +169,10 @@ class MySQLBackendMixin(object):
             self.validate_create_table, dbname, username, password
         )
     
-    def validate_delete(self, name, username, password):
-        self.assertRaises(MySQLdb.OperationalError,
-                self.validate_create_table, name, username, password
-        )
+    def validate_delete(self, dbname, username, password):
+        self.validate_login_error(dbname, username, password)
+        self.assertRaises(CommandError,
+            sshrun, self.MASTER_SERVER, 'mysql %s' % dbname, display=False)
     
     def validate_delete_user(self, name, username):
         context = {
@@ -165,8 +183,6 @@ class MySQLBackendMixin(object):
             """mysql mysql -e 'SELECT * FROM db WHERE db="%(name)s";'""" % context, display=False).stdout)
         self.assertEqual('', sshrun(self.MASTER_SERVER,
             """mysql mysql -e 'SELECT * FROM user WHERE user="%(username)s";'""" % context, display=False).stdout)
-    
-    # TODO remove used from database
 
 
 class RESTDatabaseMixin(DatabaseTestMixin):
@@ -205,6 +221,14 @@ class RESTDatabaseMixin(DatabaseTestMixin):
     @save_response_on_error
     def delete_user(self, username):
         self.rest.databaseusers.retrieve(username=username).delete()
+    
+    @save_response_on_error
+    def swap_user(self, username, username2, dbname):
+        user = self.rest.databaseusers.retrieve(username=username2).get()
+        db = self.rest.databases.retrieve(name=dbname).get()
+        db.users = db.users.exclude(username=username)
+        db.users.append(user)
+        db.save()
 
 
 class AdminDatabaseMixin(DatabaseTestMixin):
@@ -274,6 +298,24 @@ class AdminDatabaseMixin(DatabaseTestMixin):
         user = DatabaseUser.objects.get(username=username, type=self.db_type)
         users_input = self.selenium.find_element_by_id('id_users')
         users_select = Select(users_input)
+        users_select.select_by_value(str(user.pk))
+        
+        save = self.selenium.find_element_by_name('_save')
+        save.submit()
+        self.assertNotEqual(url, self.selenium.current_url)
+    
+    @snapshot_on_error
+    def swap_user(self, username, username2, dbname):
+        database = Database.objects.get(name=dbname, type=self.db_type)
+        url = self.live_server_url + change_url(database)
+        self.selenium.get(url)
+        
+        user = DatabaseUser.objects.get(username=username, type=self.db_type)
+        users_input = self.selenium.find_element_by_id('id_users')
+        users_select = Select(users_input)
+        users_select.deselect_by_value(str(user.pk))
+        
+        user = DatabaseUser.objects.get(username=username2, type=self.db_type)
         users_select.select_by_value(str(user.pk))
         
         save = self.selenium.find_element_by_name('_save')

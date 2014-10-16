@@ -142,7 +142,7 @@ class ListMixin(object):
         domain_name = '%sdomain.lan' % random_ascii(10)
         address_domain = Domain.objects.create(name=domain_name, account=self.account)
         self.add(name, password, admin_email, address_name=address_name, address_domain=address_domain)
-#        self.addCleanup(self.delete, name)
+        self.addCleanup(self.delete, name)
         # Mailman doesn't support changing the address, only the domain
         address_name = '%s_name' % random_ascii(10)
         self.update_address_name(name, address_name)
@@ -174,7 +174,7 @@ class RESTListMixin(ListMixin):
         if address_name:
             extra.update({
                 'address_name': address_name,
-                'address_domain': self.rest.domains.retrieve(name=address_domain.name).get().url,
+                'address_domain': self.rest.domains.retrieve(name=address_domain.name).get(),
             })
         self.rest.lists.create(name=name, password=password, admin_email=admin_email, **extra)
     
@@ -191,7 +191,7 @@ class RESTListMixin(ListMixin):
     def update_domain(self, name, domain_name):
         mail_list = self.rest.lists.retrieve(name=name).get()
         domain = self.rest.domains.retrieve(name=domain_name).get()
-        mail_list.update(address_domain=domain.url)
+        mail_list.update(address_domain=domain)
     
     @save_response_on_error
     def update_address_name(self, name, address_name):

@@ -72,10 +72,10 @@ class RESTWebsiteMixin(RESTWebAppMixin):
         domain = self.rest.domains.retrieve(name=domain).get()
         webapp = self.rest.webapps.retrieve(name=webapp).get()
         contents = [{
-            'webapp': webapp.url,
+            'webapp': webapp,
             'path': path
         }]
-        self.rest.websites.create(name=name, domains=[domain.url], contents=contents)
+        self.rest.websites.create(name=name, domains=[domain], contents=contents)
     
     @save_response_on_error
     def delete_website(self, name):
@@ -86,7 +86,7 @@ class RESTWebsiteMixin(RESTWebAppMixin):
         website = self.rest.websites.retrieve(name=website).get()
         webapp = self.rest.webapps.retrieve(name=webapp).get()
         website.contents.append({
-            'webapp': webapp.url,
+            'webapp': webapp,
             'path': path,
         })
         website.save()

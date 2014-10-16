@@ -168,8 +168,9 @@ function install_requirements () {
             orchestra-orm==dev \
             django-debug-toolbar==1.2.1 \
             django-nose==1.2 \
-            sqlparse
-            requests"
+            sqlparse \
+            requests \
+            --allow-external orchestra-orm --allow-unverified orchestra-orm"
     fi
     
     # Make sure locales are in place before installing postgres
@@ -181,7 +182,7 @@ function install_requirements () {
     
     run apt-get update
     run apt-get install -y $APT
-    run pip install $PIP --allow-external orchestra-orm --allow-unverified orchestra-orm
+    run pip install $PIP
     
     # Install ca certificates
     if [[ ! -e  /usr/local/share/ca-certificates/cacert.org ]]; then

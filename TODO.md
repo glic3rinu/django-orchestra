@@ -42,8 +42,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * passlib; nano /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py SortedDict -> collections.OrderedDict
 * pip install pyinotify
 
-* create custom field that returns backend python objects
-
 * Timezone awareness on monitoring system (reading server-side logs with different TZ than orchestra) maybe a settings value? (use UTC internally, timezone.localtime() when interacting with servers)
 
 * EMAIL backend operations which contain stderr messages (because under certain failures status code is still 0)
@@ -90,8 +88,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * mail backend related_models = ('resources__content_type') ??
 
-* ignore orders (mark orders as ignored), ignore orchestra related orders by default (or do not generate them on the first place) ignore superuser orders?
-
 * Domain backend PowerDNS Bind validation support?
 
 * Maildir billing tests/ webdisk billing tests (avg metric)
@@ -120,12 +116,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Redirect junk emails and delete every 30 days?
 
 * DOC: Complitely decouples scripts execution, billing, service definition
-
-* Create SystemUser on account creation. username=username, is_main=True,
-    * Exclude is_main=True from queryset filter default is_main=False
-    * self referencing group.
-    * Unify all users
-
 
 * delete main user -> delete account or prevent delete main user
 

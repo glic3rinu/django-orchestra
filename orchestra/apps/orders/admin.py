@@ -3,23 +3,27 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin import ChangeListDefaultFilter
 from orchestra.admin.utils import admin_link, admin_date
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.utils.humanize import naturaldate
 
-from .actions import BillSelectedOrders
-from .filters import ActiveOrderListFilter, BilledOrderListFilter
+from .actions import BillSelectedOrders, mark_as_ignored, mark_as_not_ignored
+from .filters import IgnoreOrderListFilter, ActiveOrderListFilter, BilledOrderListFilter
 from .models import Order, MetricStorage
 
 
-class OrderAdmin(AccountAdminMixin, admin.ModelAdmin):
+class OrderAdmin(ChangeListDefaultFilter, AccountAdminMixin, admin.ModelAdmin):
     list_display = (
         'id', 'service', 'account_link', 'content_object_link',
         'display_registered_on', 'display_billed_until', 'display_cancelled_on'
     )
     list_display_links = ('id', 'service')
-    list_filter = (ActiveOrderListFilter, BilledOrderListFilter, 'service',)
-    actions = (BillSelectedOrders(),)
+    list_filter = (ActiveOrderListFilter, BilledOrderListFilter, IgnoreOrderListFilter, 'service',)
+    default_changelist_filters = (
+        ('ignore', '0'),
+    )
+    actions = (BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored)
     date_hierarchy = 'registered_on'
     
     content_object_link = admin_link('content_object', order=False)

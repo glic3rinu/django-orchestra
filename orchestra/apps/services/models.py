@@ -109,6 +109,8 @@ class Service(models.Model):
                         "here allow to."),
             choices=ServiceHandler.get_plugin_choices())
     is_active = models.BooleanField(_("active"), default=True)
+    ignore_superusers = models.BooleanField(_("ignore superusers"), default=True,
+            help_text=_("Designates whether superuser orders are marked as ignored by default or not"))
     # Billing
     billing_period = models.CharField(_("billing period"), max_length=16,
             help_text=_("Renewal period for recurring invoicing"),
@@ -126,14 +128,6 @@ class Service(models.Model):
                 (FIXED_DATE, _("Fixed billing date")),
             ),
             default=FIXED_DATE)
-#    delayed_billing = models.CharField(_("delayed billing"), max_length=16,
-#            help_text=_("Period in which this service will be ignored for billing"),
-#            choices=(
-#                (NEVER, _("No delay (inmediate billing)")),
-#                (TEN_DAYS, _("Ten days")),
-#                (ONE_MONTH, _("One month")),
-#            ),
-#            default=ONE_MONTH, blank=True)
     is_fee = models.BooleanField(_("fee"), default=False,
             help_text=_("Designates whether this service should be billed as "
                         " membership fee or not"))
@@ -161,14 +155,6 @@ class Service(models.Model):
                 (MATCH_PRICE, _("Match price")),
             ),
             default=STEP_PRICE)
-#    orders_effect = models.CharField(_("orders effect"),  max_length=16,
-#            help_text=_("Defines the lookup behaviour when using orders for "
-#                        "the pricing rate computation of this service."),
-#            choices=(
-#                (REGISTER_OR_RENEW, _("Register or renew events")),
-#                (CONCURRENT, _("Active at every given time")),
-#            ),
-#            default=CONCURRENT)
     on_cancel = models.CharField(_("on cancel"), max_length=16,
             help_text=_("Defines the cancellation behaviour of this service"),
             choices=(
@@ -178,24 +164,6 @@ class Service(models.Model):
                 (REFUND, _("Refund")),
             ),
             default=DISCOUNT)
-#    on_broken_period = models.CharField(_("on broken period", max_length=16,
-#            help_text=_("Defines the billing behaviour when periods are incomplete on register and on cancel"),
-#            choices=(
-#                (NOTHING, _("Nothing, period is atomic")),
-#                (DISCOUNT, _("Bill partially")),
-#                (COMPENSATE, _("Compensate on cancel")),
-#                (REFUND, _("Refund on cancel")),
-#            ),
-#            default=DISCOUNT)
-#    granularity = models.CharField(_("granularity"), max_length=16,
-#            help_text=_("Defines the minimum size a period can be broken into"),
-#            choices=(
-#                (DAILY, _("One day")),
-#                (MONTHLY, _("One month")),
-#                (ANUAL, _("One year")),
-#            ),
-#            default=DAILY,
-#    )
     payment_style = models.CharField(_("payment style"), max_length=16,
             help_text=_("Designates whether this service should be paid after "
                         "consumtion (postpay/on demand) or prepaid"),
@@ -204,24 +172,6 @@ class Service(models.Model):
                 (POSTPAY, _("Postpay (on demand)")),
             ),
             default=PREPAY)
-#    trial_period = models.CharField(_("trial period"), max_length=16, blank=True,
-#            help_text=_("Period in which no charge will be issued"),
-#            choices=(
-#                (NEVER, _("No trial")),
-#                (TEN_DAYS, _("Ten days")),
-#                (ONE_MONTH, _("One month")),
-#            ),
-#            default=NEVER)
-#    refund_period = models.CharField(_("refund period"), max_length=16,
-#            help_text=_("Period in which automatic refund will be performed on "
-#                        "service cancellation"),
-#            choices=(
-#                (NEVER, _("Never refund")),
-#                (TEN_DAYS, _("Ten days")),
-#                (ONE_MONTH, _("One month")),
-#                (ALWAYS, _("Always refund")),
-#            ),
-#            default=NEVER, blank=True)
     
     def __unicode__(self):
         return self.description

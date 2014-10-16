@@ -180,10 +180,6 @@ function install_requirements () {
         update-locale LANG=en_US.UTF-8
     fi
     
-    run apt-get update
-    run apt-get install -y $APT
-    run pip install $PIP
-    
     # Install ca certificates
     if [[ ! -e  /usr/local/share/ca-certificates/cacert.org ]]; then
         mkdir -p /usr/local/share/ca-certificates/cacert.org
@@ -192,6 +188,11 @@ function install_requirements () {
             http://www.cacert.org/certs/class3.crt
         update-ca-certificates
     fi
+    
+    run apt-get update
+    run apt-get install -y $APT
+    run pip install $PIP
+    
     # Some versions of rabbitmq-server will not start automatically by default unless ...
     sed -i "s/# Default-Start:.*/# Default-Start:     2 3 4 5/" /etc/init.d/rabbitmq-server
     sed -i "s/# Default-Stop:.*/# Default-Stop:      0 1 6/" /etc/init.d/rabbitmq-server

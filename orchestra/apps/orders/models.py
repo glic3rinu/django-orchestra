@@ -77,7 +77,7 @@ class OrderQuerySet(models.QuerySet):
                         Q(Q(billed_until__isnull=True) | Q(billed_until__lt=end))
                 )
         ids = self.values_list('id', flat=True)
-        return self.model.objects.filter(qs).exclude(id__in=ids)
+        return self.model.objects.filter(qs).exclude(id__in=ids, ignore=True)
     
     def pricing_orders(self, ini, end):
         return self.filter(billed_until__isnull=False, billed_until__gt=ini,
@@ -136,8 +136,12 @@ class Order(models.Model):
                     if account_id is None:
                         # New account workaround -> user.account_id == None
                         continue
-                    order = cls.objects.create(content_object=instance,
-                            service=service, account_id=account_id)
+                    ignore = False
+                    account = getattr(instance, 'account', instance)
+                    if account.is_superuser:
+                        ignore = service.ignore_superusers
+                    order = cls.objects.create(content_object=instance, service=service,
+                            account_id=account_id, ignore=ignore)
                     logger.info("CREATED new order id: {id}".format(id=order.id))
                 else:
                     order = orders.get()
@@ -169,6 +173,14 @@ class Order(models.Model):
         self.cancelled_on = timezone.now()
         self.save(update_fields=['cancelled_on'])
         logger.info("CANCELLED order id: {id}".format(id=self.id))
+    
+    def mark_as_ignored(self):
+        self.ignore = True
+        self.save(update_fields=['ignore'])
+    
+    def mark_as_not_ignored(self):
+        self.ignore = False
+        self.save(update_fields=['ignore'])
     
     def get_metric(self, *args, **kwargs):
         if kwargs.pop('changes', False):

@@ -107,3 +107,32 @@ class BillSelectedOrders(object):
             'bills': bills,
         })
         return render(request, self.template, self.context)
+
+
+@transaction.atomic
+def mark_as_ignored(modeladmin, request, queryset):
+    """ Mark orders as ignored """
+    for order in queryset:
+        order.mark_as_ignored()
+        modeladmin.log_change(request, order, 'Marked as ignored')
+    num = len(queryset)
+    msg = ungettext(
+        _("Selected order has been marked as ignored."),
+        _("%i selected orders have been marked as ignored.") % num,
+        num)
+    modeladmin.message_user(request, msg)
+
+
+@transaction.atomic
+def mark_as_not_ignored(modeladmin, request, queryset):
+    """ Mark orders as ignored """
+    for order in queryset:
+        order.mark_as_not_ignored()
+        modeladmin.log_change(request, order, 'Marked as not ignored')
+    num = len(queryset)
+    msg = ungettext(
+        _("Selected order has been marked as not ignored."),
+        _("%i selected orders have been marked as not ignored.") % num,
+        num)
+    modeladmin.message_user(request, msg)
+

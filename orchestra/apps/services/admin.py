@@ -38,7 +38,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         (None, {
             'classes': ('wide',),
             'fields': ('description', 'content_type', 'match', 'handler_type',
-                       'is_active')
+                       'ignore_superusers', 'is_active')
         }),
         (_("Billing options"), {
             'classes': ('wide',),

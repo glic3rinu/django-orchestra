@@ -43,10 +43,14 @@ class Apache2Backend(ServiceController):
         apache_conf += self.get_protections(site)
         context['apache_conf'] = apache_conf
         
-        self.append(
-            "{ echo -e '%(apache_conf)s' | diff -N -I'^\s*#' %(sites_available)s - ; } ||"
-            "  { echo -e '%(apache_conf)s' > %(sites_available)s; UPDATED=1; }" % context
-        )
+        self.append(textwrap.dedent("""\
+            {
+                echo -e '%(apache_conf)s' | diff -N -I'^\s*#' %(sites_available)s -
+            } || {
+                echo -e '%(apache_conf)s' > %(sites_available)s
+                UPDATED=1
+            }""" % context
+        ))
         self.enable_or_disable(site)
     
     def delete(self, site):
@@ -108,8 +112,8 @@ class Apache2Backend(ServiceController):
     def get_security(self, site):
         directives = ''
         for rules in site.options.filter(name='sec_rule_remove'):
-            for rule in rules.split():
-                directives += "SecRuleRemoveById %d" % rule
+            for rule in rules.value.split():
+                directives += "SecRuleRemoveById %i" % int(rule)
         
         for modsecurity in site.options.filter(name='sec_rule_off'):
             directives += textwrap.dedent("""\
@@ -143,7 +147,7 @@ class Apache2Backend(ServiceController):
     
     def enable_or_disable(self, site):
         context = self.get_context(site)
-        self.append("ls -l %(sites_enabled)s; DISABLED=$?" % context)
+        self.append("ls -l %(sites_enabled)s > /dev/null; DISABLED=$?" % context)
         if site.is_active:
             self.append("if [[ $DISABLED ]]; then a2ensite %(site_unique_name)s.conf;\n"
                         "else UPDATED=0; fi" % context)

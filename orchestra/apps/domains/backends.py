@@ -49,8 +49,8 @@ class Bind9MasterDomainBackend(ServiceController):
             # These can never be top level domains
             return
         self.append(textwrap.dedent("""
-            cat -s <(sed -e 's/^};/};\n/' named.conf.local) | \
-            awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \""s"\"" } $0!~s{ print $0"\n" }' \
+            cat -s <(sed -e 's/^};/};\n/' named.conf.local) | \\
+            awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \""s"\"" } $0!~s{ print $0"\n" }' \\
             > %(conf_path)s.tmp""" % context
         ))
         self.append('diff -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)

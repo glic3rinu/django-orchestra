@@ -44,7 +44,7 @@ def message_user(request, logs):
     errors = total-successes
     if total > 1:
         url = reverse('admin:orchestration_backendlog_changelist')
-        url += '?id__in=%s' ','.join(map(str, ids))
+        url += '?id__in=%s' % ','.join(map(str, ids))
     else:
         url = reverse('admin:orchestration_backendlog_change', args=ids)
     if errors:

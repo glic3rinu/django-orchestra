@@ -139,9 +139,16 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * move bill contact to bills apps
 
-* autocreate <account>.orchestra.lan
 
 * Backend optimization
     * fields = ()
     * ignore_fields = ()
     * based on a merge set of save(update_fields)
+
+
+textwrap.dedent( \\)
+
+* accounts
+    * short name / long name
+    * contact inlines
+    * autocreate stuff (email/<account>.orchestra.lan)

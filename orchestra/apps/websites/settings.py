@@ -45,6 +45,7 @@ WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
 WEBSITES_BASE_APACHE_CONF = getattr(settings, 'WEBSITES_BASE_APACHE_CONF',
     '/etc/apache2/')
 
+
 WEBSITES_WEBALIZER_PATH = getattr(settings, 'WEBSITES_WEBALIZER_PATH',
     '/home/httpd/webalizer/')
 

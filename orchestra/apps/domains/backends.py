@@ -1,3 +1,4 @@
+import re
 import textwrap
 
 from django.utils.translation import ugettext_lazy as _
@@ -29,31 +30,29 @@ class Bind9MasterDomainBackend(ServiceController):
         context['zone'] = ';; %(banner)s\n' % context
         context['zone'] += domain.render_zone()
         self.append(textwrap.dedent("""\
-            {
-                echo -e '%(zone)s' | diff -N -I'^\s*;;' %(zone_path)s -
-            } || {
-                echo -e '%(zone)s' > %(zone_path)s
-                UPDATED=1
-            }""" % context
+            echo -e '%(zone)s' > %(zone_path)s.tmp
+            diff -N -I'^\s*;;' %(zone_path)s %(zone_path)s.tmp || UPDATED=1
+            mv %(zone_path)s.tmp %(zone_path)s""" % context
         ))
         self.update_conf(context)
     
     def update_conf(self, context):
         self.append(textwrap.dedent("""\
-            cat -s <(sed -e 's/^};/};\\n/' %(conf_path)s) | \\
-                awk -v s=pangea.cat 'BEGIN { RS=""; s="zone \\""s"\\"" } $0~s{ print }' | \\
-            diff -B -I"^\s*//" - <(echo '%(conf)s') || {
-                cat -s <(sed -e 's/^};/};\\n/' %(conf_path)s) | \\
-                    awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \\""s"\\"" } $0!~s{ print $0"\\n" }' \\
-                    > %(conf_path)s.tmp
-                echo -e '%(conf)s' >> %(conf_path)s.tmp
-                mv %(conf_path)s.tmp %(conf_path)s
+            sed '/zone "%(name)s".*/,/^\s*};\s*$/!d' %(conf_path)s | diff -B -I"^\s*//" - <(echo '%(conf)s') || {
+                sed -i -e '/zone "%(name)s".*/,/^\s*};/d' \\
+                       -e 'N; /^\\n$/d; P; D' %(conf_path)s
+                echo '%(conf)s' >> %(conf_path)s
                 UPDATED=1
             }""" % context
         ))
-        for subdomain in context['subdomains']:
-            context['name'] = subdomain.name
-            self.delete(subdomain)
+        # Delete ex-top-domains that are now subdomains
+        self.append(textwrap.dedent("""\
+            sed -i -e '/zone ".*\.%(name)s".*/,/^\s*};\s*$/d' \\
+                   -e 'N; /^\\n$/d; P; D' %(conf_path)s""" % context
+        ))
+        if 'zone_path' in context:
+            context['zone_subdomains_path'] = re.sub(r'^(.*/)', r'\1*.', context['zone_path'])
+            self.append('rm -f %(zone_subdomains_path)s' % context)
     
     def delete(self, domain):
         context = self.get_context(domain)
@@ -65,9 +64,8 @@ class Bind9MasterDomainBackend(ServiceController):
             # These can never be top level domains
             return
         self.append(textwrap.dedent("""\
-            cat -s <(sed -e 's/^};/};\\n/' %(conf_path)s) | \\
-                awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \\""s"\\"" } $0!~s{ print $0"\\n" }' \\
-                > %(conf_path)s.tmp""" % context
+            sed -e '/zone ".*\.%(name)s".*/,/^\s*};\s*$/d' \\
+                -e 'N; /^\\n$/d; P; D' %(conf_path)s > %(conf_path)s.tmp""" % context
         ))
         self.append('diff -B -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)
         self.append('mv %(conf_path)s.tmp %(conf_path)s' % context)

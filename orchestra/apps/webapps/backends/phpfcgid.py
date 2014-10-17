@@ -33,7 +33,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     
     def commit(self):
         super(PHPFcgidBackend, self).commit()
-        self.append("[[ $UPDATED_APACHE == 1 ]] && { /etc/init.d/apache reload; }")
+        self.append("[[ $UPDATED_APACHE == 1 ]] && { service apache2 reload; }")
     
     def get_context(self, webapp):
         context = super(PHPFcgidBackend, self).get_context(webapp)
@@ -50,8 +50,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
                 #!/bin/sh
                 # %(banner)s
                 export PHPRC=/etc/%(type)s/cgi/
-                exec /usr/bin/%(type)s-cgi %(init_vars)s
-                """ % context),
+                exec /usr/bin/%(type)s-cgi %(init_vars)s""" % context),
             'wrapper_path': wrapper_path,
             'wrapper_dir': os.path.dirname(wrapper_path),
         })

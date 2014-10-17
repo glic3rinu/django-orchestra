@@ -18,6 +18,10 @@ echo "from orchestra.apps.accounts.models import Account"
 echo "account = Account.objects.get(pk=1)"
 ERRORS=""
 while read name; do
+    [[ -f $name ]] && {
+        ZONE_PATH=${name%/*}
+        name=${name##*/}
+    }
     ZONE=$(named-checkzone -D $name ${ZONE_PATH}/$name)
     if [[ $? != 0 ]]; then
         ERRORS="${ERRORS} $name"

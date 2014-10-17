@@ -2,6 +2,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 
+# TODO make '%(mainuser_home)s/webapps...
 WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '/home/%(user)s/webapps/%(app_name)s/')
 
 
@@ -30,8 +31,8 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
         _("This creates a PHP5.5 application under ~/webapps/<app_name>\n"
           "PHP-FPM will be used to execute PHP files.")
     ),
-    'php5': (
-        _("PHP 5"),
+    'php5.2': (
+        _("PHP 5.2"),
         'fcgid', (WEBAPPS_FCGID_PATH,),
         _("This creates a PHP5.2 application under ~/webapps/<app_name>\n"
           "Apache-mod-fcgid will be used to execute PHP files.")

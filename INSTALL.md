@@ -76,3 +76,14 @@ Additionally the following command can be used in order to determine the current
 python manage.py orchestraversion
 ```
 
+
+
+Extra
+=====
+
+1. Generate a passwordless ssh key for orchestra user
+ssh-keygen
+
+2. Copy this key to all servers orchestra will manage, including itself is neccessary
+ssh-copy-id root@<server-address>
+

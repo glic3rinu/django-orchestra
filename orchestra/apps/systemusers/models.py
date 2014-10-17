@@ -67,6 +67,7 @@ class SystemUser(models.Model):
         basehome = basehome.replace('/./', '/')
         home = os.path.join(basehome, self.home)
         # Chrooting
+        # TODO option for disabling chrooting
         home = home.split('/')
         home.insert(-2, '.')
         return '/'.join(home)

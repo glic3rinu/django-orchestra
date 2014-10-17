@@ -45,10 +45,13 @@ class Bind9MasterDomainBackend(ServiceController):
         self.delete_conf(context)
     
     def delete_conf(self, context):
+        if context['name'][0] in ('*', '_'):
+            # These can never be top level domains
+            return
         self.append(textwrap.dedent("""
-            awk -v s=%(name)s 'BEGIN {
-                RS=""; s="zone \\""s"\\""
-            } $0!~s{ print $0"\\n" }' %(conf_path)s > %(conf_path)s.tmp""" % context
+            cat -s <(sed -e 's/^};/};\n/' named.conf.local) | \
+            awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \""s"\"" } $0!~s{ print $0"\n" }' \
+            > %(conf_path)s.tmp""" % context
         ))
         self.append('diff -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)
         self.append('mv %(conf_path)s.tmp %(conf_path)s' % context)

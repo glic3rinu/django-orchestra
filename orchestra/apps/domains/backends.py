@@ -40,10 +40,14 @@ class Bind9MasterDomainBackend(ServiceController):
     
     def update_conf(self, context):
         self.append(textwrap.dedent("""\
-            cat -s <(sed -e 's/^};/};\n/' named.conf.local) | \\
+            cat -s <(sed -e 's/^};/};\\n/' %(conf_path)s) | \\
                 awk -v s=pangea.cat 'BEGIN { RS=""; s="zone \\""s"\\"" } $0~s{ print }' | \\
             diff -I"^\s*//" - <(echo '%(conf)s') || {
-                echo -e '%(conf)s' >> %(conf_path)s
+                cat -s <(sed -e 's/^};/};\\n/' %(conf_path)s) | \\
+                    awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \\""s"\\"" } $0!~s{ print $0"\\n" }' \\
+                    > %(conf_path)s.tmp
+                echo -e '%(conf)s' >> %(conf_path)s.tmp
+                mv %(conf_path)s.tmp %(conf_path)s
                 UPDATED=1
             }""" % context
         ))
@@ -61,9 +65,9 @@ class Bind9MasterDomainBackend(ServiceController):
             # These can never be top level domains
             return
         self.append(textwrap.dedent("""\
-            cat -s <(sed -e 's/^};/};\\n/' named.conf.local) | \\
-            awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \\""s"\\"" } $0!~s{ print $0"\\n" }' \\
-            > %(conf_path)s.tmp""" % context
+            cat -s <(sed -e 's/^};/};\\n/' %(conf_path)s) | \\
+                awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \\""s"\\"" } $0!~s{ print $0"\\n" }' \\
+                > %(conf_path)s.tmp""" % context
         ))
         self.append('diff -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)
         self.append('mv %(conf_path)s.tmp %(conf_path)s' % context)

@@ -29,7 +29,7 @@ class Apache2Backend(ServiceController):
         
         apache_conf = Template(textwrap.dedent("""\
             # {{ banner }}
-            <VirtualHost {{ id }}:{{ site.port }}>
+            <VirtualHost {{ ip }}:{{ site.port }}>
                 ServerName {{ site.domains.all|first }}\
             {% if site.domains.all|slice:"1:" %}
                 ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}

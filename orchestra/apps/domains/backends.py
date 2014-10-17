@@ -28,13 +28,25 @@ class Bind9MasterDomainBackend(ServiceController):
         domain.refresh_serial()
         context['zone'] = ';; %(banner)s\n' % context
         context['zone'] += domain.render_zone()
-        self.append("{ echo -e '%(zone)s' | diff -N -I'^;;' %(zone_path)s - ; } ||"
-                    "   { echo -e '%(zone)s' > %(zone_path)s; UPDATED=1; }" % context)
+        self.append(textwrap.dedent("""\
+            {
+                echo -e '%(zone)s' | diff -N -I'^\s*;;' %(zone_path)s -
+            } || {
+                echo -e '%(zone)s' > %(zone_path)s
+                UPDATED=1
+            }""" % context
+        ))
         self.update_conf(context)
     
     def update_conf(self, context):
-        self.append("grep '\s*zone\s*\"%(name)s\"\s*{' %(conf_path)s > /dev/null ||"
-                    "   { echo -e '%(conf)s' >> %(conf_path)s; UPDATED=1; }" % context)
+        self.append(textwrap.dedent("""\
+            cat -s <(sed -e 's/^};/};\n/' named.conf.local) | \\
+                awk -v s=pangea.cat 'BEGIN { RS=""; s="zone \\""s"\\"" } $0~s{ print }' | \\
+            diff -I"^\s*//" - <(echo '%(conf)s') || {
+                echo -e '%(conf)s' >> %(conf_path)s
+                UPDATED=1
+            }""" % context
+        ))
         for subdomain in context['subdomains']:
             context['name'] = subdomain.name
             self.delete(subdomain)
@@ -48,7 +60,7 @@ class Bind9MasterDomainBackend(ServiceController):
         if context['name'][0] in ('*', '_'):
             # These can never be top level domains
             return
-        self.append(textwrap.dedent("""
+        self.append(textwrap.dedent("""\
             cat -s <(sed -e 's/^};/};\\n/' named.conf.local) | \\
             awk -v s="%(name)s" 'BEGIN { RS=""; s="zone \\""s"\\"" } $0!~s{ print $0"\\n" }' \\
             > %(conf_path)s.tmp""" % context

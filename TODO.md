@@ -136,3 +136,12 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * update_fields=[] doesn't trigger post save!
 
 * lists -> SaaS ?
+
+* move bill contact to bills apps
+
+* autocreate <account>.orchestra.lan
+
+* Backend optimization
+    * fields = ()
+    * ignore_fields = ()
+    * based on a merge set of save(update_fields)

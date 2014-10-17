@@ -36,7 +36,7 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 
 5. Create and configure a Postgres database
     ```bash
-    sudo python manage.py setuppostgres
+    sudo python manage.py setuppostgres --db_password <password>
     python manage.py syncdb
     python manage.py migrate
     ```

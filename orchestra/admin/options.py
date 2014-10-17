@@ -112,6 +112,7 @@ class ChangeAddFieldsMixin(object):
     add_fieldsets = ()
     add_form = None
     change_readonly_fields = ()
+    add_inlines = ()
     
     def get_readonly_fields(self, request, obj=None):
         fields = super(ChangeAddFieldsMixin, self).get_readonly_fields(request, obj=obj)
@@ -129,9 +130,10 @@ class ChangeAddFieldsMixin(object):
     
     def get_inline_instances(self, request, obj=None):
         """ add_inlines and inline.parent_object """
-        self.inlines = getattr(self, 'add_inlines', self.inlines)
         if obj:
             self.inlines = type(self).inlines
+        else:
+            self.inlines = self.add_inlines or self.inlines
         inlines = super(ChangeAddFieldsMixin, self).get_inline_instances(request, obj=obj)
         for inline in inlines:
             inline.parent_object = obj

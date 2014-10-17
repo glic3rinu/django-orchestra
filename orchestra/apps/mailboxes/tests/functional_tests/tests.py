@@ -228,7 +228,7 @@ class MailboxMixin(object):
         imap.create(folder)
         self.validate_mailbox(username)
         token = random_ascii(100)
-        self.send_email("%s@%s" % (username, settings.MAILS_VIRTUAL_MAILBOX_DEFAULT_DOMAIN), token)
+        self.send_email("%s@%s" % (username, settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN), token)
         home = Mailbox.objects.get(name=username).get_home()
         sshrun(self.MASTER_SERVER,
                "grep '%s' %s/Maildir/.%s/new/*" % (token, home, folder), display=False)
@@ -300,7 +300,7 @@ class AdminMailboxMixin(MailboxMixin):
     
     @snapshot_on_error
     def add(self, username, password, quota=None, filtering=None):
-        url = self.live_server_url + reverse('admin:mails_mailbox_add')
+        url = self.live_server_url + reverse('admin:mailboxes_mailbox_add')
         self.selenium.get(url)
         
         account_input = self.selenium.find_element_by_id('id_account')
@@ -346,7 +346,7 @@ class AdminMailboxMixin(MailboxMixin):
     
     @snapshot_on_error
     def add_address(self, username, name, domain):
-        url = self.live_server_url + reverse('admin:mails_address_add')
+        url = self.live_server_url + reverse('admin:mailboxes_address_add')
         self.selenium.get(url)
         
         name_field = self.selenium.find_element_by_id('id_name')

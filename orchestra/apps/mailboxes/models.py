@@ -22,14 +22,14 @@ class Mailbox(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='mailboxes')
     filtering = models.CharField(max_length=16,
-            choices=[(k, v[0]) for k,v in settings.MAILS_MAILBOX_FILTERINGS.iteritems()],
-            default=settings.MAILS_MAILBOX_DEFAULT_FILTERING)
+            choices=[(k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.iteritems()],
+            default=settings.MAILBOXES_MAILBOX_DEFAULT_FILTERING)
     custom_filtering = models.TextField(_("filtering"), blank=True,
             validators=[validators.validate_sieve],
             help_text=_("Arbitrary email filtering in sieve language. "
                         "This overrides any automatic junk email filtering"))
     is_active = models.BooleanField(_("active"), default=True)
-#    addresses = models.ManyToManyField('mails.Address',
+#    addresses = models.ManyToManyField('mailboxes.Address',
 #            verbose_name=_("addresses"),
 #            related_name='mailboxes', blank=True)
     
@@ -54,7 +54,7 @@ class Mailbox(models.Model):
             'name': self.name,
             'username': self.name,
         }
-        home = settings.MAILS_HOME % context
+        home = settings.MAILBOXES_HOME % context
         return home.rstrip('/')
     
     def clean(self):
@@ -62,7 +62,7 @@ class Mailbox(models.Model):
             self.custom_filtering = ''
     
     def get_filtering(self):
-        __, filtering = settings.MAILS_MAILBOX_FILTERINGS[self.filtering]
+        __, filtering = settings.MAILBOXES_MAILBOX_FILTERINGS[self.filtering]
         if isinstance(filtering, basestring):
             return filtering
         return filtering(self)
@@ -83,7 +83,7 @@ class Mailbox(models.Model):
 class Address(models.Model):
     name = models.CharField(_("name"), max_length=64,
             validators=[validators.validate_emailname])
-    domain = models.ForeignKey(settings.MAILS_DOMAIN_MODEL,
+    domain = models.ForeignKey(settings.MAILBOXES_DOMAIN_MODEL,
             verbose_name=_("domain"),
             related_name='addresses')
     mailboxes = models.ManyToManyField(Mailbox,

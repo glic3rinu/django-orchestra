@@ -130,7 +130,8 @@ function install_requirements () {
          libxml2-dev \
          libxslt1-dev \
          wkhtmltopdf \
-         xvfb"
+         xvfb \
+         ca-certificates"
     
     PIP="django==1.7 \
          django-celery-email==1.0.4 \
@@ -139,8 +140,8 @@ function install_requirements () {
          IPy==0.81 \
          django-extensions==1.1.1 \
          django-transaction-signals==1.0.0 \
-         django-celery==3.1.10 \
-         celery==3.1.13 \
+         django-celery==3.1.16 \
+         celery==3.1.16 \
          kombu==3.0.23 \
          billiard==3.3.0.18 \
          Markdown==2.4 \
@@ -153,7 +154,8 @@ function install_requirements () {
          jsonfield==0.9.22 \
          lxml==3.3.5 \
          python-dateutil==2.2 \
-         django-iban==0.3.0"
+         django-iban==0.3.0 \
+         requests"
     
     if $testing; then
         APT="${APT} \
@@ -169,7 +171,6 @@ function install_requirements () {
             django-debug-toolbar==1.2.1 \
             django-nose==1.2 \
             sqlparse \
-            requests \
             --allow-external orchestra-orm --allow-unverified orchestra-orm"
     fi
     
@@ -180,7 +181,10 @@ function install_requirements () {
         update-locale LANG=en_US.UTF-8
     fi
     
-    # Install ca certificates
+    run apt-get update
+    run apt-get install -y $APT
+    
+    # Install ca certificates before executing pip install
     if [[ ! -e  /usr/local/share/ca-certificates/cacert.org ]]; then
         mkdir -p /usr/local/share/ca-certificates/cacert.org
         wget -P /usr/local/share/ca-certificates/cacert.org \
@@ -189,8 +193,6 @@ function install_requirements () {
         update-ca-certificates
     fi
     
-    run apt-get update
-    run apt-get install -y $APT
     run pip install $PIP
     
     # Some versions of rabbitmq-server will not start automatically by default unless ...

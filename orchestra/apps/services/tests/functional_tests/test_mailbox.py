@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from freezegun import freeze_time
 
-from orchestra.apps.mails.models import Mailbox
+from orchestra.apps.mailboxes.models import Mailbox
 from orchestra.apps.resources.models import Resource, ResourceData
 from orchestra.utils.tests import random_ascii
 

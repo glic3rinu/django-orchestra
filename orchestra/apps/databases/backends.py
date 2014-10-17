@@ -13,6 +13,8 @@ class MySQLBackend(ServiceController):
     model = 'databases.Database'
     
     def save(self, database):
+        if database.type != database.MYSQL:
+            return
         context = self.get_context(database)
         # Not available on delete()
         context['owner'] = database.owner
@@ -32,6 +34,8 @@ class MySQLBackend(ServiceController):
             ))
     
     def delete(self, database):
+        if database.type != database.MYSQL:
+            return
         context = self.get_context(database)
         self.append("mysql -e 'DROP DATABASE `%(database)s`;'" % context)
         
@@ -50,6 +54,8 @@ class MySQLUserBackend(ServiceController):
     model = 'databases.DatabaseUser'
     
     def save(self, user):
+        if user.type != user.MYSQL:
+            return
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
             mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true \
@@ -61,6 +67,8 @@ class MySQLUserBackend(ServiceController):
         ))
     
     def delete(self, user):
+        if user.type != user.MYSQL:
+            return
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
             mysql -e 'DROP USER "%(username)s"@"%(host)s";' \
@@ -83,6 +91,8 @@ class MysqlDisk(ServiceMonitor):
     verbose_name = _("MySQL disk")
     
     def exceeded(self, db):
+        if db.type != db.MYSQL:
+            return
         context = self.get_context(db)
         self.append(textwrap.dedent("""\
             mysql -e 'UPDATE db SET Insert_priv="N", Create_priv="N" WHERE Db="%(db_name)s";' \
@@ -90,6 +100,8 @@ class MysqlDisk(ServiceMonitor):
         ))
     
     def recovery(self, db):
+        if db.type != db.MYSQL:
+            return
         context = self.get_context(db)
         self.append(textwrap.dedent("""\
             mysql -e 'UPDATE db SET Insert_priv="Y", Create_priv="Y" WHERE Db="%(db_name)s";' \
@@ -97,6 +109,8 @@ class MysqlDisk(ServiceMonitor):
         ))
     
     def monitor(self, db):
+        if db.type != db.MYSQL:
+            return
         context = self.get_context(db)
         self.append(textwrap.dedent("""\
             echo %(db_id)s $(mysql -B -e '"

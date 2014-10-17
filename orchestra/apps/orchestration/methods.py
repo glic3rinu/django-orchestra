@@ -19,18 +19,22 @@ transports = {}
 
 def BashSSH(backend, log, server, cmds):
     from .models import BackendLog
+    # TODO save remote file into a root read only directory to avoid users sniffing passwords and stuff
+    
     script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
-    log.script = script
+    digest = hashlib.md5(script).hexdigest()
+    path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_PATH, digest)
+    remote_path = "%s.remote" % path
+    log.script = '# %s\n%s' % (remote_path, script)
     log.save(update_fields=['script'])
-    logger.debug('%s is going to be executed on %s' % (backend, server))
+    
     channel = None
     ssh = None
     try:
+        logger.debug('%s is going to be executed on %s' % (backend, server))
         # Avoid "Argument list too long" on large scripts by genereting a file
         # and scping it to the remote server
-        digest = hashlib.md5(script).hexdigest()
-        path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_PATH, digest)
         with open(path, 'w') as script_file:
             script_file.write(script)
         
@@ -50,19 +54,19 @@ def BashSSH(backend, log, server, cmds):
         
         # Copy script to remote server
         sftp = paramiko.SFTPClient.from_transport(transport)
-        sftp.put(path, "%s.remote" % path)
+        sftp.put(path, remote_path)
         sftp.close()
         os.remove(path)
         
         # Execute it
         context = {
-            'path': "%s.remote" % path,
+            'remote_path': remote_path,
             'digest': digest
         }
         cmd = (
-            "[[ $(md5sum %(path)s|awk {'print $1'}) == %(digest)s ]] && bash %(path)s\n"
+            "[[ $(md5sum %(remote_path)s|awk {'print $1'}) == %(digest)s ]] && bash %(remote_path)s\n"
             "RETURN_CODE=$?\n"
-# TODO            "rm -fr %(path)s\n"
+# TODO            "rm -fr %(remote_path)s\n"
             "exit $RETURN_CODE" % context
         )
         channel = transport.open_session()

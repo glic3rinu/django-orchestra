@@ -16,6 +16,22 @@ from orchestra.utils.html import html_to_pdf
 from . import settings
 
 
+class BillContact(models.Model):
+    account = models.OneToOneField('accounts.Account', verbose_name=_("account"),
+            related_name='billcontact')
+    name = models.CharField(_("name"), max_length=256)
+    address = models.TextField(_("address"))
+    city = models.CharField(_("city"), max_length=128,
+            default=settings.BILLS_CONTACT_DEFAULT_CITY)
+    zipcode = models.PositiveIntegerField(_("zip code"))
+    country = models.CharField(_("country"), max_length=20,
+            default=settings.BILLS_CONTACT_DEFAULT_COUNTRY)
+    vat = models.CharField(_("VAT number"), max_length=64)
+    
+    def __unicode__(self):
+        return self.name
+
+
 class BillManager(models.Manager):
     def get_queryset(self):
         queryset = super(BillManager, self).get_queryset()
@@ -73,11 +89,11 @@ class Bill(models.Model):
     
     @cached_property
     def seller(self):
-        return Account.get_main().invoicecontact
+        return Account.get_main().billcontact
     
     @cached_property
     def buyer(self):
-        return self.account.invoicecontact
+        return self.account.billcontact
     
     @cached_property
     def payment_state(self):

@@ -7,13 +7,14 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import admin_date
-from orchestra.apps.accounts.admin import AccountAdminMixin
+from orchestra.admin.utils import admin_date, insertattr
+from orchestra.apps.accounts.admin import AccountAdminMixin, AccountAdmin
+from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
 from . import settings
 from .actions import download_bills, view_bill, close_bills, send_bills, validate_contact
-from .filters import BillTypeListFilter
-from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine
+from .filters import BillTypeListFilter, HasBillContactListFilter
+from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillContact
 
 
 PAYMENT_STATE_COLORS = {
@@ -164,3 +165,27 @@ admin.site.register(AmendmentInvoice, BillAdmin)
 admin.site.register(Fee, BillAdmin)
 admin.site.register(AmendmentFee, BillAdmin)
 admin.site.register(ProForma, BillAdmin)
+
+
+class BillContactInline(admin.StackedInline):
+    model = BillContact
+    fields = ('name', 'address', ('city', 'zipcode'), 'country', 'vat')
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'address':
+            kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
+        if db_field.name == 'email_usage':
+            kwargs['widget'] = paddingCheckboxSelectMultiple(45)
+        return super(BillContactInline, self).formfield_for_dbfield(db_field, **kwargs)
+
+
+def has_bill_contact(account):
+    return hasattr(account, 'billcontact')
+has_bill_contact.boolean = True
+has_bill_contact.admin_order_field = 'billcontact'
+
+
+insertattr(AccountAdmin, 'inlines', BillContactInline)
+insertattr(AccountAdmin, 'list_display', has_bill_contact)
+insertattr(AccountAdmin, 'list_filter', HasBillContactListFilter)

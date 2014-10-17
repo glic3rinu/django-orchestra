@@ -22,13 +22,12 @@ class BillTypeListFilter(SimpleListFilter):
             ('proforma', _("Pro-forma")),
         )
     
-
     def queryset(self, request, queryset):
         return queryset
-
+    
     def value(self):
         return self.request.path.split('/')[-2]
-
+    
     def choices(self, cl):
         for lookup, title in self.lookup_choices:
             yield {
@@ -37,3 +36,20 @@ class BillTypeListFilter(SimpleListFilter):
                 'display': title,
             }
 
+
+class HasBillContactListFilter(SimpleListFilter):
+    """ Filter Nodes by group according to request.user """
+    title = _("has bill contact")
+    parameter_name = 'bill'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('True', _("Yes")),
+            ('False', _("No")),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'True':
+            return queryset.filter(billcontact__isnull=False)
+        if self.value() == 'False':
+            return queryset.filter(billcontact__isnull=True)

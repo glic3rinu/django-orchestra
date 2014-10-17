@@ -66,6 +66,8 @@ TEMPLATE_CONTEXT_PROCESSORS =(
 INSTALLED_APPS = (
     # django-orchestra apps
     'orchestra',
+    'orchestra.apps.accounts',
+    'orchestra.apps.contacts',
     'orchestra.apps.orchestration',
     'orchestra.apps.domains',
     'orchestra.apps.systemusers',
@@ -73,7 +75,7 @@ INSTALLED_APPS = (
 #    'orchestra.apps.users.roles.mail',
 #    'orchestra.apps.users.roles.jabber',
 #    'orchestra.apps.users.roles.posix',
-    'orchestra.apps.mails',
+    'orchestra.apps.mailboxes',
     'orchestra.apps.lists',
     'orchestra.apps.webapps',
     'orchestra.apps.websites',
@@ -99,7 +101,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'passlib.ext.django',
-    'django_nose',
     
     # Django.contrib
     'django.contrib.auth',
@@ -109,8 +110,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin.apps.SimpleAdminConfig',
     
-    'orchestra.apps.accounts',
-    'orchestra.apps.contacts',
+    # Last to load
     'orchestra.apps.resources',
 )
 
@@ -175,8 +175,8 @@ FLUENT_DASHBOARD_APP_ICONS = {
     # Services
     'webs/web': 'web.png',
     'mail/address': 'X-office-address-book.png',
-    'mails/mailbox': 'email.png',
-    'mails/address': 'X-office-address-book.png',
+    'mailboxes/mailbox': 'email.png',
+    'mailboxes/address': 'X-office-address-book.png',
     'lists/list': 'email-alter.png',
     'domains/domain': 'domain.png',
     'multitenance/tenant': 'apps.png',

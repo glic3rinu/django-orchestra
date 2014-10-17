@@ -6,8 +6,8 @@ from orchestra.admin import AtLeastOneRequiredInlineFormSet
 from orchestra.admin.utils import insertattr
 from orchestra.apps.accounts.admin import AccountAdmin, AccountAdminMixin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
-from .filters import HasInvoiceContactListFilter
-from .models import Contact, InvoiceContact
+
+from .models import Contact
 
 
 class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
@@ -69,20 +69,7 @@ class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
 admin.site.register(Contact, ContactAdmin)
 
 
-class InvoiceContactInline(admin.StackedInline):
-    model = InvoiceContact
-    fields = ('name', 'address', ('city', 'zipcode'), 'country', 'vat')
-    
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        """ Make value input widget bigger """
-        if db_field.name == 'address':
-            kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
-        if db_field.name == 'email_usage':
-            kwargs['widget'] = paddingCheckboxSelectMultiple(45)
-        return super(InvoiceContactInline, self).formfield_for_dbfield(db_field, **kwargs)
-
-
-class ContactInline(InvoiceContactInline):
+class ContactInline(admin.StackedInline):
     model = Contact
     formset = AtLeastOneRequiredInlineFormSet
     extra = 0
@@ -93,18 +80,17 @@ class ContactInline(InvoiceContactInline):
     
     def get_extra(self, request, obj=None, **kwargs):
        return 0 if obj and obj.contacts.exists() else 1
-
-
-def has_invoice(account):
-    return hasattr(account, 'invoicecontact')
-has_invoice.boolean = True
-has_invoice.admin_order_field = 'invoicecontact'
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'address':
+            kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
+        if db_field.name == 'email_usage':
+            kwargs['widget'] = paddingCheckboxSelectMultiple(45)
+        return super(ContactInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 insertattr(AccountAdmin, 'inlines', ContactInline)
-insertattr(AccountAdmin, 'inlines', InvoiceContactInline)
-insertattr(AccountAdmin, 'list_display', has_invoice)
-insertattr(AccountAdmin, 'list_filter', HasInvoiceContactListFilter)
 search_fields = (
     'contacts__short_name', 'contacts__full_name', 'contacts__phone',
     'contacts__phone2', 'contacts__email'

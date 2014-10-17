@@ -41,8 +41,8 @@ Database.users.through._meta.unique_together = (('database', 'databaseuser'),)
 
 
 class DatabaseUser(models.Model):
-    MYSQL = 'mysql'
-    POSTGRESQL = 'postgresql'
+    MYSQL = Database.MYSQL
+    POSTGRESQL = Database.POSTGRESQL
     
     username = models.CharField(_("username"), max_length=16, # MySQL usernames 16 char long
             validators=[validators.validate_name])

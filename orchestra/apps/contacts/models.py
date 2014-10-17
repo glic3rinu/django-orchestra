@@ -50,20 +50,4 @@ class Contact(models.Model):
         return self.short_name
 
 
-class InvoiceContact(models.Model):
-    account = models.OneToOneField('accounts.Account', verbose_name=_("account"),
-            related_name='invoicecontact')
-    name = models.CharField(_("name"), max_length=256)
-    address = models.TextField(_("address"))
-    city = models.CharField(_("city"), max_length=128,
-            default=settings.CONTACTS_DEFAULT_CITY)
-    zipcode = models.PositiveIntegerField(_("zip code"))
-    country = models.CharField(_("country"), max_length=20,
-            default=settings.CONTACTS_DEFAULT_COUNTRY)
-    vat = models.CharField(_("VAT number"), max_length=64)
-    
-    def __unicode__(self):
-        return self.name
-
-
 accounts.register(Contact)

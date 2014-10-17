@@ -76,7 +76,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdm
     def addresses_field(self, mailbox):
         """ Address form field with "Add address" button """
         account = mailbox.account
-        add_url = reverse('admin:mails_address_add')
+        add_url = reverse('admin:mailboxes_address_add')
         add_url += '?account=%d&mailboxes=%s' % (account.pk, mailbox.pk)
         img = '<img src="/static/admin/img/icon_addlink.gif" width="10" height="10" alt="Add Another">'
         onclick = 'onclick="return showAddAnotherPopup(this);"'
@@ -84,7 +84,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdm
                 add_url=add_url, onclick=onclick, img=img)
         value = '%s<br><br>' % add_link
         for pk, name, domain in mailbox.addresses.values_list('pk', 'name', 'domain__name'):
-            url = reverse('admin:mails_address_change', args=(pk,))
+            url = reverse('admin:mailboxes_address_change', args=(pk,))
             name = '%s@%s' % (name, domain)
             value += '<li><a href="%s">%s</a></li>' % (url, name)
         value = '<ul>%s</ul>' % value

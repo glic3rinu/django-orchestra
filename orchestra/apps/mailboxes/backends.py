@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class PasswdVirtualUserBackend(ServiceController):
     verbose_name = _("Mail virtual user (passwd-file)")
-    model = 'mails.Mailbox'
+    model = 'mailboxes.Mailbox'
     # TODO related_models = ('resources__content_type') ?? needed for updating disk usage from resource.data
     
     DEFAULT_GROUP = 'postfix'
@@ -86,7 +86,7 @@ class PasswdVirtualUserBackend(ServiceController):
     
     def commit(self):
         context = {
-            'virtual_mailbox_maps': settings.MAILS_VIRTUAL_MAILBOX_MAPS_PATH
+            'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH
         }
         self.append(
             "[[ $UPDATED_VIRTUAL_MAILBOX_MAPS == 1 ]] && { postmap %(virtual_mailbox_maps)s; }"
@@ -102,11 +102,11 @@ class PasswdVirtualUserBackend(ServiceController):
             'gid': 10000 + mailbox.pk,
             'group': self.DEFAULT_GROUP,
             'quota': self.get_quota(mailbox),
-            'passwd_path': settings.MAILS_PASSWD_PATH,
+            'passwd_path': settings.MAILBOXES_PASSWD_PATH,
             'home': mailbox.get_home(),
             'banner': self.get_banner(),
-            'virtual_mailbox_maps': settings.MAILS_VIRTUAL_MAILBOX_MAPS_PATH,
-            'mailbox_domain': settings.MAILS_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
+            'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH,
+            'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
         }
         context['extra_fields'] = self.get_extra_fields(mailbox, context)
         context['passwd'] = '{username}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context)
@@ -115,7 +115,7 @@ class PasswdVirtualUserBackend(ServiceController):
 
 class PostfixAddressBackend(ServiceController):
     verbose_name = _("Postfix address")
-    model = 'mails.Address'
+    model = 'mailboxes.Address'
     
     def include_virtual_alias_domain(self, context):
         self.append(textwrap.dedent("""
@@ -185,8 +185,8 @@ class PostfixAddressBackend(ServiceController):
     
     def get_context_files(self):
         return {
-            'virtual_alias_domains': settings.MAILS_VIRTUAL_ALIAS_DOMAINS_PATH,
-            'virtual_alias_maps': settings.MAILS_VIRTUAL_ALIAS_MAPS_PATH
+            'virtual_alias_domains': settings.MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH,
+            'virtual_alias_maps': settings.MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH
         }
     
     def get_context(self, address):
@@ -194,7 +194,7 @@ class PostfixAddressBackend(ServiceController):
         context.update({
             'domain': address.domain,
             'email': address.email,
-            'mailbox_domain': settings.MAILS_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
+            'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
         })
         return context
 
@@ -205,7 +205,7 @@ class AutoresponseBackend(ServiceController):
 
 
 class MaildirDisk(ServiceMonitor):
-    model = 'mails.Mailbox'
+    model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.DISK
     verbose_name = _("Maildir disk usage")
     

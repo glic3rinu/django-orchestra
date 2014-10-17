@@ -1,17 +1,16 @@
 import decimal
 
+from django.contrib.contenttypes.models import ContentType
+from django.core.validators import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.db.models.loading import get_model
-from django.contrib.contenttypes.models import ContentType
-from django.core.validators import ValidationError
 from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import caches, services, accounts
 from orchestra.models import queryset
-#from orchestra.utils.apps import autodiscover
 
 from . import settings, rating
 from .handlers import ServiceHandler
@@ -187,8 +186,6 @@ class Service(models.Model):
             cache.set(key, services)
         return services
     
-    # FIXME some times caching is nasty, do we really have to? make get_plugin more efficient?
-    # @property
     @cached_property
     def handler(self):
         """ Accessor of this service handler instance """

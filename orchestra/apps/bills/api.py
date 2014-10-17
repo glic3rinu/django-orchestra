@@ -10,6 +10,3 @@ from .serializers import BillSerializer
 class BillViewSet(AccountApiMixin, viewsets.ModelViewSet):
     model = Bill
     serializer_class = BillSerializer
-
-
-router.register(r'bills', BillViewSet)

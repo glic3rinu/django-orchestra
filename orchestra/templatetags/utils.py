@@ -4,9 +4,15 @@ from django.forms import CheckboxInput
 
 from orchestra import get_version
 from orchestra.admin.utils import change_url
+from orchestra.utils.apps import isinstalled
 
 
 register = template.Library()
+
+
+@register.filter(name='isinstalled')
+def app_is_installed(app_name):
+    return isinstalled(app_name)
 
 
 @register.simple_tag(name="version")

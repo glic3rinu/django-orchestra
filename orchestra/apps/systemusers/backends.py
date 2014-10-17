@@ -35,6 +35,9 @@ class SystemUserBackend(ServiceController):
         self.append("killall -u %(username)s || true" % context)
         self.append("userdel %(username)s || true" % context)
         self.append("groupdel %(username)s || true" % context)
+        self.delete_home(context, user)
+    
+    def delete_home(self, context, user):
         if user.is_main:
             # TODO delete instead of this shit
             context['deleted'] = context['home'].rstrip('/') + '.deleted'

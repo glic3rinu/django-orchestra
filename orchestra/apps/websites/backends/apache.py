@@ -29,7 +29,7 @@ class Apache2Backend(ServiceController):
         
         apache_conf = Template(textwrap.dedent("""\
             # {{ banner }}
-            <VirtualHost *:{{ site.port }}>
+            <VirtualHost {{ id }}:{{ site.port }}>
                 ServerName {{ site.domains.all|first }}\
             {% if site.domains.all|slice:"1:" %}
                 ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}
@@ -162,6 +162,7 @@ class Apache2Backend(ServiceController):
         context = {
             'site': site,
             'site_name': site.name,
+            'ip': settings.WEBSITES_DEFAULT_IP,
             'site_unique_name': site.unique_name,
             'user': site.account.username,
             'group': site.account.username,

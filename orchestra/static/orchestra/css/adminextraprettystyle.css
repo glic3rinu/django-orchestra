@@ -5,7 +5,7 @@ body {
 
 #header #branding h1 {
     margin: 0;
-    padding: 2px 10px;
+    padding: 2px 15px;
     background: transparent url(/static/orchestra/images/orchestra-logo.png) 10px 2px no-repeat;
     text-indent: 0;
     height: 31px;
@@ -13,6 +13,7 @@ body {
 /*    font-weight: bold;*/
     padding-left: 50px;
     line-height: 30px;
+    border-right: 1px solid #ededed;
 }
 
 #branding h1, #branding h1 a:link, #branding h1 a:visited {
@@ -35,3 +36,49 @@ body {
     color: #9B9B9B;
 }
 
+
+#header ul#navigation-menu li.first a {
+    outline: none;
+    background: none;
+    margin: 0;
+    padding: 10px;
+}
+
+
+#header-breadcrumb {
+    width: 100%;
+    z-index: -1;
+    margin-top: 35px;
+    height: 69px;
+    position: absolute;
+    background-attachment: scroll; background-clip: border-box; 
+    background-color: rgb(255, 255, 255); 
+    background-image: url(/static/admin/img/nav-bg-reverse.gif);
+    background-origin: padding-box;
+    background-position: 0px -8px;
+    background-size: auto;
+    border-bottom-color: rgb(237, 237, 237);
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-left-color: rgb(153, 153, 153);
+    border-left-style: none;
+    border-left-width: 0px;
+    border-right-color: rgb(153, 153, 153);
+    border-right-style: none;
+    border-right-width: 0px;
+    border-top-color: rgb(153, 153, 153);
+    border-top-style: none;
+    border-top-width: 0px; 
+    color: white;
+    height: 13px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    background-repeat: repeat-x;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+div.breadcrumbs {
+    max-width: 1150px;
+    margin: auto;
+}

@@ -2,7 +2,6 @@ TODO
 ====
 
 * scape strings before executing scripts in order to prevent exploits: django templates automatically scapes things. Most important is to ensuer that all escape ' to &quot
-* Optimize SSH: pool, `UseDNS no`
 * Don't store passwords and other service parameters that can be changed by the services i.e. mailman, vps etc. Find an execution mechanism that trigger `change_password()`
 
 * abort transaction on orchestration when `state == TIMEOUT` ?
@@ -119,7 +118,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * delete main user -> delete account or prevent delete main user
 
-* https://blog.flameeyes.eu/2011/01/mostly-unknown-openssh-tricks
 * Ansible orchestration *method* (methods.py)
 * pip upgrade or install
 * multiple domains creation; line separated domains
@@ -151,4 +149,8 @@ textwrap.dedent( \\)
 * accounts
     * short name / long name
     * contact inlines
-    * autocreate stuff (email/<account>.orchestra.lan)
+    * autocreate stuff (email/<account>.orchestra.lan/plans)
+    * account username should be domain freiendly withot lines
+
+
+* parmiko write to a channel instead of transfering files?  http://sysadmin.circularvale.com/programming/paramiko-channel-hangs/

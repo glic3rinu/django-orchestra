@@ -1,0 +1,58 @@
+{% load i18n admin_tools_menu_tags %}
+{% if menu.children %}
+<script type="text/javascript" src="{{ media_url }}/admin_tools/js/utils.js"></script>
+<script type="text/javascript" charset="utf-8">
+    // Load js files syncronously and conditionally
+    var js_files = [
+        {   
+            src : '{{ media_url }}/admin_tools/js/jquery/jquery.min.js',
+            test: function() { return typeof(jQuery) == 'undefined'; }
+        },
+        {   
+            src : '{{ media_url }}/admin_tools/js/json.min.js',
+            test: function() { return typeof(JSON.stringify) == 'undefined'; }
+        },
+        {   
+            src : '{{ media_url }}/admin_tools/js/menu.js',
+            test: function() { return true; }
+        }{% for js in menu.Media.js %},
+        {   
+            src : '{{ media_url }}/{{ js }}',
+            test: function() { return true; }
+        }{% endfor %}
+    ];
+
+    loadScripts(js_files, function(){
+        jQuery(function($) {
+            {% if has_bookmark_item %}
+                process_bookmarks(
+                   "{{ request.get_full_path }}",
+                   "{{ title }}",
+                   "{% trans 'Please enter a name for the bookmark' %}"
+                );
+            {% endif %}
+        });
+    });
+
+</script>
+{% if has_bookmark_item %}
+
+{% if bookmark %}
+{% include "admin_tools/menu/remove_bookmark_form.html" %}
+{% else %}
+{% include "admin_tools/menu/add_bookmark_form.html" %}
+{% endif %}
+
+{% endif %}
+<ul id="navigation-menu">
+    <div style="max-width: 1170px; margin:auto;">
+    <div id="branding"><a href="/admin/"></a><h1 id="site-name"><a href="/admin/">Pangea Hosting Management <span class="version">0.0.1a1</span></a></h1></div>
+    {% for item in menu.children %}{% admin_tools_render_menu_item item forloop.counter %}{% endfor %}
+    <span style="float:right;color:grey;padding:10px;font-size:11px;">{% trans 'Welcome' %},
+        {% url 'admin:users_user_change' user.pk as user_change_url %}
+        <a href="{{ user_change_url }}" style="color:#555;"><strong>{% filter force_escape %}{% firstof user.get_short_name user.username %}{% endfilter %}</strong></a>.
+     <a href="{% url 'admin:password_change' %}" style="color:#555;">Change password</a> / <a href="{% url 'admin:logout' %}" style="color:#555;">Log out</a></span>
+    </div>
+</ul>
+{% endif %}
+

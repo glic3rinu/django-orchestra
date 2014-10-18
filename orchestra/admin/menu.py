@@ -1,8 +1,11 @@
 from admin_tools.menu import items, Menu
 from django.core.urlresolvers import reverse
+from django.utils.encoding import force_text
 from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
+from django.utils.safestring import mark_safe
 
+from orchestra import get_version, settings
 from orchestra.core import services, accounts
 from orchestra.utils.apps import isinstalled
 
@@ -103,17 +106,26 @@ def get_administration_items():
     return childrens
 
 
+
 class OrchestraMenu(Menu):
+    template = 'admin/orchestra/menu.html'
+    
     def init_with_context(self, context):
-        self.children += [
-            items.MenuItem(
-                _('Dashboard'),
-                reverse('admin:index')
-            ),
-            items.Bookmarks(),
+        self.children = [
+#            items.MenuItem(
+#                mark_safe('{site_name} <span style="{version_style}">v{version}</span>'.format(
+#                    site_name=force_text(settings.SITE_VERBOSE_NAME),
+#                    version_style="text-transform:none; float:none; font-size:smaller; background:none;",
+#                    version=get_version())),
+#                reverse('admin:index')
+#            ),
+#            items.MenuItem(
+#                _('Dashboard'),
+#                reverse('admin:index')
+#            ),
+#            items.Bookmarks(),
             items.MenuItem(
                 _("Services"),
-                reverse('admin:index'),
                 children=get_services()
             ),
             items.MenuItem(
@@ -125,5 +137,5 @@ class OrchestraMenu(Menu):
                 _("Administration"),
                 children=get_administration_items()
             ),
-            items.MenuItem("API", api_link(context))
+            items.MenuItem("API", api_link(context)),
         ]

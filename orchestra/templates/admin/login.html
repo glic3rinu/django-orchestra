@@ -16,6 +16,10 @@
 
 {% block breadcrumbs %}{% endblock %}
 
+{% block branding %}
+<h1 id="site-name">{{ SITE_VERBOSE_NAME }} <span class="version">{% version %}</span>
+{% endblock %}
+
 {% block content %}
 {% if form.errors and not form.non_field_errors and not form.this_is_the_login_form.errors %}
 <p class="errornote">
@@ -30,7 +34,6 @@
 </p>
 {% endfor %}
 {% endif %}
-
 <div id="content-main">
 <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
   <div class="form-row">

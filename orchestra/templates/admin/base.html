@@ -41,43 +41,17 @@
         <div id="branding">
             {% block branding %}{% endblock %}
         </div>
-        {% if user.is_active and user.is_staff %}
-        <div id="user-tools">
-            {% trans 'Welcome,' %}
-            {% url 'admin:users_user_change' user.pk as user_change_url %}
-            <a href="{{ user_change_url }}"><strong>{% filter force_escape %}{% firstof user.get_short_name user.username %}{% endfilter %}</strong></a>.
-            {% block userlinks %}
-                {% url 'django-admindocs-docroot' as docsroot %}
-                {% if docsroot %}
-                    <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
-                {% endif %}
-                {% url 'admin:password_change' as password_change_url %}
-                {% if password_change_url %}
-                    <a href="{{ password_change_url }}">
-                {% else %}
-                    <a href="{{ root_path }}password_change/">
-                {% endif %}
-                {% trans 'Change password' %}</a> /
-                {% url 'admin:logout' as logout_url %}
-                {% if logout_url %}
-                    <a href="{{ logout_url }}">
-                {% else %}
-                    <a href="{{ root_path }}logout/">
-                {% endif %}
-                {% trans 'Log out' %}</a>
-            {% endblock %}
-        </div>
-        {% endif %}
         {% block nav-global %}{% endblock %}
     </div></div>
     <!-- END Header -->
-    {% block breadcrumbs %}<div class="breadcrumbs"><a href="/">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}
+    <div class="outer-breadcrumbs">{% block breadcrumbs %}<div class="breadcrumbs"><a href="{{ root_path }}">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}</div>
     {% endif %}
 
     {% block messages %}
         {% if messages %}
         <ul class="messagelist" >{% for message in messages %}
-          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        <div style="background: {% if message.tags == 'warning' %}#ffc{% else %}#dfd{% endif %} 5px .3em no-repeat;border-bottom: 1px solid #ddd;">
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="max-width:1130px;margin:auto;margin-bottom:-1px;">{{ message }}</li></div>
         {% endfor %}</ul>
         {% endif %}
     {% endblock messages %}

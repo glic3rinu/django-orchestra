@@ -19,9 +19,8 @@
 {% endblock %}
 
 {% block branding %}
-<a href="{% url 'admin:index' %}"><h1 id="site-name">{{ SITE_VERBOSE_NAME }} <span class="version">{% version %}</span></a>
+<!--<a href="{% url 'admin:index' %}"><h1 id="site-name">{{ SITE_VERBOSE_NAME }} <span class="version">{% version %}</span></a>-->
 {% endblock %}
-
 {% block nav-global %}
 {% if user.is_active and user.is_staff %}
 {% if not is_popup %}

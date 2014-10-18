@@ -27,6 +27,7 @@ The admin interface relies on [Django Admin](https://docs.djangoproject.com/en/d
 Every app is [reusable](https://docs.djangoproject.com/en/dev/intro/reusable-apps/), this means that you can add any Orchestra application into your Django project `INSTALLED_APPS` strigh away.
 However, Orchestra also provides glue, tools and patterns that you may find very convinient to use. Checkout the [documentation](http://django-orchestra.readthedocs.org/) if you want to know more.
 
+![](docs/images/index-screenshot.png)
 
 
 Development and Testing Setup

@@ -35,6 +35,9 @@ class List(models.Model):
             return "%s@%s" % (self.address_name, self.address_domain)
         return ''
     
+    def get_address_name(self):
+        return self.address_name or self.name
+    
     def get_username(self):
         return self.name
     

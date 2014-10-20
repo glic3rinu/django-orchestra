@@ -2,6 +2,7 @@ from django.contrib.auth import models as auth
 from django.conf import settings as djsettings
 from django.core import validators
 from django.db import models
+from django.db.models.loading import get_model
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -56,19 +57,6 @@ class Account(auth.AbstractBaseUser):
     @classmethod
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
-    
-    def clean(self):
-        """ unique usernames between accounts and system users """
-        if not self.pk and hasattr(self, 'systemusers'):
-            if self.systemusers.model.objects.filter(username=self.username).exists():
-                raise validators.ValidationError(_("A user with this name already exists"))
-    
-    def save(self, *args, **kwargs):
-        created = not self.pk
-        super(Account, self).save(*args, **kwargs)
-        if created and hasattr(self, 'systemusers'):
-            self.systemusers.create(username=self.username, account=self,
-                    password=self.password, is_main=True)
     
     def disable(self):
         self.is_active = False
@@ -132,6 +120,22 @@ class Account(auth.AbstractBaseUser):
         if self.is_active and self.is_superuser:
             return True
         return auth._user_has_module_perms(self, app_label)
+
+    def get_related_passwords(self):
+        related = []
+        for model, key, kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
+            if 'password' not in kwargs:
+                continue
+            model = get_model(model)
+            kwargs = {
+                key: eval(kwargs[key], {'account': self})
+            }
+            try:
+                rel = model.objects.get(account=self, **kwargs)
+            except model.DoesNotExist:
+                continue
+            related.append(rel)
+        return related
 
 
 services.register(Account, menu=False)

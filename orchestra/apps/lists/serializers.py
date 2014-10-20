@@ -40,15 +40,15 @@ class ListSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             raise serializers.ValidationError(_("Password required"))
         return attrs
     
-    def validate(self, attrs):
-        address_domain = attrs.get('address_domain')
-        address_name = attrs.get('address_name', )
+    def validate_address_domain(self, attrs, source):
+        address_domain = attrs.get(source)
+        address_name = attrs.get('address_name')
         if self.object:
             address_domain = address_domain or self.object.address_domain
             address_name = address_name or self.object.address_name
-        if bool(address_domain) != bool(address_name):
+        if address_name and not address_domain:
             raise serializers.ValidationError(
-                _("address_name and address_domain should go in tandem"))
+                _("address_domains should should be provided when providing an addres_name"))
         return attrs
     
     def save_object(self, obj, **kwargs):

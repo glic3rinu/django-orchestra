@@ -252,14 +252,8 @@ class ChangePasswordAdminMixin(object):
                 related.append(user.account)
         else:
             account = user
-        # TODO plugability
-        if user._meta.model_name != 'systemuser':
-            rel = account.systemusers.filter(username=username).first()
-            if rel:
-                related.append(rel)
-        if user._meta.model_name != 'mailbox':
-            rel = account.mailboxes.filter(name=username).first()
-            if rel:
+        for rel in account.get_related_passwords():
+            if not isinstance(user, type(rel)):
                 related.append(rel)
         
         if request.method == 'POST':

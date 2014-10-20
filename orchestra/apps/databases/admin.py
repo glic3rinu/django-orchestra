@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
-from orchestra.admin.utils import admin_link
+from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 
 from .forms import DatabaseCreationForm, DatabaseUserChangeForm, DatabaseUserCreationForm
@@ -13,7 +13,7 @@ from .models import Database, DatabaseUser
 
 
 class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('name', 'type', 'account_link')
+    list_display = ('name', 'type', 'display_users', 'account_link')
     list_filter = ('type',)
     search_fields = ['name']
     change_readonly_fields = ('name', 'type')
@@ -21,7 +21,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     fieldsets = (
         (None, {
             'classes': ('extrapretty',),
-            'fields': ('account_link', 'name', 'type', 'users'),
+            'fields': ('account_link', 'name', 'type', 'users', 'display_users'),
         }),
     )
     add_fieldsets = (
@@ -39,6 +39,18 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         }),
     )
     add_form = DatabaseCreationForm
+    readonly_fields = ('account_link', 'display_users',)
+    filter_horizontal = ['users']
+    
+    def display_users(self, db):
+        links = []
+        for user in db.users.all():
+            link = '<a href="%s">%s</a>' % (change_url(user), user.username)
+            links.append(link)
+        return ', '.join(links)
+    display_users.short_description = _("Users")
+    display_users.allow_tags = True
+    display_users.admin_order_field = 'users__username'
     
     def save_model(self, request, obj, form, change):
         super(DatabaseAdmin, self).save_model(request, obj, form, change)
@@ -56,7 +68,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
 
 
 class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, ExtendedModelAdmin):
-    list_display = ('username', 'type', 'account_link')
+    list_display = ('username', 'type', 'display_databases', 'account_link')
     list_filter = ('type',)
     search_fields = ['username']
     form = DatabaseUserChangeForm
@@ -65,7 +77,7 @@ class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, Exten
     fieldsets = (
         (None, {
             'classes': ('extrapretty',),
-            'fields': ('account_link', 'username', 'password', 'type')
+            'fields': ('account_link', 'username', 'password', 'type', 'display_databases')
         }),
     )
     add_fieldsets = (
@@ -74,6 +86,17 @@ class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, Exten
             'fields': ('account_link', 'username', 'password1', 'password2', 'type')
         }),
     )
+    readonly_fields = ('account_link', 'display_databases',)
+    
+    def display_databases(self, user):
+        links = []
+        for db in user.databases.all():
+            link = '<a href="%s">%s</a>' % (change_url(db), db.name)
+            links.append(link)
+        return ', '.join(links)
+    display_databases.short_description = _("Databases")
+    display_databases.allow_tags = True
+    display_databases.admin_order_field = 'databases__name'
     
     def get_urls(self):
         useradmin = UserAdmin(DatabaseUser, self.admin_site)

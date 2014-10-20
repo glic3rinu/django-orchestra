@@ -21,6 +21,17 @@ class Domain(models.Model):
     def __unicode__(self):
         return self.name
     
+    @classmethod
+    def get_top_domain(cls, name):
+        split = name.split('.')
+        top = None
+        for i in range(1, len(split)-1):
+            name = '.'.join(split[i:])
+            domain = Domain.objects.filter(name=name)
+            if domain:
+                top = domain.get()
+        return top
+    
     @property
     def origin(self):
         return self.top or self
@@ -39,14 +50,7 @@ class Domain(models.Model):
         return self.origin.subdomains.all()
     
     def get_top(self):
-        split = self.name.split('.')
-        top = None
-        for i in range(1, len(split)-1):
-            name = '.'.join(split[i:])
-            domain = Domain.objects.filter(name=name)
-            if domain:
-                top = domain.get()
-        return top
+        return type(self).get_top_domain(self.name)
     
     def render_zone(self):
         origin = self.origin

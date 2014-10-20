@@ -12,9 +12,6 @@ class CleanAddressMixin(object):
         if name and not domain:
             msg = _("Domain should be selected for provided address name")
             raise forms.ValidationError(msg)
-        elif not name and domain:
-            msg = _("Address name should be provided for this selected domain")
-            raise forms.ValidationError(msg)
         return domain
 
 

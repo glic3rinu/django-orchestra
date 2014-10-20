@@ -1,8 +1,12 @@
+import copy
+import re
+
 from django import forms
 from django.conf.urls import patterns, url
 from django.contrib import admin, messages
 from django.contrib.admin.util import unquote
 from django.contrib.auth import admin as auth
+from django.db.models.loading import get_model
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.six.moves.urllib.parse import parse_qsl
@@ -13,6 +17,7 @@ from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, ch
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
 
+from . import settings
 from .actions import disable
 from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm
@@ -84,11 +89,26 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
         return super(AccountAdmin, self).change_view(request, object_id,
                 form_url=form_url, extra_context=context)
     
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super(AccountAdmin, self).get_fieldsets(request, obj=obj)
+        if not obj:
+            fields = AccountCreationForm.create_related_fields
+            if fields:
+                fieldsets = copy.deepcopy(fieldsets)
+                fieldsets = list(fieldsets)
+                fieldsets.insert(1, (_("Related services"), {'fields': fields}))
+        return fieldsets
+    
     def get_queryset(self, request):
         """ Select related for performance """
         qs = super(AccountAdmin, self).get_queryset(request)
         related = ('invoicecontact',)
         return qs.select_related(*related)
+    
+    def save_model(self, request, obj, form, change):
+        super(AccountAdmin, self).save_model(request, obj, form, change)
+        if not change:
+            form.save_related(obj)
 
 
 admin.site.register(Account, AccountAdmin)
@@ -162,6 +182,7 @@ class AccountAdminMixin(object):
                 def render(*args, **kwargs):
                     output = old_render(*args, **kwargs)
                     output = output.replace('/add/"', '/add/?account=%s"' % self.account.pk)
+                    output = re.sub(r'/add/\?([^".]*)"', r'/add/?\1&account=%s"' % self.account.pk, output)
                     return mark_safe(output)
                 formfield.widget.render = render
                 # Filter related object by account

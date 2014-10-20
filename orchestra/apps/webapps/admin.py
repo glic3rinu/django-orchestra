@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import change_url
-from orchestra.apps.accounts.admin import SelectAccountAdminMixin
+from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from .models import WebApp, WebAppOption
 
@@ -25,10 +25,11 @@ class WebAppOptionInline(admin.TabularInline):
         return super(WebAppOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class WebAppAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
-    fields = ('account_link', 'name', 'type')
+class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_websites', 'account_link')
     list_filter = ('type',)
+    add_fields = ('account', 'name', 'type')
+    fields = ('account_link', 'name', 'type')
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')

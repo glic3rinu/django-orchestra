@@ -22,3 +22,32 @@ ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE', 'en')
 
 
 ACCOUNTS_MAIN_PK = getattr(settings, 'ACCOUNTS_MAIN_PK', 1)
+
+
+ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
+    # <model>, <key field>, <kwargs>, <help_text>
+    ('systemusers.SystemUser',
+        'username',
+        {
+            'username': 'account.username',
+            'password': 'account.password',
+            'is_main': 'True',
+        },
+        _("Designates whether to creates a related system users with the same username and password or not."),
+    ),
+    ('mailboxes.Mailbox',
+        'name',
+        {
+            'name': 'account.username',
+            'password': 'account.password',
+        },
+        _("Designates whether to creates a related mailbox with the same name and password or not."),
+    ),
+    ('domains.Domain',
+        'name',
+        {
+            'name': '"%s.orchestra.lan" % account.username'
+        },
+        _("Designates whether to creates a related subdomain &lt;username&gt;.orchestra.lan or not."),
+    ),
+))

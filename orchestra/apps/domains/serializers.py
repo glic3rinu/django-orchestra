@@ -27,6 +27,14 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         fields = ('url', 'name', 'records')
         postonly_fields = ('name',)
     
+    def clean_name(self, attrs, source):
+        """ prevent users creating subdomains of other users domains """
+        name = attrs[source]
+        top = Domain.get_top_domain(name)
+        if top and top.account != self.account:
+            raise ValidationError(_("Can not create subdomains of other users domains"))
+        return attrs
+    
     def full_clean(self, instance):
         """ Checks if everything is consistent """
         instance = super(DomainSerializer, self).full_clean(instance)

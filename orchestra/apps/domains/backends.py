@@ -39,7 +39,7 @@ class Bind9MasterDomainBackend(ServiceController):
     def update_conf(self, context):
         self.append(textwrap.dedent("""\
             sed '/zone "%(name)s".*/,/^\s*};\s*$/!d' %(conf_path)s | diff -B -I"^\s*//" - <(echo '%(conf)s') || {
-                sed -i -e '/zone "%(name)s".*/,/^\s*};/d' \\
+                sed -i -e '/zone\s\s*"%(name)s".*/,/^\s*};/d' \\
                        -e 'N; /^\\n$/d; P; D' %(conf_path)s
                 echo '%(conf)s' >> %(conf_path)s
                 UPDATED=1
@@ -47,7 +47,7 @@ class Bind9MasterDomainBackend(ServiceController):
         ))
         # Delete ex-top-domains that are now subdomains
         self.append(textwrap.dedent("""\
-            sed -i -e '/zone ".*\.%(name)s".*/,/^\s*};\s*$/d' \\
+            sed -i -e '/zone\s\s*".*\.%(name)s".*/,/^\s*};\s*$/d' \\
                    -e 'N; /^\\n$/d; P; D' %(conf_path)s""" % context
         ))
         if 'zone_path' in context:
@@ -64,7 +64,7 @@ class Bind9MasterDomainBackend(ServiceController):
             # These can never be top level domains
             return
         self.append(textwrap.dedent("""\
-            sed -e '/zone ".*\.%(name)s".*/,/^\s*};\s*$/d' \\
+            sed -e '/zone\s\s*"%(name)s".*/,/^\s*};\s*$/d' \\
                 -e 'N; /^\\n$/d; P; D' %(conf_path)s > %(conf_path)s.tmp""" % context
         ))
         self.append('diff -B -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)

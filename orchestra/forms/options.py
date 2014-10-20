@@ -38,6 +38,7 @@ class UserCreationForm(forms.ModelForm):
     """
     error_messages = {
         'password_mismatch': _("The two password fields didn't match."),
+        'duplicate_username': _("A user with that username already exists."),
     }
     password1 = forms.CharField(label=_("Password"),
         widget=forms.PasswordInput, validators=[validate_password])

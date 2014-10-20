@@ -124,7 +124,7 @@ class MailmanBackend(ServiceController):
             'name': mail_list.name,
             'password': mail_list.password,
             'domain': mail_list.address_domain or settings.LISTS_DEFAULT_DOMAIN,
-            'address_name': mail_list.address_name,
+            'address_name': mail_list.get_address_name,
             'address_domain': mail_list.address_domain,
             'admin': mail_list.admin_email,
             'mailman_root': settings.LISTS_MAILMAN_ROOT_PATH,

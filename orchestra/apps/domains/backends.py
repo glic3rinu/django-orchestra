@@ -91,7 +91,7 @@ class Bind9MasterDomainBackend(ServiceController):
             'zone_path': settings.DOMAINS_ZONE_PATH % {'name': domain.name},
             'subdomains': domain.subdomains.all(),
             'banner': self.get_banner(),
-            'slaves': '; '.join(self.get_slaves(domain)) or 'none',
+            'slaves': '; '.join(self.get_slaves(domain)) or '"none"',
         }
         context.update({
             'conf_path': settings.DOMAINS_MASTERS_PATH,
@@ -101,6 +101,7 @@ class Bind9MasterDomainBackend(ServiceController):
                     type master;
                     file "%(zone_path)s";
                     allow-transfer { %(slaves)s; };
+                    also-notify { %(slaves)s; };
                 };""" % context)
         })
         return context

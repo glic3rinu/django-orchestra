@@ -13,7 +13,7 @@ class Command(BaseCommand):
         self.option_list = BaseCommand.option_list + (
             make_option('--username', dest='username', default='orchestra',
                 help='Specifies the system user that would run celeryd.'),
-            make_option('--processes', dest='processes', default=5,
+            make_option('--processes', dest='processes', default=2,
                 help='Number of celeryd processes.'),
             make_option('--noinput', action='store_false', dest='interactive', default=True,
                 help='Tells Django to NOT prompt the user for input of any kind. '

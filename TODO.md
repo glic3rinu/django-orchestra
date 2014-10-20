@@ -147,7 +147,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 textwrap.dedent( \\)
 
 * accounts
-    * short name / long name
+    * short name / long name, account name really needed? address? only minimal info..
     * contact inlines
     * autocreate stuff (email/<account>.orchestra.lan/plans)
     * account username should be domain freiendly withot lines

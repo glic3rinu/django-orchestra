@@ -19,6 +19,7 @@ echo "account = Account.objects.get(pk=1)"
 ERRORS=""
 while read name; do
     [[ -f $name ]] && {
+        [[ ! $(echo "$name" | grep '/' > /dev/null ) ]] && name="./${name}"
         ZONE_PATH=${name%/*}
         name=${name##*/}
     }

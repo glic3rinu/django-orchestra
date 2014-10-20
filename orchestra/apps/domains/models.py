@@ -98,11 +98,11 @@ class Domain(models.Model):
                     settings.DOMAINS_DEFAULT_MIN_CACHING_TIME
                 ]
                 records.insert(0, AttrDict(type=Record.SOA, value=' '.join(soa)))
-        no_cname = Record.CNAME not in types
-        if Record.MX not in types and no_cname:
+        is_a = not types or Record.A in types or Record.AAAA in types
+        if Record.MX not in types and is_a:
             for mx in settings.DOMAINS_DEFAULT_MX:
                 records.append(AttrDict(type=Record.MX, value=mx))
-        if (Record.A not in types and Record.AAAA not in types) and no_cname:
+        if (Record.A not in types and Record.AAAA not in types) and is_a:
             records.append(AttrDict(type=Record.A, value=settings.DOMAINS_DEFAULT_A))
         result = ''
         for record in records:

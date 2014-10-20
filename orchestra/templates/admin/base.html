@@ -34,7 +34,6 @@
 
 <!-- Container -->
 {% block container-stetic %}<div id="container">{% endblock %}
-
     {% if not is_popup %}
     <!-- Header -->
    {% block header-stetic %}<div id="header"><div id="header-wrapper">{% endblock %}
@@ -44,18 +43,18 @@
         {% block nav-global %}{% endblock %}
     </div></div>
     <!-- END Header -->
-    <div class="outer-breadcrumbs">{% block breadcrumbs %}<div class="breadcrumbs"><a href="{{ root_path }}">{% trans 'Home' %}</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}</div>
+    <div class="outer-breadcrumbs">{% block breadcrumbs %}<div class="breadcrumbs">{% trans 'Home' %}</div>{% endblock %}</div>
     {% endif %}
-
+    
     {% block messages %}
         {% if messages %}
         <ul class="messagelist" >{% for message in messages %}
-        <div style="background: {% if message.tags == 'warning' %}#ffc{% else %}#dfd{% endif %} 5px .3em no-repeat;border-bottom: 1px solid #ddd;">
+        <div style="background: {% if message.tags == 'warning' %}#ffc{% elif message.tags == 'error' %}#ffefef{% else %}#dfd{% endif %} 5px .3em no-repeat;border-bottom: 1px solid #ddd;">
           <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="max-width:1130px;margin:auto;margin-bottom:-1px;">{{ message }}</li></div>
         {% endfor %}</ul>
         {% endif %}
     {% endblock messages %}
-
+    
     <!-- Content -->
     <div id="content" class="{% block coltype %}colM{% endblock %}" style="max-width:1150px; margin:20px auto;">
         {% block pretitle %}{% endblock %}
@@ -68,7 +67,7 @@
         <br class="clear" />
     </div>
     <!-- END Content -->
-
+    
     {% block footer %}<div id="footer"></div>{% endblock %}
 </div>
 <!-- END Container -->

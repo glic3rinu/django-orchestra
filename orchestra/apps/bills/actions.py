@@ -4,6 +4,7 @@ import zipfile
 from django.contrib import messages
 from django.contrib.admin import helpers
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
@@ -45,6 +46,7 @@ view_bill.verbose_name = _("View")
 view_bill.url_name = 'view'
 
 
+@transaction.atomic
 def close_bills(modeladmin, request, queryset):
     queryset = queryset.filter(is_open=True)
     if not queryset:

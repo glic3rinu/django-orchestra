@@ -41,7 +41,7 @@
             {% for line in lines %}
             <tr class="form-row {% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
                 <td>
-                    <a href="{{ line.order | admin_link }}">{{ line.order.description }}</a>
+                    <a href="{{ line.order | admin_url }}">{{ line.order.description }}</a>
                     {% for discount in line.discounts %}
                         <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Discount per {{ discount.type }}
                     {% endfor %}

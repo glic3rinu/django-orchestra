@@ -1,0 +1,52 @@
+{% extends "admin/orchestra/generic_confirmation.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+
+{% block content %}
+    <div class="inline-group" id="rates-group">
+     <div class="tabular inline-related last-related">
+    <fieldset class="module">
+    <table id="result_list">
+    <thead>
+        <tr>
+        <th scope="col"><div class="text"><span>Action</span</div></th>
+        <th scope="col"><div class="text"><span>ID</span</div></th>
+        <th scope="col"><div class="text"><span>Service</span</div></th>
+        <th scope="col"><div class="text"><span>Account</span</div></th>
+        <th scope="col"><div class="text"><span>Content object</span</div></th>
+        <th scope="col"><div class="text"><span>Registered on</span</div></th>
+        <th scope="col"><div class="text"><span>Billed until</span</div></th>
+        <th scope="col"><div class="text"><span>Cancelled on</span</div>
+        </th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for order, action in updates %}
+        <tr class="{% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
+            <th>{{ action }}</th>
+            <td>{% if order.pk %}<a href="{{ order | admin_url }}">{{ order.id }}</a>{% endif %}</td>
+            <td><a href="{{ order.service | admin_url }}">{{ order.service }}</a></td>
+            <td><a href="{{ order.account | admin_url }}">{{ order.account }}</a></td>
+            <td><a href="{{ order.content_object | admin_url }}">{{ order.content_object }}</a></td>
+            <td><span title="{{ order.registered_on }}">{{ order.registered_on }}</span></td>
+            <td><span title="{{ order.billed_unitl }}">{{ order.billed_unitl }}</span></td>
+            <td>{{ order.canncelled_on }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+    </div>
+    </ul>
+    <form action="" method="post">{% csrf_token %}
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_value }}" />
+    <input type="hidden" name="post" value="confirmation" />
+    <input type="submit" value="{% trans "Yes, I'm sure" %}" />
+    </form>
+{% endblock %}
+

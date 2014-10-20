@@ -59,6 +59,7 @@ class OrderQuerySet(models.QuerySet):
         return self.filter(**qs)
     
     def get_related(self, **options):
+        """ returns related orders that could have a pricing effect """
         Service = get_model(settings.ORDERS_SERVICE_MODEL)
         conflictive = self.filter(service__metric='')
         conflictive = conflictive.exclude(service__billing_period=Service.NEVER)
@@ -66,6 +67,8 @@ class OrderQuerySet(models.QuerySet):
         qs = Q()
         for account_id, services in conflictive.iteritems():
             for service, orders in services.iteritems():
+                if not service.rates.exists():
+                    continue
                 end = datetime.date.min
                 bp = None
                 for order in orders:
@@ -107,7 +110,7 @@ class Order(models.Model):
             related_name='orders')
     registered_on = models.DateField(_("registered"), default=lambda: timezone.now())
     cancelled_on = models.DateField(_("cancelled"), null=True, blank=True)
-    billed_on = models.DateField(_("billed on"), null=True, blank=True)
+    billed_on = models.DateField(_("billed"), null=True, blank=True)
     billed_until = models.DateField(_("billed until"), null=True, blank=True)
     ignore = models.BooleanField(_("ignore"), default=False)
     description = models.TextField(_("description"), blank=True)
@@ -122,7 +125,8 @@ class Order(models.Model):
         return str(self.service)
     
     @classmethod
-    def update_orders(cls, instance, service=None):
+    def update_orders(cls, instance, service=None, commit=True):
+        updates = []
         if service is None:
             Service = get_model(settings.ORDERS_SERVICE_MODEL)
             services = Service.get_services(instance)
@@ -140,14 +144,23 @@ class Order(models.Model):
                     account = getattr(instance, 'account', instance)
                     if account.is_superuser:
                         ignore = service.ignore_superusers
-                    order = cls.objects.create(content_object=instance, service=service,
+                    order = cls(content_object=instance, service=service,
                             account_id=account_id, ignore=ignore)
+                    if commit:
+                        order.save()
+                    updates.append((order, 'created'))
                     logger.info("CREATED new order id: {id}".format(id=order.id))
                 else:
                     order = orders.get()
-                order.update()
+                    updates.append((order, 'updated'))
+                if commit:
+                    order.update()
             elif orders:
-                orders.get().cancel()
+                order = orders.get()
+                if commit:
+                    order.cancel()
+                updates.append((order, 'cancelled'))
+        return updates
     
     @classmethod
     def get_bill_backend(cls):

@@ -54,5 +54,5 @@ def is_checkbox(field):
 
 
 @register.filter
-def admin_link(obj):
+def admin_url(obj):
     return change_url(obj)

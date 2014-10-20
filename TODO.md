@@ -154,3 +154,7 @@ textwrap.dedent( \\)
 
 
 * parmiko write to a channel instead of transfering files?  http://sysadmin.circularvale.com/programming/paramiko-channel-hangs/
+
+* strip leading and trailing whitre spaces of most input fields
+* Examples of service.match and service.metric
+

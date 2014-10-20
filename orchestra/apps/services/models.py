@@ -272,11 +272,13 @@ class Service(models.Model):
     def rate_method(self):
         return self.RATE_METHODS[self.rate_algorithm]
     
-    def update_orders(self):
+    def update_orders(self, commit=True):
         order_model = get_model(settings.SERVICES_ORDER_MODEL)
         related_model = self.content_type.model_class()
+        updates = []
         for instance in related_model.objects.all().select_related('account'):
-            order_model.update_orders(instance, service=self)
+            updates += order_model.update_orders(instance, service=self, commit=commit)
+        return updates
 
 
 accounts.register(ContractedPlan)

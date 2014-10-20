@@ -13,7 +13,7 @@ def create_account_creation_form():
     for model, key, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
         model = get_model(model)
         field_name = 'create_%s' % model._meta.model_name
-        label = _("Create related %s") % model._meta.verbose_name
+        label = _("Create %s") % model._meta.verbose_name
         fields[field_name] = forms.BooleanField(initial=True, required=False, label=label,
                 help_text=help_text)
         

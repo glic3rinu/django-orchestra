@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
@@ -34,6 +35,13 @@ class Miscellaneous(models.Model):
     
     def __unicode__(self):
         return "{0}-{1}".format(str(self.service), str(self.account))
+    
+    @cached_property
+    def active(self):
+        try:
+            return self.is_active and self.account.is_active
+        except type(self).account.field.rel.to.DoesNotExist:
+            return self.is_active
 
 
 services.register(Miscellaneous)

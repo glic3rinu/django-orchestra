@@ -45,6 +45,9 @@ class ServiceHandler(plugins.Plugin):
         return ContentType.objects.get_by_natural_key(app_label, model.lower())
     
     def matches(self, instance):
+        if not self.match:
+            # Blank expressions always evaluate True
+            return True
         safe_locals = {
             'instance': instance,
             'obj': instance,

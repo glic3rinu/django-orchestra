@@ -11,9 +11,10 @@ from . import settings, validators, utils
 
 class Domain(models.Model):
     name = models.CharField(_("name"), max_length=256, unique=True,
-            validators=[validate_hostname, validators.validate_allowed_domain])
+            validators=[validate_hostname, validators.validate_allowed_domain],
+            help_text=_("Domain or subdomain name."))
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
-            related_name='domains', blank=True, help_text=_("Automatically selected for subdomains"))
+            related_name='domains', blank=True, help_text=_("Automatically selected for subdomains."))
     top = models.ForeignKey('domains.Domain', null=True, related_name='subdomains')
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial,
             help_text=_("Serial number"))

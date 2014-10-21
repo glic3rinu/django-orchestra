@@ -119,7 +119,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * delete main user -> delete account or prevent delete main user
 
 * Ansible orchestration *method* (methods.py)
-* pip upgrade or install
 * multiple domains creation; line separated domains
 * Move MU webapps to SaaS?
 
@@ -156,5 +155,6 @@ textwrap.dedent( \\)
 * parmiko write to a channel instead of transfering files?  http://sysadmin.circularvale.com/programming/paramiko-channel-hangs/
 
 * strip leading and trailing whitre spaces of most input fields
-* Examples of service.match and service.metric
 
+* better modeling of the interdependency between webapps and websites (settings)
+* webapp options cfig agnostic

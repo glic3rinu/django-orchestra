@@ -133,7 +133,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
             'name': domain.name,
             'banner': self.get_banner(),
             'subdomains': domain.subdomains.all(),
-            'masters': '; '.join(self.get_masters(domain)) or 'none',
+            'masters': '; '.join(self.get_masters(domain)) or '"none"',
         }
         context.update({
             'conf_path': settings.DOMAINS_SLAVES_PATH,

@@ -100,8 +100,19 @@ class Service(models.Model):
     }
     
     description = models.CharField(_("description"), max_length=256, unique=True)
-    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
-    match = models.CharField(_("match"), max_length=256, blank=True)
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"),
+            help_text=_("Content type of the related service objects."))
+    match = models.CharField(_("match"), max_length=256, blank=True,
+            help_text=_(
+                "Python <a href='https://docs.python.org/2/library/functions.html#eval'>expression</a> "
+                "that designates wheter a <tt>content_type</tt> object is related to this service "
+                "or not, always evaluates <tt>True</tt> when left blank. "
+                "Related instance can be instantiated with <tt>instance</tt> keyword or "
+                "<tt>content_type.model_name</tt>.</br>"
+                "<tt>&nbsp;databaseuser.type == 'MYSQL'</tt><br>"
+                "<tt>&nbsp;miscellaneous.active and miscellaneous.service.name.lower() == 'domain .es'</tt><br>"
+                "<tt>&nbsp;contractedplan.plan.name == 'association_fee''</tt><br>"
+                "<tt>&nbsp;instance.active</tt>"))
     handler_type = models.CharField(_("handler"), max_length=256, blank=True,
             help_text=_("Handler used for processing this Service. A handler "
                         "enables customized behaviour far beyond what options "
@@ -132,8 +143,16 @@ class Service(models.Model):
                         " membership fee or not"))
     # Pricing
     metric = models.CharField(_("metric"), max_length=256, blank=True,
-            help_text=_("Metric used to compute the pricing rate. "
-                        "Number of orders is used when left blank."))
+            help_text=_(
+                "Python <a href='https://docs.python.org/2/library/functions.html#eval'>expression</a> "
+                "used for obtinging the <i>metric value</i> for the pricing rate computation. "
+                "Number of orders is used when left blank. Related instance can be instantiated "
+                "with <tt>instance</tt> keyword or <tt>content_type.model_name</tt>.<br>"
+                "<tt>&nbsp;max((mailbox.resources.disk.allocated or 0) -1, 0)</tt><br>"
+                "<tt>&nbsp;miscellaneous.amount</tt><br>"
+                "<tt>&nbsp;max((account.resources.traffic.used or 0) -"
+                " getattr(account.miscellaneous.filter(is_active=True,"
+                " service__name='traffic prepay').last(), 'amount', 0), 0)</tt>"))
     nominal_price = models.DecimalField(_("nominal price"), max_digits=12,
             decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"), choices=settings.SERVICES_SERVICE_TAXES,

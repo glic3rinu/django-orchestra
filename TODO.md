@@ -161,3 +161,5 @@ textwrap.dedent( \\)
 
 * Disable menu on tests, fucking overlapping
 * service.name / verbose_name instead of .description ?
+
+* Bills can have sublines?

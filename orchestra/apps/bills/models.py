@@ -316,6 +316,7 @@ class BillSubline(models.Model):
     # TODO: order info for undoing
     line = models.ForeignKey(BillLine, verbose_name=_("bill line"), related_name='sublines')
     description = models.CharField(_("description"), max_length=256)
+    # TODO rename to subtotal
     total = models.DecimalField(max_digits=12, decimal_places=2)
     type = models.CharField(_("type"), max_length=16, choices=TYPES, default=OTHER)
     

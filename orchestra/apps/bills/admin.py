@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -26,23 +27,19 @@ PAYMENT_STATE_COLORS = {
 
 class BillLineInline(admin.TabularInline):
     model = BillLine
-    fields = ('description', 'rate', 'quantity', 'tax', 'subtotal', 'get_total')
-    readonly_fields = ('get_total',)
+    fields = ('description', 'rate', 'quantity', 'tax', 'subtotal', 'display_total')
+    readonly_fields = ('display_total',)
     
-    def get_readonly_fields(self, request, obj=None):
-        if obj and not obj.is_open:
-            return self.fields
-        return super(BillLineInline, self).get_readonly_fields(request, obj=obj)
-    
-    def has_add_permission(self, request):
-        if request.__bill__ and not request.__bill__.is_open:
-            return False
-        return super(BillLineInline, self).has_add_permission(request)
-    
-    def has_delete_permission(self, request, obj=None):
-        if obj and not obj.is_open:
-            return False
-        return super(BillLineInline, self).has_delete_permission(request, obj=obj)
+    def display_total(self, line):
+        total = line.get_total()
+        sublines = line.sublines.all()
+        if sublines:
+            content = '\n'.join(['%s: %s' % (sub.description, sub.total) for sub in sublines])
+            img = static('admin/img/icon_alert.gif')
+            return '<span title="%s">%s<img src="%s"></img></span>' % (content, str(total), img)
+        return total
+    display_total.short_description = _("Total")
+    display_total.allow_tags = True
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -51,6 +48,40 @@ class BillLineInline(admin.TabularInline):
         else:
             kwargs['widget'] = forms.TextInput(attrs={'size':'13'})
         return super(BillLineInline, self).formfield_for_dbfield(db_field, **kwargs)
+    
+    def get_queryset(self, request):
+        qs = super(BillLineInline, self).get_queryset(request)
+        return qs.prefetch_related('sublines')
+
+
+class ClosedBillLineInline(BillLineInline):
+    # TODO reimplement as nested inlines when upstream
+    #      https://code.djangoproject.com/ticket/9025
+    
+    fields = ('display_description', 'rate', 'quantity', 'tax', 'display_subtotal', 'display_total')
+    readonly_fields = fields
+    
+    def display_description(self, line):
+        descriptions = [line.description]
+        for subline in line.sublines.all():
+            descriptions.append('&nbsp;'*4+subline.description)
+        return '<br>'.join(descriptions)
+    display_description.short_description = _("Description")
+    display_description.allow_tags = True
+    
+    def display_subtotal(self, line):
+        subtotals = ['&nbsp;&nbsp;' + str(line.subtotal)]
+        for subline in line.sublines.all():
+            subtotals.append(str(subline.total))
+        return '<br>'.join(subtotals)
+    display_subtotal.short_description = _("Subtotal")
+    display_subtotal.allow_tags = True
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
@@ -62,7 +93,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     add_fields = ('account', 'type', 'is_open', 'due_on', 'comments')
     fieldsets = (
         (None, {
-            'fields': ('number', 'display_total', 'account_link', 'type',
+            'fields': ('number', 'type', 'account_link', 'display_total',
                        'display_payment_state', 'is_sent', 'due_on', 'comments'),
         }),
         (_("Raw"), {
@@ -74,7 +105,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_view_actions = [view_bill, download_bills, send_bills, close_bills]
     change_readonly_fields = ('account_link', 'type', 'is_open')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
-    inlines = [BillLineInline]
+    inlines = [BillLineInline, ClosedBillLineInline]
     
     created_on_display = admin_date('created_on')
     
@@ -134,9 +165,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return [action for action in actions if action.__name__ not in exclude]
     
     def get_inline_instances(self, request, obj=None):
-        # Make parent object available for inline.has_add_permission()
-        request.__bill__ = obj
-        return super(BillAdmin, self).get_inline_instances(request, obj=obj)
+        inlines = super(BillAdmin, self).get_inline_instances(request, obj=obj)
+        if obj and not obj.is_open:
+            return [inline for inline in inlines if not type(inline) == BillLineInline]
+        return [inline for inline in inlines if not type(inline) == ClosedBillLineInline]
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """

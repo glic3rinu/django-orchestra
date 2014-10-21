@@ -18,9 +18,12 @@ from .handlers import ServiceHandler
 
 class Plan(models.Model):
     name = models.CharField(_("plan"), max_length=128)
-    is_default = models.BooleanField(_("default"), default=False)
-    is_combinable = models.BooleanField(_("combinable"), default=True)
-    allow_multiple = models.BooleanField(_("allow multiple"), default=False)
+    is_default = models.BooleanField(_("default"), default=False,
+        help_text=_("Designates whether this plan is used by default or not."))
+    is_combinable = models.BooleanField(_("combinable"), default=True,
+        help_text=_("Designates whether this plan can be combined with other plans or not."))
+    allow_multiple = models.BooleanField(_("allow multiple"), default=False,
+        help_text=_("Designates whether this plan allow for multiple contractions."))
     
     def __unicode__(self):
         return self.name
@@ -120,10 +123,10 @@ class Service(models.Model):
             choices=ServiceHandler.get_plugin_choices())
     is_active = models.BooleanField(_("active"), default=True)
     ignore_superusers = models.BooleanField(_("ignore superusers"), default=True,
-            help_text=_("Designates whether superuser orders are marked as ignored by default or not"))
+            help_text=_("Designates whether superuser orders are marked as ignored by default or not."))
     # Billing
     billing_period = models.CharField(_("billing period"), max_length=16,
-            help_text=_("Renewal period for recurring invoicing"),
+            help_text=_("Renewal period for recurring invoicing."),
             choices=(
                 (NEVER, _("One time service")),
                 (MONTHLY, _("Monthly billing")),
@@ -158,8 +161,7 @@ class Service(models.Model):
     tax = models.PositiveIntegerField(_("tax"), choices=settings.SERVICES_SERVICE_TAXES,
             default=settings.SERVICES_SERVICE_DEFAUL_TAX)
     pricing_period = models.CharField(_("pricing period"), max_length=16,
-            help_text=_("Period used for calculating the metric used on the "
-                        "pricing rate"),
+            help_text=_("Time period that is used for computing the rate metric."),
             choices=(
                 (BILLING_PERIOD, _("Same as billing period")),
                 (MONTHLY, _("Monthly data")),
@@ -167,14 +169,14 @@ class Service(models.Model):
             ),
             default=BILLING_PERIOD)
     rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
-            help_text=_("Algorithm used to interprete the rating table"),
+            help_text=_("Algorithm used to interprete the rating table."),
             choices=(
                 (STEP_PRICE, _("Step price")),
                 (MATCH_PRICE, _("Match price")),
             ),
             default=STEP_PRICE)
     on_cancel = models.CharField(_("on cancel"), max_length=16,
-            help_text=_("Defines the cancellation behaviour of this service"),
+            help_text=_("Defines the cancellation behaviour of this service."),
             choices=(
                 (NOTHING, _("Nothing")),
                 (DISCOUNT, _("Discount")),
@@ -184,7 +186,7 @@ class Service(models.Model):
             default=DISCOUNT)
     payment_style = models.CharField(_("payment style"), max_length=16,
             help_text=_("Designates whether this service should be paid after "
-                        "consumtion (postpay/on demand) or prepaid"),
+                        "consumtion (postpay/on demand) or prepaid."),
             choices=(
                 (PREPAY, _("Prepay")),
                 (POSTPAY, _("Postpay (on demand)")),

@@ -33,7 +33,7 @@ ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
             'password': 'account.password',
             'is_main': 'True',
         },
-        _("Designates whether to creates a related system users with the same username and password or not."),
+        _("Designates whether to creates a related system user with the same username and password or not."),
     ),
     ('mailboxes.Mailbox',
         'name',

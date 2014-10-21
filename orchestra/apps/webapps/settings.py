@@ -196,6 +196,7 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTIO
 ])
 
 
+# TODO 
 WEBAPPS_WORDPRESSMU_BASE_URL = getattr(settings, 'WEBAPPS_WORDPRESSMU_BASE_URL',
     'http://blogs.example.com')
 

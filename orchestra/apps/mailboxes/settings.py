@@ -32,6 +32,7 @@ MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH = getattr(settings, 'MAILBOXES_VIRTUAL_ALIA
 MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN = getattr(settings, 'MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN', 
         'orchestra.lan')
 
+
 MAILBOXES_PASSWD_PATH = getattr(settings, 'MAILBOXES_PASSWD_PATH',
         '/etc/dovecot/passwd')
 

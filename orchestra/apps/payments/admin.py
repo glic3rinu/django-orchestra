@@ -2,9 +2,9 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ChangeViewActionsMixin, SelectPluginAdminMixin
+from orchestra.admin import ChangeViewActionsMixin, SelectPluginAdminMixin, ExtendedModelAdmin
 from orchestra.admin.utils import admin_colored, admin_link
-from orchestra.apps.accounts.admin import AccountAdminMixin
+from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 
 from . import actions
 from .methods import PaymentMethod
@@ -51,19 +51,47 @@ class TransactionInline(admin.TabularInline):
         return False
 
 
-class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdmin):
+class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'id', 'bill_link', 'account_link', 'source_link', 'display_state',
         'amount', 'process_link'
     )
     list_filter = ('source__method', 'state')
+    fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'account_link',
+                'bill_link',
+                'source_link',
+                'display_state',
+                'amount',
+                'currency',
+                'process_link'
+            )
+        }),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'bill',
+                'source',
+                'display_state',
+                'amount',
+                'currency',
+                'process'
+            )
+        }),
+    )
     actions = (
         actions.process_transactions, actions.mark_as_executed,
         actions.mark_as_secured, actions.mark_as_rejected
     )
     change_view_actions = actions
-    filter_by_account_fields = ['source']
-    readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link')
+    filter_by_account_fields = ('bill', 'source')
+    change_readonly_fields = ('amount', 'currency')
+    readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link', 'source_link')
     
     bill_link = admin_link('bill')
     source_link = admin_link('source')
@@ -93,7 +121,7 @@ class TransactionAdmin(ChangeViewActionsMixin, AccountAdminMixin, admin.ModelAdm
 class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     list_display = ('id', 'file_url', 'display_transactions', 'created_at')
     fields = ('data', 'file_url', 'created_at')
-    readonly_fields = ('file_url', 'display_transactions', 'created_at')
+    readonly_fields = ('data', 'file_url', 'display_transactions', 'created_at')
     inlines = [TransactionInline]
     actions = (actions.mark_process_as_executed, actions.abort, actions.commit)
     change_view_actions = actions

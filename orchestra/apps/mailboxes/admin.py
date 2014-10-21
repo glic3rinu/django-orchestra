@@ -1,4 +1,5 @@
 import copy
+from urlparse import parse_qs
 
 from django import forms
 from django.contrib import admin
@@ -25,18 +26,21 @@ class AutoresponseInline(admin.StackedInline):
         return super(AutoresponseInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
+class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'name', 'account_link', 'filtering', 'display_addresses'
     )
     list_filter = (HasAddressListFilter, 'filtering')
     add_fieldsets = (
         (None, {
-            'fields': ('account', 'name', 'password1', 'password2', 'filtering'),
+            'fields': ('account_link', 'name', 'password1', 'password2', 'filtering'),
         }),
         (_("Custom filtering"), {
             'classes': ('collapse',),
             'fields': ('custom_filtering',),
+        }),
+        (_("Addresses"), {
+            'fields': ('addresses',)
         }),
     )
     fieldsets = (
@@ -48,10 +52,10 @@ class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdm
             'fields': ('custom_filtering',),
         }),
         (_("Addresses"), {
-            'fields': ('addresses_field',)
+            'fields': ('addresses',)
         }),
     )
-    readonly_fields = ('account_link', 'display_addresses', 'addresses_field')
+    readonly_fields = ('account_link', 'display_addresses')
     change_readonly_fields = ('name',)
     add_form = MailboxCreationForm
     form = MailboxChangeForm
@@ -73,24 +77,15 @@ class MailboxAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdm
             fieldsets[1][1]['classes'] = fieldsets[0][1]['fields'] + ('open',)
         return fieldsets
     
-    def addresses_field(self, mailbox):
-        """ Address form field with "Add address" button """
-        account = mailbox.account
-        add_url = reverse('admin:mailboxes_address_add')
-        add_url += '?account=%d&mailboxes=%s' % (account.pk, mailbox.pk)
-        img = '<img src="/static/admin/img/icon_addlink.gif" width="10" height="10" alt="Add Another">'
-        onclick = 'onclick="return showAddAnotherPopup(this);"'
-        add_link = '<a href="{add_url}" {onclick}>{img} Add address</a>'.format(
-                add_url=add_url, onclick=onclick, img=img)
-        value = '%s<br><br>' % add_link
-        for pk, name, domain in mailbox.addresses.values_list('pk', 'name', 'domain__name'):
-            url = reverse('admin:mailboxes_address_change', args=(pk,))
-            name = '%s@%s' % (name, domain)
-            value += '<li><a href="%s">%s</a></li>' % (url, name)
-        value = '<ul>%s</ul>' % value
-        return mark_safe('<div style="padding-left: 10px;">%s</div>' % value)
-    addresses_field.short_description = _("Addresses")
-    addresses_field.allow_tags = True
+    def get_form(self, *args, **kwargs):
+        form = super(MailboxAdmin, self).get_form(*args, **kwargs)
+        form.modeladmin = self
+        return form
+    
+    def save_model(self, request, obj, form, change):
+        """ save hacky mailbox.addresses """
+        super(MailboxAdmin, self).save_model(request, obj, form, change)
+        obj.addresses = form.cleaned_data['addresses']
 
 
 class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
@@ -138,6 +133,15 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         """ Select related for performance """
         qs = super(AddressAdmin, self).get_queryset(request)
         return qs.select_related('domain')
+    
+    def get_fields(self, request, obj=None):
+        """ Remove mailboxes field when creating address from a popup i.e. from mailbox add form """
+        fields = super(AddressAdmin, self).get_fields(request, obj=obj)
+        if '_to_field' in parse_qs(request.META['QUERY_STRING']):
+            # Add address popup
+            fields = list(fields)
+            fields.remove('mailboxes')
+        return fields
 
 
 admin.site.register(Mailbox, MailboxAdmin)

@@ -5,7 +5,7 @@ from django.db import transaction
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.decorators import action_with_confirmation
 from orchestra.admin.utils import change_url
@@ -47,7 +47,11 @@ def mark_as_executed(modeladmin, request, queryset, extra_context={}):
     for trans in queryset:
         trans.mark_as_executed()
         modeladmin.log_change(request, trans, _("Executed"))
-    msg = _("%s selected transactions have been marked as executed.") % queryset.count()
+    num = len(queryset)
+    msg = ungettext(
+        _("One selected transaction has been marked as executed."),
+        _("%s selected transactions have been marked as executed.") % num,
+        num)
     modeladmin.message_user(request, msg)
 mark_as_executed.url_name = 'execute'
 mark_as_executed.verbose_name = _("Mark as executed")
@@ -59,7 +63,11 @@ def mark_as_secured(modeladmin, request, queryset):
     for trans in queryset:
         trans.mark_as_secured()
         modeladmin.log_change(request, trans, _("Secured"))
-    msg = _("%s selected transactions have been marked as secured.") % queryset.count()
+    num = len(queryset)
+    msg = ungettext(
+        _("One selected transaction has been marked as secured."),
+        _("%s selected transactions have been marked as secured.") % num,
+        num)
     modeladmin.message_user(request, msg)
 mark_as_secured.url_name = 'secure'
 mark_as_secured.verbose_name = _("Mark as secured")
@@ -71,7 +79,11 @@ def mark_as_rejected(modeladmin, request, queryset):
     for trans in queryset:
         trans.mark_as_rejected()
         modeladmin.log_change(request, trans, _("Rejected"))
-    msg = _("%s selected transactions have been marked as rejected.") % queryset.count()
+    num = len(queryset)
+    msg = ungettext(
+        _("One selected transaction has been marked as rejected."),
+        _("%s selected transactions have been marked as rejected.") % num,
+        num)
     modeladmin.message_user(request, msg)
 mark_as_rejected.url_name = 'reject'
 mark_as_rejected.verbose_name = _("Mark as rejected")
@@ -89,8 +101,8 @@ def _format_display_objects(modeladmin, request, queryset, related):
         attr, verb = related
         for related in getattr(obj.transactions, attr)():
             subobjects.append(
-                mark_safe('{0}: <a href="{1}">{2}</a> will be marked as {3}'.format(
-                    capfirst(related.get_type().lower()), change_url(related), related, verb))
+                mark_safe('Transaction: <a href="{}">{}</a> will be marked as {}'.format(
+                    change_url(related), related, verb))
             )
         objects.append(subobjects)
     return {'display_objects': objects}
@@ -106,7 +118,11 @@ def mark_process_as_executed(modeladmin, request, queryset):
     for process in queryset:
         process.mark_as_executed()
         modeladmin.log_change(request, process, _("Executed"))
-    msg = _("%s selected processes have been marked as executed.") % queryset.count()
+    num = len(queryset)
+    msg = ungettext(
+        _("One selected process has been marked as executed."),
+        _("%s selected processes have been marked as executed.") % num,
+        num)
     modeladmin.message_user(request, msg)
 mark_process_as_executed.url_name = 'executed'
 mark_process_as_executed.verbose_name = _("Mark as executed")
@@ -118,7 +134,11 @@ def abort(modeladmin, request, queryset):
     for process in queryset:
         process.abort()
         modeladmin.log_change(request, process, _("Aborted"))
-    msg = _("%s selected processes have been aborted.") % queryset.count()
+    num = len(queryset)
+    msg = ungettext(
+        _("One selected process has been aborted."),
+        _("%s selected processes have been aborted.") % num,
+        num)
     modeladmin.message_user(request, msg)
 abort.url_name = 'abort'
 abort.verbose_name = _("Abort")
@@ -130,7 +150,11 @@ def commit(modeladmin, request, queryset):
     for trans in queryset:
         trans.mark_as_rejected()
         modeladmin.log_change(request, trans, _("Rejected"))
-    msg = _("%s selected transactions have been marked as rejected.") % queryset.count()
+    num = len(queryset)
+    msg = ungettext(
+        _("One selected transaction has been marked as rejected."),
+        _("%s selected transactions have been marked as rejected.") % num,
+        num)
     modeladmin.message_user(request, msg)
 commit.url_name = 'commit'
 commit.verbose_name = _("Commit")

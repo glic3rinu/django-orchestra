@@ -41,7 +41,7 @@ class ContractedPlan(models.Model):
         return str(self.plan)
     
     def clean(self):
-        if not self.pk and not self.plan.allow_multipls:
+        if not self.pk and not self.plan.allow_multiples:
             if ContractedPlan.objects.filter(plan=self.plan, account=self.account).exists():
                 raise ValidationError("A contracted plan for this account already exists")
 

@@ -69,18 +69,24 @@ class OrderQuerySet(models.QuerySet):
             for service, orders in services.iteritems():
                 if not service.rates.exists():
                     continue
+                ini = datetime.date.max
                 end = datetime.date.min
                 bp = None
                 for order in orders:
                     bp = service.handler.get_billing_point(order, **options)
                     end = max(end, bp)
-                # FIXME exclude cancelled except cancelled and billed > ini
-                qs = qs | Q(
-                    Q(service=service, account=account_id, registered_on__lt=end) &
-                        Q(Q(billed_until__isnull=True) | Q(billed_until__lt=end))
+                    ini = min(ini, order.billed_until or order.registered_on)
+                qs |= Q(
+                    Q(service=service, account=account_id, registered_on__lt=end) & Q(
+                        Q(billed_until__isnull=True) | Q(billed_until__lt=end)
+                    ) & Q(
+                        Q(cancelled_on__isnull=True) | Q(cancelled_on__gt=ini)
+                    )
                 )
+        if not  qs:
+            return self.model.objects.none()
         ids = self.values_list('id', flat=True)
-        return self.model.objects.filter(qs).exclude(id__in=ids, ignore=True)
+        return self.model.objects.filter(qs).exclude(id__in=ids)
     
     def pricing_orders(self, ini, end):
         return self.filter(billed_until__isnull=False, billed_until__gt=ini,

@@ -15,10 +15,9 @@ from .models import Order, MetricStorage
 
 class OrderAdmin(ChangeListDefaultFilter, AccountAdminMixin, admin.ModelAdmin):
     list_display = (
-        'id', 'service', 'account_link', 'content_object_link',
+        'id', 'service_link', 'account_link', 'content_object_link',
         'display_registered_on', 'display_billed_until', 'display_cancelled_on'
     )
-    list_display_links = ('id', 'service')
     list_filter = (ActiveOrderListFilter, BilledOrderListFilter, IgnoreOrderListFilter, 'service',)
     default_changelist_filters = (
         ('ignore', '0'),
@@ -26,6 +25,7 @@ class OrderAdmin(ChangeListDefaultFilter, AccountAdminMixin, admin.ModelAdmin):
     actions = (BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored)
     date_hierarchy = 'registered_on'
     
+    service_link = admin_link('service')
     content_object_link = admin_link('content_object', order=False)
     display_registered_on = admin_date('registered_on')
     display_cancelled_on = admin_date('cancelled_on')

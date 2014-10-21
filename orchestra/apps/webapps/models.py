@@ -19,8 +19,7 @@ def settings_to_choices(choices):
 
 class WebApp(models.Model):
     """ Represents a web application """
-    name = models.CharField(_("name"), max_length=128,
-            validators=[validators.validate_name])
+    name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name])
     type = models.CharField(_("type"), max_length=32,
             choices=settings_to_choices(settings.WEBAPPS_TYPES),
             default=settings.WEBAPPS_DEFAULT_TYPE)

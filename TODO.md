@@ -158,3 +158,6 @@ textwrap.dedent( \\)
 
 * better modeling of the interdependency between webapps and websites (settings)
 * webapp options cfig agnostic
+
+* Disable menu on tests, fucking overlapping
+* service.name / verbose_name instead of .description ?

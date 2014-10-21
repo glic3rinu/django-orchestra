@@ -74,3 +74,7 @@ def validate_password(value):
     except ValueError, message:
         raise ValidationError("Password %s." % str(message)[3:])
 
+
+def validate_url_path(value):
+    if not re.match(r'^\/[/.a-zA-Z0-9-]*$', value):
+        raise ValidationError(_('"%s" is not a valid URL path.') % value)

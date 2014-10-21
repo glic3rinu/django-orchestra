@@ -61,4 +61,4 @@ def compute_resource_usage(data):
             has_result = True
         else:
             raise NotImplementedError("%s support not implemented" % data.period)
-    return result/resource.scale if has_result else None
+    return result/resource.get_scale() if has_result else None

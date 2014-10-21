@@ -1,12 +1,12 @@
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
-from django.core import validators
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
+from orchestra.core import validators
 from orchestra.models import queryset, fields
 
 from . import helpers
@@ -36,8 +36,7 @@ class Resource(models.Model):
     name = models.CharField(_("name"), max_length=32,
             help_text=_('Required. 32 characters or fewer. Lowercase letters, '
                         'digits and hyphen only.'),
-            validators=[validators.RegexValidator(r'^[a-z0-9_\-]+$',
-                        _('Enter a valid name.'), 'invalid')])
+            validators=[validators.validate_name])
     verbose_name = models.CharField(_("verbose name"), max_length=256)
     content_type = models.ForeignKey(ContentType,
             help_text=_("Model where this resource will be hooked."))
@@ -57,7 +56,7 @@ class Resource(models.Model):
                    "For example GB, KB or subscribers"))
     scale = models.PositiveIntegerField(_("scale"),
             help_text=_("Scale in which this resource monitoring resoults should "
-                        "be prorcessed to match with unit."))
+                        "be prorcessed to match with unit. e.g. <tt>10**9</tt>"))
     disable_trigger = models.BooleanField(_("disable trigger"), default=False,
             help_text=_("Disables monitors exeeded and recovery triggers"))
     crontab = models.ForeignKey(CrontabSchedule, verbose_name=_("crontab"),
@@ -113,6 +112,9 @@ class Resource(models.Model):
             task='resources.Monitor',
             args=[self.pk]
         ).delete()
+    
+    def get_scale(self):
+        return eval(self.scale)
 
 
 class ResourceData(models.Model):

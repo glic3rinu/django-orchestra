@@ -11,11 +11,14 @@ from .models import Address, Mailbox
 
 class MailboxForm(forms.ModelForm):
     """ hacky form for adding reverse M2M form field for Mailbox.addresses """
+    # TODO keep track of this ticket for future reimplementation
+    #      https://code.djangoproject.com/ticket/897
     addresses = forms.ModelMultipleChoiceField(queryset=Address.objects, required=False,
             widget=widgets.FilteredSelectMultiple(verbose_name=_('Pizzas'), is_stacked=False))
     
     def __init__(self, *args, **kwargs):
         super(MailboxForm, self).__init__(*args, **kwargs)
+        # Hack the widget in order to display add button
         field = AttrDict(**{
             'to': Address,
             'get_related_field': lambda: AttrDict(name='id'),
@@ -23,6 +26,8 @@ class MailboxForm(forms.ModelForm):
         widget = self.fields['addresses'].widget
         self.fields['addresses'].widget = widgets.RelatedFieldWidgetWrapper(widget, field,
                 self.modeladmin.admin_site, can_add_related=True)
+        
+        # Filter related addresses by account
         old_render = self.fields['addresses'].widget.render
         def render(*args, **kwargs):
             output = old_render(*args, **kwargs)
@@ -42,7 +47,6 @@ class MailboxForm(forms.ModelForm):
         if filtering == self._meta.model.CUSTOM and not custom_filtering:
             raise forms.ValidationError(_("You didn't provide any custom filtering"))
         return custom_filtering
-
 
 
 class MailboxChangeForm(UserChangeForm, MailboxForm):
@@ -66,4 +70,3 @@ class AddressForm(forms.ModelForm):
         cleaned_data = super(AddressForm, self).clean()
         if not cleaned_data.get('mailboxes', True) and not cleaned_data['forward']:
             raise forms.ValidationError(_("Mailboxes or forward address should be provided"))
-

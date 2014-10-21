@@ -48,6 +48,15 @@ class Contact(models.Model):
     
     def __unicode__(self):
         return self.short_name
+    
+    def clean(self):
+        self.short_name = self.short_name.strip()
+        self.full_name = self.full_name.strip()
+        self.phone = self.phone.strip()
+        self.phone2 = self.phone2.strip()
+        self.address = self.address.strip()
+        self.city = self.city.strip()
+        self.country = self.country.strip()
 
 
 accounts.register(Contact)

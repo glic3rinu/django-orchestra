@@ -58,6 +58,10 @@ class Account(auth.AbstractBaseUser):
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
     
+    def clean(self):
+        self.first_name = self.first_name.strip()
+        self.last_name = self.last_name.strip()
+    
     def disable(self):
         self.is_active = False
         self.save(update_fields=['is_active'])

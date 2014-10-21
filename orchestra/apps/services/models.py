@@ -27,6 +27,9 @@ class Plan(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    def clean(self):
+        self.name = self.name.strip()
 
 
 class ContractedPlan(models.Model):
@@ -215,6 +218,7 @@ class Service(models.Model):
         return ServiceHandler(self)
     
     def clean(self):
+        self.description = self.description.strip()
         content_type = self.handler.get_content_type()
         if self.content_type != content_type:
             ct = str(content_type)

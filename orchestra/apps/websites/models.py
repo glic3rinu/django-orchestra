@@ -78,7 +78,8 @@ class WebsiteOption(models.Model):
 class Content(models.Model):
     webapp = models.ForeignKey('webapps.WebApp', verbose_name=_("web application"))
     website = models.ForeignKey('websites.Website', verbose_name=_("web site"))
-    path = models.CharField(_("path"), max_length=256, blank=True)
+    path = models.CharField(_("path"), max_length=256, blank=True,
+            validators=[validators.validate_url_path])
     
     class Meta:
         unique_together = ('website', 'path')

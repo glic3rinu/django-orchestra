@@ -2,6 +2,7 @@ import re
 import textwrap
 
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
 from orchestra.apps.resources import ServiceMonitor
@@ -135,6 +136,7 @@ class MailmanBackend(ServiceController):
 class MailmanTraffic(ServiceMonitor):
     model = 'lists.List'
     resource = ServiceMonitor.TRAFFIC
+    verbose_name = _("Mailman traffic")
     
     def prepare(self):
         current_date = timezone.localtime(self.current_date)
@@ -167,4 +169,19 @@ class MailmanTraffic(ServiceMonitor):
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
             'last_date': last_date.strftime("%b %d %H:%M:%S"),
+        }
+
+
+class MailmanTraffic(ServiceMonitor):
+    model = 'lists.List'
+    verbose_name = _("Mailman subscribers")
+    
+    def monitor(self, mail_list):
+        context = self.get_context(mail_list)
+        self.append('echo %(object_id)i $(list_members %(list_name)s | wc -l)' % context)
+    
+    def get_context(self, mail_list):
+        return {
+            'list_name': mail_list.name,
+            'object_id': mail_list.pk,
         }

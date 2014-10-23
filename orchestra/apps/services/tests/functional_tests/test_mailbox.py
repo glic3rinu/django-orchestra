@@ -50,7 +50,7 @@ class MailboxBillingTest(BaseBillingTest):
             tax=0,
             nominal_price=10
         )
-        plan = Plan.objects.create(is_default=True, name='Default')
+        plan, __ = Plan.objects.get_or_create(is_default=True, name='Default')
         service.rates.create(plan=plan, quantity=1, price=10)
         return service
     
@@ -68,6 +68,7 @@ class MailboxBillingTest(BaseBillingTest):
         return self.resource
     
     def allocate_disk(self, mailbox, value):
+        # TODO get_or_Create return created
         data = ResourceData.get_or_create(mailbox, self.resource)
         data.allocated = value
         data.save()

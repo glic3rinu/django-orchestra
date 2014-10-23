@@ -53,8 +53,9 @@ class SystemUser(models.Model):
         except type(self).account.field.rel.to.DoesNotExist:
             return self.is_active
     
-    @property
+    @cached_property
     def is_main(self):
+        # TODO on account delete
         # On account creation main_systemuser_id is still None
         if self.account.main_systemuser_id:
             return self.account.main_systemuser_id == self.pk

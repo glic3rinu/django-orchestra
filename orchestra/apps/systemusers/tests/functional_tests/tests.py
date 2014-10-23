@@ -223,6 +223,9 @@ class RESTSystemUserMixin(SystemUserMixin):
     def change_password(self, username, password):
         user = self.rest.systemusers.retrieve(username=username).get()
         user.set_password(password)
+    
+    def delete_account(self, username):
+        self.rest.account.delete()
 
 
 class AdminSystemUserMixin(SystemUserMixin):
@@ -328,22 +331,14 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         self.assertNotEqual(url, self.selenium.current_url)
         
         account = Account.objects.get(username=account_username)
-        self.addCleanup(self.delete, account_username)
+        self.addCleanup(self.delete_account, account_username)
         self.assertEqual(0, sshr(self.MASTER_SERVER, "id %s" % account.username).return_code)
     
     @snapshot_on_error
     def test_delete_account(self):
         home = self.account.main_systemuser.get_home()
-        
-        delete = reverse('admin:accounts_account_delete', args=(self.account.pk,))
-        url = self.live_server_url + delete
-        self.selenium.get(url)
-        confirmation = self.selenium.find_element_by_name('post')
-        confirmation.submit()
-        self.assertNotEqual(url, self.selenium.current_url)
-        
+        self.admin_delete(self.account)
         self.assertRaises(CommandError, run, 'ls %s' % home, display=False)
-        
         # Recreate a fucking fake account for test cleanup
         self.account = self.create_account(username=self.account.username, superuser=True)
         self.selenium.delete_all_cookies()

@@ -44,4 +44,4 @@ def running_syncdb():
 
 
 def database_ready():
-    return not running_syncdb() and 'setuppostgres' not in sys.argv
+    return not running_syncdb() and 'setuppostgres' not in sys.argv and 'test' not in sys.argv

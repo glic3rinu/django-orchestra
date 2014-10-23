@@ -17,7 +17,7 @@ class SystemUserViewSet(AccountApiMixin, SetPasswordApiMixin, viewsets.ModelView
         user = self.get_object()
         if user.is_main:
             raise exceptions.PermissionDenied(_("Main system user can not be deleted."))
-        super(SystemUserViewSet, self).destroy(request, pk=pk)
+        return super(SystemUserViewSet, self).destroy(request, pk=pk)
 
 
 router.register(r'systemusers', SystemUserViewSet)

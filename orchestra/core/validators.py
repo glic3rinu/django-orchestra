@@ -76,5 +76,5 @@ def validate_password(value):
 
 
 def validate_url_path(value):
-    if not re.match(r'^\/[/.a-zA-Z0-9-]*$', value):
+    if not re.match(r'^\/[/.a-zA-Z0-9-_]*$', value):
         raise ValidationError(_('"%s" is not a valid URL path.') % value)

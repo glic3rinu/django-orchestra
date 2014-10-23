@@ -217,9 +217,9 @@ class MaildirDisk(ServiceMonitor):
         )
     
     def get_context(self, mailbox):
-        context = MailSystemUserBackend().get_context(mailbox)
-        context.update({
-            'rr_path': os.path.join(context['home'], 'Maildir/maildirsize'),
+        home = mailbox.get_home()
+        context = {
+            'maildir_path': os.path.join(home, 'Maildir/maildirsize'),
             'object_id': mailbox.pk
-        })
+        }
         return context

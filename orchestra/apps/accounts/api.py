@@ -26,7 +26,7 @@ class AccountViewSet(SetPasswordApiMixin, viewsets.ModelViewSet):
         # TODO reimplement in permissions
         if not request.user.is_superuser:
             raise exceptions.PermissionDenied(_("Accounts can not be deleted."))
-        super(AccountViewSet, self).destroy(request, pk=pk)
+        return super(AccountViewSet, self).destroy(request, pk=pk)
 
 
 router.register(r'accounts', AccountViewSet)

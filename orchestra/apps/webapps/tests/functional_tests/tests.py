@@ -76,7 +76,7 @@ class StaticWebAppMixin(object):
 
 class PHPFcidWebAppMixin(StaticWebAppMixin):
     backend = backends.phpfcgid.PHPFcgidBackend
-    type_value = 'php5'
+    type_value = 'php5.2'
     token = random_ascii(100)
     page = (
         'index.php',

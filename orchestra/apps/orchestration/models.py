@@ -128,6 +128,10 @@ class BackendOperation(models.Model):
         # instance should maintain any dynamic attribute until backend execution
         # deep copy is prefered over copy otherwise objects will share same atributes (queryset cache)
         op.instance = copy.deepcopy(instance)
+        if action == cls.DELETE:
+            # Heuristic, running get_context will prevent most of related objects do not exist errors
+            if hasattr(backend, 'get_context'):
+                backend().get_context(op.instance)
         return op
     
     @classmethod

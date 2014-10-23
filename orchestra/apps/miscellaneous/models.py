@@ -3,11 +3,16 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
+from orchestra.core.validators import validate_name
 
 
 class MiscService(models.Model):
-    name = models.CharField(_("name"), max_length=256)
-    description = models.TextField(_("description"), blank=True)
+    name = models.CharField(_("name"), max_length=32, unique=True, validators=[validate_name],
+            help_text=_("Raw name used for internal referenciation, i.e. service match definition"))
+    verbose_name = models.CharField(_("verbose name"), max_length=256, blank=True,
+            help_text=_("Human readable name"))
+    description = models.TextField(_("description"), blank=True,
+            help_text=_("Optional description"))
     has_amount = models.BooleanField(_("has amount"), default=False,
             help_text=_("Designates whether this service has <tt>amount</tt> "
                         "property or not."))
@@ -17,6 +22,12 @@ class MiscService(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    def clean(self):
+        self.verbose_name = self.verbose_name.strip()
+    
+    def get_verbose_name(self):
+        return self.verbose_name or self.name
 
 
 class Miscellaneous(models.Model):

@@ -180,6 +180,7 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
                       'description')
         }),
     )
+    list_select_related = ('queue', 'owner', 'creator')
     
     class Media:
         css = {
@@ -285,11 +286,6 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
         data = request.POST.get("data")
         data_formated = markdown(strip_tags(data))
         return HttpResponse(data_formated)
-    
-    def get_queryset(self, request):
-        """ Order by structured name and imporve performance """
-        qs = super(TicketAdmin, self).get_queryset(request)
-        return qs.select_related('queue', 'owner', 'creator')
 
 
 class QueueAdmin(admin.ModelAdmin):

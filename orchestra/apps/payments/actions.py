@@ -31,8 +31,18 @@ def process_transactions(modeladmin, request, queryset):
     if not processes:
         return
     opts = modeladmin.model._meta
+    num = len(queryset)
     context = {
-        'title': _("Huston, be advised"),
+        'title': ungettext(
+            _("Selected transaction has been processed."),
+            _("%s Selected transactions have been processed.") % num,
+            num),
+        'content_message': ungettext(
+            _("The following transaction process has been generated, "
+              "you may want to save it on your computer now."),
+            _("The following %s transaction processes have been generated, "
+              "you may want to save it on your computer now.") % len(processes),
+            len(processes)),
         'action_name': _("Process"),
         'processes': processes,
         'opts': opts,

@@ -181,7 +181,7 @@ class Order(models.Model):
             if metric is not None:
                 MetricStorage.store(self, metric)
             metric = ', metric:{}'.format(metric)
-        description = "{}: {}".format(handler.description, str(instance))
+        description = handler.get_order_description(instance)
         logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
                     id=self.id, description=description, metric=metric))
         if self.description != description:

@@ -296,9 +296,12 @@ class AdminDatabaseMixin(DatabaseTestMixin):
         self.selenium.get(url)
         
         user = DatabaseUser.objects.get(username=username, type=self.db_type)
-        users_input = self.selenium.find_element_by_id('id_users')
-        users_select = Select(users_input)
+        users_from = self.selenium.find_element_by_id('id_users_from')
+        users_select = Select(users_from)
         users_select.select_by_value(str(user.pk))
+        
+        add_user = self.selenium.find_element_by_id('id_users_add_link')
+        add_user.click()
         
         save = self.selenium.find_element_by_name('_save')
         save.submit()
@@ -310,13 +313,23 @@ class AdminDatabaseMixin(DatabaseTestMixin):
         url = self.live_server_url + change_url(database)
         self.selenium.get(url)
         
+        # remove user "username"
         user = DatabaseUser.objects.get(username=username, type=self.db_type)
-        users_input = self.selenium.find_element_by_id('id_users')
-        users_select = Select(users_input)
-        users_select.deselect_by_value(str(user.pk))
-        
-        user = DatabaseUser.objects.get(username=username2, type=self.db_type)
+        users_to = self.selenium.find_element_by_id('id_users_to')
+        users_select = Select(users_to)
         users_select.select_by_value(str(user.pk))
+        remove_user = self.selenium.find_element_by_id('id_users_remove_link')
+        remove_user.click()
+        time.sleep(0.2)
+        
+        # add user "username2"
+        user = DatabaseUser.objects.get(username=username2, type=self.db_type)
+        users_from = self.selenium.find_element_by_id('id_users_from')
+        users_select = Select(users_from)
+        users_select.select_by_value(str(user.pk))
+        add_user = self.selenium.find_element_by_id('id_users_add_link')
+        add_user.click()
+        time.sleep(0.2)
         
         save = self.selenium.find_element_by_name('_save')
         save.submit()

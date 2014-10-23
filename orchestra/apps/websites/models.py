@@ -50,6 +50,17 @@ class Website(models.Model):
         if self.port == 443:
             return 'https'
         raise TypeError('No protocol for port "%s"' % self.port)
+    
+    def get_absolute_url(self):
+        domain = self.domains.first()
+        if domain:
+            return '%s://%s' % (self.protocol, domain)
+    
+    def get_username(self):
+        return self.account.username
+    
+    def get_groupname(self):
+        return self.get_username()
 
 
 class WebsiteOption(models.Model):
@@ -93,6 +104,11 @@ class Content(models.Model):
     def clean(self):
         if not self.path.startswith('/'):
             self.path = '/' + self.path
+    
+    def get_absolute_url(self):
+        domain = self.website.domains.first()
+        if domain:
+            return '%s://%s%s' % (self.website.protocol, domain, self.path)
 
 
 services.register(Website)

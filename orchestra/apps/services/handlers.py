@@ -62,6 +62,16 @@ class ServiceHandler(plugins.Plugin):
             }
             return eval(self.metric, safe_locals)
     
+    def get_order_description(self, instance):
+        safe_locals = {
+            'instance': instance,
+            'obj': instance,
+            instance._meta.model_name: instance,
+        }
+        if not self.order_description:
+            return '%s: %s' % (self.description, instance)
+        return eval(self.order_description, safe_locals)
+    
     def get_billing_point(self, order, bp=None, **options):
         not_cachable = self.billing_point == self.FIXED_DATE and options.get('fixed_point')
         if not_cachable or bp is None:

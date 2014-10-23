@@ -10,7 +10,7 @@ from .models import MiscService, Miscellaneous
 
 
 class MiscServiceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'num_instances')
+    list_display = ('name', 'verbose_name', 'num_instances')
     
     def num_instances(self, misc):
         """ return num slivers as a link to slivers changelist view """

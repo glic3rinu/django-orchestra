@@ -91,7 +91,7 @@ class Bind9MasterDomainBackend(ServiceController):
             'zone_path': settings.DOMAINS_ZONE_PATH % {'name': domain.name},
             'subdomains': domain.subdomains.all(),
             'banner': self.get_banner(),
-            'slaves': '; '.join(self.get_slaves(domain)) or '"none"',
+            'slaves': '; '.join(self.get_slaves(domain)) or '',
         }
         context.update({
             'conf_path': settings.DOMAINS_MASTERS_PATH,
@@ -133,7 +133,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
             'name': domain.name,
             'banner': self.get_banner(),
             'subdomains': domain.subdomains.all(),
-            'masters': '; '.join(self.get_masters(domain)) or '"none"',
+            'masters': '; '.join(self.get_masters(domain)) or '',
         }
         context.update({
             'conf_path': settings.DOMAINS_SLAVES_PATH,

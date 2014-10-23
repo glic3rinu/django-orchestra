@@ -46,8 +46,8 @@ class WebAppServiceMixin(object):
     
     def get_context(self, webapp):
         return {
-            'user': webapp.account.username,
-            'group': webapp.account.username,
+            'user': webapp.get_username(),
+            'group': webapp.get_groupname(),
             'app_name': webapp.name,
             'type': webapp.type,
             'app_path': webapp.get_path().rstrip('/'),

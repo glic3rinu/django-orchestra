@@ -13,10 +13,10 @@ class WebsiteOptionInline(admin.TabularInline):
     model = WebsiteOption
     extra = 1
     
-    class Media:
-        css = {
-            'all': ('orchestra/css/hide-inline-id.css',)
-        }
+#    class Media:
+#        css = {
+#            'all': ('orchestra/css/hide-inline-id.css',)
+#        }
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """

@@ -43,7 +43,7 @@ class BaseTrafficBillingTest(BaseBillingTest):
             period=Resource.MONTHLY_SUM,
             verbose_name='Account Traffic',
             unit='GB',
-            scale=10**9,
+            scale='10**9',
             on_demand=True,
             monitors='FTPTraffic',
         )

@@ -70,11 +70,15 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     display_addresses.allow_tags = True
     
     def get_fieldsets(self, request, obj=None):
-        """ not collapsed filtering when exists """
         fieldsets = super(MailboxAdmin, self).get_fieldsets(request, obj=obj)
         if obj and obj.filtering == obj.CUSTOM:
+            # not collapsed filtering when exists
             fieldsets = copy.deepcopy(fieldsets)
             fieldsets[1][1]['classes'] = fieldsets[0][1]['fields'] + ('open',)
+        elif '_to_field' in parse_qs(request.META['QUERY_STRING']):
+            # remove address from popup
+            fieldsets = list(copy.deepcopy(fieldsets))
+            fieldsets.pop(-1)
         return fieldsets
     
     def get_form(self, *args, **kwargs):

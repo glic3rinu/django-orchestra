@@ -43,6 +43,12 @@ class List(models.Model):
     
     def set_password(self, password):
         self.password = password
+    
+    def get_absolute_url(self):
+        context = {
+            'name': self.name
+        }
+        return settings.LISTS_LIST_URL % context
 
 
 services.register(List)

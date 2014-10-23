@@ -52,6 +52,12 @@ class WebApp(models.Model):
             'app_name': self.name,
         }
         return settings.WEBAPPS_BASE_ROOT % context
+    
+    def get_username(self):
+        return self.account.username
+    
+    def get_groupname(self):
+        return self.get_username()
 
 
 class WebAppOption(models.Model):

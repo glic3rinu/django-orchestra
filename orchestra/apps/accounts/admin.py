@@ -63,6 +63,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     change_form_template = 'admin/accounts/account/change_form.html'
     actions = [disable]
     change_view_actions = actions
+    list_select_related = ('billcontact',)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -98,12 +99,6 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
                 fieldsets = list(fieldsets)
                 fieldsets.insert(1, (_("Related services"), {'fields': fields}))
         return fieldsets
-    
-    def get_queryset(self, request):
-        """ Select related for performance """
-        qs = super(AccountAdmin, self).get_queryset(request)
-        related = ('invoicecontact',)
-        return qs.select_related(*related)
     
     def save_model(self, request, obj, form, change):
         super(AccountAdmin, self).save_model(request, obj, form, change)
@@ -152,6 +147,7 @@ class AccountAdminMixin(object):
     change_list_template = 'admin/accounts/account/change_list.html'
     change_form_template = 'admin/accounts/account/change_form.html'
     account = None
+    list_select_related = ('account',)
     
     def account_link(self, instance):
         account = instance.account if instance.pk else self.account
@@ -166,11 +162,6 @@ class AccountAdminMixin(object):
         if obj:
             self.account = obj.account
         return super(AccountAdminMixin, self).get_readonly_fields(request, obj=obj)
-    
-    def get_queryset(self, request):
-        """ Select related for performance """
-        qs = super(AccountAdminMixin, self).get_queryset(request)
-        return qs.select_related('account')
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Filter by account """

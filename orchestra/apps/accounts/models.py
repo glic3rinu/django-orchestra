@@ -17,6 +17,8 @@ class Account(auth.AbstractBaseUser):
             help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])
+    main_systemuser = models.ForeignKey(settings.ACCOUNTS_SYSTEMUSER_MODEL, null=True,
+            related_name='accounts_main')
     first_name = models.CharField(_("first name"), max_length=30, blank=True)
     last_name = models.CharField(_("last name"), max_length=30, blank=True)
     email = models.EmailField(_('email address'), help_text=_("Used for password recovery"))
@@ -50,13 +52,21 @@ class Account(auth.AbstractBaseUser):
     def is_staff(self):
         return self.is_superuser
     
-    @property
-    def main_systemuser(self):
-        return self.systemusers.get(is_main=True)
+#    @property
+#    def main_systemuser(self):
+#        return self.systemusers.get(is_main=True)
     
     @classmethod
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
+    
+    def save(self, *args, **kwargs):
+        created = not self.pk
+        super(Account, self).save(*args, **kwargs)
+        if created:
+            self.main_systemuser = self.systemusers.create(account=self, username=self.username,
+                    password=self.password)
+            self.save(update_fields=['main_systemuser'])
     
     def clean(self):
         self.first_name = self.first_name.strip()
@@ -124,15 +134,17 @@ class Account(auth.AbstractBaseUser):
         if self.is_active and self.is_superuser:
             return True
         return auth._user_has_module_perms(self, app_label)
-
+    
     def get_related_passwords(self):
-        related = []
-        for model, key, kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
-            if 'password' not in kwargs:
+        related = [
+            self.main_systemuser,
+        ]
+        for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
+            if 'password' not in related_kwargs:
                 continue
             model = get_model(model)
             kwargs = {
-                key: eval(kwargs[key], {'account': self})
+                key: eval(related_kwargs[key], {'account': self})
             }
             try:
                 rel = model.objects.get(account=self, **kwargs)

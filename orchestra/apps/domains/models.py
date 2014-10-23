@@ -42,6 +42,9 @@ class Domain(models.Model):
         # don't cache, don't replace by top_id
         return not bool(self.top)
     
+    def get_absolute_url(self):
+        return 'http://%s' % self.name
+    
     def get_records(self):
         """ proxy method, needed for input validation, see helpers.domain_for_validation """
         return self.records.all()

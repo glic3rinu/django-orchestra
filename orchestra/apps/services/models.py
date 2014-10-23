@@ -10,6 +10,7 @@ from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import caches, services, accounts
+from orchestra.core.validators import validate_name
 from orchestra.models import queryset
 
 from . import settings, rating
@@ -17,7 +18,8 @@ from .handlers import ServiceHandler
 
 
 class Plan(models.Model):
-    name = models.CharField(_("plan"), max_length=128)
+    name = models.CharField(_("name"), max_length=32, unique=True, validators=[validate_name])
+    verbose_name = models.CharField(_("verbose_name"), max_length=128, blank=True)
     is_default = models.BooleanField(_("default"), default=False,
         help_text=_("Designates whether this plan is used by default or not."))
     is_combinable = models.BooleanField(_("combinable"), default=True,
@@ -29,7 +31,10 @@ class Plan(models.Model):
         return self.name
     
     def clean(self):
-        self.name = self.name.strip()
+        self.verbose_name = self.verbose_name.strip()
+    
+    def get_verbose_name(self):
+        return self.verbose_name or self.name
 
 
 class ContractedPlan(models.Model):
@@ -147,6 +152,12 @@ class Service(models.Model):
     is_fee = models.BooleanField(_("fee"), default=False,
             help_text=_("Designates whether this service should be billed as "
                         " membership fee or not"))
+    order_description = models.CharField(_("Order description"), max_length=128, blank=True,
+            help_text=_(
+                "Python <a href='https://docs.python.org/2/library/functions.html#eval'>expression</a> "
+                "used for generating the description for the bill lines of this services.<br>"
+                "Defaults to <tt>'%s: %s' % (handler.description, instance)</tt>"
+            ))
     # Pricing
     metric = models.CharField(_("metric"), max_length=256, blank=True,
             help_text=_(

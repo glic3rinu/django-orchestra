@@ -92,16 +92,13 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_by_account_fields = ('bill', 'source')
     change_readonly_fields = ('amount', 'currency')
     readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link', 'source_link')
+    list_select_related = ('account', 'source', 'bill__account')
     
     bill_link = admin_link('bill')
     source_link = admin_link('source')
     process_link = admin_link('process', short_description=_("proc"))
     account_link = admin_link('bill__account')
     display_state = admin_colored('state', colors=STATE_COLORS)
-    
-    def get_queryset(self, request):
-        qs = super(TransactionAdmin, self).get_queryset(request)
-        return qs.select_related('source', 'bill__account')
     
     def get_change_view_actions(self, obj=None):
         actions = super(TransactionAdmin, self).get_change_view_actions()

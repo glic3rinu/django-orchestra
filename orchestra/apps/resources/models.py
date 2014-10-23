@@ -8,9 +8,12 @@ from djcelery.models import PeriodicTask, CrontabSchedule
 
 from orchestra.core import validators
 from orchestra.models import queryset, fields
+from orchestra.utils.paths import get_project_root
+from orchestra.utils.system import run
 
 from . import helpers
 from .backends import ServiceMonitor
+from .validators import validate_scale
 
 
 class ResourceQuerySet(models.QuerySet):
@@ -34,16 +37,15 @@ class Resource(models.Model):
     _related = set() # keeps track of related models for resource cleanup
     
     name = models.CharField(_("name"), max_length=32,
-            help_text=_('Required. 32 characters or fewer. Lowercase letters, '
-                        'digits and hyphen only.'),
+            help_text=_("Required. 32 characters or fewer. Lowercase letters, "
+                        "digits and hyphen only."),
             validators=[validators.validate_name])
     verbose_name = models.CharField(_("verbose name"), max_length=256)
     content_type = models.ForeignKey(ContentType,
             help_text=_("Model where this resource will be hooked."))
     period = models.CharField(_("period"), max_length=16, choices=PERIODS,
             default=LAST,
-            help_text=_("Operation used for aggregating this resource monitored"
-                        "data."))
+            help_text=_("Operation used for aggregating this resource monitored data."))
     on_demand = models.BooleanField(_("on demand"), default=False,
             help_text=_("If enabled the resource will not be pre-allocated, "
                         "but allocated under the application demand"))
@@ -53,8 +55,8 @@ class Resource(models.Model):
                         "on demand resource"))
     unit = models.CharField(_("unit"), max_length=16,
             help_text=_("The unit in which this resource is measured. "
-                   "For example GB, KB or subscribers"))
-    scale = models.PositiveIntegerField(_("scale"),
+                        "For example GB, KB or subscribers"))
+    scale = models.CharField(_("scale"), max_length=32, validators=[validate_scale],
             help_text=_("Scale in which this resource monitoring resoults should "
                         "be prorcessed to match with unit. e.g. <tt>10**9</tt>"))
     disable_trigger = models.BooleanField(_("disable trigger"), default=False,
@@ -79,6 +81,9 @@ class Resource(models.Model):
     def __unicode__(self):
         return "{}-{}".format(str(self.content_type), self.name)
     
+    def clean(self):
+        self.verbose_name = self.verbose_name.strip()
+    
     def save(self, *args, **kwargs):
         created = not self.pk
         super(Resource, self).save(*args, **kwargs)
@@ -102,7 +107,7 @@ class Resource(models.Model):
                 task.save(update_fields=['crontab'])
         # This only work on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
-        # TODO touch wsgi.py for code reloading?
+        run('touch %s/wsgi.py' % get_project_root())
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)

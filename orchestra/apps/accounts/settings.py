@@ -18,6 +18,10 @@ ACCOUNTS_LANGUAGES = getattr(settings, 'ACCOUNTS_LANGUAGES', (
 ))
 
 
+ACCOUNTS_SYSTEMUSER_MODEL = getattr(settings, 'ACCOUNTS_SYSTEMUSER_MODEL',
+    'systemusers.SystemUser')
+
+
 ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE', 'en')
 
 
@@ -26,15 +30,6 @@ ACCOUNTS_MAIN_PK = getattr(settings, 'ACCOUNTS_MAIN_PK', 1)
 
 ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
     # <model>, <key field>, <kwargs>, <help_text>
-    ('systemusers.SystemUser',
-        'username',
-        {
-            'username': 'account.username',
-            'password': 'account.password',
-            'is_main': 'True',
-        },
-        _("Designates whether to creates a related system user with the same username and password or not."),
-    ),
     ('mailboxes.Mailbox',
         'name',
         {

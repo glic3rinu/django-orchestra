@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
 from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -14,6 +15,8 @@ from .models import Resource, ResourceData, MonitorData
 
 
 class ResourceAdmin(ExtendedModelAdmin):
+    # TODO error after saving: u"Key 'name' not found in 'ResourceForm'"
+#    prepopulated_fields = {'name': ('verbose_name',)}
     list_display = (
         'id', 'verbose_name', 'content_type', 'period', 'on_demand',
         'default_allocation', 'unit', 'disable_trigger', 'crontab',
@@ -21,11 +24,11 @@ class ResourceAdmin(ExtendedModelAdmin):
     list_filter = (UsedContentTypeFilter, 'period', 'on_demand', 'disable_trigger')
     fieldsets = (
         (None, {
-            'fields': ('name', 'content_type', 'period'),
+            'fields': ('verbose_name', 'name', 'content_type', 'period'),
         }),
         (_("Configuration"), {
-            'fields': ('verbose_name', 'unit', 'scale', 'on_demand',
-                       'default_allocation', 'disable_trigger', 'is_active'),
+            'fields': ('unit', 'scale', 'on_demand', 'default_allocation', 'disable_trigger',
+                       'is_active'),
         }),
         (_("Monitoring"), {
             'fields': ('monitors', 'crontab'),
@@ -36,10 +39,10 @@ class ResourceAdmin(ExtendedModelAdmin):
     def add_view(self, request, **kwargs):
         """ Warning user if the node is not fully configured """
         if request.method == 'POST':
-            messages.warning(request, _(
-                "Restarting orchestra and celerybeat is required to fully apply changes. "
+            messages.warning(request, mark_safe(_(
+                "Restarting orchestra and celerybeat is required to fully apply changes.<br> "
                 "Remember that new allocated values will be applied when objects are saved."
-            ))
+            )))
         return super(ResourceAdmin, self).add_view(request, **kwargs)
     
     def save_model(self, request, obj, form, change):

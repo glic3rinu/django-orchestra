@@ -14,7 +14,6 @@ from django.core.management.base import CommandError
 from django.core.urlresolvers import reverse
 from selenium.webdriver.support.select import Select
 
-from orchestra.apps.accounts.models import Account
 from orchestra.apps.orchestration.models import Server, Route
 from orchestra.apps.resources.models import Resource
 from orchestra.utils.system import run, sshrun
@@ -303,9 +302,9 @@ class AdminMailboxMixin(MailboxMixin):
         url = self.live_server_url + reverse('admin:mailboxes_mailbox_add')
         self.selenium.get(url)
         
-        account_input = self.selenium.find_element_by_id('id_account')
-        account_select = Select(account_input)
-        account_select.select_by_value(str(self.account.pk))
+#        account_input = self.selenium.find_element_by_id('id_account')
+#        account_select = Select(account_input)
+#        account_select.select_by_value(str(self.account.pk))
         
         name_field = self.selenium.find_element_by_id('id_name')
         name_field.send_keys(username)

@@ -46,7 +46,7 @@ def read_async(fd):
             return ''
 
 
-def run(command, display=True, error_codes=[0], silent=False, stdin=''):
+def run(command, display=False, error_codes=[0], silent=False, stdin=''):
     """ Subprocess wrapper for running commands """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)

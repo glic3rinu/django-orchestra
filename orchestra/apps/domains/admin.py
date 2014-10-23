@@ -20,19 +20,22 @@ class RecordInline(admin.TabularInline):
     formset = RecordInlineFormSet
     verbose_name_plural = _("Extra records")
     
-    class Media:
-        css = {
-            'all': ('orchestra/css/hide-inline-id.css',)
-        }
-    
+#    class Media:
+#        css = {
+#            'all': ('orchestra/css/hide-inline-id.css',)
+#        }
+#    
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
+        if db_field.name == 'ttl':
+            kwargs['widget'] = forms.TextInput(attrs={'size':'10'})
         return super(RecordInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 class DomainInline(admin.TabularInline):
+    # TODO account, and record sumary fields
     model = Domain
     fields = ('domain_link',)
     readonly_fields = ('domain_link',)
@@ -47,6 +50,7 @@ class DomainInline(admin.TabularInline):
 
 
 class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin):
+    # TODO name link
     fields = ('name', 'account')
     list_display = (
         'structured_name', 'display_is_top', 'websites', 'account_link'

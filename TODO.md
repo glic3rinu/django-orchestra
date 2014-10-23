@@ -12,7 +12,6 @@ TODO
 * enforce an emergency email contact and account to contact contacts about problems when mailserver is down
 
 * add `BackendLog` retry action
-* move invoice contact to invoices app?
 * PHPbBckendMiixin with get_php_ini
 * Apache: `IncludeOptional /etc/apache2/extra-vhos[t]/account-site-custom.con[f]`
 * webmail identities and addresses
@@ -143,7 +142,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     * based on a merge set of save(update_fields)
 
 
-textwrap.dedent( \\)
+* textwrap.dedent( \\)
 
 * accounts
     * short name / long name, account name really needed? address? only minimal info..
@@ -159,7 +158,22 @@ textwrap.dedent( \\)
 * better modeling of the interdependency between webapps and websites (settings)
 * webapp options cfig agnostic
 
-* Disable menu on tests, fucking overlapping
 * service.name / verbose_name instead of .description ?
+* miscellaneous.name / verbose_name
+* service.invoice_name
 
 * Bills can have sublines?
+
+* proforma without billing contact?
+
+* remove contact addresss, and use invoice contact for it (maybe move to contacts app again)
+
+* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest
+
+* Pangea modifications: domain registered/non-registered list_display and field with register link: inconsistent, what happen to related objects with a domain that is converted to register-only?
+
+* ForeignKey.swappable
+* Field.editable
+* ManyToManyField.symmetrical = False (user group)
+
+* REST PERMISSIONS

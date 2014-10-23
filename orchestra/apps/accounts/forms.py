@@ -9,7 +9,12 @@ from .models import Account
 
 
 def create_account_creation_form():
-    fields = {}
+    fields = {
+        'create_systemuser': forms.BooleanField(initial=True, required=False,
+            label=_("Create systemuser"), widget=forms.CheckboxInput(attrs={'disabled': True}),
+            help_text=_("Designates whether to creates a related system user with the same "
+                        "username and password or not."))
+    }
     for model, key, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
         model = get_model(model)
         field_name = 'create_%s' % model._meta.model_name
@@ -28,6 +33,9 @@ def create_account_creation_form():
         except KeyError:
             # Previous validation error
             return
+        systemuser_model = Account.main_systemuser.field.rel.to
+        if systemuser_model.objects.filter(username=account.username).exists():
+            raise forms.ValidationError(_("A system user with this name already exists"))
         for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
             model = get_model(model)
             kwargs = {
@@ -44,9 +52,10 @@ def create_account_creation_form():
             model = get_model(model)
             field_name = 'create_%s' % model._meta.model_name
             if self.cleaned_data[field_name]:
-                for key, value in related_kwargs.iteritems():
-                    related_kwargs[key] = eval(value, {'account': account})
-                model.objects.create(account=account, **related_kwargs)
+                kwargs = {
+                    key: eval(value, {'account': account}) for key, value in related_kwargs.iteritems()
+                }
+                model.objects.create(account=account, **kwargs)
     
     fields.update({
         'create_related_fields': fields.keys(),

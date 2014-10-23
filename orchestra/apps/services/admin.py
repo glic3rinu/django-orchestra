@@ -9,7 +9,7 @@ from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
-from .actions import update_orders, view_help
+from .actions import update_orders, view_help, clone
 from .models import Plan, ContractedPlan, Rate, Service
 
 
@@ -42,7 +42,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         }),
         (_("Billing options"), {
             'classes': ('wide',),
-            'fields': ('billing_period', 'billing_point', 'is_fee')
+            'fields': ('billing_period', 'billing_point', 'is_fee', 'order_description')
         }),
         (_("Pricing options"), {
             'classes': ('wide',),
@@ -51,7 +51,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         }),
     )
     inlines = [RateInline]
-    actions = [update_orders]
+    actions = [update_orders, clone]
     change_view_actions = actions + [view_help]
     
     def formfield_for_dbfield(self, db_field, **kwargs):
@@ -60,7 +60,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
             models = [model._meta.model_name for model in services.get()]
             queryset = db_field.rel.to.objects
             kwargs['queryset'] = queryset.filter(model__in=models)
-        if db_field.name in ['match', 'metric']:
+        if db_field.name in ['match', 'metric', 'order_description']:
             kwargs['widget'] = forms.TextInput(attrs={'size':'160'})
         return super(ServiceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
     

@@ -143,6 +143,7 @@ class SystemUserMixin(object):
         self.validate_user(username)
         self.delete(username)
         self.validate_delete(username)
+        self.assertRaises(Exception, self.delete, self.account.username)
     
     def test_add_group(self):
         username = '%s_systemuser' % random_ascii(10)
@@ -190,7 +191,7 @@ class RESTSystemUserMixin(SystemUserMixin):
         self.rest_login()
         # create main user
         self.save(self.account.username)
-        self.addCleanup(self.delete, self.account.username)
+        self.addCleanup(self.delete_account, self.account.username)
     
     @save_response_on_error
     def add(self, username, password, shell='/dev/null'):
@@ -230,7 +231,7 @@ class AdminSystemUserMixin(SystemUserMixin):
         self.admin_login()
         # create main user
         self.save(self.account.username)
-        self.addCleanup(self.delete, self.account.username)
+        self.addCleanup(self.delete_account, self.account.username)
     
     @snapshot_on_error
     def add(self, username, password, shell='/dev/null'):
@@ -245,10 +246,6 @@ class AdminSystemUserMixin(SystemUserMixin):
         password_field = self.selenium.find_element_by_id('id_password2')
         password_field.send_keys(password)
         
-        account_input = self.selenium.find_element_by_id('id_account')
-        account_select = Select(account_input)
-        account_select.select_by_value(str(self.account.pk))
-        
         shell_input = self.selenium.find_element_by_id('id_shell')
         shell_select = Select(shell_input)
         shell_select.select_by_value(shell)
@@ -260,6 +257,10 @@ class AdminSystemUserMixin(SystemUserMixin):
     def delete(self, username):
         user = SystemUser.objects.get(username=username)
         self.admin_delete(user)
+    
+    @snapshot_on_error
+    def delete_account(self, username):
+        self.admin_delete(self.account)
     
     @snapshot_on_error
     def disable(self, username):
@@ -332,7 +333,7 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
     
     @snapshot_on_error
     def test_delete_account(self):
-        home = self.account.systemusers.get(is_main=True).get_home()
+        home = self.account.main_systemuser.get_home()
         
         delete = reverse('admin:accounts_account_delete', args=(self.account.pk,))
         url = self.live_server_url + delete

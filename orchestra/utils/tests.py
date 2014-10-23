@@ -69,6 +69,8 @@ class BaseTestCase(TestCase, AppDependencyMixin):
 class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
+        # Avoid problems with the overlaping menu when clicking
+        settings.ADMIN_TOOLS_MENU = 'admin_tools.menu.Menu'
         cls.vdisplay = Xvfb()
         cls.vdisplay.start()
         cls.selenium = WebDriver()
@@ -180,4 +182,3 @@ def save_response_on_error(test):
                 dumpfile.write(self.rest.last_response.content)
             raise
     return inner
-

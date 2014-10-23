@@ -1,4 +1,5 @@
-from rest_framework import viewsets
+from django.utils.translation import ugettext_lazy as _
+from rest_framework import viewsets, exceptions
 
 from orchestra.api import router, SetPasswordApiMixin
 
@@ -20,6 +21,12 @@ class AccountViewSet(SetPasswordApiMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super(AccountViewSet, self).get_queryset()
         return qs.filter(id=self.request.user.pk)
+    
+    def destroy(self, request, pk=None):
+        # TODO reimplement in permissions
+        if not request.user.is_superuser:
+            raise exceptions.PermissionDenied(_("Accounts can not be deleted."))
+        super(AccountViewSet, self).destroy(request, pk=pk)
 
 
 router.register(r'accounts', AccountViewSet)

@@ -1,4 +1,5 @@
-from rest_framework import viewsets
+from django.utils.translation import ugettext_lazy as _
+from rest_framework import viewsets, exceptions
 
 from orchestra.api import router, SetPasswordApiMixin
 from orchestra.apps.accounts.api import AccountApiMixin
@@ -11,6 +12,12 @@ class SystemUserViewSet(AccountApiMixin, SetPasswordApiMixin, viewsets.ModelView
     model = SystemUser
     serializer_class = SystemUserSerializer
     filter_fields = ('username',)
+    
+    def destroy(self, request, pk=None):
+        user = self.get_object()
+        if user.is_main:
+            raise exceptions.PermissionDenied(_("Main system user can not be deleted."))
+        super(SystemUserViewSet, self).destroy(request, pk=pk)
 
 
 router.register(r'systemusers', SystemUserViewSet)

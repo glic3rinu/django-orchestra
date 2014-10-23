@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import AtLeastOneRequiredInlineFormSet
-from orchestra.admin.utils import insertattr
+from orchestra.admin.utils import insertattr, admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdmin, AccountAdminMixin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
@@ -74,15 +74,20 @@ class ContactInline(admin.StackedInline):
     formset = AtLeastOneRequiredInlineFormSet
     extra = 0
     fields = (
-        'short_name', 'full_name', 'email', 'email_usage', ('phone', 'phone2'),
-        'address', ('city', 'zipcode'), 'country',
+        ('short_name', 'full_name'), 'email', 'email_usage', ('phone', 'phone2'),
     )
     
     def get_extra(self, request, obj=None, **kwargs):
        return 0 if obj and obj.contacts.exists() else 1
     
+    def get_view_on_site_url(self, obj=None):
+        if obj:
+            return change_url(obj)
+    
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
+        if db_field.name == 'short_name':
+            kwargs['widget'] = forms.TextInput(attrs={'size':'15'})
         if db_field.name == 'address':
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
         if db_field.name == 'email_usage':

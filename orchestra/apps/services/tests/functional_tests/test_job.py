@@ -34,8 +34,7 @@ class JobBillingTest(BaseBillingTest):
         if not account:
             account = self.create_account()
         description = 'Random Job %s' % random_ascii(10)
-        service, __ = MiscService.objects.get_or_create(name='job', description=description,
-                has_amount=True)
+        service, __ = MiscService.objects.get_or_create(name='job', has_amount=True)
         return account.miscellaneous.create(service=service, description=description, amount=amount)
     
     def test_job(self):

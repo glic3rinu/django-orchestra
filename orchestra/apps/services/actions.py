@@ -1,7 +1,7 @@
 from django.contrib.admin import helpers
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -62,3 +62,21 @@ def view_help(modeladmin, request, queryset):
     return TemplateResponse(request, 'admin/services/service/help.html', context)
 view_help.url_name = 'help'
 view_help.verbose_name = _("Help")
+
+
+def clone(modeladmin, request, queryset):
+    service = queryset.get()
+    fields = (
+        'content_type_id', 'match', 'handler_type', 'is_active', 'ignore_superusers', 'billing_period',
+        'billing_point', 'is_fee', 'metric', 'nominal_price', 'tax', 'pricing_period', 
+        'rate_algorithm', 'on_cancel', 'payment_style',
+    )
+    query = []
+    for field in fields:
+        value = getattr(service, field)
+        field = field.replace('_id', '')
+        query.append('%s=%s' % (field, value))
+    opts = service._meta
+    url = reverse('admin:%s_%s_add' % (opts.app_label, opts.model_name))
+    url += '?%s' % '&'.join(query)
+    return redirect(url)

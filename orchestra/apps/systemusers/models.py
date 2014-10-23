@@ -36,7 +36,7 @@ class SystemUser(models.Model):
     groups = models.ManyToManyField('self', blank=True,
             help_text=_("A new group will be created for the user. "
                         "Which additional groups would you like them to be a member of?"))
-    is_main = models.BooleanField(_("is main"), default=False)
+#    is_main = models.BooleanField(_("is main"), default=False)
     is_active = models.BooleanField(_("active"), default=True,
             help_text=_("Designates whether this account should be treated as active. "
                         "Unselect this instead of deleting accounts."))
@@ -53,6 +53,13 @@ class SystemUser(models.Model):
         except type(self).account.field.rel.to.DoesNotExist:
             return self.is_active
     
+    @property
+    def is_main(self):
+        # On account creation main_systemuser_id is still None
+        if self.account.main_systemuser_id:
+            return self.account.main_systemuser_id == self.pk
+        return self.account.username == self.username
+    
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
     
@@ -63,7 +70,7 @@ class SystemUser(models.Model):
             }
             basehome = settings.SYSTEMUSERS_HOME % context
         else:
-            basehome = self.account.systemusers.get(is_main=True).get_home()
+            basehome = self.account.main_systemuser.get_home()
         basehome = basehome.replace('/./', '/')
         home = os.path.join(basehome, self.home)
         # Chrooting

@@ -160,9 +160,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * service.name / verbose_name instead of .description ?
 * miscellaneous.name / verbose_name
-* service.invoice_name
-
-* Bills can have sublines?
 
 * proforma without billing contact?
 
@@ -177,3 +174,5 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * ManyToManyField.symmetrical = False (user group)
 
 * REST PERMISSIONS
+
+* caching based on def text2int(textnum, numwords={}):

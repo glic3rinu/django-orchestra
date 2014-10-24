@@ -28,3 +28,6 @@ STOP_SERVICES = getattr(settings, 'STOP_SERVICES',
 
 
 API_ROOT_VIEW = getattr(settings, 'API_ROOT_VIEW', 'orchestra.api.root.APIRoot')
+
+
+ORCHESTRA_MIGRATION_MODE = getattr(settings, 'ORCHESTRA_MIGRATION_MODE', False)

@@ -60,12 +60,12 @@ class Account(auth.AbstractBaseUser):
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
     
-    def save(self, *args, **kwargs):
+    def save(self, active_systemuser=False, *args, **kwargs):
         created = not self.pk
         super(Account, self).save(*args, **kwargs)
         if created:
             self.main_systemuser = self.systemusers.create(account=self, username=self.username,
-                    password=self.password)
+                    password=self.password, is_active=active_systemuser)
             self.save(update_fields=['main_systemuser'])
     
     def clean(self):

@@ -55,6 +55,32 @@ class ServiceHandler(plugins.Plugin):
         }
         return eval(self.match, safe_locals)
     
+    def get_ignore_delta(self):
+        if self.ignore_period == self.NEVER:
+            return None
+        value, unit = self.ignore_period.split('_')
+        value = text2int(value)
+        if unit.lowe().startswith('day'):
+            return timedelta(days=value)
+        if unit.lowe().startswith('month'):
+            return timedelta(months=value)
+        else:
+            raise ValueError("Unknown unit %s" % unit)
+    
+    def get_order_ignore(self, order):
+        """ service trial delta """
+        ignore_delta = self.get_ignore_delta()
+        if ignore_delta and (order.cancelled_on-ignore_delta).date() <= order.registered_on:
+            return True
+        return order.ignore
+    
+    def get_ignore(self, instance):
+        ignore = False
+        account = getattr(instance, 'account', instance)
+        if account.is_superuser:
+            ignore = self.ignore_superusers
+        return ignore
+    
     def get_metric(self, instance):
         if self.metric:
             safe_locals = {

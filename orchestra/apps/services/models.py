@@ -89,6 +89,8 @@ class Service(models.Model):
 #    DAILY = 'DAILY'
     MONTHLY = 'MONTHLY'
     ANUAL = 'ANUAL'
+    ONE_DAY = 'ONE_DAY'
+    TWO_DAYS = 'TWO_DAYS'
     TEN_DAYS = 'TEN_DAYS'
     ONE_MONTH = 'ONE_MONTH'
     ALWAYS = 'ALWAYS'
@@ -158,6 +160,17 @@ class Service(models.Model):
                 "used for generating the description for the bill lines of this services.<br>"
                 "Defaults to <tt>'%s: %s' % (handler.description, instance)</tt>"
             ))
+    ignore_period = models.CharField(_("ignore period"), max_length=16, blank=True,
+            help_text=_("Period in which orders will be ignored if cancelled. "
+                        "Useful for designating <i>trial periods</i>"),
+            choices=(
+                (NEVER, _("No ignore")),
+                (ONE_DAY, _("One day")),
+                (TWO_DAYS, _("Two days")),
+                (TEN_DAYS, _("Ten days")),
+                (ONE_MONTH, _("One month")),
+            ),
+            default=settings.SERVICES_DEFAULT_IGNORE_PERIOD)
     # Pricing
     metric = models.CharField(_("metric"), max_length=256, blank=True,
             help_text=_(

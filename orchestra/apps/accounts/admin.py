@@ -42,7 +42,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     )
     fieldsets = (
         (_("User"), {
-            'fields': ('username', 'password',)
+            'fields': ('username', 'password', 'main_systemuser_link')
         }),
         (_("Personal info"), {
             'fields': ('first_name', 'last_name', 'email', ('type', 'language'), 'comments'),
@@ -59,11 +59,13 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     add_form = AccountCreationForm
     form = UserChangeForm
     filter_horizontal = ()
-    change_readonly_fields = ('username',)
+    change_readonly_fields = ('username', 'main_systemuser_link')
     change_form_template = 'admin/accounts/account/change_form.html'
     actions = [disable]
     change_view_actions = actions
     list_select_related = ('billcontact',)
+    
+    main_systemuser_link = admin_link('main_systemuser')
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -101,9 +103,11 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
         return fieldsets
     
     def save_model(self, request, obj, form, change):
-        super(AccountAdmin, self).save_model(request, obj, form, change)
         if not change:
+            form.save_model(obj)
             form.save_related(obj)
+        else:
+            super(AccountAdmin, self).save_model(request, obj, form, change)
 
 
 admin.site.register(Account, AccountAdmin)

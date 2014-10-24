@@ -65,12 +65,12 @@ class Apache2Backend(ServiceController):
     def get_content_directives(self, site):
         directives = ''
         for content in site.content_set.all().order_by('-path'):
-            method, args = content.webapp.get_method()
+            method, args = content.webapp.get_directive()
             method = getattr(self, 'get_%s_directives' % method)
             directives += method(content, *args)
         return directives
     
-    def get_alias_directives(self, content, *args):
+    def get_static_directives(self, content, *args):
         context = self.get_content_context(content)
         context['path'] = args[0] % context if args else content.webapp.get_path()
         return "Alias %(location)s %(path)s\n" % context
@@ -81,10 +81,10 @@ class Apache2Backend(ServiceController):
         directive = "ProxyPassMatch ^%(location)s(.*\.php(/.*)?)$ %(fcgi_path)s$1\n"
         return directive % context
     
-    def get_fcgid_directives(self, content, fcgid_path):
+    def get_fcgi_directives(self, content, fcgid_path):
         context = self.get_content_context(content)
         context['fcgid_path'] = fcgid_path % context
-        fcgid = self.get_alias_directives(content)
+        fcgid = self.get_static_directives(content)
         fcgid += textwrap.dedent("""\
             ProxyPass %(location)s !
             <Directory %(app_path)s>

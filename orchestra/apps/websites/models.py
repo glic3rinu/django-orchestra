@@ -5,16 +5,10 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import validators, services
+from orchestra.utils import tuple_setting_to_choices
 from orchestra.utils.functional import cached
 
 from . import settings
-
-
-def settings_to_choices(choices):
-    return sorted(
-        [ (name, opt[0]) for name,opt in choices.iteritems() ],
-        key=lambda e: e[0]
-    )
 
 
 class Website(models.Model):
@@ -67,7 +61,7 @@ class WebsiteOption(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
             related_name='options')
     name = models.CharField(_("name"), max_length=128,
-            choices=settings_to_choices(settings.WEBSITES_OPTIONS))
+            choices=tuple_setting_to_choices(settings.WEBSITES_OPTIONS))
     value = models.CharField(_("value"), max_length=256)
     
     class Meta:

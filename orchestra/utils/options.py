@@ -45,3 +45,17 @@ def running_syncdb():
 
 def database_ready():
     return not running_syncdb() and 'setuppostgres' not in sys.argv and 'test' not in sys.argv
+
+
+def dict_setting_to_choices(choices):
+    return sorted(
+        [ (name, opt.get('verbose_name', 'name')) for name, opt in choices.iteritems() ],
+        key=lambda e: e[0]
+    )
+
+
+def tuple_setting_to_choices(choices):
+    return sorted(
+        [ (name, opt[0]) for name,opt in choices.iteritems() ],
+        key=lambda e: e[0]
+    )

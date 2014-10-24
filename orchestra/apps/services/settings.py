@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
@@ -14,3 +16,6 @@ SERVICES_SERVICE_ANUAL_BILLING_MONTH = getattr(settings, 'SERVICES_SERVICE_ANUAL
 
 
 SERVICES_ORDER_MODEL = getattr(settings, 'SERVICES_ORDER_MODEL', 'orders.Order')
+
+
+SERVICES_DEFAULT_IGNORE_PERIOD = getattr(settings, 'SERVICES_DEFAULT_IGNORE_PERIOD', 'TWO_DAYS')

@@ -42,7 +42,8 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         }),
         (_("Billing options"), {
             'classes': ('wide',),
-            'fields': ('billing_period', 'billing_point', 'is_fee', 'order_description')
+            'fields': ('billing_period', 'billing_point', 'is_fee', 'order_description',
+                       'ignore_period')
         }),
         (_("Pricing options"), {
             'classes': ('wide',),

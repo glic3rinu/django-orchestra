@@ -2,8 +2,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 
-# TODO make '%(mainuser_home)s/webapps...
-WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '/home/%(user)s/webapps/%(app_name)s/')
+WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '%(home)s/webapps/%(app_name)s/')
 
 
 WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
@@ -23,57 +22,36 @@ WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
 
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
-    # { name: ( verbose_name, method_name, method_args, description) }
-    'php5.5': (
-        _("PHP 5.5"),
+    'php5.5': {
+        'verbose_name': "PHP 5.5",
 #        'fpm', ('unix:/var/run/%(user)s-%(app_name)s.sock|fcgi://127.0.0.1%(app_path)s',),
-        'fpm', ('fcgi://127.0.0.1:%(fpm_port)s%(app_path)s',),
-        _("This creates a PHP5.5 application under ~/webapps/<app_name>\n"
-          "PHP-FPM will be used to execute PHP files.")
-    ),
-    'php5.2': (
-        _("PHP 5.2"),
-        'fcgid', (WEBAPPS_FCGID_PATH,),
-        _("This creates a PHP5.2 application under ~/webapps/<app_name>\n"
-          "Apache-mod-fcgid will be used to execute PHP files.")
-    ),
-    'php4': (
-        _("PHP 4"),
-        'fcgid', (WEBAPPS_FCGID_PATH,),
-        _("This creates a PHP4 application under ~/webapps/<app_name>\n"
-          "Apache-mod-fcgid will be used to execute PHP files.")
-    ),
-    'static': (
-        _("Static"),
-        'alias', (),
-        _("This creates a Static application under ~/webapps/<app_name>\n"
-          "Apache2 will be used to serve static content and execute CGI files.")
-    ),
-#    'wordpress': (
-#        _("Wordpress"),
-#        'fpm', ('fcgi://127.0.0.1:8990/home/httpd/wordpress-mu/',),
-#        _("This creates a Wordpress site into a shared Wordpress server\n"
-#          "By default this blog will be accessible via http://<app_name>.blogs.example.com")
-#        
-#    ),
-#    'dokuwiki': (
-#        _("DokuWiki"),
-#        'alias', ('/home/httpd/wikifarm/farm/',),
-#        _("This create a Dokuwiki wiki into a shared Dokuwiki server\n")
-#    ),
-#    'drupal': (
-#        _("Drupdal"),
-#        'fpm', ('fcgi://127.0.0.1:8991/home/httpd/drupal-mu/',),
-#        _("This creates a Drupal site into a shared Drupal server\n"
-#          "The installation will be completed after visiting "
-#          "http://<app_name>.drupal.example.com/install.php?profile=standard&locale=ca\n"
-#          "By default this site will be accessible via http://<app_name>.drupal.example.com")
-#    ),
-    'webalizer': (
-        _("Webalizer"),
-        'alias', ('%(app_path)s%(site_name)s',),
-        _("This creates a Webalizer application under ~/webapps/<app_name>-<site_name>\n")
-    ),
+        'directive': ('fpm', 'fcgi://{}%(app_path)s'.format(WEBAPPS_FPM_LISTEN)),
+        'help_text': _("This creates a PHP5.5 application under ~/webapps/&lt;app_name&gt;<br>"
+                       "PHP-FPM will be used to execute PHP files.")
+    },
+    'php5.2': {
+        'verbose_name': "PHP 5.2",
+        'directive': ('fcgi', WEBAPPS_FCGID_PATH),
+        'help_text': _("This creates a PHP5.2 application under ~/webapps/&lt;app_name&gt;<br>"
+                       "Apache-mod-fcgid will be used to execute PHP files.")
+    },
+    'php4': {
+        'verbose_name': "PHP 4",
+        'directive': ('fcgi', WEBAPPS_FCGID_PATH,),
+        'help_text': _("This creates a PHP4 application under ~/webapps/&lt;app_name&gt;<br>"
+                       "Apache-mod-fcgid will be used to execute PHP files.")
+    },
+    'static': {
+        'verbose_name': _("Static"),
+        'directive': ('static',),
+        'help_text': _("This creates a Static application under ~/webapps/&lt;app_name&gt;<br>"
+                       "Apache2 will be used to serve static content and execute CGI files.")
+    },
+    'webalizer': {
+        'verbose_name': "Webalizer",
+        'directive': ('static', '%(app_path)s%(site_name)s'),
+        'help_text': _("This creates a Webalizer application under ~/webapps/<app_name>-<site_name>")
+    },
 })
 
 
@@ -194,25 +172,3 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTIO
     'escapeshellarg',
     'dl'
 ])
-
-
-# TODO 
-WEBAPPS_WORDPRESSMU_BASE_URL = getattr(settings, 'WEBAPPS_WORDPRESSMU_BASE_URL',
-    'http://blogs.example.com')
-
-
-WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD = getattr(settings, 'WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD',
-    'secret')
-
-
-WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH = setattr(settings, 'WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH',
-    '/home/httpd/htdocs/wikifarm/template.tar.gz')
-
-
-WEBAPPS_DOKUWIKIMU_FARM_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_FARM_PATH',
-    '/home/httpd/htdocs/wikifarm/farm')
-
-
-WEBAPPS_DRUPAL_SITES_PATH = getattr(settings, 'WEBAPPS_DRUPAL_SITES_PATH',
-    '/home/httpd/htdocs/drupal-mu/sites/%(app_name)s')
-

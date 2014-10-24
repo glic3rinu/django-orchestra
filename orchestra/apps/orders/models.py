@@ -146,10 +146,7 @@ class Order(models.Model):
                     if account_id is None:
                         # New account workaround -> user.account_id == None
                         continue
-                    ignore = False
-                    account = getattr(instance, 'account', instance)
-                    if account.is_superuser:
-                        ignore = service.ignore_superusers
+                    ignore = service.handler.get_ignore(instance)
                     order = cls(content_object=instance, service=service,
                             account_id=account_id, ignore=ignore)
                     if commit:
@@ -163,8 +160,7 @@ class Order(models.Model):
                     order.update()
             elif orders:
                 order = orders.get()
-                if commit:
-                    order.cancel()
+                order.cancel(commit=commit)
                 updates.append((order, 'cancelled'))
         return updates
     
@@ -188,10 +184,12 @@ class Order(models.Model):
             self.description = description
             self.save(update_fields=['description'])
     
-    def cancel(self):
+    def cancel(self, commit=True):
         self.cancelled_on = timezone.now()
-        self.save(update_fields=['cancelled_on'])
-        logger.info("CANCELLED order id: {id}".format(id=self.id))
+        self.ignore = self.service.handler.get_order_ignore(self)
+        if commit:
+            self.save(update_fields=['cancelled_on', 'ignore'])
+            logger.info("CANCELLED order id: {id}".format(id=self.id))
     
     def mark_as_ignored(self):
         self.ignore = True

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django import forms
 from django.db.models.loading import get_model
 from django.utils.translation import ugettext_lazy as _
@@ -9,12 +11,12 @@ from .models import Account
 
 
 def create_account_creation_form():
-    fields = {
-        'create_systemuser': forms.BooleanField(initial=True, required=False,
-            label=_("Create systemuser"), widget=forms.CheckboxInput(attrs={'disabled': True}),
-            help_text=_("Designates whether to creates a related system user with the same "
-                        "username and password or not."))
-    }
+    fields = OrderedDict(**{
+        'enable_systemuser': forms.BooleanField(initial=True, required=False,
+            label=_("Enable systemuser"),
+            help_text=_("Designates whether to creates an enabled or disabled related system user. "
+                        "Notice that a related system user will be always created."))
+    })
     for model, key, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
         model = get_model(model)
         field_name = 'create_%s' % model._meta.model_name
@@ -46,6 +48,8 @@ def create_account_creation_form():
                 raise forms.ValidationError(
                     _("A %s with this name already exists") % verbose_name
                 )
+    def save_model(self, account):
+        account.save(active_systemuser=self.cleaned_data['enable_systemuser'])
     
     def save_related(self, account):
         for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
@@ -60,6 +64,7 @@ def create_account_creation_form():
     fields.update({
         'create_related_fields': fields.keys(),
         'clean': clean,
+        'save_model': save_model,
         'save_related': save_related,
     })
     

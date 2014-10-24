@@ -12,17 +12,17 @@ Note `*` _for sustancial progress_
 3. [x] REST API for users
 2. [x] [Orchestra-orm](https://github.com/glic3rinu/orchestra-orm) a Python library for easily interacting with Orchestra REST API
 3. [x] Service orchestration framework
-4. [ ] Data model, crazy input validation, admin and REST interfaces, permissions, unit and functional tests, service management, migration scripts and documentation of:
-    1. [ ] *PHP/static Web applications
-    1. [ ] *Websites with Apache
+4. [x] Data model, crazy input validation, admin and REST interfaces, permissions, unit and functional tests, service management, migration scripts and documentation of:
+    1. [x] PHP/static Web applications
+    1. [x] Websites with Apache
     2. [x] FTP/rsync/scp/shell system accounts
-    2. [ ] *Databases and database users with MySQL
+    2. [x] Databases and database users with MySQL
     1. [x] Mail accounts, aliases, forwards with Postfix and Dovecot
     1. [x] DNS with Bind
-    1. [ ] *Mailing lists with Mailman
+    1. [x] Mailing lists with Mailman
 1. [x] Contact management and service contraction
 1. [ ] *Unittests of the bussines logic
-2. [ ] *Functional tests of all Admin UI and REST interations
+2. [x] Functional tests of Admin UI and REST interations
 1. [ ] Initial documentation
 
 

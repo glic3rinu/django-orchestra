@@ -41,6 +41,9 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
             url = change_url(website)
             name = "%s on %s" % (website.name, content.path)
             websites.append('<a href="%s">%s</a>' % (url, name))
+        add_url = reverse('admin:webapps_website_add')
+        add_url += '?account=%s' % webapp.account_id
+        websites.append('<a href="%s">%s</a>' % (add_url, _("Add website")))
         return '<br>'.join(websites)
     display_websites.short_description = _("web sites")
     display_websites.allow_tags = True

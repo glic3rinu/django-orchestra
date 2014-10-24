@@ -55,7 +55,7 @@ class DomainInline(admin.TabularInline):
 
 class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin):
     # TODO name link
-    fields = ('name', 'account')
+    fields = ('name', ('account', 'migrate_subdomains'),)
     list_display = (
         'structured_name', 'display_is_top', 'websites', 'account_link'
     )
@@ -111,6 +111,12 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
         if apps.isinstalled('orchestra.apps.websites'):
             qs = qs.prefetch_related('websites')
         return qs
+    
+    def save_related(self, request, form, formsets, change):
+        super(DomainAdmin, self).save_related(request, form, formsets, change)
+        if form.cleaned_data['migrate_subdomains']:
+            domain = form.instance
+            domain.subdomains.update(account_id=domain.account_id)
 
 
 admin.site.register(Domain, DomainAdmin)

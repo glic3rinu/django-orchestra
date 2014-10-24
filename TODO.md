@@ -179,3 +179,5 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 
 * Subdomain saving should not trigger bind slave
+
+* Domain account change, unselected checkbox: migrate subdomains

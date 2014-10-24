@@ -8,6 +8,9 @@ from .models import Domain
 
 
 class DomainAdminForm(forms.ModelForm):
+    migrate_subdomains = forms.BooleanField(label=_("Migrate subdomains"), required=False,
+            initial=False, help_text=_("Propagate the account owner change to subdomains."))
+    
     def clean(self):
         """ inherit related top domain account, when exists """
         cleaned_data = super(DomainAdminForm, self).clean()

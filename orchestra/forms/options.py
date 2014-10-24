@@ -47,11 +47,16 @@ class UserCreationForm(forms.ModelForm):
         widget=forms.PasswordInput,
         help_text=_("Enter the same password as above, for verification."))
     
-#    def __init__(self, *args, **kwargs):
-#        super(UserCreationForm, self).__init__(*args, **kwargs)
-#        self.fields['password1'].validators.append(validate_password)
+    def __init__(self, *args, **kwargs):
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+        if settings.ORCHESTRA_MIGRATION_MODE:
+            self.fields['password1'].widget = forms.TextInput(attrs={'size':'130'})
+            self.fields['password2'].widget = forms.HiddenInput()
+            self.fields['password2'].required = False
     
     def clean_password2(self):
+        if settings.ORCHESTRA_MIGRATION_MODE:
+            return self.cleaned_data.get('password1')
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
         if password1 and password2 and password1 != password2:
@@ -73,7 +78,7 @@ class UserCreationForm(forms.ModelForm):
     
     def save(self, commit=True):
         user = super(UserCreationForm, self).save(commit=False)
-        if settings.ORCHESTRA_MIGRATION_MODE:
+        if not settings.ORCHESTRA_MIGRATION_MODE:
             user.password = self.cleaned_data['password1']
         else:
             user.set_password(self.cleaned_data['password1'])

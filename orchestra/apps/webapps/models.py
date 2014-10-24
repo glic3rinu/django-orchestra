@@ -42,7 +42,7 @@ class WebApp(models.Model):
     
     def get_path(self):
         context = {
-            'home': webapp.get_user().get_home(),
+            'home': self.get_user().get_home(),
             'app_name': self.name,
         }
         return settings.WEBAPPS_BASE_ROOT % context

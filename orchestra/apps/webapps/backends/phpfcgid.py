@@ -12,8 +12,11 @@ from .. import settings
 class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     """ Per-webapp fcgid application """
     verbose_name = _("PHP-Fcgid")
+    directive = 'fcgi'
     
     def save(self, webapp):
+        if not self.valid_directive(webapp):
+            return
         context = self.get_context(webapp)
         self.create_webapp_dir(context)
         self.append("mkdir -p %(wrapper_dir)s" % context)
@@ -27,6 +30,8 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
         self.append("chown -R %(user)s.%(group)s %(wrapper_dir)s" % context)
     
     def delete(self, webapp):
+        if not self.valid_directive(webapp):
+            return
         context = self.get_context(webapp)
         self.append("rm '%(wrapper_path)s'" % context)
         self.delete_webapp_dir(context)

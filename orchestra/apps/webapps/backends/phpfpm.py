@@ -13,8 +13,11 @@ from .. import settings
 class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     """ Per-webapp php application """
     verbose_name = _("PHP-FPM")
+    directive = 'fpm'
     
     def save(self, webapp):
+        if not self.valid_directive(webapp)
+            return
         context = self.get_context(webapp)
         self.create_webapp_dir(context)
         self.append(textwrap.dedent("""\
@@ -39,6 +42,8 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
             }"""))
     
     def get_context(self, webapp):
+        if not self.valid_directive(webapp):
+            return
         context = super(PHPFPMBackend, self).get_context(webapp)
         context.update({
             'init_vars': self.get_php_init_vars(webapp),

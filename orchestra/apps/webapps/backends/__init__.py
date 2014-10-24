@@ -1,9 +1,15 @@
 import pkgutil
 import textwrap
 
+from .. import settings
+
 
 class WebAppServiceMixin(object):
     model = 'webapps.WebApp'
+    directive = None
+    
+    def valid_directive(self, webapp):
+        return settings.WEBAPPS_TYPES[webapp.type]['directive'][0] == self.directive
     
     def create_webapp_dir(self, context):
         self.append(textwrap.dedent("""

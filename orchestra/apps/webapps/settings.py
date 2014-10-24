@@ -14,11 +14,11 @@ WEBAPPS_FPM_START_PORT = getattr(settings, 'WEBAPPS_FPM_START_PORT', 10000)
 
 
 WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
-    '/etc/php5/fpm/pool.d/%(app_name)s.conf')
+    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf')
 
 
 WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
-    '/home/httpd/fcgid/%(app_name)s-wrapper')
+    '/home/httpd/fcgid/%(user)s-%(app_name)s-wrapper')
 
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {

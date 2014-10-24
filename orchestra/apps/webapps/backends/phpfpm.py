@@ -16,7 +16,7 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     directive = 'fpm'
     
     def save(self, webapp):
-        if not self.valid_directive(webapp)
+        if not self.valid_directive(webapp):
             return
         context = self.get_context(webapp)
         self.create_webapp_dir(context)

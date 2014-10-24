@@ -51,6 +51,7 @@ class UserCreationForm(forms.ModelForm):
         super(UserCreationForm, self).__init__(*args, **kwargs)
         if settings.ORCHESTRA_MIGRATION_MODE:
             self.fields['password1'].widget = forms.TextInput(attrs={'size':'130'})
+            self.fields['password1'].help_text = _("RAW password digest (migration mode is enabled).")
             self.fields['password2'].widget = forms.HiddenInput()
             self.fields['password2'].required = False
     
@@ -78,7 +79,7 @@ class UserCreationForm(forms.ModelForm):
     
     def save(self, commit=True):
         user = super(UserCreationForm, self).save(commit=False)
-        if not settings.ORCHESTRA_MIGRATION_MODE:
+        if settings.ORCHESTRA_MIGRATION_MODE:
             user.password = self.cleaned_data['password1']
         else:
             user.set_password(self.cleaned_data['password1'])

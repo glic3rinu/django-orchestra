@@ -8,6 +8,7 @@ ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
     ('CUSTOMER', _("Customer")),
     ('COMPANY', _("Company")),
     ('PUBLICBODY', _("Public body")),
+    ('STAFF', _("Staff")),
 ))
 
 ACCOUNTS_DEFAULT_TYPE = getattr(settings, 'ACCOUNTS_DEFAULT_TYPE', 'INDIVIDUAL')

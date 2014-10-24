@@ -176,3 +176,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * REST PERMISSIONS
 
 * caching based on def text2int(textnum, numwords={}):
+
+
+* Subdomain saving should not trigger bind slave

@@ -205,6 +205,8 @@ class BillContactInline(admin.StackedInline):
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
+        if db_field.name == 'name':
+            kwargs['widget'] = forms.TextInput(attrs={'size':'70'})
         if db_field.name == 'address':
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
         if db_field.name == 'email_usage':

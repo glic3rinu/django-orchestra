@@ -35,15 +35,19 @@ class RecordInline(admin.TabularInline):
 
 
 class DomainInline(admin.TabularInline):
-    # TODO account, and record sumary fields
     model = Domain
-    fields = ('domain_link',)
-    readonly_fields = ('domain_link',)
+    fields = ('domain_link', 'display_records', 'account_link')
+    readonly_fields = ('domain_link', 'display_records', 'account_link')
     extra = 0
     verbose_name_plural = _("Subdomains")
     
     domain_link = admin_link('__unicode__')
     domain_link.short_description = _("Name")
+    account_link = admin_link('account')
+    
+    def display_records(self, domain):
+        return ', '.join(domain.records.values_list('type', flat=True))
+    display_records.short_description = _("Declared records")
     
     def has_add_permission(self, *args, **kwargs):
         return False

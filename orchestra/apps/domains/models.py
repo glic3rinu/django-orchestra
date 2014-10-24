@@ -145,7 +145,6 @@ class Domain(models.Model):
             for domain in domains.filter(name__endswith=self.name):
                 domain.top = self
                 domain.save(update_fields=['top'])
-        self.subdomains.update(account_id=self.account_id)
 
 
 class Record(models.Model):

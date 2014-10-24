@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ChangeViewActionsMixin
+from orchestra.admin import ChangeViewActionsMixin, ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
@@ -18,9 +18,12 @@ class RateInline(admin.TabularInline):
     ordering = ('plan', 'quantity')
 
 
-class PlanAdmin(admin.ModelAdmin):
+class PlanAdmin(ExtendedModelAdmin):
     list_display = ('name', 'is_default', 'is_combinable', 'allow_multiple')
     list_filter = ('is_default', 'is_combinable', 'allow_multiple')
+    fields = ('verbose_name', 'name', 'is_default', 'is_combinable', 'allow_multiple')
+    prepopulated_fields = {'name': ('verbose_name',)}
+    change_readonly_fields = ('name',)
     inlines = [RateInline]
 
 

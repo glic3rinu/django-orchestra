@@ -59,7 +59,6 @@ class AtLeastOneRequiredInlineFormSet(BaseInlineFormSet):
 
 class ChangeViewActionsMixin(object):
     """ Makes actions visible on the admin change view page. """
-    
     change_view_actions = ()
     change_form_template = 'orchestra/admin/change_form.html'
     
@@ -111,8 +110,14 @@ class ChangeAddFieldsMixin(object):
     add_fields = ()
     add_fieldsets = ()
     add_form = None
+    add_prepopulated_fields = {}
     change_readonly_fields = ()
     add_inlines = ()
+    
+    def get_prepopulated_fields(self, request, obj=None):
+        if not obj:
+            return super(ChangeAddFieldsMixin, self).get_prepopulated_fields(request, obj=obj)
+        return {}
     
     def get_readonly_fields(self, request, obj=None):
         fields = super(ChangeAddFieldsMixin, self).get_readonly_fields(request, obj=obj)

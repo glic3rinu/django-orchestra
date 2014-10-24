@@ -1,3 +1,4 @@
+import textwrap
 from optparse import make_option
 from os import path
 
@@ -33,51 +34,52 @@ class Command(BaseCommand):
             'processes': options.get('processes'),
         }
         
-        celery_config = (
-            '# Name of nodes to start, here we have a single node\n'
-            'CELERYD_NODES="w1"\n'
-            '\n'
-            '# Where to chdir at start.\n'
-            'CELERYD_CHDIR="%(site_root)s"\n'
-            '\n'
-            '# How to call "manage.py celeryd_multi"\n'
-            'CELERYD_MULTI="$CELERYD_CHDIR/manage.py celeryd_multi"\n'
-            '\n'
-            '# Extra arguments to celeryd\n'
-            'CELERYD_OPTS="-P:w1 processes -c:w1 %(processes)s -Q:w1 celery"\n'
-            '\n'
-            '# Name of the celery config module.\n'
-            'CELERY_CONFIG_MODULE="celeryconfig"\n'
-            '\n'
-            '# %%n will be replaced with the nodename.\n'
-            'CELERYD_LOG_FILE="/var/log/celery/%%n.log"\n'
-            'CELERYD_PID_FILE="/var/run/celery/%%n.pid"\n'
-            'CELERY_CREATE_DIRS=1\n'
-            '\n'
-            '# Full path to the celeryd logfile.\n'
-            'CELERYEV_LOG_FILE="/var/log/celery/celeryev.log"\n'
-            'CELERYEV_PID_FILE="/var/run/celery/celeryev.pid"\n'
-            '\n'
-            '# Workers should run as an unprivileged user.\n'
-            'CELERYD_USER="%(username)s"\n'
-            'CELERYD_GROUP="$CELERYD_USER"\n'
-            '\n'
-            '# Persistent revokes\n'
-            'CELERYD_STATE_DB="$CELERYD_CHDIR/persistent_revokes"\n'
-            '\n'
-            '# Celeryev\n'
-            'CELERYEV="$CELERYD_CHDIR/manage.py"\n'
-            'CELERYEV_CAM="djcelery.snapshot.Camera"\n'
-            'CELERYEV_USER="$CELERYD_USER"\n'
-            'CELERYEV_GROUP="$CELERYD_USER"\n'
-            'CELERYEV_OPTS="celerycam"\n'
-            '\n'
-            '# Celerybeat\n'
-            'CELERYBEAT="${CELERYD_CHDIR}/manage.py celerybeat"\n'
-            'CELERYBEAT_USER="$CELERYD_USER"\n'
-            'CELERYBEAT_GROUP="$CELERYD_USER"\n'
-            'CELERYBEAT_CHDIR="$CELERYD_CHDIR"\n'
-            'CELERYBEAT_OPTS="--schedule=/var/run/celerybeat-schedule"\n' % context
+        celery_config = textwrap.dedent("""\
+            # Name of nodes to start, here we have a single node
+            CELERYD_NODES="w1"
+            
+            # Where to chdir at start.
+            CELERYD_CHDIR="%(site_root)s"
+            
+            # How to call "manage.py celeryd_multi"
+            CELERYD_MULTI="$CELERYD_CHDIR/manage.py celeryd_multi"
+            
+            # Extra arguments to celeryd
+            CELERYD_OPTS="-P:w1 processes -c:w1 %(processes)s -Q:w1 celery"
+            
+            # Name of the celery config module.
+            CELERY_CONFIG_MODULE="celeryconfig"
+            
+            # %%n will be replaced with the nodename.
+            CELERYD_LOG_FILE="/var/log/celery/%%n.log"
+            CELERYD_PID_FILE="/var/run/celery/%%n.pid"
+            CELERY_CREATE_DIRS=1
+            
+            # Full path to the celeryd logfile.
+            CELERYEV_LOG_FILE="/var/log/celery/celeryev.log"
+            CELERYEV_PID_FILE="/var/run/celery/celeryev.pid"
+            
+            # Workers should run as an unprivileged user.
+            CELERYD_USER="%(username)s"
+            CELERYD_GROUP="$CELERYD_USER"
+            
+            # Persistent revokes
+            CELERYD_STATE_DB="$CELERYD_CHDIR/persistent_revokes"
+            
+            # Celeryev
+            CELERYEV="$CELERYD_CHDIR/manage.py"
+            CELERYEV_CAM="djcelery.snapshot.Camera"
+            CELERYEV_USER="$CELERYD_USER"
+            CELERYEV_GROUP="$CELERYD_USER"
+            CELERYEV_OPTS="celerycam"
+            
+            # Celerybeat
+            CELERYBEAT="${CELERYD_CHDIR}/manage.py celerybeat"
+            CELERYBEAT_USER="$CELERYD_USER"
+            CELERYBEAT_GROUP="$CELERYD_USER"
+            CELERYBEAT_CHDIR="$CELERYD_CHDIR"
+            CELERYBEAT_OPTS="--schedule=/var/run/celerybeat-schedule --scheduler=djcelery.schedulers.DatabaseScheduler"
+            """ % context
         )
         
         run("echo '%s' > /etc/default/celeryd" % celery_config)
@@ -89,15 +91,15 @@ class Command(BaseCommand):
             run('chmod +x /etc/init.d/%(script)s' % context)
             run('update-rc.d %(script)s defaults' % context)
         
-        rotate = (
-            '/var/log/celery/*.log {\n'
-            '    weekly\n'
-            '    missingok\n'
-            '    rotate 10\n'
-            '    compress\n'
-            '    delaycompress\n'
-            '    notifempty\n'
-            '    copytruncate\n'
-            '}'
+        rotate = textwrap.dedent("""\
+            /var/log/celery/*.log {
+                weekly
+                missingok
+                rotate 10
+                compress
+                delaycompress
+                notifempty
+                copytruncate
+            }"""
         )
         run("echo '%s' > /etc/logrotate.d/celeryd" % rotate)

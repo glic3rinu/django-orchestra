@@ -47,6 +47,7 @@ class SystemUserBackend(ServiceController):
         if user.is_main:
             return user.account.systemusers.exclude(username=user.username).values_list('username', flat=True)
         groups = list(user.groups.values_list('username', flat=True))
+        groups += list(settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS)
         return groups
     
     def get_context(self, user):

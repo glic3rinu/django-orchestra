@@ -15,12 +15,12 @@ from .models import Resource, ResourceData, MonitorData
 
 
 class ResourceAdmin(ExtendedModelAdmin):
-    # TODO error after saving: u"Key 'name' not found in 'ResourceForm'"
-#    prepopulated_fields = {'name': ('verbose_name',)}
     list_display = (
         'id', 'verbose_name', 'content_type', 'period', 'on_demand',
-        'default_allocation', 'unit', 'disable_trigger', 'crontab',
+        'default_allocation', 'unit', 'crontab', 'is_active'
     )
+    list_display_links = ('id', 'verbose_name')
+    list_editable = ('default_allocation', 'crontab', 'is_active',)
     list_filter = (UsedContentTypeFilter, 'period', 'on_demand', 'disable_trigger')
     fieldsets = (
         (None, {
@@ -35,6 +35,7 @@ class ResourceAdmin(ExtendedModelAdmin):
         }),
     )
     change_readonly_fields = ('name', 'content_type', 'period')
+    prepopulated_fields = {'name': ('verbose_name',)}
     
     def add_view(self, request, **kwargs):
         """ Warning user if the node is not fully configured """

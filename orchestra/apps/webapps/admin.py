@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import change_url
@@ -41,9 +42,10 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
             url = change_url(website)
             name = "%s on %s" % (website.name, content.path)
             websites.append('<a href="%s">%s</a>' % (url, name))
-        add_url = reverse('admin:webapps_website_add')
+        add_url = reverse('admin:websites_website_add')
         add_url += '?account=%s' % webapp.account_id
-        websites.append('<a href="%s">%s</a>' % (add_url, _("Add website")))
+        plus = '<strong style="color:green; font-size:12px">+</strong>'
+        websites.append('<a href="%s">%s%s</a>' % (add_url, plus, ugettext("Add website")))
         return '<br>'.join(websites)
     display_websites.short_description = _("web sites")
     display_websites.allow_tags = True

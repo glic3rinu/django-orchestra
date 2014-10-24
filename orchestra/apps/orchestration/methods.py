@@ -66,7 +66,7 @@ def BashSSH(backend, log, server, cmds):
         cmd = (
             "[[ $(md5sum %(remote_path)s|awk {'print $1'}) == %(digest)s ]] && bash %(remote_path)s\n"
             "RETURN_CODE=$?\n"
-# TODO            "rm -fr %(remote_path)s\n"
+            "rm -fr %(remote_path)s\n"
             "exit $RETURN_CODE" % context
         )
         channel = transport.open_session()

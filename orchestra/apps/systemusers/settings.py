@@ -17,3 +17,7 @@ SYSTEMUSERS_HOME = getattr(settings, 'SYSTEMUSERS_HOME', '/home/%(username)s')
 
 
 SYSTEMUSERS_FTP_LOG_PATH = getattr(settings, 'SYSTEMUSERS_FTP_LOG_PATH', '/var/log/vsftpd.log')
+
+
+SYSTEMUSERS_DEFAULT_GROUP_MEMBERS = getattr(settings, 'SYSTEMUSERS_DEFAULT_GROUP_MEMBERS',
+    ('www-data',))

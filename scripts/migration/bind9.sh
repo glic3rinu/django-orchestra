@@ -11,11 +11,12 @@
 
 
 ZONE_PATH=${1:-/etc/bind/master/}
+ACCOUNT_ID=${2:-1}
 
 echo "from orchestra.apps.domains.models import Domain"
 echo "from orchestra.apps.accounts.models import Account"
 
-echo "account = Account.objects.get(pk=1)"
+echo "account = Account.objects.get(pk=${ACCOUNT_ID})"
 ERRORS=""
 while read name; do
     [[ -f $name ]] && {

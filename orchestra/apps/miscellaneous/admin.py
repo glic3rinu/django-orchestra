@@ -4,13 +4,19 @@ from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin import ExtendedModelAdmin
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
 from .models import MiscService, Miscellaneous
 
 
-class MiscServiceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'verbose_name', 'num_instances')
+class MiscServiceAdmin(ExtendedModelAdmin):
+    list_display = ('name', 'verbose_name', 'num_instances', 'has_amount', 'is_active')
+    list_editable = ('has_amount', 'is_active')
+    list_filter = ('has_amount', 'is_active')
+    fields = ('verbose_name', 'name', 'description', 'has_amount', 'is_active')
+    prepopulated_fields = {'name': ('verbose_name',)}
+    change_readonly_fields = ('name',)
     
     def num_instances(self, misc):
         """ return num slivers as a link to slivers changelist view """
@@ -27,7 +33,7 @@ class MiscServiceAdmin(admin.ModelAdmin):
 
 
 class MiscellaneousAdmin(AccountAdminMixin, admin.ModelAdmin):
-    list_display = ('service', 'amount', 'account_link')
+    list_display = ('service', 'amount', 'active', 'account_link')
     
     def get_fields(self, request, obj=None):
         if obj is None:

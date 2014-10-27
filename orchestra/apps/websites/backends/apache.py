@@ -235,9 +235,8 @@ class Apache2Traffic(ServiceMonitor):
         self.append('monitor {object_id} $(date "+%Y%m%d%H%M%S" -d "{last_date}") "{log_file}"'.format(**context))
     
     def get_context(self, site):
-        last_date = self.get_last_date(site.pk)
         return {
             'log_file': '%s{,.1}' % site.get_www_log_path(),
-            'last_date': last_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
+            'last_date': self.get_last_date(site.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': site.pk,
         }

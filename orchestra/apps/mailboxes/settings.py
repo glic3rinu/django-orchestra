@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 MAILBOXES_DOMAIN_MODEL = getattr(settings, 'MAILBOXES_DOMAIN_MODEL', 'domains.Domain')
 
 
-MAILBOXES_HOME = getattr(settings, 'MAILBOXES_HOME', '/home/%(name)s/')
+MAILBOXES_HOME = getattr(settings, 'MAILBOXES_HOME', '/home/./%(name)s/')
 
 
 MAILBOXES_SIEVE_PATH = getattr(settings, 'MAILBOXES_SIEVE_PATH',

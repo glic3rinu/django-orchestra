@@ -33,7 +33,7 @@ class SystemUser(models.Model):
             help_text=_("Home directory relative to account's ~main_user"))
     shell = models.CharField(_("shell"), max_length=32,
             choices=settings.SYSTEMUSERS_SHELLS, default=settings.SYSTEMUSERS_DEFAULT_SHELL)
-    groups = models.ManyToManyField('self', blank=True,
+    groups = models.ManyToManyField('self', blank=True,  symmetrical=False,
             help_text=_("A new group will be created for the user. "
                         "Which additional groups would you like them to be a member of?"))
 #    is_main = models.BooleanField(_("is main"), default=False)
@@ -72,26 +72,7 @@ class SystemUser(models.Model):
             basehome = settings.SYSTEMUSERS_HOME % context
         else:
             basehome = self.account.main_systemuser.get_home()
-        basehome = basehome.replace('/./', '/')
-        home = os.path.join(basehome, self.home)
-        # Chrooting
-        # TODO option for disabling chrooting
-        home = home.split('/')
-        home.insert(-2, '.')
-        return '/'.join(home)
-
-
-## TODO user deletion and group handling.
-#class SystemGroup(models.Model):
-#    name = models.CharField(_("name"), max_length=64, unique=True,
-#            help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
-#            validators=[validators.RegexValidator(r'^[\w.-]+$',
-#                        _("Enter a valid group name."), 'invalid')])
-#    account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
-#            related_name='systemgroups')
-#    
-#    def __unicode__(self):
-#        return self.name
+        return os.path.join(basehome, self.home)
 
 
 services.register(SystemUser)

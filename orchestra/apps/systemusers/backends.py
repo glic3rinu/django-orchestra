@@ -1,7 +1,6 @@
 import os
 import textwrap
 
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
@@ -82,9 +81,8 @@ class FTPTraffic(ServiceMonitor):
     verbose_name = _('Main FTP traffic')
     
     def prepare(self):
-        current_date = timezone.localtime(self.current_date)
-        current_date = current_date.strftime("%Y%m%d%H%M%S")
-        self.append(textwrap.dedent("""
+        current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
+        self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
                 INI_DATE=$2
@@ -92,9 +90,8 @@ class FTPTraffic(ServiceMonitor):
                 LOG_FILE="$4"
                 grep "UPLOAD\|DOWNLOAD" "${LOG_FILE}" \\
                     | grep " \\[${USERNAME}\\] " \\
-                    | awk -v ini="${INI_DATE}" '
+                    | awk -v ini="${INI_DATE}" end="$(date '+%%Y%%m%%d%%H%%M%%S' -d '%s')" '
                         BEGIN {
-                            end = "%s"
                             sum = 0
                             months["Jan"] = "01"
                             months["Feb"] = "02"
@@ -126,13 +123,13 @@ class FTPTraffic(ServiceMonitor):
     def monitor(self, user):
         context = self.get_context(user)
         self.append(
-            'monitor %(object_id)i %(last_date)s "%(username)s" "%(log_file)s"' % context)
+            'monitor %{object_id} $(date "+%Y%m%d%H%M%S" -d "{last_date}") "{username}" "{log_file}"'.format(**context)
+        )
     
     def get_context(self, user):
-        last_date = timezone.localtime(self.get_last_date(user.pk))
         return {
-            'log_file': settings.SYSTEMUSERS_FTP_LOG_PATH,
-            'last_date': last_date.strftime("%Y%m%d%H%M%S"),
+            'log_file': '%s{,.1}' % settings.SYSTEMUSERS_FTP_LOG_PATH,
+            'last_date': self.get_last_date(site.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': user.pk,
             'username': user.username,
         }

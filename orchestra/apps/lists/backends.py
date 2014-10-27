@@ -167,7 +167,7 @@ class MailmanTraffic(ServiceMonitor):
     def monitor(self, mail_list):
         context = self.get_context(mail_list)
         self.append(
-            'monitor %(object_id)i %(last_date)s "%(list_name)s" "%(log_file)s"' % context)
+            'monitor %(object_id)i %(last_date)s "%(list_name)s" "%(log_file)s{,.1}"' % context)
     
     def get_context(self, mail_list):
         last_date = timezone.localtime(self.get_last_date(mail_list.pk))

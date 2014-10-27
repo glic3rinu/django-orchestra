@@ -103,7 +103,7 @@ class PasswdVirtualUserBackend(ServiceController):
             'group': self.DEFAULT_GROUP,
             'quota': self.get_quota(mailbox),
             'passwd_path': settings.MAILBOXES_PASSWD_PATH,
-            'home': mailbox.get_home(),
+            'home': mailbox.get_home().rstrip('/'),
             'banner': self.get_banner(),
             'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH,
             'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,

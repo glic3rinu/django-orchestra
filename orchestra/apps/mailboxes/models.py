@@ -50,8 +50,7 @@ class Mailbox(models.Model):
             'name': self.name,
             'username': self.name,
         }
-        home = settings.MAILBOXES_HOME % context
-        return home.rstrip('/')
+        return settings.MAILBOXES_HOME % context
     
     def clean(self):
         if self.custom_filtering and self.filtering != self.CUSTOM:

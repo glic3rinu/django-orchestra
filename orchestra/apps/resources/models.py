@@ -55,7 +55,7 @@ class Resource(models.Model):
             help_text=_("Default allocation value used when this is not an "
                         "on demand resource"))
     unit = models.CharField(_("unit"), max_length=16,
-            help_text=_("The unit in which this resource is measured. "
+            help_text=_("The unit in which this resource is represented. "
                         "For example GB, KB or subscribers"))
     scale = models.CharField(_("scale"), max_length=32, validators=[validate_scale],
             help_text=_("Scale in which this resource monitoring resoults should "
@@ -171,7 +171,7 @@ class MonitorData(models.Model):
             choices=ServiceMonitor.get_plugin_choices())
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
     object_id = models.PositiveIntegerField(_("object id"))
-    created_at = models.DateTimeField(_("created"))
+    created_at = models.DateTimeField(_("created"), default=timezone.now)
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     
     content_object = GenericForeignKey()

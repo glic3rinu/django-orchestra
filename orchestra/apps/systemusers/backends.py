@@ -129,7 +129,7 @@ class FTPTraffic(ServiceMonitor):
     def get_context(self, user):
         return {
             'log_file': '%s{,.1}' % settings.SYSTEMUSERS_FTP_LOG_PATH,
-            'last_date': self.get_last_date(site.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
+            'last_date': self.get_last_date(user.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': user.pk,
             'username': user.username,
         }

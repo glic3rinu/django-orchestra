@@ -68,7 +68,7 @@ class SystemUserDisk(ServiceMonitor):
     
     def monitor(self, user):
         context = self.get_context(user)
-        self.append("du -s %(home)s | xargs echo %(object_id)s" % context)
+        self.append("du -s %(home)s | cut -f1 | xargs echo %(object_id)s" % context)
     
     def get_context(self, user):
         context = SystemUserBackend().get_context(user)

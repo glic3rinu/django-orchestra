@@ -86,12 +86,14 @@ class Bind9MasterDomainBackend(ServiceController):
         return self.get_servers(domain, Bind9SlaveDomainBackend)
     
     def get_context(self, domain):
+        slaves = self.get_slaves(domain)
         context = {
             'name': domain.name,
             'zone_path': settings.DOMAINS_ZONE_PATH % {'name': domain.name},
             'subdomains': domain.subdomains.all(),
             'banner': self.get_banner(),
-            'slaves': '; '.join(self.get_slaves(domain)) or 'none',
+            'slaves': '; '.join(slaves) or 'none',
+            'also_notify': '; '.join(slaves) + ';' if slaves else '',
         }
         context.update({
             'conf_path': settings.DOMAINS_MASTERS_PATH,
@@ -101,6 +103,7 @@ class Bind9MasterDomainBackend(ServiceController):
                     type master;
                     file "%(zone_path)s";
                     allow-transfer { %(slaves)s; };
+                    also-notify { %(also_notify)s };
                     notify yes;
                 };""" % context)
         })

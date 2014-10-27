@@ -46,8 +46,8 @@ class PasswdVirtualUserBackend(ServiceController):
             fi""" % context))
     
     def generate_filter(self, mailbox, context):
-        self.append("doveadm mailbox create -u %(username)s Spam" % context) # TODO override webmail filters???
-        context['filtering_path'] = os.path.join(context['home'], '.dovecot.sieve')
+        self.append("doveadm mailbox create -u %(username)s Spam" % context)
+        context['filtering_path'] = settings.MAILBOXES_SIEVE_PATH % context
         filtering = mailbox.get_filtering()
         if filtering:
             context['filtering'] = '# %(banner)s\n' + filtering

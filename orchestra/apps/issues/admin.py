@@ -12,12 +12,11 @@ from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
 from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin#, ChangeViewActions
-from orchestra.admin.utils import (admin_link, admin_colored, wrap_admin_view,
-        admin_date)
-from orchestra.apps.contacts import settings as contacts_settings
+from orchestra.admin.utils import admin_link, admin_colored, wrap_admin_view, admin_date
+from orchestra.apps.contacts.models import Contact
 
 from .actions import (reject_tickets, resolve_tickets, take_tickets, close_tickets,
-    mark_as_unread, mark_as_read, set_default_queue)
+        mark_as_unread, mark_as_read, set_default_queue)
 from .filters import MyTicketsListFilter, TicketStateListFilter
 from .forms import MessageInlineForm, TicketForm
 from .helpers import get_ticket_changes, markdown_formated_changes, filter_actions
@@ -311,7 +310,7 @@ class QueueAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         """ show notifications """
         list_display = list(self.list_display)
-        for value, verbose in contacts_settings.CONTACTS_EMAIL_USAGES:
+        for value, verbose in Contact.EMAIL_USAGES:
             def display_notify(queue, notify=value):
                 return notify in queue.notify
             display_notify.short_description = verbose

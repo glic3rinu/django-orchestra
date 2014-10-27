@@ -50,7 +50,7 @@ class ServiceMonitor(ServiceBackend):
         data = self.get_last_data(object_id)
         if data is None:
             return self.current_date - datetime.timedelta(days=1)
-        return data.date
+        return data.created_at
     
     def process(self, line):
         """ line -> object_id, value """
@@ -66,7 +66,7 @@ class ServiceMonitor(ServiceBackend):
             line = line.strip()
             object_id, value = self.process(line)
             MonitorData.objects.create(monitor=name, object_id=object_id,
-                    content_type=ct, value=value, date=self.current_date)
+                    content_type=ct, value=value, created_at=self.current_date)
     
     def execute(self, server):
         log = super(ServiceMonitor, self).execute(server)

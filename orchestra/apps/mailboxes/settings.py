@@ -1,3 +1,4 @@
+import os
 import textwrap
 
 from django.conf import settings
@@ -8,6 +9,10 @@ MAILBOXES_DOMAIN_MODEL = getattr(settings, 'MAILBOXES_DOMAIN_MODEL', 'domains.Do
 
 
 MAILBOXES_HOME = getattr(settings, 'MAILBOXES_HOME', '/home/%(name)s/')
+
+
+MAILBOXES_SIEVE_PATH = getattr(settings, 'MAILBOXES_SIEVE_PATH',
+        os.path.join(MAILBOXES_HOME, 'Maildir/sieve/orchestra.sieve'))
 
 
 MAILBOXES_SIEVETEST_PATH = getattr(settings, 'MAILBOXES_SIEVETEST_PATH', '/dev/shm')

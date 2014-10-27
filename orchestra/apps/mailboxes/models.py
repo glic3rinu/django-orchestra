@@ -8,7 +8,6 @@ from orchestra.core import services
 
 from . import validators, settings
 
-# TODO rename app to mailboxes
 
 class Mailbox(models.Model):
     CUSTOM = 'CUSTOM'

@@ -7,13 +7,13 @@ from .helpers import domain_for_validation
 from .models import Domain
 
 
-class DomainAdminForm(forms.ModelForm):
-    migrate_subdomains = forms.BooleanField(label=_("Migrate subdomains"), required=False,
-            initial=False, help_text=_("Propagate the account owner change to subdomains."))
+class CreateDomainAdminForm(forms.ModelForm):
+#    migrate_subdomains = forms.BooleanField(label=_("Migrate subdomains"), required=False,
+#            initial=False, help_text=_("Propagate the account owner change to subdomains."))
     
     def clean(self):
         """ inherit related top domain account, when exists """
-        cleaned_data = super(DomainAdminForm, self).clean()
+        cleaned_data = super(CreateDomainAdminForm, self).clean()
         if not cleaned_data['account']:
             domain = Domain(name=cleaned_data['name'])
             top = domain.get_top()

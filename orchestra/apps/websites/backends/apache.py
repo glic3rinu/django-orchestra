@@ -3,7 +3,6 @@ import os
 import re
 
 from django.template import Template, Context
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
@@ -191,17 +190,15 @@ class Apache2Traffic(ServiceMonitor):
     verbose_name = _("Apache 2 Traffic")
     
     def prepare(self):
-        current_date = timezone.localtime(self.current_date)
-        current_date = current_date.strftime("%Y%m%d%H%M%S")
+        current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
                 INI_DATE=$2
                 LOG_FILE="$3"
                 {
-                    awk -v ini="${INI_DATE}" '
+                    awk -v ini="${INI_DATE}" -v end="$(date '+%%Y%%m%%d%%H%%M%%S' -d '%s')" '
                     BEGIN {
-                        end = "%s"
                         sum = 0
                         months["Jan"] = "01";
                         months["Feb"] = "02";
@@ -235,12 +232,12 @@ class Apache2Traffic(ServiceMonitor):
     
     def monitor(self, site):
         context = self.get_context(site)
-        self.append('monitor %(object_id)i %(last_date)s "%(log_file)s"' % context)
+        self.append('monitor {object_id} $(date "+%Y%m%d%H%M%S" -d "{last_date}") "{log_file}"'.format(**context))
     
     def get_context(self, site):
-        last_date = timezone.localtime(self.get_last_date(site.pk))
+        last_date = self.get_last_date(site.pk)
         return {
             'log_file': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
-            'last_date': last_date.strftime("%Y%m%d%H%M%S"),
+            'last_date': last_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': site.pk,
         }

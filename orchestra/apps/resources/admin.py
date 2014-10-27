@@ -1,8 +1,9 @@
 from django.contrib import admin, messages
 from django.contrib.contenttypes import generic
+from django.core.urlresolvers import reverse
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
@@ -10,6 +11,7 @@ from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_
 from orchestra.core import services
 from orchestra.utils import database_ready
 
+from .actions import run_monitor
 from .forms import ResourceForm
 from .models import Resource, ResourceData, MonitorData
 
@@ -66,27 +68,49 @@ class ResourceAdmin(ExtendedModelAdmin):
         return super(ResourceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class ResourceDataAdmin(admin.ModelAdmin):
+class ResourceDataAdmin(ExtendedModelAdmin):
     list_display = (
-        'id', 'resource_link', 'used', 'allocated', 'updated_at', 'content_object_link'
+        'id', 'resource_link', 'content_object_link', 'used', 'allocated', 'display_unit',
+        'display_updated'
     )
     list_filter = ('resource',)
-    readonly_fields = ('content_object_link',)
+    add_fields = ('resource', 'content_type', 'object_id', 'used', 'updated_at', 'allocated')
+    fields = (
+        'resource_link', 'content_type', 'content_object_link', 'used', 'display_updated',
+        'allocated', 'display_unit'
+    )
+    readonly_fields = ('display_unit',)
+    change_readonly_fields = (
+        'resource_link', 'content_type', 'content_object_link', 'used', 'display_updated',
+        'display_unit'
+    )
+    actions = (run_monitor,)
+    change_view_actions = actions
+    ordering = ('-updated_at',)
     
     resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')
+    display_updated = admin_date('updated_at', short_description=_("Updated"))
+    
+    def display_unit(self, data):
+        return data.unit
+    display_unit.short_description = _("Unit")
+    display_unit.admin_order_field = 'resource__unit'
     
     def get_queryset(self, request):
         queryset = super(ResourceDataAdmin, self).get_queryset(request)
         return queryset.prefetch_related('content_object')
 
 
-class MonitorDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'monitor', 'created_at', 'value', 'content_object_link')
+class MonitorDataAdmin(ExtendedModelAdmin):
+    list_display = ('id', 'monitor', 'display_created', 'value', 'content_object_link')
     list_filter = ('monitor',)
-    readonly_fields = ('content_object_link',)
+    add_fields = ('monitor', 'content_type', 'object_id', 'created_at', 'value')
+    fields = ('monitor', 'content_type', 'content_object_link', 'display_created', 'value')
+    change_readonly_fields = fields
     
     content_object_link = admin_link('content_object')
+    display_created = admin_date('created_at', short_description=_("Created"))
     
     def get_queryset(self, request):
         queryset = super(MonitorDataAdmin, self).get_queryset(request)
@@ -109,10 +133,21 @@ def resource_inline_factory(resources):
         def forms(self, resources=resources):
             forms = []
             resources_copy = list(resources)
-            for i, data in enumerate(self.queryset):
+            queryset = self.queryset
+            if self.instance.pk:
+                # Create missing resource data
+                queryset = list(queryset)
+                queryset_resources = [data.resource for data in queryset]
+                for resource in resources:
+                    if resource not in queryset_resources:
+                        data = resource.dataset.create(content_object=self.instance)
+                        queryset.append(data)
+            # Existing dataset
+            for i, data in enumerate(queryset):
                 forms.append(self._construct_form(i, resource=data.resource))
                 resources_copy.remove(data.resource)
-            for i, resource in enumerate(resources_copy, len(self.queryset)):
+            # Missing dataset
+            for i, resource in enumerate(resources_copy, len(queryset)):
                 forms.append(self._construct_form(i, resource=resource))
             return forms
     
@@ -123,9 +158,9 @@ def resource_inline_factory(resources):
         formset = ResourceInlineFormSet
         can_delete = False
         fields = (
-            'verbose_name', 'used', 'display_updated', 'allocated', 'unit'
+            'verbose_name', 'display_used', 'display_updated', 'allocated', 'unit',
         )
-        readonly_fields = ('used', 'display_updated')
+        readonly_fields = ('display_used', 'display_updated')
         
         class Media:
             css = {
@@ -134,9 +169,20 @@ def resource_inline_factory(resources):
         
         display_updated = admin_date('updated_at', default=_("Never"))
         
+        def display_used(self, data):
+            update_link = ''
+            if data.pk:
+                url = reverse('admin:resources_resourcedata_monitor', args=(data.pk,))
+                update_link = '<a href="%s"><strong>%s</strong></a>' % (url, ugettext("Update"))
+            if data.used is not None:
+                return '%s %s %s' % (data.used, data.resource.unit, update_link)
+            return _("Unknonw %s") % update_link
+        display_used.short_description = _("Used")
+        
         def has_add_permission(self, *args, **kwargs):
             """ Hidde add another """
             return False
+        
     return ResourceInline
 
 

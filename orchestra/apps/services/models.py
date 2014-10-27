@@ -186,7 +186,7 @@ class Service(models.Model):
     nominal_price = models.DecimalField(_("nominal price"), max_digits=12,
             decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"), choices=settings.SERVICES_SERVICE_TAXES,
-            default=settings.SERVICES_SERVICE_DEFAUL_TAX)
+            default=settings.SERVICES_SERVICE_DEFAULT_TAX)
     pricing_period = models.CharField(_("pricing period"), max_length=16,
             help_text=_("Time period that is used for computing the rate metric."),
             choices=(

@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from djcelery.models import PeriodicTask, CrontabSchedule
 
@@ -11,7 +12,7 @@ from orchestra.models import queryset, fields
 from orchestra.utils.paths import get_project_root
 from orchestra.utils.system import run
 
-from . import helpers
+from . import helpers, tasks
 from .backends import ServiceMonitor
 from .validators import validate_scale
 
@@ -127,7 +128,7 @@ class ResourceData(models.Model):
     resource = models.ForeignKey(Resource, related_name='dataset', verbose_name=_("resource"))
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
     object_id = models.PositiveIntegerField(_("object id"))
-    used = models.PositiveIntegerField(_("used"), null=True)
+    used = models.DecimalField(_("used"), max_digits=16, decimal_places=2, null=True)
     updated_at = models.DateTimeField(_("updated"), null=True)
     allocated = models.PositiveIntegerField(_("allocated"), null=True, blank=True)
     
@@ -159,6 +160,9 @@ class ResourceData(models.Model):
         self.used = current or 0
         self.updated_at = timezone.now()
         self.save(update_fields=['used', 'updated_at'])
+    
+    def monitor(self):
+        tasks.monitor(self.resource_id, ids=(self.object_id,))
 
 
 class MonitorData(models.Model):
@@ -167,7 +171,7 @@ class MonitorData(models.Model):
             choices=ServiceMonitor.get_plugin_choices())
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
     object_id = models.PositiveIntegerField(_("object id"))
-    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    created_at = models.DateTimeField(_("created"))
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     
     content_object = GenericForeignKey()
@@ -178,6 +182,10 @@ class MonitorData(models.Model):
     
     def __unicode__(self):
         return str(self.monitor)
+    
+    @cached_property
+    def unit(self):
+        return self.resource.unit
 
 
 def create_resource_relation():

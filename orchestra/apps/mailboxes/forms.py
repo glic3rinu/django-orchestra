@@ -14,7 +14,7 @@ class MailboxForm(forms.ModelForm):
     # TODO keep track of this ticket for future reimplementation
     #      https://code.djangoproject.com/ticket/897
     addresses = forms.ModelMultipleChoiceField(queryset=Address.objects, required=False,
-            widget=widgets.FilteredSelectMultiple(verbose_name=_('Pizzas'), is_stacked=False))
+            widget=widgets.FilteredSelectMultiple(verbose_name=_('addresses'), is_stacked=False))
     
     def __init__(self, *args, **kwargs):
         super(MailboxForm, self).__init__(*args, **kwargs)

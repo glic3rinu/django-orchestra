@@ -180,4 +180,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * Subdomain saving should not trigger bind slave
 
-* Domain account change, unselected checkbox: migrate subdomains
+* multiple files monitoring
+* prevent adding local email addresses on account.contacts account.email
+
+* Resource monitoring without ROUTE alert or explicit error

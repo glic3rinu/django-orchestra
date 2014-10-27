@@ -66,15 +66,14 @@ view_help.verbose_name = _("Help")
 
 def clone(modeladmin, request, queryset):
     service = queryset.get()
-    fields = (
-        'content_type_id', 'match', 'handler_type', 'is_active', 'ignore_superusers', 'billing_period',
-        'billing_point', 'is_fee', 'metric', 'nominal_price', 'tax', 'pricing_period', 
-        'rate_algorithm', 'on_cancel', 'payment_style',
-    )
+    fields = modeladmin.get_fields(request)
+    fk_fields = ('content_type',)
     query = []
     for field in fields:
-        value = getattr(service, field)
-        field = field.replace('_id', '')
+        if field in fk_fields:
+            value = getattr(service, field + '_id')
+        else:
+            value = getattr(service, field)
         query.append('%s=%s' % (field, value))
     opts = service._meta
     url = reverse('admin:%s_%s_add' % (opts.app_label, opts.model_name))

@@ -102,7 +102,8 @@ class MailmanBackend(ServiceController):
         for address in self.addresses:
             context['address'] = address
             self.append('sed -i "s/^.*\s%(name)s%(address)s\s*$//" %(virtual_alias)s' % context)
-        self.append("rmlist -a %(name)s" % context)
+        # TODO remove
+        self.append("echo rmlist -a %(name)s" % context)
     
     def commit(self):
         context = self.get_context_files()
@@ -172,7 +173,7 @@ class MailmanTraffic(ServiceMonitor):
         }
 
 
-class MailmanTraffic(ServiceMonitor):
+class MailmanSubscribers(ServiceMonitor):
     model = 'lists.List'
     verbose_name = _("Mailman subscribers")
     

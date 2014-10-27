@@ -13,7 +13,8 @@ from . import settings
 
 class WebApp(models.Model):
     """ Represents a web application """
-    name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name])
+    name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name],
+            blank=settings.WEBAPPS_ALLOW_BLANK_NAME)
     type = models.CharField(_("type"), max_length=32,
             choices=dict_setting_to_choices(settings.WEBAPPS_TYPES),
             default=settings.WEBAPPS_DEFAULT_TYPE)
@@ -26,7 +27,7 @@ class WebApp(models.Model):
         verbose_name_plural = _("Web Apps")
     
     def __unicode__(self):
-        return self.name
+        return self.name or settings.WEBAPPS_BLANK_NAME
     
     @cached
     def get_options(self):

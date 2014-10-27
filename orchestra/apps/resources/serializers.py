@@ -8,10 +8,11 @@ from .models import Resource, ResourceData
 
 class ResourceSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField('get_name')
+    unit = serializers.Field()
     
     class Meta:
         model = ResourceData
-        fields = ('name', 'used', 'allocated')
+        fields = ('name', 'used', 'allocated', 'unit')
         read_only_fields = ('used',)
     
     def from_native(self, raw_data, files=None):

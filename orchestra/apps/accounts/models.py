@@ -19,8 +19,8 @@ class Account(auth.AbstractBaseUser):
                         _("Enter a valid username."), 'invalid')])
     main_systemuser = models.ForeignKey(settings.ACCOUNTS_SYSTEMUSER_MODEL, null=True,
             related_name='accounts_main')
-    first_name = models.CharField(_("first name"), max_length=30, blank=True)
-    last_name = models.CharField(_("last name"), max_length=30, blank=True)
+    short_name = models.CharField(_("short name"), max_length=30, blank=True)
+    full_name = models.CharField(_("full name"), max_length=30)
     email = models.EmailField(_('email address'), help_text=_("Used for password recovery"))
     type = models.CharField(_("type"), choices=settings.ACCOUNTS_TYPES,
             max_length=32, default=settings.ACCOUNTS_DEFAULT_TYPE)
@@ -69,8 +69,8 @@ class Account(auth.AbstractBaseUser):
             self.save(update_fields=['main_systemuser'])
     
     def clean(self):
-        self.first_name = self.first_name.strip()
-        self.last_name = self.last_name.strip()
+        self.short_name = self.short_name.strip()
+        self.full_name = self.full_name.strip()
     
     def disable(self):
         self.is_active = False
@@ -93,12 +93,11 @@ class Account(auth.AbstractBaseUser):
         send_email_template(template, context, email_to, html=html, attachments=attachments)
     
     def get_full_name(self):
-        full_name = '%s %s' % (self.first_name, self.last_name)
-        return full_name.strip() or self.username
+        return self.full_name or self.short_name or self.username
     
     def get_short_name(self):
         """ Returns the short name for the user """
-        return self.first_name
+        return self.short_name or self.username or self.full_name
     
     def has_perm(self, perm, obj=None):
         """

@@ -167,7 +167,7 @@ class Apache2Backend(ServiceController):
             'group': site.get_groupname(),
             'sites_enabled': sites_enabled,
             'sites_available': "%s.conf" % os.path.join(sites_available, site.unique_name),
-            'logs': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
+            'logs': site.get_www_log_path(),
             'banner': self.get_banner(),
         }
         return context
@@ -237,7 +237,7 @@ class Apache2Traffic(ServiceMonitor):
     def get_context(self, site):
         last_date = self.get_last_date(site.pk)
         return {
-            'log_file': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, site.unique_name),
+            'log_file': '%s{,.1}' % site.get_www_log_path(),
             'last_date': last_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': site.pk,
         }

@@ -34,7 +34,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
             'fields': ('username', 'password1', 'password2',),
         }),
         (_("Personal info"), {
-            'fields': ('first_name', 'last_name', 'email', ('type', 'language'), 'comments'),
+            'fields': ('short_name', 'full_name', 'email', ('type', 'language'), 'comments'),
         }),
         (_("Permissions"), {
             'fields': ('is_superuser',)
@@ -45,7 +45,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
             'fields': ('username', 'password', 'main_systemuser_link')
         }),
         (_("Personal info"), {
-            'fields': ('first_name', 'last_name', 'email', ('type', 'language'), 'comments'),
+            'fields': ('short_name', 'full_name', 'email', ('type', 'language'), 'comments'),
         }),
         (_("Permissions"), {
             'fields': ('is_superuser', 'is_active')

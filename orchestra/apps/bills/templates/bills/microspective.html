@@ -23,7 +23,7 @@
 </div>
 <div id="seller-details">
     <div claas="address">
-        <span class="name">{{ seller.name }}</span>
+        <span class="name">{{ seller.get_name }}</span>
     </div>
     <div class="contact">
         <p>{{ seller.address }}<br>
@@ -58,7 +58,7 @@
     </div>
 </div>
 <div id="buyer-details">
-    <span class="name">{{ buyer.name }}</span><br>
+    <span class="name">{{ buyer.get_name }}</span><br>
     {{ buyer.vat }}<br>
     {{ buyer.address }}<br>
     {{ buyer.zipcode }} - {{ buyer.city }}<br>

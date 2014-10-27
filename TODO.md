@@ -126,44 +126,20 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     -# Required-Start:    $network $local_fs $remote_fs postgresql celeryd
     -# Required-Stop:     $network $local_fs $remote_fs postgresql celeryd
 
-
 * for list virtual_domains cleaning up we need to know the old domain name when a list changes its address domain, but this is not possible with the current design.
 * regenerate virtual_domains every time (configure a separate file for orchestra on postfix)
 * update_fields=[] doesn't trigger post save!
-
-* lists -> SaaS ?
-
-* move bill contact to bills apps
-
 
 * Backend optimization
     * fields = ()
     * ignore_fields = ()
     * based on a merge set of save(update_fields)
 
-
 * textwrap.dedent( \\)
-
-* accounts
-    * short name / long name, account name really needed? address? only minimal info..
-    * contact inlines
-    * autocreate stuff (email/<account>.orchestra.lan/plans)
-    * account username should be domain freiendly withot lines
-
-
 * parmiko write to a channel instead of transfering files?  http://sysadmin.circularvale.com/programming/paramiko-channel-hangs/
 
-* strip leading and trailing whitre spaces of most input fields
-
-* better modeling of the interdependency between webapps and websites (settings)
-* webapp options cfig agnostic
-
-* service.name / verbose_name instead of .description ?
-* miscellaneous.name / verbose_name
 
 * proforma without billing contact?
-
-* remove contact addresss, and use invoice contact for it (maybe move to contacts app again)
 
 * env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest
 
@@ -175,7 +151,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * REST PERMISSIONS
 
-* caching based on def text2int(textnum, numwords={}):
+* caching based on def text2int(textnum, numwords={}) ?:
 
 
 * Subdomain saving should not trigger bind slave
@@ -184,3 +160,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * prevent adding local email addresses on account.contacts account.email
 
 * Resource monitoring without ROUTE alert or explicit error
+
+
+* account.full_name account.short_name

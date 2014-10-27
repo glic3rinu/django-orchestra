@@ -30,10 +30,15 @@ def as_task(execute):
 def close_connection(execute):
     """ Threads have their own connection pool, closing it when finishing """
     def wrapper(*args, **kwargs):
-        log = execute(*args, **kwargs)
-        db.connection.close()
-        # Using the wrapper function as threader messenger for the execute output
-        wrapper.log = log
+        try:
+            log = execute(*args, **kwargs)
+        except:
+            raise
+        else:
+            # Using the wrapper function as threader messenger for the execute output
+            wrapper.log = log
+        finally:
+            db.connection.close()
     return wrapper
 
 

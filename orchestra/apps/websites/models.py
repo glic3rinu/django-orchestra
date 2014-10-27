@@ -55,6 +55,12 @@ class Website(models.Model):
     
     def get_groupname(self):
         return self.get_username()
+    
+    def get_www_log_path(self):
+        context = {
+            'unique_name': self.unique_name
+        }
+        return settings.WEBSITES_WEBSITE_WWW_LOG_PATH % context
 
 
 class WebsiteOption(models.Model):

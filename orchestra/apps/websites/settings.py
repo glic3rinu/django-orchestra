@@ -50,5 +50,5 @@ WEBSITES_WEBALIZER_PATH = getattr(settings, 'WEBSITES_WEBALIZER_PATH',
     '/home/httpd/webalizer/')
 
 
-WEBSITES_BASE_APACHE_LOGS = getattr(settings, 'WEBSITES_BASE_APACHE_LOGS',
-    '/var/log/apache2/virtual/')
+WEBSITES_WEBSITE_WWW_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_LOG_PATH',
+    '/var/log/apache2/virtual/%(unique_name)s')

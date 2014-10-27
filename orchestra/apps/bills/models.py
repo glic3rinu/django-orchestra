@@ -19,7 +19,8 @@ from . import settings
 class BillContact(models.Model):
     account = models.OneToOneField('accounts.Account', verbose_name=_("account"),
             related_name='billcontact')
-    name = models.CharField(_("name"), max_length=256)
+    name = models.CharField(_("name"), max_length=256, blank=True,
+            help_text=_("Account full name will be used when not provided"))
     address = models.TextField(_("address"))
     city = models.CharField(_("city"), max_length=128,
             default=settings.BILLS_CONTACT_DEFAULT_CITY)
@@ -30,6 +31,9 @@ class BillContact(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    def get_name(self):
+        return self.name or self.account.get_full_name()
 
 
 class BillManager(models.Manager):

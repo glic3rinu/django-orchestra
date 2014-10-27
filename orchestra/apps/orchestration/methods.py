@@ -8,6 +8,7 @@ import select
 
 import paramiko
 from celery.datastructures import ExceptionInfo
+from django.conf import settings as djsettings
 
 from . import settings
 
@@ -61,12 +62,13 @@ def BashSSH(backend, log, server, cmds):
         # Execute it
         context = {
             'remote_path': remote_path,
-            'digest': digest
+            'digest': digest,
+            'remove': '' if djsettings.DEBUG else "rm -fr %(remote_path)s\n",
         }
         cmd = (
             "[[ $(md5sum %(remote_path)s|awk {'print $1'}) == %(digest)s ]] && bash %(remote_path)s\n"
             "RETURN_CODE=$?\n"
-            "rm -fr %(remote_path)s\n"
+            "%(remove)s"
             "exit $RETURN_CODE" % context
         )
         channel = transport.open_session()

@@ -263,7 +263,8 @@ class AdminSystemUserMixin(SystemUserMixin):
     
     @snapshot_on_error
     def delete_account(self, username):
-        self.admin_delete(self.account)
+        account = Account.objects.get(username=username)
+        self.admin_delete(account)
     
     @snapshot_on_error
     def disable(self, username):
@@ -317,6 +318,10 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         password = self.selenium.find_element_by_id('id_password2')
         password.send_keys(account_password)
         
+        full_name = random_ascii(10)
+        full_name_field = self.selenium.find_element_by_id('id_full_name')
+        full_name_field.send_keys(full_name)
+        
         account_email = 'orchestra@orchestra.lan'
         email = self.selenium.find_element_by_id('id_email')
         email.send_keys(account_email)
@@ -330,9 +335,8 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         email.submit()
         self.assertNotEqual(url, self.selenium.current_url)
         
-        account = Account.objects.get(username=account_username)
         self.addCleanup(self.delete_account, account_username)
-        self.assertEqual(0, sshr(self.MASTER_SERVER, "id %s" % account.username).return_code)
+        self.assertEqual(0, sshr(self.MASTER_SERVER, "id %s" % account_username).return_code)
     
     @snapshot_on_error
     def test_delete_account(self):
@@ -368,4 +372,4 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         # Reenable for test cleanup
         self.account.is_active = True
         self.account.save()
-#        self.admin_login()
+        self.admin_login()

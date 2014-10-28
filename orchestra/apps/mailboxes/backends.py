@@ -51,6 +51,7 @@ class PasswdVirtualUserBackend(ServiceController):
         filtering = mailbox.get_filtering()
         if filtering:
             context['filtering'] = '# %(banner)s\n' + filtering
+            self.append("mkdir -p $(dirname '%(filtering_path)s')" % context)
             self.append("echo '%(filtering)s' > %(filtering_path)s" % context)
         else:
             self.append("rm -f %(filtering_path)s" % context)
@@ -159,10 +160,10 @@ class PostfixAddressBackend(ServiceController):
     
     def exclude_virtual_alias_maps(self, context):
         self.append(textwrap.dedent("""
-            if [[ $(grep "^%(email)s\s") ]]; then
+            if [[ $(grep "^%(email)s\s" %(virtual_alias_maps)s) ]]; then
                sed -i "/^%(email)s\s.*$/d" %(virtual_alias_maps)s
                UPDATED_VIRTUAL_ALIAS_MAPS=1
-            fi"""
+            fi""" % context
         ))
     
     def save(self, address):

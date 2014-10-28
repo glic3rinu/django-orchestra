@@ -99,7 +99,8 @@ class RESTWebAppMixin(object):
     
     @save_response_on_error
     def save_systemuser(self):
-        self.rest.systemusers.retrieve().get().save()
+        systemuser = self.rest.systemusers.retrieve().get()
+        systemuser.update(is_active=True)
     
     @save_response_on_error
     def add_webapp(self, name, options=[]):

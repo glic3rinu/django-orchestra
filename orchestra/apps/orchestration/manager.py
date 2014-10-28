@@ -33,6 +33,7 @@ def close_connection(execute):
         try:
             log = execute(*args, **kwargs)
         except:
+            logger.error('EXCEPTION executing backend %s %s' % (str(args), str(kwargs)))
             raise
         else:
             # Using the wrapper function as threader messenger for the execute output

@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from orchestra.apps.accounts.models import Account
 from orchestra.core import services
 
@@ -16,7 +18,10 @@ def get_related_objects(origin, max_depth=2):
                 yield getattr(node, field.name)
         for field in node._meta.fields:
             if field.rel:
-                yield getattr(node, field.name)
+                try:
+                    yield getattr(node, field.name)
+                except ObjectDoesNotExist:
+                    pass
     
     # BFS model relation transversal
     queue = [[origin]]

@@ -22,11 +22,15 @@ class SystemUserBackend(ServiceController):
                usermod  %(username)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             else
                useradd %(username)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
-               usermod -a -G %(username)s %(mainusername)s
             fi
             mkdir -p %(home)s
             chown %(username)s.%(username)s %(home)s""" % context
         ))
+        for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
+            context['member'] = member
+            self.append('usermod -a -G %(username)s %(member)s' % context)
+        if not user.is_main:
+            self.append('usermod -a -G %(username)s %(mainusername)s' % context)
     
     def delete(self, user):
         context = self.get_context(user)
@@ -45,9 +49,7 @@ class SystemUserBackend(ServiceController):
     def get_groups(self, user):
         if user.is_main:
             return user.account.systemusers.exclude(username=user.username).values_list('username', flat=True)
-        groups = list(user.groups.values_list('username', flat=True))
-        groups += list(settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS)
-        return groups
+        return list(user.groups.values_list('username', flat=True))
     
     def get_context(self, user):
         context = {

@@ -61,10 +61,10 @@ class ServiceHandler(plugins.Plugin):
             return None
         value, unit = self.ignore_period.split('_')
         value = text2int(value)
-        if unit.lowe().startswith('day'):
-            return timedelta(days=value)
-        if unit.lowe().startswith('month'):
-            return timedelta(months=value)
+        if unit.lower().startswith('day'):
+            return datetime.timedelta(days=value)
+        if unit.lower().startswith('month'):
+            return datetime.timedelta(months=value)
         else:
             raise ValueError("Unknown unit %s" % unit)
     

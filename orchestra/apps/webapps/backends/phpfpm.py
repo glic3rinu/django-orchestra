@@ -30,7 +30,7 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     
     def delete(self, webapp):
         context = self.get_context(webapp)
-        self.append("rm '%(fpm_config)s'" % context)
+        self.append("rm '%(fpm_path)s'" % context)
         self.delete_webapp_dir(context)
     
     def commit(self):

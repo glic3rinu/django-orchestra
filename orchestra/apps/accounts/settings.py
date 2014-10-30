@@ -15,7 +15,7 @@ ACCOUNTS_DEFAULT_TYPE = getattr(settings, 'ACCOUNTS_DEFAULT_TYPE', 'INDIVIDUAL')
 
 
 ACCOUNTS_LANGUAGES = getattr(settings, 'ACCOUNTS_LANGUAGES', (
-    ('en', _('English')),
+    ('EN', _('English')),
 ))
 
 
@@ -23,7 +23,7 @@ ACCOUNTS_SYSTEMUSER_MODEL = getattr(settings, 'ACCOUNTS_SYSTEMUSER_MODEL',
     'systemusers.SystemUser')
 
 
-ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE', 'en')
+ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE', 'EN')
 
 
 ACCOUNTS_MAIN_PK = getattr(settings, 'ACCOUNTS_MAIN_PK', 1)

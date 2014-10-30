@@ -24,6 +24,7 @@ class Apache2Backend(ServiceController):
         if site.protocol is 'https':
             extra_conf += self.get_ssl(site)
         extra_conf += self.get_security(site)
+        extra_conf += self.get_redirect(site)
         context['extra_conf'] = extra_conf
         
         apache_conf = Template(textwrap.dedent("""\
@@ -89,7 +90,7 @@ class Apache2Backend(ServiceController):
             <Directory %(app_path)s>
                 Options +ExecCGI
                 AddHandler fcgid-script .php
-                FcgidWrapper %(fcgid_path)s
+                FcgidWrapper %(fcgid_path)s\
             """ % context)
         for option in content.webapp.options.filter(name__startswith='Fcgid'):
             fcgid += "    %s %s\n" % (option.name, option.value)
@@ -101,10 +102,12 @@ class Apache2Backend(ServiceController):
         custom_cert = site.options.filter(name='ssl')
         if custom_cert:
             cert = tuple(custom_cert[0].value.split())
+        # TODO separate directtives?
         directives = textwrap.dedent("""\
             SSLEngine on
             SSLCertificateFile %s
-            SSLCertificateKeyFile %s""" % cert
+            SSLCertificateKeyFile %s\
+            """ % cert
         )
         return directives
     
@@ -112,14 +115,24 @@ class Apache2Backend(ServiceController):
         directives = ''
         for rules in site.options.filter(name='sec_rule_remove'):
             for rule in rules.value.split():
-                directives += "SecRuleRemoveById %i" % int(rule)
-        
+                directives += "SecRuleRemoveById %i\n" % int(rule)
         for modsecurity in site.options.filter(name='sec_rule_off'):
             directives += textwrap.dedent("""\
                 <LocationMatch %s>
                     SecRuleEngine Off
-                </LocationMatch>
+                </LocationMatch>\
                 """ % modsecurity.value)
+        if directives:
+            directives = '<IfModule mod_security2.c>\n%s\n</IfModule>' % directives
+        return directives
+    
+    def get_redirect(self, site):
+        directives = ''
+        for redirect in site.options.filter(name='redirect'):
+            if re.match(r'^.*[\^\*\$\?\)]+.*$', redirect.value):
+                directives += "RedirectMatch %s" % redirect.value
+            else:
+                directives += "Redirect %s" % redirect.value
         return directives
     
     def get_protections(self, site):

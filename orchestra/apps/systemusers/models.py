@@ -23,7 +23,7 @@ class SystemUserQuerySet(models.QuerySet):
 class SystemUser(models.Model):
     """ System users """
     username = models.CharField(_("username"), max_length=64, unique=True,
-            help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
+            help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])
     password = models.CharField(_("password"), max_length=128)

@@ -14,13 +14,13 @@ from . import settings
 
 class Account(auth.AbstractBaseUser):
     username = models.CharField(_("username"), max_length=64, unique=True,
-            help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
+            help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])
     main_systemuser = models.ForeignKey(settings.ACCOUNTS_SYSTEMUSER_MODEL, null=True,
-            related_name='accounts_main')
-    short_name = models.CharField(_("short name"), max_length=30, blank=True)
-    full_name = models.CharField(_("full name"), max_length=30)
+            related_name='accounts_main', editable=False)
+    short_name = models.CharField(_("short name"), max_length=64, blank=True)
+    full_name = models.CharField(_("full name"), max_length=256)
     email = models.EmailField(_('email address'), help_text=_("Used for password recovery"))
     type = models.CharField(_("type"), choices=settings.ACCOUNTS_TYPES,
             max_length=32, default=settings.ACCOUNTS_DEFAULT_TYPE)

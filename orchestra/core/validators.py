@@ -1,11 +1,15 @@
 import re
 
 import crack
+import localflavor
+import phonenumbers
 
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from IPy import IP
+
+from ..utils.python import import_class
 
 
 def validate_ipv4_address(value):
@@ -16,7 +20,6 @@ def validate_ipv4_address(value):
         raise ValidationError(msg)
     if ip.version() != 4:
         raise ValidationError(msg)
-
 
 
 def validate_ipv6_address(value):
@@ -61,11 +64,12 @@ def validate_hostname(hostname):
     http://stackoverflow.com/a/2532344
     """
     if len(hostname) > 255:
-        return False
-    if hostname[-1] == ".":
-        hostname = hostname[:-1] # strip exactly one dot from the right, if present
-    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
-    return all(allowed.match(x) for x in hostname.split("."))
+        raise ValidationError(_("Too long for a hostname."))
+    hostname = hostname.rstrip('.')
+    allowed = re.compile('(?!-)[A-Z\d-]{1,63}(?<!-)$', re.IGNORECASE)
+    for name in hostname.split('.'):
+        if not allowed.match(name):
+            raise ValidationError(_("Not a valid hostname (%s).") % name)
 
 
 def validate_password(value):
@@ -78,3 +82,40 @@ def validate_password(value):
 def validate_url_path(value):
     if not re.match(r'^\/[/.a-zA-Z0-9-_]*$', value):
         raise ValidationError(_('"%s" is not a valid URL path.') % value)
+
+
+def validate_vat(vat, country):
+    field = 'localflavor.{lower}.forms.{upper}IdentityCardNumberField'.format(
+        lower=country.lower(),
+        upper=country.upper()
+    )
+    try:
+        field = import_class(field)
+    except (ImportError, AttributeError, ValueError):
+        pass
+    else:
+        field().clean(vat)
+
+
+def validate_zipcode(zipcode, country):
+    field = 'localflavor.{lower}.forms.{upper}PostalCodeField'.format(
+        lower=country.lower(),
+        upper=country.upper()
+    )
+    try:
+        field = import_class(field)
+    except (ImportError, AttributeError, ValueError):
+        pass
+    else:
+        field().clean(zipcode)
+
+
+def validate_phone(value, country):
+    """ local phone number or international """
+    msg = _("Not a valid %s nor international phone number.") % country
+    try:
+        number = phonenumbers.parse(value, country)
+    except phonenumbers.phonenumberutil.NumberParseException:
+        raise ValidationError(msg)
+    if not phonenumbers.is_valid_number(number):
+        raise ValidationError(msg)

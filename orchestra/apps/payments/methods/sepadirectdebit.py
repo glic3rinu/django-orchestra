@@ -23,24 +23,12 @@ class SEPADirectDebitForm(PluginDataForm):
             widget=forms.TextInput(attrs={'size': '50'}))
     name = forms.CharField(max_length=128, label=_("Name"),
             widget=forms.TextInput(attrs={'size': '50'}))
-    
-    def clean_iban(self):
-        return self.cleaned_data['iban'].strip()
-    
-    def clean_name(self):
-        return self.cleaned_data['name'].strip()
 
 
 class SEPADirectDebitSerializer(serializers.Serializer):
     iban = serializers.CharField(label='IBAN', validators=[IBANValidator()],
             min_length=min(IBAN_COUNTRY_CODE_LENGTH.values()), max_length=34)
     name = serializers.CharField(label=_("Name"), max_length=128)
-    
-    def clean_iban(self, attrs, source):
-        return attrs[source].strip()
-    
-    def clean_name(self, attrs, source):
-        return attrs[source].strip()
 
 
 class SEPADirectDebit(PaymentMethod):
@@ -55,6 +43,13 @@ class SEPADirectDebit(PaymentMethod):
     def get_bill_message(self, source):
         return _("This bill will been automatically charged to your bank account "
                  " with IBAN number<br><strong>%s</strong>.") % source.number
+    
+    @classmethod
+    def clean_data(cls, data):
+        data['iban'] = data['iban'].strip()
+        data['name'] = data['name'].strip()
+        IBANValidator()(data['iban'])
+        return data
     
     @classmethod
     def process(cls, transactions):

@@ -155,7 +155,10 @@ function install_requirements () {
          lxml==3.3.5 \
          python-dateutil==2.2 \
          django-iban==0.3.0 \
-         requests"
+         requests \
+         phonenumbers \
+         django-countries \
+         django-localflavor"
     
     if $testing; then
         APT="${APT} \

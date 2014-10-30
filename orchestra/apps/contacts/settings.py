@@ -1,4 +1,5 @@
 from django.conf import settings
+from django_countries import data
 
 
 CONTACTS_DEFAULT_EMAIL_USAGES = getattr(settings, 'CONTACTS_DEFAULT_EMAIL_USAGES',
@@ -9,7 +10,7 @@ CONTACTS_DEFAULT_EMAIL_USAGES = getattr(settings, 'CONTACTS_DEFAULT_EMAIL_USAGES
 CONTACTS_DEFAULT_CITY = getattr(settings, 'CONTACTS_DEFAULT_CITY', 'Barcelona')
 
 
-CONTACTS_DEFAULT_PROVINCE = getattr(settings, 'CONTACTS_DEFAULT_PROVINCE', 'Barcelona')
+CONTACTS_COUNTRIES = getattr(settings, 'CONTACTS_COUNTRIES', data.COUNTRIES)
 
 
-CONTACTS_DEFAULT_COUNTRY = getattr(settings, 'CONTACTS_DEFAULT_COUNTRY', 'Spain')
+CONTACTS_DEFAULT_COUNTRY = getattr(settings, 'CONTACTS_DEFAULT_COUNTRY', 'ES')

@@ -4,6 +4,7 @@ import re
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core.validators import validate_hostname
 from orchestra.utils import paths
 from orchestra.utils.system import run
 
@@ -21,6 +22,15 @@ def validate_allowed_domain(value):
             for domain in forbidden.readlines():
                 if re.match(r'^(.*\.)*%s$' % domain.strip(), value):
                     raise ValidationError(_("This domain name is not allowed"))
+
+
+def validate_domain_name(value):
+    # SRV records may use '_' in the domain name
+    value = value.lstrip('*.').replace('_', '')
+    try:
+        validate_hostname(value)
+    except ValidationError:
+        raise ValidationError(_("Not a valid domain name."))
 
 
 def validate_zone_interval(value):

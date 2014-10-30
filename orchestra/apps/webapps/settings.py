@@ -61,6 +61,14 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
 })
 
 
+WEBAPPS_TYPES_OVERRIDE = getattr(settings, 'WEBAPPS_TYPES_OVERRIDE', {})
+for webapp_type, value in WEBAPPS_TYPES_OVERRIDE.iteritems():
+    if value is None:
+        WEBAPPS_TYPES.pop(webapp_type, None)
+    else:
+        WEBAPPS_TYPES[webapp_type] = value
+
+
 WEBAPPS_DEFAULT_TYPE = getattr(settings, 'WEBAPPS_DEFAULT_TYPE', 'php5.5')
 
 
@@ -74,51 +82,91 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     # PHP
     'enabled_functions': (
         _("PHP - Enabled functions"),
-        r'^[\w.,-]+$'
-    ),
-    'PHP-register_globals': (
-        _("PHP - Register globals"),
-        r'^(On|Off|on|off)$'
+        r'^[\w\.,-]+$'
     ),
     'PHP-allow_url_include': (
         _("PHP - Allow URL include"),
         r'^(On|Off|on|off)$'
     ),
+    'PHP-allow_url_fopen': (
+        _("PHP - allow_url_fopen"),
+        r'^(On|Off|on|off)$'
+    ),
     'PHP-auto_append_file': (
         _("PHP - Auto append file"),
-        r'^none$'
+        r'^[\w\.,-/]+$'
+    ),
+    'PHP-auto_prepend_file': (
+        _("PHP - Auto prepend file"),
+        r'^[\w\.,-/]+$'
+    ),
+    'PHP-date.timezone': (
+        _("PHP - date.timezone"),
+        r'^\w+/\w+$'
     ),
     'PHP-default_socket_timeout': (
         _("PHP - Default socket timeout"),
-        r'P^[0-9][0-9]?[0-9]?$'
+        r'^[0-9]{1,3}$'
     ),
     'PHP-display_errors': (
         _("PHP - Display errors"),
         r'^(On|Off|on|off)$'
     ),
+    'PHP-extension': (
+        _("PHP - Extension"),
+        r'^[^ ]+$'
+    ),
     'PHP-magic_quotes_gpc': (
         _("PHP - Magic quotes GPC"),
         r'^(On|Off|on|off)$'
     ),
+    'PHP-magic_quotes_runtime': (
+        _("PHP - Magic quotes runtime"),
+        r'^(On|Off|on|off)$'
+    ),
+    'PHP-magic_quotes_sybase': (
+        _("PHP - Magic quotes sybase"),
+        r'^(On|Off|on|off)$'
+    ),
     'PHP-max_execution_time': (
         _("PHP - Max execution time"),
-        r'^[0-9][0-9]?[0-9]?$'
+        r'^[0-9]{1,3}$'
     ),
     'PHP-max_input_time': (
         _("PHP - Max input time"),
-        r'^[0-9][0-9]?[0-9]?$'
+        r'^[0-9]{1,3}$'
     ),
     'PHP-memory_limit': (
         _("PHP - Memory limit"),
-        r'^[0-9][0-9]?[0-9]?M$'
+        r'^[0-9]{1,3}M$'
     ),
     'PHP-mysql.connect_timeout': (
         _("PHP - Mysql connect timeout"),
-        r'^[0-9][0-9]?[0-9]?$'
+        r'^([0-9]){1,3}$'
+    ),
+    'PHP-output_buffering': (
+        _("PHP - output_buffering"),
+        r'^(On|Off|on|off)$'
+    ),
+    'PHP-register_globals': (
+        _("PHP - Register globals"),
+        r'^(On|Off|on|off)$'
     ),
     'PHP-post_max_size': (
         _("PHP - Post max size"),
-        r'^[0-9][0-9]?M$'
+        r'^[0-9]{1,3}M$'
+    ),
+    'PHP-sendmail_path': (
+        _("PHP - sendmail_path"),
+        r'^[^ ]+$'
+    ),
+    'PHP-session.bug_compat_warn': (
+        _("PHP - session.bug_compat_warn"),
+        r'^(On|Off|on|off)$'
+    ),
+    'PHP-session.auto_start': (
+        _("PHP - session.auto_start"),
+        r'^(On|Off|on|off)$'
     ),
     'PHP-safe_mode': (
         _("PHP - Safe mode"),
@@ -126,32 +174,48 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     ),
     'PHP-suhosin.post.max_vars': (
         _("PHP - Suhosin post max vars"),
-        r'^[0-9][0-9]?[0-9]?[0-9]?$'
+        r'^[0-9]{1,4}$'
     ),
     'PHP-suhosin.request.max_vars': (
         _("PHP - Suhosin request max vars"),
-        r'^[0-9][0-9]?[0-9]?[0-9]?$'
+        r'^[0-9]{1,4}$'
+    ),
+    'PHP-suhosin.session.encrypt': (
+        _("PHP - suhosin.session.encrypt"),
+        r'^(On|Off|on|off)$'
     ),
     'PHP-suhosin.simulation': (
         _("PHP - Suhosin simulation"),
         r'^(On|Off|on|off)$'
     ),
+    'PHP-suhosin.executor.include.whitelist': (
+        _("PHP - suhosin.executor.include.whitelist"),
+        r'^(upload|phar)$'
+    ),
+    'PHP-upload_max_filesize': (
+        _("PHP - upload_max_filesize"),
+        r'^[0-9]{1,3}M$'
+    ),
+    'PHP-zend_extension': (
+        _("PHP - zend_extension"),
+        r'^[^ ]+$'
+    ),
     # FCGID
     'FcgidIdleTimeout': (
         _("FCGI - Idle timeout"),
-        r'^[0-9][0-9]?[0-9]?$'
+        r'^[0-9]{1,3}$'
     ),
     'FcgidBusyTimeout': (
         _("FCGI - Busy timeout"),
-        r'^[0-9][0-9]?[0-9]?$'
+        r'^[0-9]{1,3}$'
     ),
     'FcgidConnectTimeout': (
         _("FCGI - Connection timeout"),
-        r'^[0-9][0-9]?[0-9]?$'
+        r'^[0-9]{1,3}$'
     ),
     'FcgidIOTimeout': (
         _("FCGI - IO timeout"),
-        r'^[0-9][0-9]?[0-9]?$'
+        r'^[0-9]{1,3}$'
     ),
 })
 

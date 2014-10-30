@@ -24,6 +24,11 @@ class PaymentMethod(plugins.Plugin):
             plugins.append(import_class(cls))
         return plugins
     
+    @classmethod
+    def clean_data(cls, data):
+        """ model clean """
+        return data
+    
     def get_form(self):
         self.form.plugin = self
         self.form.plugin_field = 'method'

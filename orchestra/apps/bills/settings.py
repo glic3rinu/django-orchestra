@@ -1,4 +1,5 @@
 from django.conf import settings
+from django_countries import data
 
 
 BILLS_NUMBER_LENGTH = getattr(settings, 'BILLS_NUMBER_LENGTH', 4)
@@ -57,4 +58,9 @@ BILLS_ORDER_MODEL = getattr(settings, 'BILLS_ORDER_MODEL', 'orders.Order')
 BILLS_CONTACT_DEFAULT_CITY = getattr(settings, 'BILLS_CONTACT_DEFAULT_CITY', 'Barcelona')
 
 
-BILLS_CONTACT_DEFAULT_COUNTRY = getattr(settings, 'BILLS_CONTACT_DEFAULT_COUNTRY', 'Spain')
+BILLS_CONTACT_COUNTRIES = getattr(settings, 'BILLS_CONTACT_COUNTRIES', data.COUNTRIES)
+
+
+BILLS_CONTACT_DEFAULT_COUNTRY = getattr(settings, 'BILLS_CONTACT_DEFAULT_COUNTRY', 'ES')
+
+

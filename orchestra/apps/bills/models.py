@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 
-from django.core.validators import ValidationError
+from django.core.validators import ValidationError, RegexValidator
 from django.db import models
 from django.template import loader, Context
 from django.utils import timezone
@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.contacts.models import Contact
-from orchestra.core import accounts
+from orchestra.core import accounts, validators
 from orchestra.utils.html import html_to_pdf
 
 from . import settings
@@ -24,8 +24,11 @@ class BillContact(models.Model):
     address = models.TextField(_("address"))
     city = models.CharField(_("city"), max_length=128,
             default=settings.BILLS_CONTACT_DEFAULT_CITY)
-    zipcode = models.PositiveIntegerField(_("zip code"))
+    zipcode = models.CharField(_("zip code"), max_length=10,
+            validators=[RegexValidator(r'^[0-9A-Z]{3,10}$',
+                        _("Enter a valid zipcode."), 'invalid')])
     country = models.CharField(_("country"), max_length=20,
+            choices=settings.BILLS_CONTACT_COUNTRIES,
             default=settings.BILLS_CONTACT_DEFAULT_COUNTRY)
     vat = models.CharField(_("VAT number"), max_length=64)
     
@@ -34,6 +37,12 @@ class BillContact(models.Model):
     
     def get_name(self):
         return self.name or self.account.get_full_name()
+    
+    def clean(self):
+        self.vat = self.vat.strip()
+        self.city = self.city.strip()
+        validators.validate_vat(self.vat, self.country)
+        validators.validate_zipcode(self.zipcode, self.country)
 
 
 class BillManager(models.Manager):

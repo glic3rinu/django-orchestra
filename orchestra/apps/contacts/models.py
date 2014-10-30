@@ -1,10 +1,15 @@
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import accounts
+from orchestra.core import accounts, validators
 from orchestra.models.fields import MultiSelectField
 
 from . import settings
+
+
+validate_phone = lambda p: validators.validate_phone(p, settings.CONTACTS_DEFAULT_COUNTRY)
 
 
 class ContactQuerySet(models.QuerySet):
@@ -37,14 +42,17 @@ class Contact(models.Model):
     email_usage = MultiSelectField(_("email usage"), max_length=256, blank=True,
             choices=EMAIL_USAGES,
             default=settings.CONTACTS_DEFAULT_EMAIL_USAGES)
-    phone = models.CharField(_("phone"), max_length=32, blank=True)
-    phone2 = models.CharField(_("alternative phone"), max_length=32, blank=True)
+    phone = models.CharField(_("phone"), max_length=32, blank=True,
+            validators=[validate_phone])
+    phone2 = models.CharField(_("alternative phone"), max_length=32, blank=True,
+            validators=[validate_phone])
     address = models.TextField(_("address"), blank=True)
-    city = models.CharField(_("city"), max_length=128, blank=True,
-            default=settings.CONTACTS_DEFAULT_CITY)
-    zipcode = models.PositiveIntegerField(_("zip code"), null=True, blank=True)
+    city = models.CharField(_("city"), max_length=128, blank=True)
+    zipcode = models.CharField(_("zip code"), max_length=10, blank=True,
+            validators=[RegexValidator(r'^[0-9,A-Z]{3,10}$',
+                        _("Enter a valid zipcode."), 'invalid')])
     country = models.CharField(_("country"), max_length=20, blank=True,
-            default=settings.CONTACTS_DEFAULT_COUNTRY)
+            choices=settings.CONTACTS_COUNTRIES)
     
     def __unicode__(self):
         return self.short_name
@@ -57,6 +65,12 @@ class Contact(models.Model):
         self.address = self.address.strip()
         self.city = self.city.strip()
         self.country = self.country.strip()
+        if self.address and not (self.city and self.zipcode and self.country):
+            raise ValidationError(_("City, zipcode and country must be provided when address is provided."))
+        if self.zipcode and not self.country:
+            raise ValidationError(_("Country must be provided when zipcode is provided."))
+        elif self.zipcode and self.country:
+            validators.validate_zipcode(self.zipcode, self.country)
 
 
 accounts.register(Contact)

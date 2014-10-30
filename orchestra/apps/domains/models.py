@@ -2,8 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
-from orchestra.core.validators import (validate_ipv4_address, validate_ipv6_address,
-        validate_hostname, validate_ascii)
+from orchestra.core.validators import validate_ipv4_address, validate_ipv6_address, validate_ascii
 from orchestra.utils.python import AttrDict
 
 from . import settings, validators, utils
@@ -11,11 +10,11 @@ from . import settings, validators, utils
 
 class Domain(models.Model):
     name = models.CharField(_("name"), max_length=256, unique=True,
-            validators=[validate_hostname, validators.validate_allowed_domain],
+            validators=[validators.validate_domain_name, validators.validate_allowed_domain],
             help_text=_("Domain or subdomain name."))
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='domains', blank=True, help_text=_("Automatically selected for subdomains."))
-    top = models.ForeignKey('domains.Domain', null=True, related_name='subdomains')
+    top = models.ForeignKey('domains.Domain', null=True, related_name='subdomains', editable=False)
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial,
             help_text=_("Serial number"))
     

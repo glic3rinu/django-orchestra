@@ -49,6 +49,9 @@ class PaymentSource(models.Model):
     
     def get_due_delta(self):
         return self.method_class().due_delta
+    
+    def clean(self):
+        self.data = self.method_class().clean_data(self.data)
 
 
 class TransactionQuerySet(models.QuerySet):

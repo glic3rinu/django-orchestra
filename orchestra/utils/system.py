@@ -21,11 +21,11 @@ def check_root(func):
     return wrapped
 
 
-class _AttributeString(str):
+class _AttributeUnicode(unicode):
     """ Simple string subclass to allow arbitrary attribute access. """
     @property
     def stdout(self):
-        return str(self)
+        return unicode(self)
 
 
 def make_async(fd):
@@ -43,7 +43,7 @@ def read_async(fd):
         if e.errno != errno.EAGAIN:
             raise e
         else:
-            return ''
+            return u''
 
 
 def run(command, display=False, error_codes=[0], silent=False, stdin=''):
@@ -60,8 +60,8 @@ def run(command, display=False, error_codes=[0], silent=False, stdin=''):
     make_async(p.stdout)
     make_async(p.stderr)
     
-    stdout = str()
-    stderr = str()
+    stdout = unicode()
+    stderr = unicode()
     
     # Async reading of stdout and sterr
     while True:
@@ -77,15 +77,15 @@ def run(command, display=False, error_codes=[0], silent=False, stdin=''):
         if display and stderrPiece:
             sys.stderr.write(stderrPiece)
         
-        stdout += stdoutPiece
-        stderr += stderrPiece
+        stdout += stdoutPiece.decode("utf8")
+        stderr += stderrPiece.decode("utf8")
         returnCode = p.poll()
         
         if returnCode != None:
             break
     
-    out = _AttributeString(stdout.strip())
-    err = _AttributeString(stderr.strip())
+    out = _AttributeUnicode(stdout.strip())
+    err = _AttributeUnicode(stderr.strip())
     p.stdout.close()
     p.stderr.close()
     

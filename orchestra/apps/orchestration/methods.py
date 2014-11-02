@@ -55,7 +55,7 @@ def BashSSH(backend, log, server, cmds):
         # Copy script to remote server
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.put(path, remote_path)
-        sftp.chmod(remote_path, '0600')
+        sftp.chmod(remote_path, 0600)
         sftp.close()
         os.remove(path)
         

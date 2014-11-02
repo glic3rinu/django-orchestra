@@ -76,8 +76,9 @@ class Mailbox(models.Model):
 
 
 class Address(models.Model):
-    name = models.CharField(_("name"), max_length=64,
-            validators=[validators.validate_emailname])
+    name = models.CharField(_("name"), max_length=64, blank=True,
+            validators=[validators.validate_emailname],
+            help_text=_("Address name, left blank for a <i>catch-all</i> address"))
     domain = models.ForeignKey(settings.MAILBOXES_DOMAIN_MODEL,
             verbose_name=_("domain"),
             related_name='addresses')

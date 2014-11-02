@@ -13,7 +13,7 @@ class MailboxForm(forms.ModelForm):
     """ hacky form for adding reverse M2M form field for Mailbox.addresses """
     # TODO keep track of this ticket for future reimplementation
     #      https://code.djangoproject.com/ticket/897
-    addresses = forms.ModelMultipleChoiceField(queryset=Address.objects, required=False,
+    addresses = forms.ModelMultipleChoiceField(queryset=Address.objects.select_related('domain'), required=False,
             widget=widgets.FilteredSelectMultiple(verbose_name=_('addresses'), is_stacked=False))
     
     def __init__(self, *args, **kwargs):

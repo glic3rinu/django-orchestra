@@ -1,5 +1,4 @@
-TODO
-====
+TODO ====
 
 * scape strings before executing scripts in order to prevent exploits: django templates automatically scapes things. Most important is to ensuer that all escape ' to &quot
 * Don't store passwords and other service parameters that can be changed by the services i.e. mailman, vps etc. Find an execution mechanism that trigger `change_password()`
@@ -163,3 +162,21 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 
 * Domain validation has to be done with injected records and subdomains
+
+* Names: lower andupper case allow or disallow ? webapps/account.username etc
+
+* Split plans into a separate app (plans and rates / services ) ? 
+
+* reconsider binding webapps to systemusers (pangea multiple users wordpress-ftp, moodle-pangea, etc)
+
+* sync() ServiceController method that synchronizes orchestra and servers (delete or import)
+
+* validate address.forward: if mailbox in account.mailboxes then: _("Please use mailboxes field") or consider removing mailbox support on forward (user@pangea.org instead)
+* reespell systemuser to system_user
+* remove order in account admin and others
+
+* create admin prefetch_related on ExtendedModelAdmin
+
+* Databases.User add reverse M2M databases widget (like mailbox.addresses)
+
+* One domain zone validation for each save, not one per subdomain, maybe on modeladmin.save_related? prevent save on model_related, and save it on save_related()

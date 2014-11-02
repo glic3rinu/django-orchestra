@@ -55,6 +55,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         }),
     )
     filter_by_account_fields = ['domains']
+    prefetch_related = ('domains', 'content_set__webapp')
     
     def display_domains(self, website):
         domains = []
@@ -67,7 +68,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     
     def display_webapps(self, website):
         webapps = []
-        for content in website.content_set.all().select_related('webapp'):
+        for content in website.content_set.all():
             webapp = content.webapp
             url = change_url(webapp)
             name = "%s on %s" % (webapp.get_type_display(), content.path)
@@ -80,11 +81,6 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         if db_field.name == 'root':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         return super(WebsiteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
-    
-    def get_queryset(self, request):
-        """ Select related for performance """
-        qs = super(WebsiteAdmin, self).get_queryset(request)
-        return qs.prefetch_related('domains')
 
 
 admin.site.register(Website, WebsiteAdmin)

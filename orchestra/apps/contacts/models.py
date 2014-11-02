@@ -52,7 +52,8 @@ class Contact(models.Model):
             validators=[RegexValidator(r'^[0-9,A-Z]{3,10}$',
                         _("Enter a valid zipcode."), 'invalid')])
     country = models.CharField(_("country"), max_length=20, blank=True,
-            choices=settings.CONTACTS_COUNTRIES)
+            choices=settings.CONTACTS_COUNTRIES,
+            default=settings.CONTACTS_DEFAULT_COUNTRY)
     
     def __unicode__(self):
         return self.short_name

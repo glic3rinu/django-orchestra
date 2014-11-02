@@ -20,7 +20,6 @@ transports = {}
 
 def BashSSH(backend, log, server, cmds):
     from .models import BackendLog
-    # TODO save remote file into a root read only directory to avoid users sniffing passwords and stuff
     
     script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
@@ -36,8 +35,8 @@ def BashSSH(backend, log, server, cmds):
         logger.debug('%s is going to be executed on %s' % (backend, server))
         # Avoid "Argument list too long" on large scripts by genereting a file
         # and scping it to the remote server
-        with open(path, 'w') as script_file:
-            script_file.write(script)
+        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT, 0600), 'w') as handle:
+            handle.write(script)
         
         # ssh connection
         ssh = paramiko.SSHClient()

@@ -59,6 +59,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     change_readonly_fields = ('name',)
     add_form = MailboxCreationForm
     form = MailboxChangeForm
+    prefetch_related = ('addresses__domain',)
     
     def display_addresses(self, mailbox):
         addresses = []
@@ -104,6 +105,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_by_account_fields = ('domain', 'mailboxes')
     filter_horizontal = ['mailboxes']
     form = AddressForm
+    prefetch_related = ('mailboxes', 'domain')
     
     domain_link = admin_link('domain', order='domain__name')
     
@@ -132,11 +134,6 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         if db_field.name == 'forward':
             kwargs['widget'] = forms.TextInput(attrs={'size':'118'})
         return super(AddressAdmin, self).formfield_for_dbfield(db_field, **kwargs)
-    
-    def get_queryset(self, request):
-        """ Select related for performance """
-        qs = super(AddressAdmin, self).get_queryset(request)
-        return qs.select_related('domain')
     
     def get_fields(self, request, obj=None):
         """ Remove mailboxes field when creating address from a popup i.e. from mailbox add form """

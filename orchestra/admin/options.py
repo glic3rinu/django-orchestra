@@ -154,7 +154,13 @@ class ChangeAddFieldsMixin(object):
 
 
 class ExtendedModelAdmin(ChangeViewActionsMixin, ChangeAddFieldsMixin, admin.ModelAdmin):
-    pass
+    prefetch_related = None
+    
+    def get_queryset(self, request):
+        qs = super(ExtendedModelAdmin, self).get_queryset(request)
+        if self.prefetch_related:
+            qs = qs.prefetch_related(*self.prefetch_related)
+        return qs
 
 
 class SelectPluginAdminMixin(object):

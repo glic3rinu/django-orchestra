@@ -44,8 +44,8 @@ def validate_name(value):
     """
     A single non-empty line of free-form text with no whitespace.
     """
-    validators.RegexValidator('^[\.\w\-]+$',
-        _("Enter a valid name (text without whitspaces)."), 'invalid')(value)
+    validators.RegexValidator('^[\.\_\-0-9a-z]+$',
+        _("Enter a valid name (spaceless lowercase text including _.-)."), 'invalid')(value)
 
 
 def validate_ascii(value):

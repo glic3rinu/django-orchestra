@@ -26,7 +26,11 @@ def validate_emailname(value):
 def validate_forward(value):
     """ space separated mailboxes or emails """
     from .models import Mailbox
+    destinations = []
     for destination in value.split():
+        if destination in destinations:
+            raise ValidationError(_("'%s' is already present.") % destination)
+        destinations.append(destination)
         msg = _("'%s' is not an existent mailbox" % destination)
         if '@' in destination:
             if not destination[-1].isalpha():

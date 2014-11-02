@@ -217,6 +217,10 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
         _("FCGI - IO timeout"),
         r'^[0-9]{1,3}$'
     ),
+    'FcgidProcessLifeTime': (
+        _("FCGI - IO timeout"),
+        r'^[0-9]{1,4}$'
+    ),
 })
 
 

@@ -58,7 +58,7 @@ BILLS_ORDER_MODEL = getattr(settings, 'BILLS_ORDER_MODEL', 'orders.Order')
 BILLS_CONTACT_DEFAULT_CITY = getattr(settings, 'BILLS_CONTACT_DEFAULT_CITY', 'Barcelona')
 
 
-BILLS_CONTACT_COUNTRIES = getattr(settings, 'BILLS_CONTACT_COUNTRIES', data.COUNTRIES)
+BILLS_CONTACT_COUNTRIES = getattr(settings, 'BILLS_CONTACT_COUNTRIES', ((k,v) for k,v in data.COUNTRIES.iteritems()))
 
 
 BILLS_CONTACT_DEFAULT_COUNTRY = getattr(settings, 'BILLS_CONTACT_DEFAULT_COUNTRY', 'ES')

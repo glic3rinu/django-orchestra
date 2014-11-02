@@ -41,13 +41,15 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     add_form = DatabaseCreationForm
     readonly_fields = ('account_link', 'display_users',)
     filter_horizontal = ['users']
+    filter_by_account_fields = ('users',)
+    prefetch_related = ('users',)
     
     def display_users(self, db):
         links = []
         for user in db.users.all():
             link = '<a href="%s">%s</a>' % (change_url(user), user.username)
             links.append(link)
-        return ', '.join(links)
+        return '<br>'.join(links)
     display_users.short_description = _("Users")
     display_users.allow_tags = True
     display_users.admin_order_field = 'users__username'
@@ -87,13 +89,15 @@ class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, Exten
         }),
     )
     readonly_fields = ('account_link', 'display_databases',)
+    filter_by_account_fields = ('databases',)
+    prefetch_related = ('databases',)
     
     def display_databases(self, user):
         links = []
         for db in user.databases.all():
             link = '<a href="%s">%s</a>' % (change_url(db), db.name)
             links.append(link)
-        return ', '.join(links)
+        return '<br>'.join(links)
     display_databases.short_description = _("Databases")
     display_databases.allow_tags = True
     display_databases.admin_order_field = 'databases__name'

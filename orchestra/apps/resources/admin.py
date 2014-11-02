@@ -87,7 +87,8 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     actions = (run_monitor,)
     change_view_actions = actions
     ordering = ('-updated_at',)
-    
+    prefetch_related = ('content_object',)
+
     resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')
     display_updated = admin_date('updated_at', short_description=_("Updated"))
@@ -96,10 +97,6 @@ class ResourceDataAdmin(ExtendedModelAdmin):
         return data.unit
     display_unit.short_description = _("Unit")
     display_unit.admin_order_field = 'resource__unit'
-    
-    def get_queryset(self, request):
-        queryset = super(ResourceDataAdmin, self).get_queryset(request)
-        return queryset.prefetch_related('content_object')
 
 
 class MonitorDataAdmin(ExtendedModelAdmin):

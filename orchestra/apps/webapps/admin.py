@@ -34,15 +34,17 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')
+    prefetch_related = ('content_set__website',)
     
     def display_websites(self, webapp):
         websites = []
-        for content in webapp.content_set.all().select_related('website'):
+        for content in webapp.content_set.all():
             website = content.website
             url = change_url(website)
             name = "%s on %s" % (website.name, content.path)
             websites.append('<a href="%s">%s</a>' % (url, name))
         add_url = reverse('admin:websites_website_add')
+        # TODO support for preselecting related we app on website
         add_url += '?account=%s' % webapp.account_id
         plus = '<strong style="color:green; font-size:12px">+</strong>'
         websites.append('<a href="%s">%s%s</a>' % (add_url, plus, ugettext("Add website")))

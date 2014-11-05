@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
@@ -46,14 +46,19 @@ class DomainInline(admin.TabularInline):
     account_link = admin_link('account')
     
     def display_records(self, domain):
-        return ', '.join(domain.records.values_list('type', flat=True))
+        return ', '.join([record.type for record in domain.records.all()])
     display_records.short_description = _("Declared records")
     
     def has_add_permission(self, *args, **kwargs):
         return False
+    
+    def get_queryset(self, request):
+        """ Order by structured name and imporve performance """
+        qs = super(DomainInline, self).get_queryset(request)
+        return qs.select_related('account').prefetch_related('records')
 
 
-class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin):
+class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'structured_name', 'display_is_top', 'websites', 'account_link'
     )
@@ -99,7 +104,7 @@ class DomainAdmin(ChangeListDefaultFilter, AccountAdminMixin, ExtendedModelAdmin
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """
         qs = super(DomainAdmin, self).get_queryset(request)
-        qs = qs.select_related('top')
+        qs = qs.select_related('top', 'account')
         # For some reason if we do this we know for sure that join table will be called T4
         query = str(qs.query)
         table = re.findall(r'(T\d+)\."account_id"', query)[0]

@@ -159,44 +159,29 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * Resource monitoring without ROUTE alert or explicit error
 
-
 * Domain validation has to be done with injected records and subdomains
 
 * Names: lower andupper case allow or disallow ? webapps/account.username etc
 
 * Split plans into a separate app (plans and rates / services ) ? 
 
-* reconsider binding webapps to systemusers (pangea multiple users wordpress-ftp, moodle-pangea, etc)
-
 * sync() ServiceController method that synchronizes orchestra and servers (delete or import)
 
 * validate address.forward: if mailbox in account.mailboxes then: _("Please use mailboxes field") or consider removing mailbox support on forward (user@pangea.org instead)
-* reespell systemuser to system_user
-* remove order in account admin and others
 
-* create admin prefetch_related on ExtendedModelAdmin
+* reespell systemuser to system_user
+
+* remove order in account admin and others admininlines
 
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
 
-* One domain zone validation for each save, not one per subdomain, maybe on modeladmin.save_related? prevent save on model_related, and save it on save_related()
-
 * Change permissions periodically on the web server, to ensure security
-
-* Apache RLimit ?
-
-* Patch suexec: if user mismatch, check user belongs to suexecusergroup group
-
-* fuck suexec http://www.litespeedtech.com/support/forum/threads/solved-cloudlinux-php-lsapi-say-no-to-suexec.5812/
-
-* http://mail-archives.apache.org/mod_mbox/httpd-dev/201409.mbox/%3C5411FFBE.9050506@loginroot.com%3E ??
 
 * Root owned logs on user's home ? 
 
-
+* reconsider binding webapps to systemusers (pangea multiple users wordpress-ftp, moodle-pangea, etc)
 * Secondary user home in /home/secondaryuser and simlink to /home/main/webapps/app so it can have private storage?
-
 * Grant permissions like in webfaction
-
 
 * Secondaryusers home should be under mainuser home. i.e. /home/mainuser/webapps/seconduser_webapp/
 * Make one dedicated CGI user for each account only for CGI execution (fpm/fcgid). Different from the files owner, and without W permissions, so attackers can not inject backdors and malware.
@@ -209,6 +194,3 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * resource min max allocation with validation
 
 * mailman needs both aliases when address_name is provided (default messages and bounces and all)
-
-* specify field on ValidationError under model.clean() of form.clean(): ValidationError({'bark_volume': ["Must be louder!",]}
-	* And raise ValidationError once at the end collecting all errors at once

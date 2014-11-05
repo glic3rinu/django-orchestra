@@ -68,8 +68,8 @@ class CreateDomainAdminForm(forms.ModelForm):
 #                    self.save_formset(request, form, formset, change=change)
 
 
-# TODO do it in admin
 class RecordInlineFormSet(forms.models.BaseInlineFormSet):
+    # TODO 
     def clean(self):
         """ Checks if everything is consistent """
         if any(self.errors):

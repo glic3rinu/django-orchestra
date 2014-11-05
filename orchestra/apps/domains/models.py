@@ -62,7 +62,7 @@ class Domain(models.Model):
     def render_zone(self):
         origin = self.origin
         zone = origin.render_records()
-        for subdomain in origin.get_subdomains():
+        for subdomain in origin.get_subdomains().prefetch_related('records'):
             zone += subdomain.render_records()
         return zone
     

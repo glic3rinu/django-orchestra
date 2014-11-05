@@ -66,12 +66,18 @@ class Contact(models.Model):
         self.address = self.address.strip()
         self.city = self.city.strip()
         self.country = self.country.strip()
+        errors = {}
         if self.address and not (self.city and self.zipcode and self.country):
-            raise ValidationError(_("City, zipcode and country must be provided when address is provided."))
+            errors['__all__'] = _("City, zipcode and country must be provided when address is provided.")
         if self.zipcode and not self.country:
-            raise ValidationError(_("Country must be provided when zipcode is provided."))
+            errors['country'] = _("Country must be provided when zipcode is provided.")
         elif self.zipcode and self.country:
-            validators.validate_zipcode(self.zipcode, self.country)
+            try:
+                validators.validate_zipcode(self.zipcode, self.country)
+            except ValidationError, error:
+                errors['zipcode'] = error
+        if errors:
+            raise ValidationError(errors)
 
 
 accounts.register(Contact)

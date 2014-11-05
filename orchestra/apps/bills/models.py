@@ -41,8 +41,10 @@ class BillContact(models.Model):
     def clean(self):
         self.vat = self.vat.strip()
         self.city = self.city.strip()
-        validators.validate_vat(self.vat, self.country)
-        validators.validate_zipcode(self.zipcode, self.country)
+        validators.all_valid({
+            'vat': (validators.validate_vat, self.vat, self.country),
+            'zipcode': (validators.validate_zipcode, self.zipcode, self.country)
+        })
 
 
 class BillManager(models.Manager):

@@ -14,7 +14,7 @@ class Domain(models.Model):
             help_text=_("Domain or subdomain name."))
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='domains', blank=True, help_text=_("Automatically selected for subdomains."))
-    top = models.ForeignKey('domains.Domain', null=True, related_name='subdomains', editable=False)
+    top = models.ForeignKey('domains.Domain', null=True, related_name='subdomain_set', editable=False)
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial,
             help_text=_("Serial number"))
     
@@ -41,6 +41,10 @@ class Domain(models.Model):
         # don't cache, don't replace by top_id
         return not bool(self.top)
     
+    @property
+    def subdomains(self):
+        return Domain.objects.filter(name__regex='\.%s$' % self.name)
+    
     def get_absolute_url(self):
         return 'http://%s' % self.name
     
@@ -50,7 +54,7 @@ class Domain(models.Model):
     
     def get_subdomains(self):
         """ proxy method, needed for input validation, see helpers.domain_for_validation """
-        return self.origin.subdomains.all()
+        return self.origin.subdomain_set.all()
     
     def get_top(self):
         return type(self).get_top_domain(self.name)
@@ -140,8 +144,8 @@ class Domain(models.Model):
                 update = True
         super(Domain, self).save(*args, **kwargs)
         if update:
-            domains = Domain.objects.exclude(pk=self.pk)
-            for domain in domains.filter(name__endswith=self.name):
+            for domain in self.subdomains.exclude(pk=self.pk):
+                # queryset.update() is not used because we want to trigger backend to delete ex-topdomains
                 domain.top = self
                 domain.save(update_fields=['top'])
 
@@ -182,7 +186,7 @@ class Record(models.Model):
         """ validates record value based on its type """
         # validate value
         self.value = self.value.lower().strip()
-        mapp = {
+        choices = {
             self.MX: validators.validate_mx_record,
             self.NS: validators.validate_zone_label,
             self.A: validate_ipv4_address,
@@ -192,7 +196,10 @@ class Record(models.Model):
             self.SRV: validators.validate_srv_record,
             self.SOA: validators.validate_soa_record,
         }
-        mapp[self.type](self.value)
+        try:
+            choices[self.type](self.value)
+        except ValidationError, error:
+            raise ValidationError({'value': error})
     
     def get_ttl(self):
         return self.ttl or settings.DOMAINS_DEFAULT_TTL

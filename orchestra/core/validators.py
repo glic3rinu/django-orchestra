@@ -12,6 +12,18 @@ from IPy import IP
 from ..utils.python import import_class
 
 
+def all_valid(kwargs):
+    """ helper function to merge multiple validators at once """
+    errors = {}
+    for field, validator in kwargs.iteritems():
+        try:
+            validator[0](*validator[1:])
+        except ValidationError, error:
+            errors[field] = error
+    if errors:
+        raise ValidationError(errors)
+
+
 def validate_ipv4_address(value):
     msg = _("%s is not a valid IPv4 address") % value
     try:

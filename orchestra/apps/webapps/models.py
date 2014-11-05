@@ -77,8 +77,13 @@ class WebAppOption(models.Model):
         """ validates name and value according to WEBAPPS_OPTIONS """
         __, regex = settings.WEBAPPS_OPTIONS[self.name]
         if not re.match(regex, self.value):
-            msg = _("'%s' does not match %s")
-            raise ValidationError(msg % (self.value, regex))
+            raise ValidationError({
+                'value': ValidationError(_("'%(value)s' does not match %(regex)s."),
+                    params={
+                        'value': self.value,
+                        'regex': regex
+                    }),
+            })
 
 
 services.register(WebApp)

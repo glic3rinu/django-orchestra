@@ -39,6 +39,35 @@ class ServiceHandler(plugins.Plugin):
         choices = super(ServiceHandler, cls).get_plugin_choices()
         return [('', _("Default"))] + choices
     
+    def validate_content_type(self, service):
+        pass
+    
+    def validate_match(self, service):
+        if not service.match:
+            raise ValidationError(_("Match should be provided."))
+        try:
+            obj = service.content_type.model_class().objects.all()[0]
+        except IndexError:
+            return
+        try:
+            bool(self.matches(obj))
+        except Exception, exception:
+            name = type(exception).__name__
+            message = exception.message
+            raise ValidationError(': '.join((name, message)))
+    
+    def validate_metric(self, service):
+        try:
+            obj = service.content_type.model_class().objects.all()[0]
+        except IndexError:
+            return
+        try:
+            bool(self.get_metric(obj))
+        except Exception, exception:
+            name = type(exception).__name__
+            message = exception.message
+            raise ValidationError(': '.join((name, message)))
+    
     def get_content_type(self):
         if not self.model:
             return self.content_type

@@ -24,7 +24,7 @@ WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
 
 
 WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
-    '/home/httpd/fcgid/%(user)s-%(app_name)s-wrapper')
+    '/home/httpd/fcgid/%(user)s/%(app_name)s-wrapper')
 
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
@@ -190,7 +190,7 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     ),
     'PHP-suhosin.executor.include.whitelist': (
         _("PHP - suhosin.executor.include.whitelist"),
-        r'^(upload|phar)$'
+        r'.*$'
     ),
     'PHP-upload_max_filesize': (
         _("PHP - upload_max_filesize"),

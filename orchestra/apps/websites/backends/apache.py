@@ -37,6 +37,7 @@ class Apache2Backend(ServiceController):
                 SuexecUserGroup {{ user }} {{ group }}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
+                IncludeOptional /etc/apache2/extra-vhos[t]/{{ site_unique_name }}.con[f]
             </VirtualHost>"""
         ))
         apache_conf = apache_conf.render(Context(context))

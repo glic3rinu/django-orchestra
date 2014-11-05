@@ -117,7 +117,7 @@ class Transaction(models.Model):
         if not self.pk:
             amount = self.bill.transactions.exclude(state=self.REJECTED).amount()
             if amount >= self.bill.total:
-                raise ValidationError(_("New transactions can not be allocated for this bill"))
+                raise ValidationError(_("New transactions can not be allocated for this bill."))
     
     def mark_as_processed(self):
         assert self.state == self.WAITTING_PROCESSING

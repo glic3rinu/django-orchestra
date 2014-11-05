@@ -21,8 +21,9 @@ class CreateDomainAdminForm(forms.ModelForm):
                 # Fake an account to make django validation happy
                 account_model = self.fields['account']._queryset.model
                 cleaned_data['account'] = account_model()
-                msg = _("An account should be provided for top domain names")
-                raise ValidationError(msg)
+                raise ValidationError({
+                    'account': _("An account should be provided for top domain names."),
+                })
             cleaned_data['account'] = top.account
         return cleaned_data
 
@@ -67,6 +68,7 @@ class CreateDomainAdminForm(forms.ModelForm):
 #                    self.save_formset(request, form, formset, change=change)
 
 
+# TODO do it in admin
 class RecordInlineFormSet(forms.models.BaseInlineFormSet):
     def clean(self):
         """ Checks if everything is consistent """

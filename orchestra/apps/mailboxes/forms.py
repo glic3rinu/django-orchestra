@@ -45,7 +45,9 @@ class MailboxForm(forms.ModelForm):
         filtering = self.cleaned_data['filtering']
         custom_filtering = self.cleaned_data['custom_filtering']
         if filtering == self._meta.model.CUSTOM and not custom_filtering:
-            raise forms.ValidationError(_("You didn't provide any custom filtering"))
+            raise forms.ValidationError({
+                'custom_filtering': _("You didn't provide any custom filtering.")
+            })
         return custom_filtering
 
 
@@ -69,4 +71,4 @@ class AddressForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(AddressForm, self).clean()
         if not cleaned_data.get('mailboxes', True) and not cleaned_data['forward']:
-            raise forms.ValidationError(_("Mailboxes or forward address should be provided"))
+            raise forms.ValidationError(_("Mailboxes or forward address should be provided."))

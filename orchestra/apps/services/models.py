@@ -9,7 +9,7 @@ from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import caches, services, accounts
+from orchestra.core import caches, services, accounts, validators
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
 
@@ -51,7 +51,7 @@ class ContractedPlan(models.Model):
     def clean(self):
         if not self.pk and not self.plan.allow_multiples:
             if ContractedPlan.objects.filter(plan=self.plan, account=self.account).exists():
-                raise ValidationError("A contracted plan for this account already exists")
+                raise ValidationError("A contracted plan for this account already exists.")
 
 
 class RateQuerySet(models.QuerySet):
@@ -243,34 +243,12 @@ class Service(models.Model):
     
     def clean(self):
         self.description = self.description.strip()
-        content_type = self.handler.get_content_type()
-        if self.content_type != content_type:
-            ct = str(content_type)
-            raise ValidationError(_("Content type must be equal to '%s'.") % ct)
-        if not self.match:
-            raise ValidationError(_("Match should be provided"))
-        try:
-            obj = content_type.model_class().objects.all()[0]
-        except IndexError:
-            pass
-        else:
-            attr = None
-            try:
-                bool(self.handler.matches(obj))
-            except Exception as exception:
-                attr = "Matches"
-            try:
-                metric = self.handler.get_metric(obj)
-                if metric is not None:
-                    int(metric)
-            except Exception as exception:
-                attr = "Get metric"
-            if attr is not None:
-                name = type(exception).__name__
-                message = exception.message
-                msg = "{0} {1}: {2}".format(attr, name, message)
-                raise ValidationError(msg)
-    
+        validators.all_valid({
+            'content_type': (self.handler.validate_content_type, self),
+            'match': (self.handlers.validate_match, self),
+            'metric': (self.handlers.validate_metric, self),
+        })
+        
     def get_pricing_period(self):
         if self.pricing_period == self.BILLING_PERIOD:
             return self.billing_period

@@ -82,8 +82,13 @@ class WebsiteOption(models.Model):
         """ validates name and value according to WEBSITES_WEBSITEOPTIONS """
         __, regex = settings.WEBSITES_OPTIONS[self.name]
         if not re.match(regex, self.value):
-            msg = _("'%s' does not match %s")
-            raise ValidationError(msg % (self.value, regex))
+            raise ValidationError({
+                'value': ValidationError(_("'%(value)s' does not match %(regex)s."),
+                    params={
+                        'value': self.value,
+                        'regex': regex
+                    }),
+            })
 
 
 class Content(models.Model):

@@ -54,7 +54,7 @@ class WebAppServiceMixin(object):
         return {
             'user': webapp.get_username(),
             'group': webapp.get_groupname(),
-            'app_name': webapp.name,
+            'app_name': webapp.get_name(),
             'type': webapp.type,
             'app_path': webapp.get_path().rstrip('/'),
             'banner': self.get_banner(),

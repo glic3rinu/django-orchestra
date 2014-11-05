@@ -12,7 +12,6 @@ TODO ====
 
 * add `BackendLog` retry action
 * PHPbBckendMiixin with get_php_ini
-* Apache: `IncludeOptional /etc/apache2/extra-vhos[t]/account-site-custom.con[f]`
 * webmail identities and addresses
 * user.roles.mailbox its awful when combined with addresses:
     * address.mailboxes filter by account is crap in admin and api
@@ -180,3 +179,36 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
 
 * One domain zone validation for each save, not one per subdomain, maybe on modeladmin.save_related? prevent save on model_related, and save it on save_related()
+
+* Change permissions periodically on the web server, to ensure security
+
+* Apache RLimit ?
+
+* Patch suexec: if user mismatch, check user belongs to suexecusergroup group
+
+* fuck suexec http://www.litespeedtech.com/support/forum/threads/solved-cloudlinux-php-lsapi-say-no-to-suexec.5812/
+
+* http://mail-archives.apache.org/mod_mbox/httpd-dev/201409.mbox/%3C5411FFBE.9050506@loginroot.com%3E ??
+
+* Root owned logs on user's home ? 
+
+
+* Secondary user home in /home/secondaryuser and simlink to /home/main/webapps/app so it can have private storage?
+
+* Grant permissions like in webfaction
+
+
+* Secondaryusers home should be under mainuser home. i.e. /home/mainuser/webapps/seconduser_webapp/
+* Make one dedicated CGI user for each account only for CGI execution (fpm/fcgid). Different from the files owner, and without W permissions, so attackers can not inject backdors and malware.
+* In most cases we can prevent the creation of files for the CGI users, preventing attackers to upload and executing PHPShells.
+* Make main systemuser able to write/read everything on its home, including stuff created by the CGI user and secondary users
+* Prevent users from accessing other users home while at the same time allow access Apache/fcgid/fpm and secondary users (x)
+
+* public_html/webapps directory with root owner and permissions
+
+* resource min max allocation with validation
+
+* mailman needs both aliases when address_name is provided (default messages and bounces and all)
+
+* specify field on ValidationError under model.clean() of form.clean(): ValidationError({'bark_volume': ["Must be louder!",]}
+	* And raise ValidationError once at the end collecting all errors at once

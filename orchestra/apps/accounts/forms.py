@@ -17,7 +17,7 @@ def create_account_creation_form():
             help_text=_("Designates whether to creates an enabled or disabled related system user. "
                         "Notice that a related system user will be always created."))
     })
-    for model, key, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
+    for model, __, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
         model = get_model(model)
         field_name = 'create_%s' % model._meta.model_name
         label = _("Create %s") % model._meta.verbose_name
@@ -35,9 +35,10 @@ def create_account_creation_form():
         except KeyError:
             # Previous validation error
             return
+        errors = {}
         systemuser_model = Account.main_systemuser.field.rel.to
         if systemuser_model.objects.filter(username=account.username).exists():
-            raise forms.ValidationError(_("A system user with this name already exists"))
+            errors['username'] = _("A system user with this name already exists.")
         for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
             model = get_model(model)
             kwargs = {
@@ -45,9 +46,13 @@ def create_account_creation_form():
             }
             if model.objects.filter(**kwargs).exists():
                 verbose_name = model._meta.verbose_name
-                raise forms.ValidationError(
-                    _("A %s with this name already exists") % verbose_name
-                )
+                field_name = 'create_%s' % model._meta.model_name
+                errors[field] = ValidationError(
+                    _("A %(type)s with this name already exists."),
+                    params={'type': verbose_name})
+        if errors:
+            raise ValidationError(errors)
+    
     def save_model(self, account):
         account.save(active_systemuser=self.cleaned_data['enable_systemuser'])
     

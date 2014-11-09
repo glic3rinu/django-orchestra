@@ -2,7 +2,7 @@
 
 Note `*` _for sustancial progress_
 
-### 1.0a1 Milestone (first alpha release on Oct '14)
+### 1.0a1 Milestone (first alpha release on ~~Oct~~ Nov '14)
 
 1. [x] Automated deployment of the development environment
 2. [x] Automated installation and upgrading

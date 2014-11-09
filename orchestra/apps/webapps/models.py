@@ -34,7 +34,7 @@ class WebApp(models.Model):
         return { opt.name: opt.value for opt in self.options.all() }
     
     def get_name(self):
-        return return self.name or settings.WEBAPPS_BLANK_NAME
+        return self.name or settings.WEBAPPS_BLANK_NAME
     
     def get_fpm_port(self):
         return settings.WEBAPPS_FPM_START_PORT + self.account.pk

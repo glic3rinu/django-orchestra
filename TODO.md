@@ -169,8 +169,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * validate address.forward: if mailbox in account.mailboxes then: _("Please use mailboxes field") or consider removing mailbox support on forward (user@pangea.org instead)
 
-* reespell systemuser to system_user
-
 * remove order in account admin and others admininlines
 
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
@@ -194,3 +192,11 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * resource min max allocation with validation
 
 * mailman needs both aliases when address_name is provided (default messages and bounces and all)
+
+* domain validation parse named-checzone output to assign errors to fields
+
+
+* Directory Protection on webapp and use webapp path as base path (validate)
+* User [Group] webapp/website option (validation) which overrides default mainsystemuser
+
+* validate systemuser.home

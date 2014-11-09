@@ -68,9 +68,6 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_filter = [TopDomainListFilter]
     change_readonly_fields = ('name',)
     search_fields = ['name',]
-    default_changelist_filters = (
-        ('top_domain', 'True'),
-    )
     add_form = CreateDomainAdminForm
     change_view_actions = [view_zone]
     

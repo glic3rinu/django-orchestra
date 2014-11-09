@@ -11,7 +11,8 @@ from .services import SoftwareService
 class SaaS(models.Model):
     service = models.CharField(_("service"), max_length=32,
             choices=SoftwareService.get_plugin_choices())
-    account = models.ForeignKey('accounts.Account', verbose_name=_("account"), related_name='saas')
+    account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
+            related_name='saas')
     data = JSONField(_("data"))
     
     class Meta:
@@ -28,6 +29,9 @@ class SaaS(models.Model):
     @cached_property
     def description(self):
         return self.service_class().get_description(self.data)
+    
+    def clean(self):
+        self.data = self.service_class().clean_data(self)
 
 
 services.register(SaaS)

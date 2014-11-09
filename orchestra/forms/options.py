@@ -7,12 +7,11 @@ from ..core.validators import validate_password
 
 
 class PluginDataForm(forms.ModelForm):
-    class Meta:
-        exclude = ('data',)
+    data = forms.CharField(widget=forms.HiddenInput, required=False)
     
     def __init__(self, *args, **kwargs):
         super(PluginDataForm, self).__init__(*args, **kwargs)
-        # TODO remove it weel
+        # TODO remove it well
         try:
             self.fields[self.plugin_field].widget = forms.HiddenInput()
         except KeyError:
@@ -23,13 +22,14 @@ class PluginDataForm(forms.ModelForm):
                 initial = self.fields[field].initial
                 self.fields[field].initial = instance.data.get(field, initial)
     
-    def save(self, commit=True):
-        plugin = self.plugin
-        setattr(self.instance, self.plugin_field, plugin.get_plugin_name())
-        self.instance.data = {
-            field: self.cleaned_data[field] for field in self.declared_fields
-        }
-        return super(PluginDataForm, self).save(commit=commit)
+    def clean(self):
+        data = {}
+        for field in self.declared_fields:
+            try:
+                data[field] = self.cleaned_data[field]
+            except KeyError:
+                data[field] = self.data[field]
+        self.cleaned_data['data'] = data
 
 
 class UserCreationForm(forms.ModelForm):

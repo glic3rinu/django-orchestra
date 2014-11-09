@@ -42,6 +42,7 @@ class MailboxForm(forms.ModelForm):
             self.fields['addresses'].initial = self.instance.addresses.all()
     
     def clean_custom_filtering(self):
+        # TODO move to model.clean?
         filtering = self.cleaned_data['filtering']
         custom_filtering = self.cleaned_data['custom_filtering']
         if filtering == self._meta.model.CUSTOM and not custom_filtering:
@@ -49,6 +50,10 @@ class MailboxForm(forms.ModelForm):
                 'custom_filtering': _("You didn't provide any custom filtering.")
             })
         return custom_filtering
+    
+    def clean(self):
+        if not self.cleaned_data['mailboxes'] and not self.cleaned_data['forward']:
+            raise ValidationError("A mailbox or forward address should be provided.")
 
 
 class MailboxChangeForm(UserChangeForm, MailboxForm):

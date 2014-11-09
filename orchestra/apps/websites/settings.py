@@ -17,7 +17,6 @@ WEBSITES_DEFAULT_IP = getattr(settings, 'WEBSITES_DEFAULT_IP', '*')
 WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL', 'domains.Domain')
 
 
-# TODO ssl ca, ssl cert, ssl key
 WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
     # { name: ( verbose_name, validation_regex ) }
     'directory_protection': (
@@ -47,6 +46,10 @@ WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
     'sec_engine': (
         _("HTTPD - Disable Modsecurity"),
         r'^[\w/_]+$'
+    ),
+    'user_group': (
+        _("HTTPD - SuexecUserGroup"),
+        r'^[\w/_]+\s[\w/_]+$'
     ),
 })
 

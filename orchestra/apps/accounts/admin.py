@@ -25,7 +25,7 @@ from .models import Account
 
 
 class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
-    list_display = ('username', 'type', 'is_active')
+    list_display = ('username', 'full_name', 'type', 'is_active')
     list_filter = (
         'type', 'is_active', HasMainUserListFilter
     )
@@ -55,7 +55,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
             'fields': ('last_login', 'date_joined')
         }),
     )
-    search_fields = ('username',)
+    search_fields = ('username', 'short_name', 'full_name')
     add_form = AccountCreationForm
     form = UserChangeForm
     filter_horizontal = ()
@@ -64,6 +64,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     actions = [disable]
     change_view_actions = actions
     list_select_related = ('billcontact',)
+    ordering = ()
     
     main_systemuser_link = admin_link('main_systemuser')
     
@@ -115,10 +116,8 @@ admin.site.register(Account, AccountAdmin)
 
 class AccountListAdmin(AccountAdmin):
     """ Account list to allow account selection when creating new services """
-    list_display = ('select_account', 'type', 'username')
+    list_display = ('select_account', 'username', 'type', 'username')
     actions = None
-    search_fields = ['username',]
-    ordering = ('username',)
     
     def select_account(self, instance):
         # TODO get query string from request.META['QUERY_STRING'] to preserve filters

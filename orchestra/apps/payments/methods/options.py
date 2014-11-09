@@ -1,5 +1,6 @@
 from dateutil import relativedelta
 from django import forms
+from django.core.exceptions import ValidationError
 
 from orchestra.utils import plugins
 from orchestra.utils.functional import cached
@@ -26,8 +27,12 @@ class PaymentMethod(plugins.Plugin):
     
     @classmethod
     def clean_data(cls, data):
-        """ model clean """
-        return data
+        """ model clean, uses cls.serializer by default """
+        serializer = cls.serializer(data=data)
+        if not serializer.is_valid():
+            serializer.errors.pop('non_field_errors', None)
+            raise ValidationError(serializer.errors)
+        return serializer.data
     
     def get_form(self):
         self.form.plugin = self

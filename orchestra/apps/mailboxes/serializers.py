@@ -81,5 +81,5 @@ class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
     
     def validate(self, attrs):
         if not attrs['mailboxes'] and not attrs['forward']:
-            raise serializers.ValidationError("mailboxes or forward addresses should be provided")
+            raise serializers.ValidationError("A mailbox or forward address should be provided.")
         return attrs

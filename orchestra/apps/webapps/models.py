@@ -27,11 +27,14 @@ class WebApp(models.Model):
         verbose_name_plural = _("Web Apps")
     
     def __unicode__(self):
-        return self.name or settings.WEBAPPS_BLANK_NAME
+        return self.get_name()
     
     @cached
     def get_options(self):
         return { opt.name: opt.value for opt in self.options.all() }
+    
+    def get_name(self):
+        return return self.name or settings.WEBAPPS_BLANK_NAME
     
     def get_fpm_port(self):
         return settings.WEBAPPS_FPM_START_PORT + self.account.pk

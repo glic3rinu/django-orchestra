@@ -128,10 +128,11 @@ class ResourceData(models.Model):
     resource = models.ForeignKey(Resource, related_name='dataset', verbose_name=_("resource"))
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
     object_id = models.PositiveIntegerField(_("object id"))
-    used = models.DecimalField(_("used"), max_digits=16, decimal_places=2, null=True)
-    updated_at = models.DateTimeField(_("updated"), null=True)
-    allocated = models.PositiveIntegerField(_("allocated"), null=True, blank=True)
-    
+    used = models.DecimalField(_("used"), max_digits=16, decimal_places=2, null=True,
+            editable=False)
+    updated_at = models.DateTimeField(_("updated"), null=True, editable=False)
+    allocated = models.DecimalField(_("allocated"), max_digits=8, decimal_places=2,
+            null=True, blank=True)
     content_object = GenericForeignKey()
     
     class Meta:
@@ -194,6 +195,12 @@ def create_resource_relation():
         def __getattr__(self, attr):
             """ get or build ResourceData """
             try:
+                return self.obj.__resource_cache[attr]
+            except AttributeError:
+                self.obj.__resource_cache = {}
+            except KeyError:
+                pass
+            try:
                 data = self.obj.resource_set.get(resource__name=attr)
             except ResourceData.DoesNotExist:
                 model = self.obj._meta.model_name
@@ -201,6 +208,7 @@ def create_resource_relation():
                         is_active=True)
                 data = ResourceData(content_object=self.obj, resource=resource,
                         allocated=resource.default_allocation)
+            self.obj.__resource_cache[attr] = data
             return data
         
         def __get__(self, obj, cls):

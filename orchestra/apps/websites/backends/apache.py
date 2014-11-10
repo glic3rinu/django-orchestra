@@ -169,15 +169,15 @@ class Apache2Backend(ServiceController):
                         "else UPDATED=0; fi" % context)
     
     def get_username(self, site):
-        option = site.options.filter('user_group')
+        option = site.options.filter(name='user_group').first()
         if option:
-            return option[0].split()[0]
+            return option.value.split()[0]
         return site.account.username
     
     def get_groupname(self, site):
-        option = site.options.filter('user_group')
-        if option and ' ' in option:
-            user, group = option.split()
+        option = site.options.filter(name='user_group').first()
+        if option and ' ' in option.value:
+            user, group = option.value.split()
             return group
         return site.account.username
     

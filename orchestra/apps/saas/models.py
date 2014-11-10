@@ -11,6 +11,12 @@ from .services import SoftwareService
 class SaaS(models.Model):
     service = models.CharField(_("service"), max_length=32,
             choices=SoftwareService.get_plugin_choices())
+    # TODO use model username password instead of data
+#    username = models.CharField(_("username"), max_length=64, unique=True,
+#            help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
+#            validators=[validators.RegexValidator(r'^[\w.-]+$',
+#                        _("Enter a valid username."), 'invalid')])
+#    password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='saas')
     data = JSONField(_("data"))

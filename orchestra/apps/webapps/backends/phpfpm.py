@@ -65,7 +65,7 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
             listen.group = {{ group }}
             pm = ondemand
             pm.max_children = 4
-            {% for name,value in init_vars %}
+            {% for name, value in init_vars %}
             php_admin_value[{{ name | safe }}] = {{ value | safe }}{% endfor %}"""
         ))
         context.update({

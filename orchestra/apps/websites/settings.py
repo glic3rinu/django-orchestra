@@ -26,11 +26,11 @@ WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
     ),
     'redirect': (
         _("HTTPD - Redirection"),
-        _("[permanent] &lt;website path&gt; &lt;destination URL&gt;"),
+        _("<tt>[permanent] &lt;website path&gt; &lt;destination URL&gt;</tt>"),
         r'^(permanent\s[^ ]+|[^ ]+)\s[^ ]+$',
     ),
     'ssl_ca': (
-        _("HTTPD - SSL CA"),
+        "HTTPD - SSL CA",
         _("Filesystem path of the CA certificate file."),
         r'^[^ ]+$'
     ),
@@ -45,21 +45,31 @@ WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
         r'^[^ ]+$',
     ),
     'sec_rule_remove': (
-        _("HTTPD - SecRuleRemoveById"),
+        "HTTPD - SecRuleRemoveById",
         _("Space separated ModSecurity rule IDs."),
         r'^[0-9\s]+$',
     ),
     'sec_engine': (
-        _("HTTPD - Modsecurity engine"),
-        _("On or Off, defaults to On"),
+        "HTTPD - Modsecurity engine",
+        _("<tt>On</tt> or <tt>Off</tt>, defaults to On"),
         r'^(On|Off)$',
     ),
     'user_group': (
-        _("HTTPD - SuexecUserGroup"),
-        _("Username and optional groupname (user [group])"),
+        "HTTPD - SuexecUserGroup",
+        _("<tt>user [group]</tt>, username and optional groupname."),
         # TODO validate existing user/group
         r'^[\w/_]+(\s[\w/_]+)*$',
     ),
+    # TODO backend support
+    'error_document': (
+        "HTTPD - ErrorDocumentRoot",
+        _("&lt;error code&gt; &lt;URL/path/message&gt;<br>"
+          "<tt>&nbsp;500 http://foo.example.com/cgi-bin/tester</tt><br>"
+          "<tt>&nbsp;404 /cgi-bin/bad_urls.pl</tt><br>"
+          "<tt>&nbsp;401 /subscription_info.html</tt><br>"
+          "<tt>&nbsp;403 \"Sorry can't allow you access today\"</tt>"),
+        r'[45]0[0-9]\s.*',
+    )
 })
 
 

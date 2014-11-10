@@ -54,7 +54,7 @@ class Domain(models.Model):
     
     def get_subdomains(self):
         """ proxy method, needed for input validation, see helpers.domain_for_validation """
-        return self.origin.subdomain_set.all()
+        return self.origin.subdomain_set.all().prefetch_related('records')
     
     def get_top(self):
         return type(self).get_top_domain(self.name)
@@ -62,7 +62,7 @@ class Domain(models.Model):
     def render_zone(self):
         origin = self.origin
         zone = origin.render_records()
-        for subdomain in origin.get_subdomains().prefetch_related('records'):
+        for subdomain in origin.get_subdomains():
             zone += subdomain.render_records()
         return zone
     

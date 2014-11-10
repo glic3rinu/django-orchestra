@@ -84,6 +84,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         return '<br>'.join(domains)
     display_domains.short_description = _("domains")
     display_domains.allow_tags = True
+    display_domains.admin_order_field = 'domains'
     
     def display_webapps(self, website):
         webapps = []

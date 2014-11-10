@@ -121,6 +121,9 @@ class Resource(models.Model):
     
     def get_scale(self):
         return eval(self.scale)
+    
+    def get_verbose_name(self):
+        return self.verbose_name or self.name
 
 
 class ResourceData(models.Model):

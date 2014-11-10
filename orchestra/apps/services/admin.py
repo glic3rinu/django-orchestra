@@ -22,7 +22,9 @@ class PlanAdmin(ExtendedModelAdmin):
     list_display = ('name', 'is_default', 'is_combinable', 'allow_multiple')
     list_filter = ('is_default', 'is_combinable', 'allow_multiple')
     fields = ('verbose_name', 'name', 'is_default', 'is_combinable', 'allow_multiple')
-    prepopulated_fields = {'name': ('verbose_name',)}
+    prepopulated_fields = {
+        'name': ('verbose_name',)
+    }
     change_readonly_fields = ('name',)
     inlines = [RateInline]
 

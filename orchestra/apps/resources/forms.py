@@ -17,7 +17,7 @@ class ResourceForm(forms.ModelForm):
         self.resource = kwargs.pop('resource', None)
         super(ResourceForm, self).__init__(*args, **kwargs)
         if self.resource:
-            self.fields['verbose_name'].initial = self.resource.verbose_name
+            self.fields['verbose_name'].initial = self.resource.get_verbose_name()
             self.fields['unit'].initial = self.resource.unit
             if self.resource.on_demand:
                 self.fields['allocated'].required = False

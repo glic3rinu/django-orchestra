@@ -37,6 +37,8 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
         self.delete_webapp_dir(context)
     
     def commit(self):
+        if not self.cmds:
+            return
         super(PHPFcgidBackend, self).commit()
         self.append("[[ $UPDATED_APACHE == 1 ]] && { service apache2 reload; }")
     
@@ -44,7 +46,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
         context = super(PHPFcgidBackend, self).get_context(webapp)
         init_vars = self.get_php_init_vars(webapp)
         if init_vars:
-            init_vars = [ '%s="%s"' % (k,v) for v,k in init_vars.iteritems() ]
+            init_vars = [ '%s="%s"' % (k,v) for v,k in init_vars ]
             init_vars = ', -d '.join(init_vars)
             context['init_vars'] = '-d %s' % init_vars
         else:

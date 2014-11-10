@@ -28,7 +28,8 @@ def BashSSH(backend, log, server, cmds):
     remote_path = "%s.remote" % path
     log.script = '# %s\n%s' % (remote_path, script)
     log.save(update_fields=['script'])
-    
+    if not cmds:
+        return
     channel = None
     ssh = None
     try:

@@ -29,11 +29,15 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
             }""" % context))
     
     def delete(self, webapp):
+        if not self.valid_directive(webapp):
+            return
         context = self.get_context(webapp)
         self.append("rm '%(fpm_path)s'" % context)
         self.delete_webapp_dir(context)
     
     def commit(self):
+        if not self.cmds:
+            return
         super(PHPFPMBackend, self).commit()
         self.append(textwrap.dedent("""
             [[ $UPDATEDFPM == 1 ]] && {
@@ -61,7 +65,7 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
             listen.group = {{ group }}
             pm = ondemand
             pm.max_children = 4
-            {% for name,value in init_vars.iteritems %}
+            {% for name,value in init_vars %}
             php_admin_value[{{ name | safe }}] = {{ value | safe }}{% endfor %}"""
         ))
         context.update({

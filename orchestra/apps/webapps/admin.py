@@ -7,12 +7,18 @@ from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin
 
+from . import settings
 from .models import WebApp, WebAppOption
 
 
 class WebAppOptionInline(admin.TabularInline):
     model = WebAppOption
     extra = 1
+    
+    OPTIONS_HELP_TEXT = str({
+        k: str(unicode(v[1])) if len(v) == 3 else ''
+            for k, v in settings.WEBAPPS_OPTIONS.iteritems()
+    })
     
     class Media:
         css = {
@@ -23,6 +29,17 @@ class WebAppOptionInline(admin.TabularInline):
         """ Make value input widget bigger """
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
+        if db_field.name == 'name':
+            kwargs['widget'] = forms.Select(attrs={
+                'onChange': """
+                    siteoptions = %s;
+                    valueelement = $("#"+this.id.replace("name", "value"));
+                    valueelement.parent().find('p').remove();
+                    valueelement.parent().append(
+                        "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
+                    );
+                """ % self.OPTIONS_HELP_TEXT,
+            })
         return super(WebAppOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 

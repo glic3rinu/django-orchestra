@@ -78,7 +78,7 @@ class WebAppOption(models.Model):
     
     def clean(self):
         """ validates name and value according to WEBAPPS_OPTIONS """
-        __, regex = settings.WEBAPPS_OPTIONS[self.name]
+        regex = settings.WEBAPPS_OPTIONS[self.name][-1]
         if not re.match(regex, self.value):
             raise ValidationError({
                 'value': ValidationError(_("'%(value)s' does not match %(regex)s."),

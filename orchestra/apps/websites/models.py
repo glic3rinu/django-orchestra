@@ -50,12 +50,6 @@ class Website(models.Model):
         if domain:
             return '%s://%s' % (self.protocol, domain)
     
-    def get_username(self):
-        return self.account.username
-    
-    def get_groupname(self):
-        return self.get_username()
-    
     def get_www_log_path(self):
         context = {
             'unique_name': self.unique_name
@@ -80,7 +74,7 @@ class WebsiteOption(models.Model):
     
     def clean(self):
         """ validates name and value according to WEBSITES_WEBSITEOPTIONS """
-        __, regex = settings.WEBSITES_OPTIONS[self.name]
+        regex = settings.WEBSITES_OPTIONS[self.name][-1]
         if not re.match(regex, self.value):
             raise ValidationError({
                 'value': ValidationError(_("'%(value)s' does not match %(regex)s."),

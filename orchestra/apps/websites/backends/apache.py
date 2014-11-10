@@ -168,6 +168,19 @@ class Apache2Backend(ServiceController):
             self.append("if [[ ! $DISABLED ]]; then a2dissite %(site_unique_name)s.conf;\n"
                         "else UPDATED=0; fi" % context)
     
+    def get_username(self, site):
+        option = site.options.filter('user_group')
+        if option:
+            return option[0].split()[0]
+        return site.account.username
+    
+    def get_groupname(self, site):
+        option = site.options.filter('user_group')
+        if option and ' ' in option:
+            user, group = option.split()
+            return group
+        return site.account.username
+    
     def get_context(self, site):
         base_apache_conf = settings.WEBSITES_BASE_APACHE_CONF
         sites_available = os.path.join(base_apache_conf, 'sites-available')
@@ -177,8 +190,8 @@ class Apache2Backend(ServiceController):
             'site_name': site.name,
             'ip': settings.WEBSITES_DEFAULT_IP,
             'site_unique_name': site.unique_name,
-            'user': site.get_username(),
-            'group': site.get_groupname(),
+            'user': self.get_username(site),
+            'group': self.get_groupname(site),
             'sites_enabled': sites_enabled,
             'sites_available': "%s.conf" % os.path.join(sites_available, site.unique_name),
             'logs': site.get_www_log_path(),

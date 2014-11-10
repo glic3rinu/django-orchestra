@@ -18,38 +18,47 @@ WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL', 'domains.Doma
 
 
 WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
-    # { name: ( verbose_name, validation_regex ) }
+    # { name: ( verbose_name, [help_text], validation_regex ) }
     'directory_protection': (
         _("HTTPD - Directory protection"),
-        r'^([\w/_]+)\s+(\".*\")\s+([\w/_\.]+)$'
+        _("Space separated ..."),
+        r'^([\w/_]+)\s+(\".*\")\s+([\w/_\.]+)$',
     ),
     'redirect': (
         _("HTTPD - Redirection"),
-        r'^(permanent\s[^ ]+|[^ ]+)\s[^ ]+$'
+        _("[permanent] &lt;website path&gt; &lt;destination URL&gt;"),
+        r'^(permanent\s[^ ]+|[^ ]+)\s[^ ]+$',
     ),
     'ssl_ca': (
         _("HTTPD - SSL CA"),
+        _("Filesystem path of the CA certificate file."),
         r'^[^ ]+$'
     ),
     'ssl_cert': (
         _("HTTPD - SSL cert"),
+        _("Filesystem path of the certificate file."),
         r'^[^ ]+$'
     ),
     'ssl_key': (
         _("HTTPD - SSL key"),
-        r'^[^ ]+$'
+        _("Filesystem path of the key file."),
+        r'^[^ ]+$',
     ),
     'sec_rule_remove': (
         _("HTTPD - SecRuleRemoveById"),
-        r'^[0-9\s]+$'
+        _("Space separated ModSecurity rule IDs."),
+        r'^[0-9\s]+$',
     ),
     'sec_engine': (
-        _("HTTPD - Disable Modsecurity"),
-        r'^[\w/_]+$'
+        _("HTTPD - Modsecurity engine"),
+        _("On or Off, defaults to On"),
+        r'^(On|Off)$',
     ),
     'user_group': (
         _("HTTPD - SuexecUserGroup"),
-        r'^[\w/_]+\s[\w/_]+$'
+        _("Username and optional groupname (user [group])"),
+        # TODO validate existing user/group
+        r'^[\w/_]+(\s[\w/_]+)*$',
     ),
 })
 

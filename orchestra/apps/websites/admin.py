@@ -6,12 +6,18 @@ from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 
+from . import settings
 from .models import Content, Website, WebsiteOption
 
 
 class WebsiteOptionInline(admin.TabularInline):
     model = WebsiteOption
     extra = 1
+    
+    OPTIONS_HELP_TEXT = str({
+        k: str(unicode(v[1])) if len(v) == 3 else ''
+            for k, v in settings.WEBSITES_OPTIONS.iteritems()
+    })
     
 #    class Media:
 #        css = {
@@ -22,6 +28,19 @@ class WebsiteOptionInline(admin.TabularInline):
         """ Make value input widget bigger """
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
+        if db_field.name == 'name':
+            options = {
+            }
+            kwargs['widget'] = forms.Select(attrs={
+                'onChange': """
+                    siteoptions = %s;
+                    valueelement = $("#"+this.id.replace("name", "value"));
+                    valueelement.parent().find('p').remove();
+                    valueelement.parent().append(
+                        "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
+                    );
+                """ % self.OPTIONS_HELP_TEXT,
+            })
         return super(WebsiteOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
@@ -56,6 +75,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     )
     filter_by_account_fields = ['domains']
     prefetch_related = ('domains', 'content_set__webapp')
+    search_fields = ('name', 'account__username', 'domains__name')
     
     def display_domains(self, website):
         domains = []

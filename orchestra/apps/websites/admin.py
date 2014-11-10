@@ -14,10 +14,10 @@ class WebsiteOptionInline(admin.TabularInline):
     model = WebsiteOption
     extra = 1
     
-    OPTIONS_HELP_TEXT = str({
+    OPTIONS_HELP_TEXT = {
         k: str(unicode(v[1])) if len(v) == 3 else ''
             for k, v in settings.WEBSITES_OPTIONS.iteritems()
-    })
+    }
     
 #    class Media:
 #        css = {
@@ -29,8 +29,7 @@ class WebsiteOptionInline(admin.TabularInline):
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         if db_field.name == 'name':
-            options = {
-            }
+            # Help text based on select widget
             kwargs['widget'] = forms.Select(attrs={
                 'onChange': """
                     siteoptions = %s;
@@ -39,7 +38,7 @@ class WebsiteOptionInline(admin.TabularInline):
                     valueelement.parent().append(
                         "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
                     );
-                """ % self.OPTIONS_HELP_TEXT,
+                """ % str(self.OPTIONS_HELP_TEXT),
             })
         return super(WebsiteOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 

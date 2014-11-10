@@ -15,10 +15,10 @@ class WebAppOptionInline(admin.TabularInline):
     model = WebAppOption
     extra = 1
     
-    OPTIONS_HELP_TEXT = str({
+    OPTIONS_HELP_TEXT = {
         k: str(unicode(v[1])) if len(v) == 3 else ''
             for k, v in settings.WEBAPPS_OPTIONS.iteritems()
-    })
+    }
     
     class Media:
         css = {
@@ -30,6 +30,7 @@ class WebAppOptionInline(admin.TabularInline):
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         if db_field.name == 'name':
+            # Help text based on select widget
             kwargs['widget'] = forms.Select(attrs={
                 'onChange': """
                     siteoptions = %s;
@@ -38,7 +39,7 @@ class WebAppOptionInline(admin.TabularInline):
                     valueelement.parent().append(
                         "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
                     );
-                """ % self.OPTIONS_HELP_TEXT,
+                """ % str(self.OPTIONS_HELP_TEXT),
             })
         return super(WebAppOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
@@ -52,6 +53,11 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')
     prefetch_related = ('content_set__website',)
+    
+    TYPE_HELP_TEXT = {
+        k: str(unicode(v.get('help_text', '')))
+            for k, v in settings.WEBAPPS_TYPES.iteritems()
+    }
     
     def display_websites(self, webapp):
         websites = []
@@ -68,6 +74,22 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return '<br>'.join(websites)
     display_websites.short_description = _("web sites")
     display_websites.allow_tags = True
-
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'type':
+            # Help text based on select widget
+            kwargs['widget'] = forms.Select(attrs={
+                'onChange': """
+                    siteoptions = %s;
+                    valueelement = $("#"+this.id);
+                    valueelement.parent().find('p').remove();
+                    valueelement.parent().append(
+                        "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
+                    );
+                """ % str(self.TYPE_HELP_TEXT),
+            })
+            kwargs['help_text'] = self.TYPE_HELP_TEXT.get(db_field.default, '')
+        return super(WebAppAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 admin.site.register(WebApp, WebAppAdmin)

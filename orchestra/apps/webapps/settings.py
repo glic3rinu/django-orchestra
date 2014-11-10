@@ -56,7 +56,8 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
     'webalizer': {
         'verbose_name': "Webalizer",
         'directive': ('static', '%(app_path)s%(site_name)s'),
-        'help_text': _("This creates a Webalizer application under ~/webapps/<app_name>-<site_name>")
+        'help_text': _("This creates a Webalizer application under "
+                       "~/webapps/&lt;app_name&gt;-&lt;site_name&gt;")
     },
 })
 

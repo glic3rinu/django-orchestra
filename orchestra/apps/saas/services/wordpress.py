@@ -23,7 +23,7 @@ class WordPressForm(PluginDataForm):
             self.fields['site_name'].help_text = mark_safe(url)
 
 
-class WordpressService(SoftwareService):
+class WordPressService(SoftwareService):
     verbose_name = "WordPress"
     form = WordPressForm
     description_field = 'site_name'

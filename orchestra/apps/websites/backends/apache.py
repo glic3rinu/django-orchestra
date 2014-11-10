@@ -137,11 +137,10 @@ class Apache2Backend(ServiceController):
         return directives
     
     def get_protections(self, site):
-        protections = ""
-        __, regex = settings.WEBSITES_OPTIONS['directory_protection']
+        protections = ''
         context = self.get_context(site)
         for protection in site.options.filter(name='directory_protection'):
-            path, name, passwd = re.match(regex, protection.value).groups()
+            path, name, passwd = protection.value.split()
             path = os.path.join(context['root'], path)
             passwd = os.path.join(self.USER_HOME % context, passwd)
             protections += textwrap.dedent("""

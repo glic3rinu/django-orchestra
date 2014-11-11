@@ -37,7 +37,7 @@ class WebAppServiceMixin(object):
             value = "%s" % opt.value
             init_vars.append((name, value))
         enabled_functions = []
-        for value in options.filter(name='enabled_functions').values_list('value', flat=True):
+        for value in options.filter(name='php-enabled_functions').values_list('value', flat=True):
             enabled_functions += enabled_functions.get().value.split(',')
         if enabled_functions:
             disabled_functions = []

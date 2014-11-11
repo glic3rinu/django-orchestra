@@ -53,7 +53,7 @@ def process_transactions(modeladmin, request, queryset):
 
 @transaction.atomic
 @action_with_confirmation()
-def mark_as_executed(modeladmin, request, queryset, extra_context={}):
+def mark_as_executed(modeladmin, request, queryset):
     for trans in queryset:
         trans.mark_as_executed()
         modeladmin.log_change(request, trans, _("Executed"))

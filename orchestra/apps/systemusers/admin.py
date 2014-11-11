@@ -11,6 +11,7 @@ from orchestra.admin.utils import wrap_admin_view
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 from orchestra.forms import UserCreationForm, UserChangeForm
 
+from .actions import grant_permission
 from .filters import IsMainListFilter
 from .models import SystemUser
 
@@ -42,6 +43,8 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     add_form = UserCreationForm
     form = UserChangeForm
     ordering = ('-id',)
+    actions = (grant_permission,)
+    change_view_actions = actions
     
     def display_active(self, user):
         return user.active

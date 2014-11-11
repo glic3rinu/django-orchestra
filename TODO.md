@@ -213,3 +213,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Service instance name when selecting content_type
 
 * Address.forward mailbbox validate not available on mailboxes
+
+
+* Miscellaneous service construct form for specific data, fields, validation, uniquenes.. etc (domain usecase)

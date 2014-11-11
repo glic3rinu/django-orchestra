@@ -6,6 +6,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin
+from orchestra.forms.widgets import DynamicHelpTextSelect
 
 from . import settings
 from .models import WebApp, WebAppOption
@@ -26,21 +27,13 @@ class WebAppOptionInline(admin.TabularInline):
         }
     
     def formfield_for_dbfield(self, db_field, **kwargs):
-        """ Make value input widget bigger """
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         if db_field.name == 'name':
             # Help text based on select widget
-            kwargs['widget'] = forms.Select(attrs={
-                'onChange': """
-                    siteoptions = %s;
-                    valueelement = $("#"+this.id.replace("name", "value"));
-                    valueelement.parent().find('p').remove();
-                    valueelement.parent().append(
-                        "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
-                    );
-                """ % str(self.OPTIONS_HELP_TEXT),
-            })
+            kwargs['widget'] = DynamicHelpTextSelect(
+                'this.id.replace("name", "value")', self.OPTIONS_HELP_TEXT
+            )
         return super(WebAppOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
@@ -67,7 +60,7 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
             name = "%s on %s" % (website.name, content.path)
             websites.append('<a href="%s">%s</a>' % (url, name))
         add_url = reverse('admin:websites_website_add')
-        # TODO support for preselecting related we app on website
+        # TODO support for preselecting related web app on website
         add_url += '?account=%s' % webapp.account_id
         plus = '<strong style="color:green; font-size:12px">+</strong>'
         websites.append('<a href="%s">%s%s</a>' % (add_url, plus, ugettext("Add website")))
@@ -80,7 +73,7 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
         if db_field.name == 'type':
             # Help text based on select widget
             kwargs['widget'] = forms.Select(attrs={
-                'onChange': """
+                'onClick': """
                     siteoptions = %s;
                     valueelement = $("#"+this.id);
                     valueelement.parent().find('p').remove();

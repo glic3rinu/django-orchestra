@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
+from orchestra.forms.widgets import DynamicHelpTextSelect
 
 from . import settings
 from .models import Content, Website, WebsiteOption
@@ -25,21 +26,13 @@ class WebsiteOptionInline(admin.TabularInline):
 #        }
     
     def formfield_for_dbfield(self, db_field, **kwargs):
-        """ Make value input widget bigger """
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         if db_field.name == 'name':
             # Help text based on select widget
-            kwargs['widget'] = forms.Select(attrs={
-                'onChange': """
-                    siteoptions = %s;
-                    valueelement = $("#"+this.id.replace("name", "value"));
-                    valueelement.parent().find('p').remove();
-                    valueelement.parent().append(
-                        "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
-                    );
-                """ % str(self.OPTIONS_HELP_TEXT),
-            })
+            kwargs['widget'] = DynamicHelpTextSelect(
+                'this.id.replace("name", "value")', self.OPTIONS_HELP_TEXT
+            )
         return super(WebsiteOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 

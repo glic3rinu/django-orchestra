@@ -29,20 +29,20 @@ WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
     'php5.5': {
-        'verbose_name': "PHP 5.5",
+        'verbose_name': "PHP 5.5 fpm",
 #        'fpm', ('unix:/var/run/%(user)s-%(app_name)s.sock|fcgi://127.0.0.1%(app_path)s',),
         'directive': ('fpm', 'fcgi://{}%(app_path)s'.format(WEBAPPS_FPM_LISTEN)),
         'help_text': _("This creates a PHP5.5 application under ~/webapps/&lt;app_name&gt;<br>"
                        "PHP-FPM will be used to execute PHP files.")
     },
     'php5.2': {
-        'verbose_name': "PHP 5.2",
+        'verbose_name': "PHP 5.2 fcgi",
         'directive': ('fcgi', WEBAPPS_FCGID_PATH),
         'help_text': _("This creates a PHP5.2 application under ~/webapps/&lt;app_name&gt;<br>"
                        "Apache-mod-fcgid will be used to execute PHP files.")
     },
     'php4': {
-        'verbose_name': "PHP 4",
+        'verbose_name': "PHP 4 fcgi",
         'directive': ('fcgi', WEBAPPS_FCGID_PATH,),
         'help_text': _("This creates a PHP4 application under ~/webapps/&lt;app_name&gt;<br>"
                        "Apache-mod-fcgid will be used to execute PHP files.")
@@ -104,8 +104,24 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTIO
 
 WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     # { name: ( verbose_name, [help_text], validation_regex ) }
+    # Processes
+    'timeout': (
+        _("Process timeout"),
+        _("Maximum time in seconds allowed for a request to complete (a number between 0 and 999)."),
+        # FCGID FcgidIOTimeout
+        # FPM pm.request_terminate_timeout
+        # PHP max_execution_time ini
+        r'^[0-9]{1,3}$',
+    ),
+    'processes': (
+        _("Number of processes"),
+        _("Maximum number of children that can be alive at the same time (a number between 0 and 9)."),
+        # FCGID MaxProcesses
+        # FPM pm.max_children
+        r'^[0-9]$',
+    ),
     # PHP
-    'enabled_functions': (
+    'php-enabled_functions': (
         _("PHP - Enabled functions"),
         ' '.join(WEBAPPS_PHP_DISABLED_FUNCTIONS),
         r'^[\w\.,-]+$'
@@ -248,31 +264,5 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     'PHP-zend_extension': (
         _("PHP - zend_extension"),
         r'^[^ ]+$'
-    ),
-    # FCGID
-    'FcgidIdleTimeout': (
-        _("FCGI - Idle timeout"),
-        _("Number between 0 and 999."),
-        r'^[0-9]{1,3}$'
-    ),
-    'FcgidBusyTimeout': (
-        _("FCGI - Busy timeout"),
-        _("Number between 0 and 999."),
-        r'^[0-9]{1,3}$'
-    ),
-    'FcgidConnectTimeout': (
-        _("FCGI - Connection timeout"),
-        _("Number of seconds between 0 and 999."),
-        r'^[0-9]{1,3}$'
-    ),
-    'FcgidIOTimeout': (
-        _("FCGI - IO timeout"),
-        _("Number of seconds between 0 and 999."),
-        r'^[0-9]{1,3}$'
-    ),
-    'FcgidProcessLifeTime': (
-        _("FCGI - IO timeout"),
-        _("Numbe of secondsr between 0 and 9999."),
-        r'^[0-9]{1,4}$'
     ),
 })

@@ -163,7 +163,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * Names: lower andupper case allow or disallow ? webapps/account.username etc
 
-* Split plans into a separate app (plans and rates / services ) ? 
+* Split plans into a separate app (plans and rates / services ) ?
 
 * sync() ServiceController method that synchronizes orchestra and servers (delete or import)
 
@@ -200,3 +200,16 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * User [Group] webapp/website option (validation) which overrides default mainsystemuser
 
 * validate systemuser.home
+
+* Create plugin app
+
+* Create options widget
+
+* generic options fpm/fcgid/uwsgi webapps (num procs, idle io timeout)
+* webapp backend option compatibility check?
+
+
+* Route help text with model name when selecting backend
+* Service instance name when selecting content_type
+
+* Address.forward mailbbox validate not available on mailboxes

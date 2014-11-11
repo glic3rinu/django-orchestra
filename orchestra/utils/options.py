@@ -56,6 +56,6 @@ def dict_setting_to_choices(choices):
 
 def tuple_setting_to_choices(choices):
     return sorted(
-        [ (name, opt[0]) for name,opt in choices.iteritems() ],
+        tuple((name, opt[0]) for name, opt in choices.iteritems()),
         key=lambda e: e[0]
     )

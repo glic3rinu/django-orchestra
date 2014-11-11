@@ -4,6 +4,7 @@ from functools import wraps
 
 from django.conf import settings
 from django.contrib import admin
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.shortcuts import redirect
@@ -99,7 +100,10 @@ def admin_link(*args, **kwargs):
     if kwargs['field'] in ['id', 'pk', '__unicode__']:
         obj = instance
     else:
-        obj = get_field_value(instance, kwargs['field'])
+        try:
+            obj = get_field_value(instance, kwargs['field'])
+        except ObjectDoesNotExist:
+            return '---'
     if not getattr(obj, 'pk', None):
         return '---'
     url = change_url(obj)

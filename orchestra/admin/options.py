@@ -203,10 +203,11 @@ class SelectPluginAdminMixin(object):
         """ Redirects to select account view if required """
         if request.user.is_superuser:
             plugin_value = request.GET.get(self.plugin_field) or request.POST.get(self.plugin_field)
-            if plugin_value or self.plugin.get_plugins() == 1:
+            if plugin_value or len(self.plugin.get_plugins()) == 1:
                 self.plugin_value = plugin_value
                 if not plugin_value:
-                    self.plugin_value = self.plugin.get_plugins()[0]
+                    self.plugin_value = self.plugin.get_plugins()[0].get_plugin_name()
+                b = self.plugin_value
                 context = {
                     'title': _("Add new %s") % camel_case_to_spaces(self.plugin_value),
                 }

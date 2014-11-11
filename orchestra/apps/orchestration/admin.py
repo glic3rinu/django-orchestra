@@ -1,10 +1,13 @@
+from django import forms
 from django.contrib import admin
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.admin.html import monospace_format
 from orchestra.admin.utils import admin_link, admin_date, admin_colored
 
+from .backends import ServiceBackend
 from .models import Server, Route, BackendLog, BackendOperation
 
 
@@ -27,6 +30,11 @@ class RouteAdmin(admin.ModelAdmin):
     list_editable = ['backend', 'host', 'match', 'is_active']
     list_filter = ['host', 'is_active', 'backend']
     
+    BACKEND_HELP_TEXT = {
+        backend: "This backend operates over '%s'" % ServiceBackend.get_backend(backend).model
+            for backend, __ in ServiceBackend.get_plugin_choices()
+    }
+    
     def display_model(self, route):
         try:
             return escape(route.backend_class().model)
@@ -42,6 +50,19 @@ class RouteAdmin(admin.ModelAdmin):
             return "<span style='color: red;'>NOT AVAILABLE</span>"
     display_actions.short_description = _("actions")
     display_actions.allow_tags = True
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Provides dynamic help text on backend form field """
+        if db_field.name == 'backend':
+            kwargs['widget'] = DynamicHelpTextSelect('this.id', self.BACKEND_HELP_TEXT)
+        return super(RouteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+    
+    def get_form(self, request, obj=None, **kwargs):
+        """ Include dynamic help text for existing objects """
+        form = super(RouteAdmin, self).get_form(request, obj=obj, **kwargs)
+        if obj:
+            form.base_fields['backend'].help_text = self.BACKEND_HELP_TEXT[obj.backend]
+        return form
 
 
 class BackendOperationInline(admin.TabularInline):

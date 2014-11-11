@@ -20,13 +20,12 @@ class BillContact(models.Model):
     account = models.OneToOneField('accounts.Account', verbose_name=_("account"),
             related_name='billcontact')
     name = models.CharField(_("name"), max_length=256, blank=True,
-            help_text=_("Account full name will be used when not provided"))
+            help_text=_("Account full name will be used when left blank."))
     address = models.TextField(_("address"))
     city = models.CharField(_("city"), max_length=128,
             default=settings.BILLS_CONTACT_DEFAULT_CITY)
     zipcode = models.CharField(_("zip code"), max_length=10,
-            validators=[RegexValidator(r'^[0-9A-Z]{3,10}$',
-                        _("Enter a valid zipcode."), 'invalid')])
+            validators=[RegexValidator(r'^[0-9A-Z]{3,10}$', _("Enter a valid zipcode."))])
     country = models.CharField(_("country"), max_length=20,
             choices=settings.BILLS_CONTACT_COUNTRIES,
             default=settings.BILLS_CONTACT_DEFAULT_COUNTRY)

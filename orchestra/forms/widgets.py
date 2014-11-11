@@ -1,4 +1,5 @@
 import re
+import textwrap
 
 from django import forms
 from django.utils.safestring import mark_safe
@@ -63,3 +64,25 @@ def paddingCheckboxSelectMultiple(padding):
         return mark_safe(value)
     widget.render = render
     return widget
+
+
+class DynamicHelpTextSelect(forms.Select):
+    def __init__(self, target, help_text, *args, **kwargs):
+        help_text = self.get_dynamic_help_text(target, help_text)
+        attrs = {
+            'onClick': help_text,
+            'onChange': help_text,
+        }
+        attrs.update(kwargs.get('attrs', {}))
+        kwargs['attrs'] = attrs
+        super(DynamicHelpTextSelect, self).__init__(*args, **kwargs)
+    
+    def get_dynamic_help_text(self, target, help_text):
+        return textwrap.dedent("""\
+            siteoptions = {help_text};
+            valueelement = $("#" + {target});
+            valueelement.parent().find('p').remove();
+            valueelement.parent().append(
+            "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
+            );""".format(target=target, help_text=str(help_text))
+        )

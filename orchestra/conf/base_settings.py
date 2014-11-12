@@ -65,6 +65,7 @@ TEMPLATE_CONTEXT_PROCESSORS =(
 
 INSTALLED_APPS = (
     # django-orchestra apps
+
     'orchestra',
     'orchestra.apps.accounts',
     'orchestra.apps.contacts',

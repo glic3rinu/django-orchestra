@@ -12,7 +12,7 @@ def generate_services_group():
     settings.FLUENT_DASHBOARD_APP_GROUPS += (
         ('Services', {
             'models': models,
-            'collapsible': True
+            'collapsible': True,
         }),
     )
 

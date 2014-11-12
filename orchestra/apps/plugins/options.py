@@ -1,4 +1,4 @@
-from .functional import cached
+from orchestra.utils.functional import cached
 
 
 class Plugin(object):
@@ -8,7 +8,7 @@ class Plugin(object):
     icon = None
     
     @classmethod
-    def get_plugin_name(cls):
+    def get_name(cls):
         return cls.__name__
     
     @classmethod
@@ -19,7 +19,7 @@ class Plugin(object):
     @cached
     def get_plugin(cls, name):
         for plugin in cls.get_plugins():
-            if plugin.get_plugin_name() == name:
+            if plugin.get_name() == name:
                 return plugin
         raise KeyError('This plugin is not registered')
     
@@ -30,14 +30,14 @@ class Plugin(object):
         if verbose[0]:
             return cls.verbose_name
         else:
-            return cls.get_plugin_name()
+            return cls.get_name()
     
     @classmethod
     def get_plugin_choices(cls):
         choices = []
         for plugin in cls.get_plugins():
             verbose = plugin.get_verbose_name()
-            choices.append((plugin.get_plugin_name(), verbose))
+            choices.append((plugin.get_name(), verbose))
         return sorted(choices, key=lambda e: e[1])
 
 

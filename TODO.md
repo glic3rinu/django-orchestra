@@ -169,17 +169,17 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * validate address.forward: if mailbox in account.mailboxes then: _("Please use mailboxes field") or consider removing mailbox support on forward (user@pangea.org instead)
 
-* remove order in account admin and others admininlines
+* remove ordering in account admin and others admininlines
 
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
 
-* Change permissions periodically on the web server, to ensure security
+* Change (correct) permissions periodically on the web server, to ensure security ?
 
-* Root owned logs on user's home ? 
+* Root owned logs on user's home ? yes
 
 * reconsider binding webapps to systemusers (pangea multiple users wordpress-ftp, moodle-pangea, etc)
 * Secondary user home in /home/secondaryuser and simlink to /home/main/webapps/app so it can have private storage?
-* Grant permissions like in webfaction
+* Grant permissions to systemusers, the problem of creating a related permission model is out of sync with the server-side. evaluate tradeoff
 
 * Secondaryusers home should be under mainuser home. i.e. /home/mainuser/webapps/seconduser_webapp/
 * Make one dedicated CGI user for each account only for CGI execution (fpm/fcgid). Different from the files owner, and without W permissions, so attackers can not inject backdors and malware.
@@ -195,24 +195,13 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * domain validation parse named-checzone output to assign errors to fields
 
-
 * Directory Protection on webapp and use webapp path as base path (validate)
 * User [Group] webapp/website option (validation) which overrides default mainsystemuser
 
 * validate systemuser.home
 
-* Create plugin app
-
-* Create options widget
-
-* generic options fpm/fcgid/uwsgi webapps (num procs, idle io timeout)
 * webapp backend option compatibility check?
 
-
-* Route help text with model name when selecting backend
-* Service instance name when selecting content_type
-
-* Address.forward mailbbox validate not available on mailboxes
-
-
 * Miscellaneous service construct form for specific data, fields, validation, uniquenes.. etc (domain usecase)
+
+* miscellaneous.indentifier.endswith(('.org', '.es', '.cat'))

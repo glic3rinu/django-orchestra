@@ -2,7 +2,7 @@ from dateutil import relativedelta
 from django import forms
 from django.core.exceptions import ValidationError
 
-from orchestra.utils import plugins
+from orchestra.apps import plugins
 from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 

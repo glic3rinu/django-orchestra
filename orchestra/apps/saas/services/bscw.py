@@ -3,8 +3,8 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from orchestra.apps.plugins.forms import PluginDataForm
 from orchestra.core import validators
-from orchestra.forms import PluginDataForm
 
 from .options import SoftwareService
 

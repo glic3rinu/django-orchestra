@@ -12,7 +12,7 @@ from django_iban.forms import IBANFormField
 from django_iban.validators import IBANValidator, IBAN_COUNTRY_CODE_LENGTH
 from rest_framework import serializers
 
-from orchestra.forms import PluginDataForm
+from orchestra.apps.plugins.forms import PluginDataForm
 
 from .. import settings
 from .options import PaymentMethod

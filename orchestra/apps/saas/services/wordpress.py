@@ -2,7 +2,7 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.forms import PluginDataForm
+from orchestra.apps.plugins.forms import PluginDataForm
 
 from .options import SoftwareService
 

@@ -2,9 +2,10 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ChangeViewActionsMixin, SelectPluginAdminMixin, ExtendedModelAdmin
+from orchestra.admin import ChangeViewActionsMixin, ExtendedModelAdmin
 from orchestra.admin.utils import admin_colored, admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
+from orchestra.apps.plugins.admin import SelectPluginAdminMixin
 
 from . import actions
 from .methods import PaymentMethod

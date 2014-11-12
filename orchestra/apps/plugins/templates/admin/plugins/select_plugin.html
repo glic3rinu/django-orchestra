@@ -18,9 +18,9 @@
             <div class="dashboard-module-content">
                 <ul class="fluent-dashboard-appiconlist clearfix" style="padding: 0">
                     {% for plugin in plugins %}
-                    <li><a class="fluent-dashboard-icon" href="../?{{ field }}={{ plugin.get_plugin_name }}&{{ request.META.QUERY_STRING }}">
+                    <li><a class="fluent-dashboard-icon" href="../?{{ field }}={{ plugin.get_name }}&{{ request.META.QUERY_STRING }}">
                         <img src="{% static plugin.icon %}" width="48" height="48" alt="{{ plugin.get_name }}"></a>
-                        <a class="fluent-dashboard-icon-caption" href="../?{{ field }}={{ plugin.get_plugin_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</a></li>
+                        <a class="fluent-dashboard-icon-caption" href="../?{{ field }}={{ plugin.get_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
@@ -28,7 +28,7 @@
     {% else %}
         <ul>
         {% for plugin in plugins %}
-            <li><a style="font-size:small;" href="../?{{ field }}={{ plugin.get_plugin_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</<a></li>
+            <li><a style="font-size:small;" href="../?{{ field }}={{ plugin.get_name }}&{{ request.META.QUERY_STRING }}">{{ plugin.verbose_name }}</<a></li>
         {% endfor %}
         </ul>
     {% endif %}

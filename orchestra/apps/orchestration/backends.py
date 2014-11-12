@@ -3,7 +3,7 @@ from functools import partial
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.utils import plugins
+from orchestra.apps import plugins
 
 from . import methods
 

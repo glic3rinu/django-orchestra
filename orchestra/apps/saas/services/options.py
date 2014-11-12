@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.utils import plugins
+from orchestra.apps import plugins
 from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 

@@ -31,7 +31,7 @@ class PaymentSourceSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
     def metadata(self):
         meta = super(PaymentSourceSerializer, self).metadata()
         meta['data'] = {
-            method.get_plugin_name(): method().get_serializer()().metadata()
+            method.get_name(): method().get_serializer()().metadata()
                 for method in PaymentMethod.get_plugins()
         }
         return meta

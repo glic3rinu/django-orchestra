@@ -89,6 +89,7 @@ INSTALLED_APPS = (
     'orchestra.apps.miscellaneous',
     'orchestra.apps.bills',
     'orchestra.apps.payments',
+    'orchestra.apps.plugins',
     
     # Third-party apps
     'django_extensions',

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from orchestra.admin import SelectPluginAdminMixin
 from orchestra.apps.accounts.admin import AccountAdminMixin
+from orchestra.apps.plugins.admin import SelectPluginAdminMixin
 
 from .models import SaaS
 from .services import SoftwareService

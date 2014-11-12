@@ -10,6 +10,14 @@ from orchestra.apps.accounts.admin import AccountAdminMixin
 from .models import MiscService, Miscellaneous
 
 
+from orchestra.apps.plugins.admin import SelectPluginAdminMixin, PluginAdapter
+
+
+class MiscServicePlugin(PluginAdapter):
+    model = MiscService
+    name_field = 'name'
+
+
 class MiscServiceAdmin(ExtendedModelAdmin):
     list_display = ('name', 'verbose_name', 'num_instances', 'has_amount', 'is_active')
     list_editable = ('has_amount', 'is_active')
@@ -32,15 +40,38 @@ class MiscServiceAdmin(ExtendedModelAdmin):
         return qs.annotate(models.Count('instances', distinct=True))
 
 
-class MiscellaneousAdmin(AccountAdminMixin, admin.ModelAdmin):
+class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelAdmin):
     list_display = ('service', 'amount', 'active', 'account_link')
+    plugin_field = 'service'
+    plugin = MiscServicePlugin
+    
+    def get_service(self, obj):
+        if obj is None:
+            return self.plugin.get_plugin(self.plugin_value)().instance
+        else:
+            return obj.service
     
     def get_fields(self, request, obj=None):
-        if obj is None:
-            return ('service', 'account', 'description', 'amount', 'is_active')
-        elif not obj.service.has_amount:
-            return ('service', 'account_link', 'description', 'is_active')
-        return ('service', 'account_link', 'description', 'amount', 'is_active')
+        fields = ['account', 'description', 'is_active']
+        if obj is not None:
+            fields = ['account_link', 'description', 'is_active']
+        service = self.get_service(obj)
+        if service.has_amount:
+            fields.insert(-1, 'amount')
+#        if service.has_identifier:
+#            fields.insert(1, 'identifier')
+        return fields
+    
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(SelectPluginAdminMixin, self).get_form(request, obj=obj, **kwargs)
+        service = self.get_service(obj)
+        def clean_identifier(self, service=service):
+            validator = settings.MISCELLANEOUS_IDENTIFIER_VALIDATORS.get(service.name, None)
+            if validator:
+                validator(self.cleaned_data['identifier'])
+        form.clean_identifier = clean_identifier
+        return form
 
 
 admin.site.register(MiscService, MiscServiceAdmin)

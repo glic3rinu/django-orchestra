@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.utils import plugins
+from orchestra.apps import plugins
 from orchestra.utils.humanize import text2int
 from orchestra.utils.python import AttrDict
 

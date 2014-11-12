@@ -18,7 +18,7 @@ def validate_emailname(value):
         raise ValidationError(msg)
     value += '@localhost'
     try:
-        EmailValidator(value)
+        EmailValidator()(value)
     except ValidationError:
         raise ValidationError(msg)
 
@@ -35,7 +35,7 @@ def validate_forward(value):
         if '@' in destination:
             if not destination[-1].isalpha():
                 raise ValidationError(msg)
-            EmailValidator(destination)
+            EmailValidator()(destination)
         else:
             if not Mailbox.objects.filter(user__username=destination).exists():
                 raise ValidationError(msg)

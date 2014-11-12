@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
 from orchestra.core.validators import validate_name
+from orchestra.models.fields import NullableCharField
 
 
 class MiscService(models.Model):
@@ -13,6 +14,9 @@ class MiscService(models.Model):
             help_text=_("Human readable name"))
     description = models.TextField(_("description"), blank=True,
             help_text=_("Optional description"))
+    has_identifier = models.BooleanField(_("has identifier"), default=True,
+            help_text=_("Designates if this service has a <b>unique text</b> field that "
+                        "identifies it or not."))
     has_amount = models.BooleanField(_("has amount"), default=False,
             help_text=_("Designates whether this service has <tt>amount</tt> "
                         "property or not."))
@@ -35,6 +39,8 @@ class Miscellaneous(models.Model):
             related_name='instances')
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='miscellaneous')
+    identifier = NullableCharField(_("identifier"), max_length=256, null=True, unique=True,
+            blank=True, help_text=_("A unique identifier for this service."))
     description = models.TextField(_("description"), blank=True)
     amount = models.PositiveIntegerField(_("amount"), default=1)
     is_active = models.BooleanField(_("active"), default=True,
@@ -53,6 +59,11 @@ class Miscellaneous(models.Model):
             return self.is_active and self.account.is_active
         except type(self).account.field.rel.to.DoesNotExist:
             return self.is_active
+    
+    def clean(self):
+        if self.identifier:
+            self.identifier = self.identifier.strip()
+        self.description = self.description.strip()
 
 
 services.register(Miscellaneous)

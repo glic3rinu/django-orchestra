@@ -119,8 +119,6 @@ class Resource(models.Model):
         else:
             PeriodicTask.objects.filter(
                 name=name,
-                task='resources.Monitor',
-                args=[self.pk]
             ).delete()
     
     def get_scale(self):

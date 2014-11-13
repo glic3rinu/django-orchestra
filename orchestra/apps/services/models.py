@@ -123,7 +123,7 @@ class Service(models.Model):
                 "Related instance can be instantiated with <tt>instance</tt> keyword or "
                 "<tt>content_type.model_name</tt>.</br>"
                 "<tt>&nbsp;databaseuser.type == 'MYSQL'</tt><br>"
-                "<tt>&nbsp;miscellaneous.active and miscellaneous.service.name.lower() == 'domain .es'</tt><br>"
+                "<tt>&nbsp;miscellaneous.active and miscellaneous.identifier.endswith(('.org', '.net', '.com'))'</tt><br>"
                 "<tt>&nbsp;contractedplan.plan.name == 'association_fee''</tt><br>"
                 "<tt>&nbsp;instance.active</tt>"))
     handler_type = models.CharField(_("handler"), max_length=256, blank=True,

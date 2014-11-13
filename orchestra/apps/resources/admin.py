@@ -41,15 +41,6 @@ class ResourceAdmin(ExtendedModelAdmin):
     change_readonly_fields = ('name', 'content_type')
     prepopulated_fields = {'name': ('verbose_name',)}
     
-    def add_view(self, request, **kwargs):
-        """ Warning user if the node is not fully configured """
-        if request.method == 'POST':
-            messages.warning(request, mark_safe(_(
-                "Restarting orchestra and celerybeat is required to fully apply changes.<br> "
-                "Remember that new allocated values will be applied when objects are saved."
-            )))
-        return super(ResourceAdmin, self).add_view(request, **kwargs)
-    
     def change_view(self, request, object_id, form_url='', extra_context=None):
         """ Remaind user when monitor routes are not configured """
         if request.method == 'GET':

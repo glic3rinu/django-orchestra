@@ -4,26 +4,15 @@ TODO ====
 * Don't store passwords and other service parameters that can be changed by the services i.e. mailman, vps etc. Find an execution mechanism that trigger `change_password()`
 
 * abort transaction on orchestration when `state == TIMEOUT` ?
-* filter and other user.is_main refactoring 
 * use format_html_join for orchestration email alerts
 
-* generic form for change and display passwords and crack change password form
 * enforce an emergency email contact and account to contact contacts about problems when mailserver is down
 
 * add `BackendLog` retry action
-* PHPbBckendMiixin with get_php_ini
 * webmail identities and addresses
-* user.roles.mailbox its awful when combined with addresses:
-    * address.mailboxes filter by account is crap in admin and api
-    * address.mailboxes api needs a mailbox object endpoint (not nested user)
-    * Its not intuitive, users expect to create mailboxes, not users!
-    * Mailbox is something tangible, not a role!
-* System user vs virtual user:
-    * system user automatically hast @domain.com address :(
 
 * use Code: https://github.com/django/django/blob/master/django/forms/forms.py#L415 for domain.refresh_serial()
 * Permissions .filter_queryset()
-
 
 * git deploy in addition to FTP?
 * env vars instead of multiple settings files: https://devcenter.heroku.com/articles/config-vars ?
@@ -64,14 +53,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Plurals!
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
-
-* Transaction states: CREATED, PROCESSED, EXECUTED, COMMITED, ABORTED (SECURED, REJECTED?)
-    * bill.send() -> transacction.EXECUTED when source=None
-    * transaction.secured() -> bill.paid when bill.total == transaction.value else Error
-    * bill.paid() -> transacton.SECURED
-    * bill.bad_debt() -> transaction.ABORTED
-    * transaction.ABORTED -> bill.bad_debt
-    - Issue new transaction when current transaction is ABORTED
 
 * underescore *every* private function
 
@@ -149,22 +130,15 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * REST PERMISSIONS
 
-* caching based on def text2int(textnum, numwords={}) ?:
-
-
-* Subdomain saving should not trigger bind slave
+* caching based on "def text2int(textnum, numwords={}):"
 
 * multiple files monitoring
 
-* Domain validation has to be done with injected records and subdomains
-
-* Names: lower andupper case allow or disallow ? webapps/account.username etc
-
-* Split plans into a separate app (plans and rates / services ) ?
+* Split plans into a separate app (plans and rates / services ) interface ?
 
 * sync() ServiceController method that synchronizes orchestra and servers (delete or import)
 
-* validate address.forward: if mailbox in account.mailboxes then: _("Please use mailboxes field") or consider removing mailbox support on forward (user@pangea.org instead)
+* consider removing mailbox support on forward (user@pangea.org instead)
 
 * remove ordering in account admin and others admininlines
 
@@ -198,7 +172,3 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * validate systemuser.home
 
 * webapp backend option compatibility check?
-
-* miscellaneous.indentifier.endswith(('.org', '.es', '.cat'))
-
-* miscservic icon miscellaneous icon + scissors

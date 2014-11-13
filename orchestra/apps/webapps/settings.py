@@ -107,7 +107,8 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     # Processes
     'timeout': (
         _("Process timeout"),
-        _("Maximum time in seconds allowed for a request to complete (a number between 0 and 999)."),
+        _("Maximum time in seconds allowed for a request to complete "
+          "(a number between 0 and 999)."),
         # FCGID FcgidIOTimeout
         # FPM pm.request_terminate_timeout
         # PHP max_execution_time ini
@@ -115,7 +116,8 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     ),
     'processes': (
         _("Number of processes"),
-        _("Maximum number of children that can be alive at the same time (a number between 0 and 9)."),
+        _("Maximum number of children that can be alive at the same time "
+          "(a number between 0 and 9)."),
         # FCGID MaxProcesses
         # FPM pm.max_children
         r'^[0-9]$',
@@ -128,25 +130,30 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     ),
     'PHP-allow_url_include': (
         _("PHP - Allow URL include"),
-        _("On or Off"),
+        _("Allows the use of URL-aware fopen wrappers with include, include_once, require, "
+          "require_once (On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-allow_url_fopen': (
         _("PHP - allow_url_fopen"),
-        _("On or Off"),
+        _("Enables the URL-aware fopen wrappers that enable accessing URL object like files "
+          "(On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-auto_append_file': (
         _("PHP - Auto append file"),
+        _("Specifies the name of a file that is automatically parsed after the main file."),
         r'^[\w\.,-/]+$'
     ),
     'PHP-auto_prepend_file': (
         _("PHP - Auto prepend file"),
+        _("Specifies the name of a file that is automatically parsed before the main file."),
         r'^[\w\.,-/]+$'
     ),
     'PHP-date.timezone': (
         _("PHP - date.timezone"),
-        _("Timezone string 'Europe/London'."),
+        _("Sets the default timezone used by all date/time functions "
+          "(Timezone string 'Europe/London')."),
         r'^\w+/\w+$'
     ),
     'PHP-default_socket_timeout': (
@@ -156,7 +163,8 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     ),
     'PHP-display_errors': (
         _("PHP - Display errors"),
-        _("On or Off"),
+        _("determines whether errors should be printed to the screen as part of the output or "
+          "if they should be hidden from the user (On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-extension': (
@@ -165,32 +173,37 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     ),
     'PHP-magic_quotes_gpc': (
         _("PHP - Magic quotes GPC"),
-        _("On or Off"),
+        _("Sets the magic_quotes state for GPC (Get/Post/Cookie) operations (On or Off) "
+          "<b>DEPRECATED as of PHP 5.3.0</b>."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-magic_quotes_runtime': (
         _("PHP - Magic quotes runtime"),
-        _("On or Off"),
+        _("Functions that return data from any sort of external source will have quotes escaped "
+          "with a backslash (On or Off) <b>DEPRECATED as of PHP 5.3.0</b>."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-magic_quotes_sybase': (
         _("PHP - Magic quotes sybase"),
-        _("On or Off"),
+        _("Single-quote is escaped with a single-quote instead of a backslash (On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-max_execution_time': (
         _("PHP - Max execution time"),
-        _("Number between 0 and 999."),
+        _("Maximum time in seconds a script is allowed to run before it is terminated by "
+          "the parser (Integer between 0 and 999)."),
         r'^[0-9]{1,3}$'
     ),
     'PHP-max_input_time': (
         _("PHP - Max input time"),
-        _("Number between 0 and 999."),
+        _("Maximum time in seconds a script is allowed to parse input data, like POST and GET "
+          "(Integer between 0 and 999)."),
         r'^[0-9]{1,3}$'
     ),
     'PHP-memory_limit': (
         _("PHP - Memory limit"),
-        _("Value between 0M and 999M."),
+        _("This sets the maximum amount of memory in bytes that a script is allowed to allocate "
+          "(Value between 0M and 999M)."),
         r'^[0-9]{1,3}M$'
     ),
     'PHP-mysql.connect_timeout': (
@@ -200,36 +213,39 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     ),
     'PHP-output_buffering': (
         _("PHP - output_buffering"),
-        _("On or Off"),
+        _("Turn on output buffering (On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-register_globals': (
         _("PHP - Register globals"),
-        _("On or Off"),
+        _("Whether or not to register the EGPCS (Environment, GET, POST, Cookie, Server) "
+          "variables as global variables (On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-post_max_size': (
         _("PHP - Post max size"),
-        _("Value between 0M and 999M."),
+        _("Sets max size of post data allowed (Value between 0M and 999M)."),
         r'^[0-9]{1,3}M$'
     ),
     'PHP-sendmail_path': (
         _("PHP - sendmail_path"),
+        _("Where the sendmail program can be found."),
         r'^[^ ]+$'
     ),
     'PHP-session.bug_compat_warn': (
         _("PHP - session.bug_compat_warn"),
-        _("On or Off"),
+        _("Enables an PHP bug on session initialization for legacy behaviour (On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-session.auto_start': (
         _("PHP - session.auto_start"),
-        _("On or Off"),
+        _("Specifies whether the session module starts a session automatically on request "
+          "startup (On or Off)."),
         r'^(On|Off|on|off)$'
     ),
     'PHP-safe_mode': (
         _("PHP - Safe mode"),
-        _("On or Off"),
+        _("Whether to enable PHP's safe mode (On or Off) <b>DEPRECATED as of PHP 5.3.0</b>"),
         r'^(On|Off|on|off)$'
     ),
     'PHP-suhosin.post.max_vars': (

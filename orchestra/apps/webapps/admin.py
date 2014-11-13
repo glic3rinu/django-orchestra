@@ -72,16 +72,9 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
         """ Make value input widget bigger """
         if db_field.name == 'type':
             # Help text based on select widget
-            kwargs['widget'] = forms.Select(attrs={
-                'onClick': """
-                    siteoptions = %s;
-                    valueelement = $("#"+this.id);
-                    valueelement.parent().find('p').remove();
-                    valueelement.parent().append(
-                        "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
-                    );
-                """ % str(self.TYPE_HELP_TEXT),
-            })
+            kwargs['widget'] = DynamicHelpTextSelect(
+                'this.id.replace("name", "value")', self.TYPE_HELP_TEXT
+            )
             kwargs['help_text'] = self.TYPE_HELP_TEXT.get(db_field.default, '')
         return super(WebAppAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 

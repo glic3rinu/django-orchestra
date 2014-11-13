@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -5,24 +6,27 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin.utils import admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin
+from orchestra.apps.plugins import PluginModelAdapter
+from orchestra.apps.plugins.admin import SelectPluginAdminMixin
 
+from . import settings
 from .models import MiscService, Miscellaneous
 
 
-from orchestra.apps.plugins.admin import SelectPluginAdminMixin, PluginAdapter
-
-
-class MiscServicePlugin(PluginAdapter):
+class MiscServicePlugin(PluginModelAdapter):
     model = MiscService
     name_field = 'name'
 
 
 class MiscServiceAdmin(ExtendedModelAdmin):
-    list_display = ('name', 'verbose_name', 'num_instances', 'has_amount', 'is_active')
-    list_editable = ('has_amount', 'is_active')
-    list_filter = ('has_amount', 'is_active')
-    fields = ('verbose_name', 'name', 'description', 'has_amount', 'is_active')
+    list_display = (
+        'name', 'verbose_name', 'num_instances', 'has_identifier', 'has_amount', 'is_active'
+    )
+    list_editable = ('is_active',)
+    list_filter = ('has_identifier', 'has_amount', 'is_active')
+    fields = ('verbose_name', 'name', 'description', 'has_identifier', 'has_amount', 'is_active')
     prepopulated_fields = {'name': ('verbose_name',)}
     change_readonly_fields = ('name',)
     
@@ -38,12 +42,28 @@ class MiscServiceAdmin(ExtendedModelAdmin):
     def get_queryset(self, request):
         qs = super(MiscServiceAdmin, self).queryset(request)
         return qs.annotate(models.Count('instances', distinct=True))
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'description':
+            kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
+        return super(MiscServiceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelAdmin):
-    list_display = ('service', 'amount', 'active', 'account_link')
+    list_display = ('__unicode__', 'service_link', 'amount', 'dispaly_active', 'account_link')
+    list_filter = ('service__name', 'is_active')
+    list_select_related = ('service', 'account')
     plugin_field = 'service'
     plugin = MiscServicePlugin
+    
+    service_link = admin_link('service')
+    
+    def dispaly_active(self, instance):
+        return instance.active
+    dispaly_active.short_description = _("Active")
+    dispaly_active.boolean = True
+    dispaly_active.admin_order_field = 'is_active'
     
     def get_service(self, obj):
         if obj is None:
@@ -58,20 +78,28 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
         service = self.get_service(obj)
         if service.has_amount:
             fields.insert(-1, 'amount')
-#        if service.has_identifier:
-#            fields.insert(1, 'identifier')
+        if service.has_identifier:
+            fields.insert(1, 'identifier')
         return fields
-    
     
     def get_form(self, request, obj=None, **kwargs):
         form = super(SelectPluginAdminMixin, self).get_form(request, obj=obj, **kwargs)
         service = self.get_service(obj)
         def clean_identifier(self, service=service):
+            identifier = self.cleaned_data['identifier']
             validator = settings.MISCELLANEOUS_IDENTIFIER_VALIDATORS.get(service.name, None)
             if validator:
-                validator(self.cleaned_data['identifier'])
+                validator(identifier)
+            return identifier
+        
         form.clean_identifier = clean_identifier
         return form
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'description':
+            kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 4})
+        return super(MiscellaneousAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 admin.site.register(MiscService, MiscServiceAdmin)

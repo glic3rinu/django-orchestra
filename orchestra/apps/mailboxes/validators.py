@@ -13,7 +13,7 @@ from . import settings
 
 
 def validate_emailname(value):
-    msg = _("'%s' is not a correct email name" % value)
+    msg = _("'%s' is not a correct email name." % value)
     if '@' in value:
         raise ValidationError(msg)
     value += '@localhost'
@@ -26,20 +26,27 @@ def validate_emailname(value):
 def validate_forward(value):
     """ space separated mailboxes or emails """
     from .models import Mailbox
+    errors = []
     destinations = []
     for destination in value.split():
         if destination in destinations:
-            raise ValidationError(_("'%s' is already present.") % destination)
+            errors.append(ValidationError(
+                _("'%s' is already present.") % destination
+            ))
         destinations.append(destination)
-        msg = _("'%s' is not an existent mailbox" % destination)
         if '@' in destination:
-            if not destination[-1].isalpha():
-                raise ValidationError(msg)
-            EmailValidator()(destination)
-        else:
-            if not Mailbox.objects.filter(user__username=destination).exists():
-                raise ValidationError(msg)
-            validate_emailname(destination)
+            try:
+                EmailValidator()(destination)
+            except ValidationError:
+                errors.append(ValidationError(
+                    _("'%s' is not a valid email address.") % destination
+                ))
+        elif not Mailbox.objects.filter(name=destination).exists():
+            errors.append(ValidationError(
+                _("'%s' is not an existent mailbox.") % destination
+            ))
+    if errors:
+        raise ValidationError(errors)
 
 
 def validate_sieve(value):

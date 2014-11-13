@@ -168,6 +168,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.resources.models.Monitor',
             'orchestra.apps.services.models.Service',
             'orchestra.apps.services.models.Plan',
+            'orchestra.apps.miscellaneous.models.MiscService',
         ),
         'collapsible': True,
     }),
@@ -201,6 +202,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'payments/transaction': 'transaction.png',
     'payments/transactionprocess': 'transactionprocess.png',
     'issues/ticket': 'Ticket_star.png',
+    'miscellaneous/miscservice': 'Misc-Misc-Box-icon.png',
     # Administration
     'djcelery/taskstate': 'taskstate.png',
     'orchestration/server': 'vps.png',

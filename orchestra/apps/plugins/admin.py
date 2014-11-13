@@ -74,35 +74,3 @@ class SelectPluginAdminMixin(object):
         if not change:
             setattr(obj, self.plugin_field, self.plugin_value)
         obj.save()
-
-
-class PluginAdapter(object):
-    """ Adapter class for using model classes as plugins """
-    
-    model = None
-    name_field = None
-    
-    def __init__(self, instance):
-        self.instance = instance
-    
-    @classmethod
-    @cached
-    def get_plugins(cls):
-        plugins = []
-        for instance in cls.model.objects.filter(is_active=True):
-            plugins.append(cls(instance))
-        return plugins
-    
-    @classmethod
-    def get_plugin(cls, name):
-        return cls(cls.model.objects.get(**{cls.name_field:name}))
-    
-    @property
-    def verbose_name(self):
-        return self.instance.verbose_name or str(getattr(self.instance, self.name_field))
-    
-    def get_name(self):
-        return getattr(self.instance, self.name_field)
-    
-    def __call__(self):
-        return self

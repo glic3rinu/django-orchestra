@@ -41,6 +41,27 @@ class Plugin(object):
         return sorted(choices, key=lambda e: e[1])
 
 
+class PluginModelAdapter(Plugin):
+    """ Adapter class for using model classes as plugins """
+    model = None
+    name_field = None
+    
+    @classmethod
+    def get_plugins(cls):
+        plugins = []
+        for instance in cls.model.objects.filter(is_active=True):
+            attributes = {
+                'instance': instance,
+                'verbose_name': instance.verbose_name
+            }
+            plugins.append(type('PluginAdapter', (cls,), attributes))
+        return plugins
+    
+    @classmethod
+    def get_name(cls):
+        return getattr(cls.instance, cls.name_field)
+
+
 class PluginMount(type):
     def __init__(cls, name, bases, attrs):
         if not attrs.get('abstract', False):

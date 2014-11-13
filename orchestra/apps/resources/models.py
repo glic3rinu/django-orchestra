@@ -2,6 +2,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
 from django.db import models
+from django.db.models.loading import get_model
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -9,6 +10,7 @@ from djcelery.models import PeriodicTask, CrontabSchedule
 
 from orchestra.core import validators
 from orchestra.models import queryset, fields
+from orchestra.models.utils import get_model_field_path
 from orchestra.utils.paths import get_project_root
 from orchestra.utils.system import run
 
@@ -88,36 +90,38 @@ class Resource(models.Model):
     def save(self, *args, **kwargs):
         created = not self.pk
         super(Resource, self).save(*args, **kwargs)
-        # Create Celery periodic task
-        name = 'monitor.%s' % str(self)
-        try:
-            task = PeriodicTask.objects.get(name=name)
-        except PeriodicTask.DoesNotExist:
-            if self.is_active:
-                PeriodicTask.objects.create(
-                    name=name,
-                    task='resources.Monitor',
-                    args=[self.pk],
-                    crontab=self.crontab
-                )
-        else:
-            if not self.is_active:
-                task.delete()
-            elif task.crontab != self.crontab:
-                task.crontab = self.crontab
-                task.save(update_fields=['crontab'])
+        self.sync_periodic_task()
         # This only work on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
-        run('touch %s/wsgi.py' % get_project_root())
+        run('sleep 2 && touch %s/wsgi.py' % get_project_root(), async=True, display=True)
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
         name = 'monitor.%s' % str(self)
-        PeriodicTask.objects.filter(
-            name=name,
-            task='resources.Monitor',
-            args=[self.pk]
-        ).delete()
+    
+    def sync_periodic_task(self):
+        name = 'monitor.%s' % str(self)
+        if self.pk and self.crontab:
+            try:
+                task = PeriodicTask.objects.get(name=name)
+            except PeriodicTask.DoesNotExist:
+                if self.is_active:
+                    PeriodicTask.objects.create(
+                        name=name,
+                        task='resources.Monitor',
+                        args=[self.pk],
+                        crontab=self.crontab
+                    )
+            else:
+                if task.crontab != self.crontab:
+                    task.crontab = self.crontab
+                    task.save(update_fields=['crontab'])
+        else:
+            PeriodicTask.objects.filter(
+                name=name,
+                task='resources.Monitor',
+                args=[self.pk]
+            ).delete()
     
     def get_scale(self):
         return eval(self.scale)
@@ -146,10 +150,17 @@ class ResourceData(models.Model):
     def get_or_create(cls, obj, resource):
         ct = ContentType.objects.get_for_model(type(obj))
         try:
-            return cls.objects.get(content_type=ct, object_id=obj.pk, resource=resource)
+            return cls.objects.get(
+                content_type=ct,
+                object_id=obj.pk,
+                resource=resource
+            )
         except cls.DoesNotExist:
-            return cls.objects.create(content_object=obj, resource=resource,
-                    allocated=resource.default_allocation)
+            return cls.objects.create(
+                content_object=obj,
+                resource=resource,
+                allocated=resource.default_allocation
+            )
     
     @property
     def unit(self):
@@ -167,6 +178,47 @@ class ResourceData(models.Model):
     
     def monitor(self):
         tasks.monitor(self.resource_id, ids=(self.object_id,))
+    
+    def get_monitor_datasets(self):
+        resource = self.resource
+        today = timezone.now()
+        datasets = []
+        for monitor in resource.monitors:
+            resource_model = self.content_type.model_class()
+            model_path = ServiceMonitor.get_backend(monitor).model
+            monitor_model = get_model(model_path)
+            if resource_model == monitor_model:
+                dataset = MonitorData.objects.filter(
+                    monitor=monitor,
+                    content_type=self.content_type_id,
+                    object_id=self.object_id
+                )
+            else:
+                path = get_model_field_path(monitor_model, resource_model)
+                fields = '__'.join(path)
+                objects = monitor_model.objects.filter(**{fields: self.object_id})
+                pks = objects.values_list('id', flat=True)
+                ct = ContentType.objects.get_for_model(monitor_model)
+                dataset = MonitorData.objects.filter(
+                    monitor=monitor,
+                    content_type=ct,
+                    object_id__in=pks
+                )
+            if resource.period in (resource.MONTHLY_AVG, resource.MONTHLY_SUM):
+                datasets.append(
+                    dataset.filter(
+                        created_at__year=today.year,
+                        created_at__month=today.month
+                    )
+                )
+            elif resource.period == resource.LAST:
+                try:
+                    datasets.append(dataset.latest())
+                except MonitorData.DoesNotExist:
+                    continue
+            else:
+                raise NotImplementedError("%s support not implemented" % self.period)
+        return datasets
 
 
 class MonitorData(models.Model):
@@ -207,10 +259,16 @@ def create_resource_relation():
                 data = self.obj.resource_set.get(resource__name=attr)
             except ResourceData.DoesNotExist:
                 model = self.obj._meta.model_name
-                resource = Resource.objects.get(content_type__model=model, name=attr,
-                        is_active=True)
-                data = ResourceData(content_object=self.obj, resource=resource,
-                        allocated=resource.default_allocation)
+                resource = Resource.objects.get(
+                    content_type__model=model,
+                    name=attr,
+                    is_active=True
+                )
+                data = ResourceData(
+                    content_object=self.obj,
+                    resource=resource,
+                    allocated=resource.default_allocation
+                )
             self.obj.__resource_cache[attr] = data
             return data
         

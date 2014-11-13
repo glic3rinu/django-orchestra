@@ -28,19 +28,21 @@ class MultiSelectField(models.CharField):
             return ','.join(value)
     
     def to_python(self, value):
-        if value is not None:
+        if value:
             if isinstance(value, list) and value[0].startswith('('):
                 # Workaround unknown bug on default model values
                 # [u"('SUPPORT'", u" 'ADMIN'", u" 'BILLING'", u" 'TECH'", u" 'ADDS'", u" 'EMERGENCY')"]
                 value = list(eval(', '.join(value)))
-            return value if isinstance(value, list) else value.split(',')
-        return ''
+            if isinstance(value, list):
+                return value
+            return value.split(',')
+        return []
     
     def contribute_to_class(self, cls, name):
         super(MultiSelectField, self).contribute_to_class(cls, name)
         if self.choices:
             def func(self, field=name, choices=dict(self.choices)):
-                return ','.join([ choices.get(value, value) for value in getattr(self, field) ])
+                return ','.join([choices.get(value, value) for value in getattr(self, field)])
             setattr(cls, 'get_%s_display' % self.name, func)
     
     def validate(self, value, model_instance):

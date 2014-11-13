@@ -1,5 +1,5 @@
 from django.contrib.auth.hashers import make_password
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, ValidationError
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -108,6 +108,17 @@ class Address(models.Model):
 #        if self.forward:
 #            destinations.append(self.forward)
 #        return ' '.join(destinations)
+    
+    def clean(self):
+        if self.account:
+            errors = []
+            for mailbox in self.get_forward_mailboxes():
+                if mailbox.account == self.account:
+                    errors.append(ValidationError(
+                        _("Please use mailboxes field for '%s' mailbox.") % mailbox
+                    ))
+            if errors:
+                raise ValidationError({'forward': errors})
     
     def get_forward_mailboxes(self):
         for forward in self.forward.split():

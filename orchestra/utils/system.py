@@ -46,8 +46,8 @@ def read_async(fd):
             return u''
 
 
-def run(command, display=False, error_codes=[0], silent=False, stdin=''):
-    """ Subprocess wrapper for running commands """
+def runiterator(command, display=False, error_codes=[0], silent=False, stdin=''):
+    """ Subprocess wrapper for running commands concurrently """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)
     
@@ -56,6 +56,7 @@ def run(command, display=False, error_codes=[0], silent=False, stdin=''):
     
     p.stdin.write(stdin)
     p.stdin.close()
+    yield
     
     make_async(p.stdout)
     make_async(p.stderr)
@@ -77,22 +78,39 @@ def run(command, display=False, error_codes=[0], silent=False, stdin=''):
         if display and stderrPiece:
             sys.stderr.write(stderrPiece)
         
-        stdout += stdoutPiece.decode("utf8")
-        stderr += stderrPiece.decode("utf8")
-        returnCode = p.poll()
+        return_code = p.poll()
+        state = _AttributeUnicode(stdoutPiece.decode("utf8"))
+        state.stderr = stderrPiece.decode("utf8")
+        state.return_code = return_code
+        yield state
         
-        if returnCode != None:
-            break
+        if return_code != None:
+            p.stdout.close()
+            p.stderr.close()
+            raise StopIteration
+
+
+def run(command, display=False, error_codes=[0], silent=False, stdin='', async=False):
+    iterator = runiterator(command, display, error_codes, silent, stdin)
+    iterator.next()
+    if async:
+        return iterator
+    
+    stdout = ''
+    stderr = ''
+    for state in iterator:
+        stdout += state.stdout
+        stderr += state.stderr
+    
+    return_code = state.return_code
     
     out = _AttributeUnicode(stdout.strip())
-    err = _AttributeUnicode(stderr.strip())
-    p.stdout.close()
-    p.stderr.close()
+    err = stderr.strip()
     
     out.failed = False
-    out.return_code = returnCode
+    out.return_code = return_code
     out.stderr = err
-    if p.returncode not in error_codes:
+    if return_code not in error_codes:
         out.failed = True
         msg = "\nrun() encountered an error (return code %s) while executing '%s'\n"
         msg = msg % (p.returncode, command)

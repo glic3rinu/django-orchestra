@@ -52,6 +52,9 @@ class Website(models.Model):
     
     def get_www_log_path(self):
         context = {
+            'user_home': self.account.main_systemuser.get_home(),
+            'username': self.account.username,
+            'name': self.name,
             'unique_name': self.unique_name
         }
         return settings.WEBSITES_WEBSITE_WWW_LOG_PATH % context

@@ -161,11 +161,13 @@ class Apache2Backend(ServiceController):
         context = self.get_context(site)
         self.append("ls -l %(sites_enabled)s > /dev/null; DISABLED=$?" % context)
         if site.is_active:
-            self.append("if [[ $DISABLED ]]; then a2ensite %(site_unique_name)s.conf;\n"
-                        "else UPDATED=0; fi" % context)
+            self.append(
+                "if [[ $DISABLED ]]; then a2ensite %(site_unique_name)s.conf;\n"
+                "else UPDATED=0; fi" % context)
         else:
-            self.append("if [[ ! $DISABLED ]]; then a2dissite %(site_unique_name)s.conf;\n"
-                        "else UPDATED=0; fi" % context)
+            self.append(
+                "if [[ ! $DISABLED ]]; then a2dissite %(site_unique_name)s.conf;\n"
+                "else UPDATED=0; fi" % context)
     
     def get_username(self, site):
         option = site.options.filter(name='user_group').first()
@@ -258,7 +260,7 @@ class Apache2Traffic(ServiceMonitor):
     
     def monitor(self, site):
         context = self.get_context(site)
-        self.append('monitor {object_id} $(date "+%Y%m%d%H%M%S" -d "{last_date}") "{log_file}"'.format(**context))
+        self.append('monitor {object_id} $(date "+%Y%m%d%H%M%S" -d "{last_date}") {log_file}'.format(**context))
     
     def get_context(self, site):
         return {

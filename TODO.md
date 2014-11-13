@@ -155,9 +155,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Subdomain saving should not trigger bind slave
 
 * multiple files monitoring
-* prevent adding local email addresses on account.contacts account.email
-
-* Resource monitoring without ROUTE alert or explicit error
 
 * Domain validation has to be done with injected records and subdomains
 
@@ -202,6 +199,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * webapp backend option compatibility check?
 
-* Miscellaneous service construct form for specific data, fields, validation, uniquenes.. etc (domain usecase)
-
 * miscellaneous.indentifier.endswith(('.org', '.es', '.cat'))
+
+* miscservic icon miscellaneous icon + scissors

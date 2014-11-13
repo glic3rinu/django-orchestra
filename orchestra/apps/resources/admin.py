@@ -1,13 +1,15 @@
 from django.contrib import admin, messages
+from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes import generic
 from django.core.urlresolvers import reverse
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date
+from orchestra.apps.orchestration.models import Route
 from orchestra.core import services
 from orchestra.utils import database_ready
 
@@ -36,7 +38,7 @@ class ResourceAdmin(ExtendedModelAdmin):
             'fields': ('monitors', 'crontab'),
         }),
     )
-    change_readonly_fields = ('name', 'content_type', 'period')
+    change_readonly_fields = ('name', 'content_type')
     prepopulated_fields = {'name': ('verbose_name',)}
     
     def add_view(self, request, **kwargs):
@@ -47,6 +49,25 @@ class ResourceAdmin(ExtendedModelAdmin):
                 "Remember that new allocated values will be applied when objects are saved."
             )))
         return super(ResourceAdmin, self).add_view(request, **kwargs)
+    
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        """ Remaind user when monitor routes are not configured """
+        if request.method == 'GET':
+            resource = self.get_object(request, unquote(object_id))
+            backends = Route.objects.values_list('backend', flat=True)
+            not_routed = []
+            for monitor in resource.monitors:
+                if monitor not in backends:
+                    not_routed.append(monitor)
+            if not_routed:
+                messages.warning(request, ungettext(
+                    _("%(not_routed)s monitor doesn't have any configured route."),
+                    _("%(not_routed)s monitors don't have any configured route."),
+                    len(not_routed),
+                ) % {
+                    'not_routed': ', '.join(not_routed)
+                })
+        return super(ResourceAdmin, self).changeform_view(request, object_id, form_url, extra_context)
     
     def save_model(self, request, obj, form, change):
         super(ResourceAdmin, self).save_model(request, obj, form, change)
@@ -70,25 +91,21 @@ class ResourceAdmin(ExtendedModelAdmin):
 
 class ResourceDataAdmin(ExtendedModelAdmin):
     list_display = (
-        'id', 'resource_link', 'content_object_link', 'used', 'allocated', 'display_unit',
+        'id', 'resource_link', 'content_object_link', 'display_used', 'allocated', 'display_unit',
         'display_updated'
     )
     list_filter = ('resource',)
-    add_fields = ('resource', 'content_type', 'object_id', 'used', 'updated_at', 'allocated')
     fields = (
-        'resource_link', 'content_type', 'content_object_link', 'used', 'display_updated',
+        'resource_link', 'content_type', 'content_object_link', 'display_used', 'display_updated',
         'allocated', 'display_unit'
     )
-    readonly_fields = ('display_unit',)
-    change_readonly_fields = (
-        'resource_link', 'content_type', 'content_object_link', 'used', 'display_updated',
-        'display_unit'
-    )
+    readonly_fields = fields
     actions = (run_monitor,)
     change_view_actions = actions
     ordering = ('-updated_at',)
+    list_select_related = ('resource',)
     prefetch_related = ('content_object',)
-
+    
     resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')
     display_updated = admin_date('updated_at', short_description=_("Updated"))
@@ -97,6 +114,24 @@ class ResourceDataAdmin(ExtendedModelAdmin):
         return data.unit
     display_unit.short_description = _("Unit")
     display_unit.admin_order_field = 'resource__unit'
+    
+    def display_used(self, data):
+        if not data.used:
+            return ''
+        ids = []
+        for dataset in data.get_monitor_datasets():
+            if isinstance(dataset, MonitorData):
+                ids.append(dataset.id)
+            else:
+                ids += dataset.values_list('id', flat=True)
+        url = reverse('admin:resources_monitordata_changelist')
+        url += '?id__in=%s' % ','.join(map(str, ids))
+        return '<a href="%s">%s</a>' % (url, data.used)
+    display_used.short_description = _("Used")
+    display_used.allow_tags = True
+    
+    def has_add_permission(self, *args, **kwargs):
+        return False
 
 
 class MonitorDataAdmin(ExtendedModelAdmin):

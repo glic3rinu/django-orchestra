@@ -51,7 +51,7 @@ class Miscellaneous(models.Model):
         verbose_name_plural = _("miscellaneous")
     
     def __unicode__(self):
-        return self.identifier or str(self.service)
+        return self.identifier or self.description[:32] or str(self.service)
     
     @cached_property
     def active(self):

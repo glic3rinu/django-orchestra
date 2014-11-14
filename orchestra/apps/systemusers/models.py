@@ -24,8 +24,9 @@ class SystemUser(models.Model):
     """ System users """
     username = models.CharField(_("username"), max_length=64, unique=True,
             help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
-            validators=[validators.RegexValidator(r'^[\w.-]+$',
-                        _("Enter a valid username."), 'invalid')])
+            validators=[
+                validators.RegexValidator(r'^[\w.-]+$', _("Enter a valid username."))
+            ])
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='systemusers')
@@ -82,7 +83,10 @@ class SystemUser(models.Model):
         return settings.SYSTEMUSERS_HOME % context
     
     def get_home(self):
-        return os.path.join(self.home or self.get_base_home(), self.directory)
+        return os.path.join(
+            self.home or self.get_base_home(),
+            self.directory
+        )
 
 
 services.register(SystemUser)

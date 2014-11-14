@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from .. import settings
+from ..core import services, accounts
 
 
 class APIRoot(views.APIView):
@@ -15,6 +16,10 @@ class APIRoot(views.APIView):
             '<%s>; rel="%s"' % (root_url, 'api-root'),
             '<%s>; rel="%s"' % (token_url, 'api-get-auth-token'),
         ]
+        body = {
+            'accountancy': [],
+            'services': [],
+        }
         if not request.user.is_anonymous():
             list_name = '{basename}-list'
             detail_name = '{basename}-detail'
@@ -30,17 +35,34 @@ class APIRoot(views.APIView):
                     kwargs = {}
                 url = reverse(url_name, request=request, format=format, kwargs=kwargs)
                 links.append('<%s>; rel="%s"' % (url, url_name))
+                model = viewset.model
+                group = None
+                if model in services:
+                    group = 'services'
+                    menu = services[model].menu
+                elif model in accounts:
+                    group = 'accountancy'
+                    menu = accounts[model].menu
+                if group and menu:
+                    body[group].append({
+                        'url': url,
+                        'name': basename,
+                        'verbose_name': model._meta.verbose_name,
+                        'verbose_name_plural': model._meta.verbose_name_plural,
+                    })
         headers = {
             'Link': ', '.join(links)
         }
-        body = {
-            name.lower(): getattr(settings, name, None) for name in self.names
-        }
+        body.update({
+            name.lower(): getattr(settings, name, None)
+                for name in self.names
+        })
         return Response(body, headers=headers)
     
     def metadata(self, request):
         ret = super(APIRoot, self).metadata(request)
         ret['settings'] = {
-            name.lower(): getattr(settings, name, None) for name in self.names
+            name.lower(): getattr(settings, name, None)
+            for name in self.names
         }
         return ret

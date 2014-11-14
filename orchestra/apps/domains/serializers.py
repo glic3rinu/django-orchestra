@@ -39,13 +39,7 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         """ Checks if everything is consistent """
         instance = super(DomainSerializer, self).full_clean(instance)
         if instance and instance.name:
-            records = self.init_data['records']
+            records = self.init_data.get('records', [])
             domain = domain_for_validation(instance, records)
-            try:
-                validators.validate_zone(domain.render_zone())
-            except ValidationError as err:
-                self._errors = {
-                    'all': err.message
-                }
-                return None
+            validators.validate_zone(domain.render_zone())
         return instance

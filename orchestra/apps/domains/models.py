@@ -11,11 +11,15 @@ from . import settings, validators, utils
 
 class Domain(models.Model):
     name = models.CharField(_("name"), max_length=256, unique=True,
-            validators=[validators.validate_domain_name, validators.validate_allowed_domain],
-            help_text=_("Domain or subdomain name."))
-    account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
-            related_name='domains', blank=True, help_text=_("Automatically selected for subdomains."))
-    top = models.ForeignKey('domains.Domain', null=True, related_name='subdomain_set', editable=False)
+            help_text=_("Domain or subdomain name."),
+            validators=[
+                validators.validate_domain_name,
+                validators.validate_allowed_domain
+            ])
+    account = models.ForeignKey('accounts.Account', verbose_name=_("Account"), blank=True,
+            related_name='domains', help_text=_("Automatically selected for subdomains."))
+    top = models.ForeignKey('domains.Domain', null=True, related_name='subdomain_set',
+            editable=False)
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial,
             help_text=_("Serial number"))
     
@@ -88,17 +92,24 @@ class Domain(models.Model):
                 # Update serial and insert at 0
                 value = record.value.split()
                 value[2] = str(self.serial)
-                records.insert(0,
-                    AttrDict(type=record.SOA, ttl=record.get_ttl(), value=' '.join(value))
-                )
+                records.insert(0, AttrDict(
+                    type=record.SOA,
+                    ttl=record.get_ttl(),
+                    value=' '.join(value)
+                ))
             else:
-                records.append(
-                    AttrDict(type=record.type, ttl=record.get_ttl(), value=record.value)
-                )
+                records.append(AttrDict(
+                    type=record.type,
+                    ttl=record.get_ttl(),
+                    value=record.value
+                ))
         if self.is_top:
             if Record.NS not in types:
                 for ns in settings.DOMAINS_DEFAULT_NS:
-                    records.append(AttrDict(type=Record.NS, value=ns))
+                    records.append(AttrDict(
+                        type=Record.NS,
+                        value=ns
+                    ))
             if Record.SOA not in types:
                 soa = [
                     "%s." % settings.DOMAINS_DEFAULT_NAME_SERVER,
@@ -109,27 +120,42 @@ class Domain(models.Model):
                     settings.DOMAINS_DEFAULT_EXPIRATION,
                     settings.DOMAINS_DEFAULT_MIN_CACHING_TIME
                 ]
-                records.insert(0, AttrDict(type=Record.SOA, value=' '.join(soa)))
+                records.insert(0, AttrDict(
+                    type=Record.SOA,
+                    value=' '.join(soa)
+                ))
         is_a = not types or Record.A in types or Record.AAAA in types
         if Record.MX not in types and is_a:
             for mx in settings.DOMAINS_DEFAULT_MX:
-                records.append(AttrDict(type=Record.MX, value=mx))
+                records.append(AttrDict(
+                    type=Record.MX,
+                    value=mx
+                ))
         if (Record.A not in types and Record.AAAA not in types) and is_a:
-            records.append(AttrDict(type=Record.A, value=settings.DOMAINS_DEFAULT_A))
+            records.append(AttrDict(
+                type=Record.A,
+                value=settings.DOMAINS_DEFAULT_A
+            ))
         result = ''
         for record in records:
             name = '{name}.{spaces}'.format(
-                name=self.name, spaces=' ' * (37-len(self.name))
+                name=self.name,
+                spaces=' ' * (37-len(self.name))
             )
             ttl = record.get('ttl', settings.DOMAINS_DEFAULT_TTL)
             ttl = '{spaces}{ttl}'.format(
-                spaces=' ' * (7-len(ttl)), ttl=ttl
+                spaces=' ' * (7-len(ttl)),
+                ttl=ttl
             )
             type = '{type} {spaces}'.format(
-                type=record.type, spaces=' ' * (7-len(record.type))
+                type=record.type,
+                spaces=' ' * (7-len(record.type))
             )
             result += '{name} {ttl} IN {type} {value}\n'.format(
-                name=name, ttl=ttl, type=type, value=record.value
+                name=name,
+                ttl=ttl,
+                type=type,
+                value=record.value
             )
         return result
     

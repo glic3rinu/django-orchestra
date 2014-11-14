@@ -39,8 +39,7 @@ class ChangeListDefaultFilter(object):
              defaults.append(key)
         # hack response cl context in order to hook default filter awaearness
         # into search_form.html template
-        response = super(ChangeListDefaultFilter, self).changelist_view(request,
-                extra_context=extra_context)
+        response = super(ChangeListDefaultFilter, self).changelist_view(request, extra_context)
         if hasattr(response, 'context_data') and 'cl' in response.context_data:
             response.context_data['cl'].default_changelist_filters = defaults
         return response
@@ -100,7 +99,7 @@ class ChangeViewActionsMixin(object):
             kwargs['extra_context'] = {}
         obj = self.get_object(request, unquote(object_id))
         kwargs['extra_context']['object_tools_items'] = [
-            action.__dict__ for action in self.get_change_view_actions(obj=obj)
+            action.__dict__ for action in self.get_change_view_actions(obj)
         ]
         return super(ChangeViewActionsMixin, self).change_view(request, object_id, **kwargs)
 
@@ -116,11 +115,11 @@ class ChangeAddFieldsMixin(object):
     
     def get_prepopulated_fields(self, request, obj=None):
         if not obj:
-            return super(ChangeAddFieldsMixin, self).get_prepopulated_fields(request, obj=obj)
+            return super(ChangeAddFieldsMixin, self).get_prepopulated_fields(request, obj)
         return {}
     
     def get_readonly_fields(self, request, obj=None):
-        fields = super(ChangeAddFieldsMixin, self).get_readonly_fields(request, obj=obj)
+        fields = super(ChangeAddFieldsMixin, self).get_readonly_fields(request, obj)
         if obj:
             return fields + self.change_readonly_fields
         return fields
@@ -131,7 +130,7 @@ class ChangeAddFieldsMixin(object):
                 return self.add_fieldsets
             elif self.add_fields:
                 return [(None, {'fields': self.add_fields})]
-        return super(ChangeAddFieldsMixin, self).get_fieldsets(request, obj=obj)
+        return super(ChangeAddFieldsMixin, self).get_fieldsets(request, obj)
     
     def get_inline_instances(self, request, obj=None):
         """ add_inlines and inline.parent_object """
@@ -139,7 +138,7 @@ class ChangeAddFieldsMixin(object):
             self.inlines = type(self).inlines
         else:
             self.inlines = self.add_inlines or self.inlines
-        inlines = super(ChangeAddFieldsMixin, self).get_inline_instances(request, obj=obj)
+        inlines = super(ChangeAddFieldsMixin, self).get_inline_instances(request, obj)
         for inline in inlines:
             inline.parent_object = obj
         return inlines
@@ -200,7 +199,7 @@ class ChangePasswordAdminMixin(object):
                 related.append(rel)
         
         if request.method == 'POST':
-            form = self.change_password_form(user, request.POST, related=related)
+            form = self.change_password_form(user, request.POST, related)
             if form.is_valid():
                 form.save()
                 change_message = self.construct_change_message(request, form, None)
@@ -210,7 +209,7 @@ class ChangePasswordAdminMixin(object):
                 update_session_auth_hash(request, form.user) # This is safe
                 return HttpResponseRedirect('..')
         else:
-            form = self.change_password_form(user, related=related)
+            form = self.change_password_form(user, related)
         
         fieldsets = [
             (user._meta.verbose_name.capitalize(), {

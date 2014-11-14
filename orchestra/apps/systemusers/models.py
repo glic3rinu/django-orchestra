@@ -75,20 +75,18 @@ class SystemUser(models.Model):
         super(SystemUser, self).save(*args, **kwargs)
     
     def clean(self):
-        # TODO do it right
-        if self.has_shell and self.directory:
-            raise ValidationError({
-                'directory': _("Directory with shell users can not be specified.")
-            })
-        if self.pk and self.is_main and self.directory:
-            raise ValidationError({
-                'directory': _("Directory with main system users can not be specified.")
-            })
-        if self.home == self.get_base_home() and self.directory:
-            raise ValidationError({
-                'directory': _("Directory on the user's base home is not allowed.")
-            })
-        # TODO valid home exists
+        if self.directory:
+            directory_error = None
+            if self.has_shell:
+                directory_error = _("Directory with shell users can not be specified.")
+            elif self.pk and self.is_main:
+                directory_error = _("Directory with main system users can not be specified.")
+            elif self.home == self.get_base_home():
+                directory_error = _("Directory on the user's base home is not allowed.")
+            if directory_error:
+                raise ValidationError({
+                    'directory': directory_error,
+                })
     
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

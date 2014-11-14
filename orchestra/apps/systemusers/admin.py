@@ -17,6 +17,7 @@ from orchestra.forms import UserCreationForm, UserChangeForm
 from . import settings
 from .actions import grant_permission
 from .filters import IsMainListFilter
+from .forms import SystemUserCreationForm, SystemUserChangeForm
 from .models import SystemUser
 
 
@@ -46,8 +47,8 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     change_readonly_fields = ('username',)
     filter_horizontal = ('groups',)
     filter_by_account_fields = ('groups',)
-    add_form = UserCreationForm
-    form = UserChangeForm
+    add_form = SystemUserCreationForm
+    form = SystemUserChangeForm
     ordering = ('-id',)
     actions = (grant_permission,)
     change_view_actions = actions
@@ -70,49 +71,13 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     
     def get_form(self, request, obj=None, **kwargs):
         form = super(SystemUserAdmin, self).get_form(request, obj=obj, **kwargs)
-        duplicate = lambda n: (n, n)
+        form.account = self.account
         if obj:
             # Has to be done here and not in the form because of strange phenomenon
             # derived from monkeypatching formfield.widget.render on AccountAdminMinxin,
             # don't ask.
             formfield = form.base_fields['groups']
             formfield.queryset = formfield.queryset.exclude(id=obj.id)
-            username = obj.username
-            choices=(
-                duplicate(self.account.main_systemuser.get_home()),
-                duplicate(obj.get_home()),
-            )
-        else:
-            username = '<username>'
-            choices=(
-                duplicate(self.account.main_systemuser.get_home()),
-                duplicate(SystemUser(username=username).get_home()),
-            )
-        form.base_fields['home'].widget = forms.Select(choices=choices)
-        if obj and (obj.is_main or obj.has_shell):
-            # hidde home option for shell users
-            form.base_fields['home'].widget = forms.HiddenInput()
-            form.base_fields['directory'].widget = forms.HiddenInput()
-        else:
-            # Some javascript for hidde home/directory inputs when convinient
-            form.base_fields['shell'].widget.attrs = {
-                'onChange': textwrap.dedent("""\
-                    field = $(".form-row.field-home.field-directory");
-                    if ($.inArray(this.value, %s) < 0) {
-                        field.addClass("hidden");
-                    } else {
-                       field.removeClass("hidden");
-                    };""" % str(list(settings.SYSTEMUSERS_DISABLED_SHELLS)))
-            }
-        form.base_fields['home'].widget.attrs = {
-            'onChange': textwrap.dedent("""\
-                field = $(".field-box.field-directory");
-                if (this.value.search("%s") > 0) {
-                   field.addClass("hidden");
-                } else {
-                   field.removeClass("hidden");
-                };""" % username)
-        }
         return form
     
     def has_delete_permission(self, request, obj=None):

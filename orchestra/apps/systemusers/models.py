@@ -2,6 +2,7 @@ import os
 
 from django.contrib.auth.hashers import make_password
 from django.core import validators
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.functional import cached_property
@@ -30,7 +31,7 @@ class SystemUser(models.Model):
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='systemusers')
-    home = models.CharField(_("home"), max_length=256, blank=False,
+    home = models.CharField(_("home"), max_length=256, blank=True,
             help_text=_("Starting location when login with this no-shell user."))
     directory = models.CharField(_("directory"), max_length=256, blank=True,
             help_text=_("Optional directory relative to user's home."))
@@ -68,10 +69,26 @@ class SystemUser(models.Model):
     def has_shell(self):
         return self.shell not in settings.SYSTEMUSERS_DISABLED_SHELLS
     
-    def clean(self):
-        if self.has_shell or self.is_main:
+    def save(self, *args, **kwargs):
+        if not self.home:
             self.home = self.get_base_home()
-            self.directory = ''
+        super(SystemUser, self).save(*args, **kwargs)
+    
+    def clean(self):
+        # TODO do it right
+        if self.has_shell and self.directory:
+            raise ValidationError({
+                'directory': _("Directory with shell users can not be specified.")
+            })
+        if self.pk and self.is_main and self.directory:
+            raise ValidationError({
+                'directory': _("Directory with main system users can not be specified.")
+            })
+        if self.home == self.get_base_home() and self.directory:
+            raise ValidationError({
+                'directory': _("Directory on the user's base home is not allowed.")
+            })
+        # TODO valid home exists
     
     def set_password(self, raw_password):
         self.password = make_password(raw_password)

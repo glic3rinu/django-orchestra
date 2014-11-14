@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.forms import widgets
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -33,6 +34,24 @@ class SystemUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             'url', 'username', 'password', 'home', 'shell', 'groups', 'is_active',
         )
         postonly_fields = ('username',)
+    
+    def validate(self, attrs):
+        user = SystemUser(
+            username=attrs.get('username') or self.object.username,
+            shell=attrs.get('shell') or self.object.shell,
+        )
+        if 'home' in attrs and attrs['home']:
+            home = attrs['home'].rstrip('/') + '/'
+            if user.has_shell:
+                if home != user.get_base_home():
+                    raise ValidationError({
+                        'home': _("Not a valid home directory.")
+                    })
+            elif home not in (user.get_home(), self.account.main_systemuser.get_home()):
+                raise ValidationError({
+                    'home': _("Not a valid home directory.")
+                })
+        return attrs
     
     def validate_password(self, attrs, source):
         """ POST only password """

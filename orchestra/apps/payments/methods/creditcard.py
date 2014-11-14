@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.forms import PluginDataForm
+from orchestra.apps.plugins.forms import PluginDataForm
 
 from .options import PaymentMethod
 

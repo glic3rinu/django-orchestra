@@ -81,6 +81,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     
     def display_is_top(self, domain):
         return domain.is_top
+    display_is_top.short_description = _("Is top")
     display_is_top.boolean = True
     display_is_top.admin_order_field = 'top'
     

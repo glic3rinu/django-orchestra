@@ -1,5 +1,6 @@
 from functools import partial
 
+from django.db.models.loading import get_model
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -69,6 +70,10 @@ class ServiceBackend(plugins.Plugin):
     @classmethod
     def get_backend(cls, name):
         return cls.get_plugin(name)
+    
+    @classmethod
+    def model_class(cls):
+        return get_model(cls.model)
     
     def get_banner(self):
         time = timezone.now().strftime("%h %d, %Y %I:%M:%S")

@@ -113,7 +113,7 @@ def run(command, display=False, error_codes=[0], silent=False, stdin='', async=F
     if return_code not in error_codes:
         out.failed = True
         msg = "\nrun() encountered an error (return code %s) while executing '%s'\n"
-        msg = msg % (p.returncode, command)
+        msg = msg % (return_code, command)
         if display:
             sys.stderr.write("\n\033[1;31mCommandError: %s %s\033[m\n" % (msg, err))
         if not silent:

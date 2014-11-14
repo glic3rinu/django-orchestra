@@ -1,5 +1,4 @@
 from celery import shared_task
-from django.db.models.loading import get_model
 
 from orchestra.apps.orchestration.models import BackendOperation as Operation
 from orchestra.models.utils import get_model_field_path
@@ -16,7 +15,7 @@ def monitor(resource_id, ids=None):
     # Execute monitors
     for monitor_name in resource.monitors:
         backend = ServiceMonitor.get_backend(monitor_name)
-        model = get_model(backend.model)
+        model = backend.model_class()
         kwargs = {}
         if ids:
             path = get_model_field_path(model, resource_model)

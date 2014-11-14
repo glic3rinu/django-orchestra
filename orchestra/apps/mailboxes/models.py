@@ -13,16 +13,18 @@ class Mailbox(models.Model):
     CUSTOM = 'CUSTOM'
     
     name = models.CharField(_("name"), max_length=64, unique=True,
-            help_text=_("Required. 30 characters or fewer. Letters, digits and "
-                        "@/./+/-/_ only."),
-            validators=[RegexValidator(r'^[\w.@+-]+$',
-                        _("Enter a valid mailbox name."), 'invalid')])
+            help_text=_("Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."),
+            validators=[
+                RegexValidator(r'^[\w.@+-]+$', _("Enter a valid mailbox name."))
+            ])
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='mailboxes')
     filtering = models.CharField(max_length=16,
-            choices=[(k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.iteritems()],
-            default=settings.MAILBOXES_MAILBOX_DEFAULT_FILTERING)
+            default=settings.MAILBOXES_MAILBOX_DEFAULT_FILTERING,
+            choices=[
+                (k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.iteritems()
+            ])
     custom_filtering = models.TextField(_("filtering"), blank=True,
             validators=[validators.validate_sieve],
             help_text=_("Arbitrary email filtering in sieve language. "
@@ -110,15 +112,17 @@ class Address(models.Model):
 #        return ' '.join(destinations)
     
     def clean(self):
-        if self.account:
-            errors = []
+        if self.account_id:
+            forward_errors = []
             for mailbox in self.get_forward_mailboxes():
-                if mailbox.account == self.account:
-                    errors.append(ValidationError(
+                if mailbox.account_id == self.account_id:
+                    forward_errors.append(ValidationError(
                         _("Please use mailboxes field for '%s' mailbox.") % mailbox
                     ))
-            if errors:
-                raise ValidationError({'forward': errors})
+            if forward_errors:
+                raise ValidationError({
+                    'forward': forward_errors
+                })
     
     def get_forward_mailboxes(self):
         for forward in self.forward.split():

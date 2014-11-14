@@ -79,7 +79,7 @@ class SystemUser(models.Model):
             directory_error = None
             if self.has_shell:
                 directory_error = _("Directory with shell users can not be specified.")
-            elif self.pk and self.is_main:
+            elif self.account_id and self.is_main:
                 directory_error = _("Directory with main system users can not be specified.")
             elif self.home == self.get_base_home():
                 directory_error = _("Directory on the user's base home is not allowed.")

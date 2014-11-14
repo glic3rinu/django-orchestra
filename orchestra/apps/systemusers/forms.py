@@ -31,8 +31,8 @@ class SystemUserFormMixin(object):
             self.fields['home'].widget = forms.HiddenInput()
             self.fields['directory'].widget = forms.HiddenInput()
         elif self.instance.pk and (self.instance.get_base_home() == self.instance.home):
-                self.fields['directory'].widget = forms.HiddenInput()
-        if self.instance.pk and not self.instance.is_main:
+            self.fields['directory'].widget = forms.HiddenInput()
+        if not self.instance.pk or not self.instance.is_main:
             # Some javascript for hidde home/directory inputs when convinient
             self.fields['shell'].widget.attrs = {
                 'onChange': textwrap.dedent("""\

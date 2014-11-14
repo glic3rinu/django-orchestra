@@ -194,12 +194,13 @@ class ChangePasswordAdminMixin(object):
                 related.append(user.account)
         else:
             account = user
-        for rel in account.get_related_passwords():
-            if not isinstance(user, type(rel)):
-                related.append(rel)
+        if account.username == username:
+            for rel in account.get_related_passwords():
+                if not isinstance(user, type(rel)):
+                    related.append(rel)
         
         if request.method == 'POST':
-            form = self.change_password_form(user, request.POST, related)
+            form = self.change_password_form(user, request.POST, related=related)
             if form.is_valid():
                 form.save()
                 change_message = self.construct_change_message(request, form, None)
@@ -209,7 +210,7 @@ class ChangePasswordAdminMixin(object):
                 update_session_auth_hash(request, form.user) # This is safe
                 return HttpResponseRedirect('..')
         else:
-            form = self.change_password_form(user, related)
+            form = self.change_password_form(user, related=related)
         
         fieldsets = [
             (user._meta.verbose_name.capitalize(), {
@@ -224,7 +225,6 @@ class ChangePasswordAdminMixin(object):
             }))
         
         adminForm = admin.helpers.AdminForm(form, fieldsets, {})
-        
         context = {
             'title': _('Change password: %s') % escape(username),
             'adminform': adminForm,

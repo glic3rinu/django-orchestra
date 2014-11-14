@@ -40,17 +40,7 @@ class SystemUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             username=attrs.get('username') or self.object.username,
             shell=attrs.get('shell') or self.object.shell,
         )
-        if 'home' in attrs and attrs['home']:
-            home = attrs['home'].rstrip('/') + '/'
-            if user.has_shell:
-                if home != user.get_base_home():
-                    raise ValidationError({
-                        'home': _("Not a valid home directory.")
-                    })
-            elif home not in (user.get_home(), self.account.main_systemuser.get_home()):
-                raise ValidationError({
-                    'home': _("Not a valid home directory.")
-                })
+        user.validate_home(attrs, self.account)
         return attrs
     
     def validate_password(self, attrs, source):

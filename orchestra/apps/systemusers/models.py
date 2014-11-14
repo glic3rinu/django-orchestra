@@ -88,6 +88,29 @@ class SystemUser(models.Model):
                     'directory': directory_error,
                 })
     
+    def validate_home(self, data, account):
+        """ validates home based on account and data['shell'] """
+        if not 'username' in data and not self.pk:
+            # other validation will have raised for required username
+            return
+        user = type(self)(
+            username=data.get('username') or self.username,
+            shell=data.get('shell') or self.shell,
+        )
+        if 'home' in data and data['home']:
+            home = data['home'].rstrip('/')
+            user_home = user.get_home().rstrip('/')
+            account_home = account.main_systemuser.get_home().rstrip('/')
+            if user.has_shell:
+                if home != user_home:
+                    raise ValidationError({
+                        'home': _("Not a valid home directory.")
+                    })
+            elif home not in (user_home, account_home):
+                raise ValidationError({
+                    'home': _("Not a valid home directory.")
+                })
+    
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
     

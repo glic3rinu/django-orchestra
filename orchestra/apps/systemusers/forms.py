@@ -62,6 +62,7 @@ class SystemUserFormMixin(object):
         if home and self.MOCK_USERNAME in home:
             username = self.cleaned_data.get('username', '')
             self.cleaned_data['home'] = home.replace(self.MOCK_USERNAME, username)
+        self.instance.validate_home(self.cleaned_data, self.account)
 
 
 class SystemUserCreationForm(SystemUserFormMixin, UserCreationForm):

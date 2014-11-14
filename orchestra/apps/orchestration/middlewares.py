@@ -50,6 +50,7 @@ class OperationsMiddleware(object):
             return
         pending_operations = cls.get_pending_operations()
         for backend in ServiceBackend.get_backends():
+            # Check if there exists a related instance to be executed for this backend
             instance = None
             if backend.is_main(kwargs['instance']):
                 instance = kwargs['instance']
@@ -61,6 +62,7 @@ class OperationsMiddleware(object):
                         instance = candidate
                         # related objects with backend.model trigger save()
                         action = Operation.SAVE
+            # Maintain consistent state of pending_operations based on save/delete behaviour
             if instance is not None:
                 # Prevent creating a deleted instance by deleting existing saves
                 if action == Operation.DELETE:

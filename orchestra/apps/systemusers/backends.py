@@ -12,6 +12,7 @@ from . import settings
 class SystemUserBackend(ServiceController):
     verbose_name = _("System user")
     model = 'systemusers.SystemUser'
+    actions = ('save', 'delete', 'grant_permission')
     
     def save(self, user):
         context = self.get_context(user)
@@ -39,6 +40,10 @@ class SystemUserBackend(ServiceController):
         self.append("userdel %(username)s || true" % context)
         self.append("groupdel %(username)s || true" % context)
         self.delete_home(context, user)
+    
+    def grant_permission(self, user):
+        context = self.get_context(user)
+        # TODO setacl
     
     def delete_home(self, context, user):
         if user.is_main:

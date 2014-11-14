@@ -19,8 +19,6 @@ transports = {}
 
 
 def BashSSH(backend, log, server, cmds):
-    from .models import BackendLog
-    
     script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
     digest = hashlib.md5(script).hexdigest()
@@ -48,7 +46,7 @@ def BashSSH(backend, log, server, cmds):
             ssh.connect(addr, username='root', key_filename=settings.ORCHESTRATION_SSH_KEY_PATH, timeout=10)
         except socket.error:
             logger.error('%s timed out on %s' % (backend, server))
-            log.state = BackendLog.TIMEOUT
+            log.state = log.TIMEOUT
             log.save(update_fields=['state'])
             return
         transport = ssh.get_transport()
@@ -92,11 +90,11 @@ def BashSSH(backend, log, server, cmds):
                 if channel.exit_status_ready():
                     break
         log.exit_code = exit_code = channel.recv_exit_status()
-        log.state = BackendLog.SUCCESS if exit_code == 0 else BackendLog.FAILURE
+        log.state = log.SUCCESS if exit_code == 0 else log.FAILURE
         logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
         log.save()
     except:
-        log.state = BackendLog.ERROR
+        log.state = log.ERROR
         log.traceback = ExceptionInfo(sys.exc_info()).traceback
         logger.error('Exception while executing %s on %s' % (backend, server))
         logger.debug(log.traceback)
@@ -109,7 +107,6 @@ def BashSSH(backend, log, server, cmds):
 
 
 def Python(backend, log, server, cmds):
-    from .models import BackendLog
     script = [ str(cmd.func.func_name) + str(cmd.args) for cmd in cmds ]
     script = json.dumps(script, indent=4).replace('"', '')
     log.script = '\n'.join([log.script, script])
@@ -121,10 +118,10 @@ def Python(backend, log, server, cmds):
             stdout += str(result)
     except:
         log.exit_code = 1
-        log.state = BackendLog.FAILURE
+        log.state = log.FAILURE
         log.traceback = ExceptionInfo(sys.exc_info()).traceback
     else:
         log.exit_code = 0
-        log.state = BackendLog.SUCCESS
+        log.state = log.SUCCESS
     log.stdout += stdout
     log.save()

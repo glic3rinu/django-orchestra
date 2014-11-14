@@ -138,6 +138,12 @@ class BackendOperation(models.Model):
     def execute(cls, operations):
         return manager.execute(operations)
     
+    @classmethod
+    def execute_action(cls, instance, action):
+        backends = ServiceBackend.get_backends(instance=instance, action=action)
+        operations = [cls.create(backend, instance, action) for backend in backends]
+        return cls.execute(operations)
+    
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
 

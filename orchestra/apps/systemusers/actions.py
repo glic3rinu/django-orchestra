@@ -10,6 +10,7 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.decorators import action_with_confirmation
 from orchestra.admin.utils import change_url
+from orchestra.apps.orchestration.models import BackendOperation as Operation
 
 
 class GrantPermissionForm(forms.Form):
@@ -22,7 +23,8 @@ class GrantPermissionForm(forms.Form):
 
 @action_with_confirmation(extra_context=dict(form=GrantPermissionForm()))
 def grant_permission(modeladmin, request, queryset):
+    user = queryset.get()
+    log = Operation.execute_action(user, 'grant_permission')
     # TODO
-    pass
 grant_permission.url_name = 'grant-permission'
 grant_permission.verbose_name = _("Grant permission")

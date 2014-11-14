@@ -64,8 +64,24 @@ class ServiceBackend(plugins.Plugin):
         return None
     
     @classmethod
-    def get_backends(cls):
-        return cls.get_plugins()
+    def get_backends(cls, instance=None, action=None):
+        backends = cls.get_plugins()
+        included = []
+        # Filter for instance or action
+        if instance or action:
+            for backend in backends:
+                include = True
+                if instance:
+                    opts = instance._meta
+                    if backend.model != '.'.join((opts.app_label, opts.object_name)):
+                        include = False
+                if include and action:
+                    if action not in backend.get_actions():
+                        include = False
+                if include:
+                    included.append(backend)
+            backends = included
+        return backends
     
     @classmethod
     def get_backend(cls, name):
@@ -126,6 +142,7 @@ class ServiceController(ServiceBackend):
     @classmethod
     def get_backends(cls):
         """ filter controller classes """
+        backends = super(ServiceController, cls).get_backends()
         return [
-            plugin for plugin in cls.plugins if ServiceController in plugin.__mro__
+            backend for backend in backends if ServiceController in backend.__mro__
         ]

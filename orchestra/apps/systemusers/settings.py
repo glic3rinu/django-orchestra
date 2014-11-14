@@ -10,7 +10,14 @@ SYSTEMUSERS_SHELLS = getattr(settings, 'SYSTEMUSERS_SHELLS', (
     ('/bin/sh', "/bin/sh"),
 ))
 
+
 SYSTEMUSERS_DEFAULT_SHELL = getattr(settings, 'SYSTEMUSERS_DEFAULT_SHELL', '/dev/null')
+
+
+SYSTEMUSERS_DISABLED_SHELLS = getattr(settings, 'SYSTEMUSERS_DISABLED_SHELLS', (
+    '/dev/null',
+    '/bin/rssh',
+))
 
 
 SYSTEMUSERS_HOME = getattr(settings, 'SYSTEMUSERS_HOME', '/home/./%(username)s')

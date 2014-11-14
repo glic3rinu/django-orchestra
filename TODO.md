@@ -172,3 +172,8 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * validate systemuser.home
 
 * webapp backend option compatibility check?
+
+
+* ServiceBackend.validate() : used for server paths validation
+* ServiceBackend.grant_access() : used for granting access
+* bottom line: allow arbitrary backend methods (underscore method names that are not to be executed?)

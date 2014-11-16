@@ -75,7 +75,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * jabber with mailbox accounts (dovecto mail notification)
 
-* rename accounts register to manager register or accounttools, accountutils
+* rename accounts register to "account", and reated api and admin references
 
 * take a look icons from ajenti ;)
 
@@ -173,8 +173,4 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * webapp backend option compatibility check?
 
-
-* ServiceBackend.validate() : used for server paths validation
-* ServiceBackend.grant_access() : used for granting access
-* bottom line: allow arbitrary backend methods (underscore method names that are not to be executed?)
-* HowTo?? Signals ? what?
+* admin systemuser home/directory, add default home and empty directory with has_shell on admin

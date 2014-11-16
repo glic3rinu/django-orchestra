@@ -81,6 +81,9 @@ class BackendLog(models.Model):
     class Meta:
         get_latest_by = 'id'
     
+    def __unicode__(self):
+        return "%s@%s" % (self.backend, self.server)
+    
     @property
     def execution_time(self):
         return (self.updated_at-self.created_at).total_seconds()

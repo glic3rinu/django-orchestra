@@ -31,6 +31,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         'name', 'account_link', 'filtering', 'display_addresses'
     )
     list_filter = (HasAddressListFilter, 'filtering')
+    search_fields = ('account__username', 'account__short_name', 'account__full_name', 'name')
     add_fieldsets = (
         (None, {
             'fields': ('account_link', 'name', 'password1', 'password2', 'filtering'),

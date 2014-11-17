@@ -12,8 +12,7 @@ from .models import Contact
 
 class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = (
-        'short_name', 'full_name', 'email', 'phone', 'phone2', 'country',
-        'account_link'
+        'dispaly_name', 'email', 'phone', 'phone2', 'country', 'account_link'
     )
     list_filter = ('email_usage',)
     search_fields = (
@@ -56,6 +55,11 @@ class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
             'fields': ('address', ('zip_code', 'city'), 'country')
         }),
     )
+    
+    def dispaly_name(self, contact):
+        return unicode(contact)
+    dispaly_name.short_description = _("Name")
+    dispaly_name.admin_order_field = 'short_name'
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """

@@ -90,6 +90,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
         'resource_link', 'content_type', 'content_object_link', 'display_used', 'display_updated',
         'allocated', 'display_unit'
     )
+    search_fields = ('object_id',)
     readonly_fields = fields
     actions = (run_monitor,)
     change_view_actions = actions

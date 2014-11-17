@@ -56,7 +56,7 @@ class Contact(models.Model):
             default=settings.CONTACTS_DEFAULT_COUNTRY)
     
     def __unicode__(self):
-        return self.short_name
+        return self.full_name or self.short_name
     
     def clean(self):
         self.short_name = self.short_name.strip()

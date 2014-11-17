@@ -213,14 +213,14 @@ class MaildirDisk(ServiceMonitor):
     def monitor(self, mailbox):
         context = self.get_context(mailbox)
         self.append(
-            "SIZE=$(sed -n '2p' %(maildir_path)s | cut -d' ' -f1)\n"
+            "SIZE=$(awk 'NR>1 {s+=$1} END {print s}' %(maildir_path)s)\n"
             "echo %(object_id)s ${SIZE:-0}" % context
         )
     
     def get_context(self, mailbox):
-        home = mailbox.get_home()
         context = {
-            'maildir_path': os.path.join(home, 'Maildir/maildirsize'),
+            'home': mailbox.get_home(),
             'object_id': mailbox.pk
         }
+        context['maildir_path'] = settings.MAILBOXES_MAILDIRSIZE_PATH % context
         return context

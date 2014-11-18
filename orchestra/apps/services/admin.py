@@ -4,34 +4,13 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ChangeViewActionsMixin, ExtendedModelAdmin
+from orchestra.admin import ChangeViewActionsMixin
 from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
 from .actions import update_orders, view_help, clone
-from .models import Plan, ContractedPlan, Rate, Service
-
-
-class RateInline(admin.TabularInline):
-    model = Rate
-    ordering = ('plan', 'quantity')
-
-
-class PlanAdmin(ExtendedModelAdmin):
-    list_display = ('name', 'is_default', 'is_combinable', 'allow_multiple')
-    list_filter = ('is_default', 'is_combinable', 'allow_multiple')
-    fields = ('verbose_name', 'name', 'is_default', 'is_combinable', 'allow_multiple')
-    prepopulated_fields = {
-        'name': ('verbose_name',)
-    }
-    change_readonly_fields = ('name',)
-    inlines = [RateInline]
-
-
-class ContractedPlanAdmin(AccountAdminMixin, admin.ModelAdmin):
-    list_display = ('plan', 'account_link')
-    list_filter = ('plan__name',)
+from .models import Service
 
 
 class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
@@ -56,7 +35,6 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
                        'on_cancel', 'payment_style', 'tax', 'nominal_price')
         }),
     )
-    inlines = [RateInline]
     actions = [update_orders, clone]
     change_view_actions = actions + [view_help]
     
@@ -95,6 +73,4 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         return qs
 
 
-admin.site.register(Plan, PlanAdmin)
-admin.site.register(ContractedPlan, ContractedPlanAdmin)
 admin.site.register(Service, ServiceAdmin)

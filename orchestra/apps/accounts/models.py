@@ -6,7 +6,7 @@ from django.db.models.loading import get_model
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
+from orchestra.core import services, accounts
 from orchestra.utils import send_email_template
 
 from . import settings
@@ -154,3 +154,4 @@ class Account(auth.AbstractBaseUser):
 
 
 services.register(Account, menu=False)
+accounts.register(Account)

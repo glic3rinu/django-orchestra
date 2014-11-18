@@ -41,6 +41,7 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
             'fields': ('password',),
         }),
     )
+    search_fields = ('name', 'address_name', 'address_domain__name', 'account__username')
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name',)
     form = ListChangeForm

@@ -1,4 +1,4 @@
-TODO ====
+==== TODO ====
 
 * scape strings before executing scripts in order to prevent exploits: django templates automatically scapes things. Most important is to ensuer that all escape ' to &quot
 * Don't store passwords and other service parameters that can be changed by the services i.e. mailman, vps etc. Find an execution mechanism that trigger `change_password()`
@@ -152,7 +152,6 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Secondary user home in /home/secondaryuser and simlink to /home/main/webapps/app so it can have private storage?
 * Grant permissions to systemusers, the problem of creating a related permission model is out of sync with the server-side. evaluate tradeoff
 
-* Secondaryusers home should be under mainuser home. i.e. /home/mainuser/webapps/seconduser_webapp/
 * Make one dedicated CGI user for each account only for CGI execution (fpm/fcgid). Different from the files owner, and without W permissions, so attackers can not inject backdors and malware.
 * In most cases we can prevent the creation of files for the CGI users, preventing attackers to upload and executing PHPShells.
 * Make main systemuser able to write/read everything on its home, including stuff created by the CGI user and secondary users
@@ -169,8 +168,13 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Directory Protection on webapp and use webapp path as base path (validate)
 * User [Group] webapp/website option (validation) which overrides default mainsystemuser
 
-* validate systemuser.home
+* validate systemuser.home on server-side
 
 * webapp backend option compatibility check?
 
 * admin systemuser home/directory, add default home and empty directory with has_shell on admin
+
+
+* Backendlog doesn't show during execution, transaction isolation or what?
+
+* Resource used_list_display=True, allocated_list_displat=True, allow resources to show up on list_display

@@ -9,76 +9,12 @@ from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import caches, services, accounts, validators
+from orchestra.core import caches, validators
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
 
-from . import settings, rating
+from . import settings
 from .handlers import ServiceHandler
-
-
-class Plan(models.Model):
-    name = models.CharField(_("name"), max_length=32, unique=True, validators=[validate_name])
-    verbose_name = models.CharField(_("verbose_name"), max_length=128, blank=True)
-    is_default = models.BooleanField(_("default"), default=False,
-        help_text=_("Designates whether this plan is used by default or not."))
-    is_combinable = models.BooleanField(_("combinable"), default=True,
-        help_text=_("Designates whether this plan can be combined with other plans or not."))
-    allow_multiple = models.BooleanField(_("allow multiple"), default=False,
-        help_text=_("Designates whether this plan allow for multiple contractions."))
-    
-    def __unicode__(self):
-        return self.name
-    
-    def clean(self):
-        self.verbose_name = self.verbose_name.strip()
-    
-    def get_verbose_name(self):
-        return self.verbose_name or self.name
-
-
-class ContractedPlan(models.Model):
-    plan = models.ForeignKey(Plan, verbose_name=_("plan"), related_name='contracts')
-    account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
-            related_name='plans')
-    
-    class Meta:
-        verbose_name_plural = _("plans")
-    
-    def __unicode__(self):
-        return str(self.plan)
-    
-    def clean(self):
-        if not self.pk and not self.plan.allow_multiples:
-            if ContractedPlan.objects.filter(plan=self.plan, account=self.account).exists():
-                raise ValidationError("A contracted plan for this account already exists.")
-
-
-class RateQuerySet(models.QuerySet):
-    group_by = queryset.group_by
-    
-    def by_account(self, account):
-        # Default allways selected
-        return self.filter(
-            Q(plan__is_default=True) |
-            Q(plan__contracts__account=account)
-        ).order_by('plan', 'quantity').select_related('plan')
-
-
-class Rate(models.Model):
-    service = models.ForeignKey('services.Service', verbose_name=_("service"),
-            related_name='rates')
-    plan = models.ForeignKey(Plan, verbose_name=_("plan"), related_name='rates')
-    quantity = models.PositiveIntegerField(_("quantity"), null=True, blank=True)
-    price = models.DecimalField(_("price"), max_digits=12, decimal_places=2)
-    
-    objects = RateQuerySet.as_manager()
-    
-    class Meta:
-        unique_together = ('service', 'plan', 'quantity')
-    
-    def __unicode__(self):
-        return "{}-{}".format(str(self.price), self.quantity)
 
 
 autodiscover_modules('handlers')
@@ -105,12 +41,6 @@ class Service(models.Model):
     REFUND = 'REFUND'
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
-    STEP_PRICE = 'STEP_PRICE'
-    MATCH_PRICE = 'MATCH_PRICE'
-    RATE_METHODS = {
-        STEP_PRICE: rating.step_price,
-        MATCH_PRICE: rating.match_price,
-    }
     
     description = models.CharField(_("description"), max_length=256, unique=True)
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"),
@@ -197,11 +127,12 @@ class Service(models.Model):
             default=BILLING_PERIOD)
     rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
             help_text=_("Algorithm used to interprete the rating table."),
+            # TODO this should be dynamic, retrieved from rate (plans) app
             choices=(
-                (STEP_PRICE, _("Step price")),
-                (MATCH_PRICE, _("Match price")),
+                ('STEP_PRICE', _("Step price")),
+                ('MATCH_PRICE', _("Match price")),
             ),
-            default=STEP_PRICE)
+            default='STEP_PRICE')
     on_cancel = models.CharField(_("on cancel"), max_length=16,
             help_text=_("Defines the cancellation behaviour of this service."),
             choices=(
@@ -297,7 +228,8 @@ class Service(models.Model):
     
     @property
     def rate_method(self):
-        return self.RATE_METHODS[self.rate_algorithm]
+        rate_model = type(self).rates.related.model
+        return rate_model.get_methods()[self.rate_algorithm]
     
     def update_orders(self, commit=True):
         order_model = get_model(settings.SERVICES_ORDER_MODEL)
@@ -306,7 +238,3 @@ class Service(models.Model):
         for instance in related_model.objects.all().select_related('account'):
             updates += order_model.update_orders(instance, service=self, commit=commit)
         return updates
-
-
-accounts.register(ContractedPlan)
-services.register(ContractedPlan, menu=False)

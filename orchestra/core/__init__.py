@@ -18,7 +18,7 @@ class Register(object):
         self._registry[model] = AttrDict(**{
             'verbose_name': kwargs.get('verbose_name', model._meta.verbose_name),
             'verbose_name_plural': plural,
-            'menu': kwargs.get('menu', True)
+            'menu': kwargs.get('menu', True),
         })
     
     def get(self, *args):

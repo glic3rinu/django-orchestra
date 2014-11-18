@@ -17,5 +17,5 @@ ORDERS_EXCLUDED_APPS = getattr(settings, 'ORDERS_EXCLUDED_APPS', (
     'sessions',
     'orchestration',
     'bills',
-    # Do not put services here (plans)
+    'services',
 ))

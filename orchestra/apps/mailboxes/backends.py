@@ -206,16 +206,25 @@ class AutoresponseBackend(ServiceController):
 
 
 class MaildirDisk(ServiceMonitor):
+    """
+    Maildir disk usage based on Dovecot maildirsize file
+    
+    http://wiki2.dovecot.org/Quota/Maildir
+    """
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.DISK
     verbose_name = _("Maildir disk usage")
     
+    def prepare(self):
+        current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
+        self.append(textwrap.dedent("""\
+            function monitor () {
+                awk 'NR>1 {s+=$1} END {print s}' $1 || echo 0
+            }"""))
+    
     def monitor(self, mailbox):
         context = self.get_context(mailbox)
-        self.append(
-            "SIZE=$(awk 'NR>1 {s+=$1} END {print s}' %(maildir_path)s)\n"
-            "echo %(object_id)s ${SIZE:-0}" % context
-        )
+        self.append("echo %(object_id)s $(monitor %(maildir_path)s)" % context)
     
     def get_context(self, mailbox):
         context = {

@@ -40,7 +40,7 @@ class APIRoot(views.APIView):
                 if model in services:
                     group = 'services'
                     menu = services[model].menu
-                elif model in accounts:
+                if model in accounts:
                     group = 'accountancy'
                     menu = accounts[model].menu
                 if group and menu:

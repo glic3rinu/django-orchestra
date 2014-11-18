@@ -95,7 +95,7 @@ class MysqlDisk(ServiceMonitor):
             return
         context = self.get_context(db)
         self.append(textwrap.dedent("""\
-            mysql -e 'UPDATE db SET Insert_priv="N", Create_priv="N" WHERE Db="%(db_name)s";' \
+            mysql -e 'UPDATE db SET Insert_priv="N", Create_priv="N" WHERE Db="%(db_name)s";'\
             """ % context
         ))
     
@@ -104,22 +104,37 @@ class MysqlDisk(ServiceMonitor):
             return
         context = self.get_context(db)
         self.append(textwrap.dedent("""\
-            mysql -e 'UPDATE db SET Insert_priv="Y", Create_priv="Y" WHERE Db="%(db_name)s";' \
+            mysql -e 'UPDATE db SET Insert_priv="Y", Create_priv="Y" WHERE Db="%(db_name)s";'\
             """ % context
         ))
+        
+    def prepare(self):
+        """ slower """
+        self.append(textwrap.dedent("""\
+            function monitor () {
+                { du -bs "/var/lib/mysql/$1" || echo 0; } | awk {'print $1'}
+            }"""))
+        # Slower way
+        #self.append(textwrap.dedent("""\
+        #    function monitor () {
+        #        mysql -B -e "
+        #            SELECT IFNULL(sum(data_length + index_length), 0) 'Size'
+        #            FROM information_schema.TABLES
+        #            WHERE table_schema = '$1';
+        #        " | tail -n 1
+        #    }"""))
     
     def monitor(self, db):
         if db.type != db.MYSQL:
             return
         context = self.get_context(db)
-        self.append(textwrap.dedent("""\
-            echo %(db_id)s $(mysql -B -e '"
-               SELECT sum( data_length + index_length ) "Size"
-                  FROM information_schema.TABLES
-                  WHERE table_schema = "gisp"
-                  GROUP BY table_schema;' | tail -n 1) \
-            """ % context
-        ))
+        self.append("echo %(db_id)s $(monitor %(db_name)s)" % context)
+    
+    def monitor(self, db):
+        if db.type != db.MYSQL:
+            return
+        context = self.get_context(db)
+        self.append('echo %(db_id)s $(monitor "%(db_name)s")' % context)
     
     def get_context(self, db):
         return {

@@ -43,10 +43,7 @@ def get_services():
 
 
 def get_accounts():
-    childrens = [
-        items.MenuItem(_("Accounts"),
-                       reverse('admin:accounts_account_changelist'))
-    ]
+    childrens=[]
     if isinstalled('orchestra.apps.payments'):
         url = reverse('admin:payments_transactionprocess_changelist')
         childrens.append(items.MenuItem(_("Transaction processes"), url))
@@ -68,7 +65,7 @@ def get_administration_items():
     if isinstalled('orchestra.apps.services'):
         url = reverse('admin:services_service_changelist')
         childrens.append(items.MenuItem(_("Services"), url))
-        url = reverse('admin:services_plan_changelist')
+        url = reverse('admin:plans_plan_changelist')
         childrens.append(items.MenuItem(_("Plans"), url))
     if isinstalled('orchestra.apps.orchestration'):
         route = reverse('admin:orchestration_route_changelist')

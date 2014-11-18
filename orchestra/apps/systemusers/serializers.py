@@ -31,7 +31,7 @@ class SystemUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     class Meta:
         model = SystemUser
         fields = (
-            'url', 'username', 'password', 'home', 'shell', 'groups', 'is_active',
+            'url', 'username', 'password', 'home', 'directory', 'shell', 'groups', 'is_active',
         )
         postonly_fields = ('username',)
     

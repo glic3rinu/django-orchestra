@@ -61,7 +61,7 @@ This strategy considers two different implementations:
 
 
 #### b. Synchronization Based Management
-When Orchestra is the configuration **authority** and also _the responsible of applying the changes_ on the servers (**push** flow). The configuration files are **regenerated** every time by Orchestra, deleting any existing manual configuration. This model is very consistent since it only depends on the current state of the system (_stateless_). Therefore, it makes sense to execute the synchronization operation in **asynchronous** fashion.
+When Orchestra is the configuration **authority** and also _the responsible of applying the changes_ on the servers (**push** flow). The configuration files are **regenerated** every time by Orchestra, deleting any existing manual configuration. This model is very consistent since it only depends on the current state of the system (_memoryless_). Therefore, it makes sense to execute the synchronization operation in **asynchronous** fashion.
 
 In contrast to registry based management, synchronization management is _fully centralized_, all the management operations are driven by Orchestra so you don't need to install nor configure anything on your servers.
 

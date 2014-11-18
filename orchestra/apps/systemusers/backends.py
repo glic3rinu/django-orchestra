@@ -58,6 +58,7 @@ class SystemUserBackend(ServiceController):
     
     def get_context(self, user):
         context = {
+            'object_id': user.pk,
             'username': user.username,
             'password': user.password if user.active else '*%s' % user.password,
             'shell': user.shell,
@@ -70,16 +71,29 @@ class SystemUserBackend(ServiceController):
 class SystemUserDisk(ServiceMonitor):
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.DISK
-    verbose_name = _('Main user disk')
+    verbose_name = _('Systemuser disk')
+    
+    def prepare(self):
+        """ slower """
+        self.append(textwrap.dedent("""\
+            function monitor () {
+                { du -bs "$1" || echo 0; } | awk {'print $1'}
+            }"""
+        ))
     
     def monitor(self, user):
         context = self.get_context(user)
-        self.append("du -s %(home)s | cut -f1 | xargs echo %(object_id)s" % context)
+        if user.is_main or os.path.normpath(user.home) == user.get_base_home():
+            self.append("echo %(object_id)s $(monitor %(home)s)" % context)
+        else:
+            # Home appears to be included in other user home
+            self.append("echo %(object_id)s 0" % context)
     
     def get_context(self, user):
-        context = SystemUserBackend().get_context(user)
-        context['object_id'] = user.pk
-        return context
+        return {
+            'object_id': user.pk,
+            'home': user.home,
+        }
 
 
 class FTPTraffic(ServiceMonitor):

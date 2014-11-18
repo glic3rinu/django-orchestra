@@ -75,6 +75,7 @@ class SystemUser(models.Model):
         super(SystemUser, self).save(*args, **kwargs)
     
     def clean(self):
+        self.home = os.path.normpath(self.home)
         if self.directory:
             directory_error = None
             if self.has_shell:
@@ -118,7 +119,7 @@ class SystemUser(models.Model):
         context = {
             'username': self.username,
         }
-        return settings.SYSTEMUSERS_HOME % context
+        return os.path.normpath(settings.SYSTEMUSERS_HOME % context)
     
     def get_home(self):
         return os.path.join(

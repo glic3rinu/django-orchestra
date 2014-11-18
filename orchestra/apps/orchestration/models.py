@@ -138,8 +138,8 @@ class BackendOperation(models.Model):
         return op
     
     @classmethod
-    def execute(cls, operations):
-        return manager.execute(operations)
+    def execute(cls, operations, async=False):
+        return manager.execute(operations, async=async)
     
     @classmethod
     def execute_action(cls, instance, action):

@@ -27,7 +27,8 @@ def monitor(resource_id, ids=None):
         # Execute monitor
         for obj in model.objects.filter(**kwargs):
             operations.append(Operation.create(backend, obj, Operation.MONITOR))
-        Operation.execute(operations)
+        # TODO async=TRue only when running with celery
+        Operation.execute(operations, async=True)
     
     kwargs = {'id__in': ids} if ids else {}
     # Update used resources and trigger resource exceeded and revovery

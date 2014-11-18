@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.hashers import make_password
 from django.core.validators import RegexValidator, ValidationError
 from django.db import models
@@ -52,7 +54,7 @@ class Mailbox(models.Model):
             'name': self.name,
             'username': self.name,
         }
-        return settings.MAILBOXES_HOME % context
+        return os.path.normpath(settings.MAILBOXES_HOME % context)
     
     def clean(self):
         if self.custom_filtering and self.filtering != self.CUSTOM:

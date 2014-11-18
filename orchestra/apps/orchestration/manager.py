@@ -14,13 +14,9 @@ logger = logging.getLogger(__name__)
 
 def as_task(execute):
     def wrapper(*args, **kwargs):
-        """ failures on the backend execution doesn't fuck the request transaction atomicity """
-        db.transaction.set_autocommit(False)
-        try:
-            log = execute(*args, **kwargs)
-        finally:
-            db.transaction.commit()
-            db.transaction.set_autocommit(True)
+        """ send report """
+        # Tasks run on a separate transaction pool (thread), no need to temper with the transaction
+        log = execute(*args, **kwargs)
         if log.state != log.SUCCESS:
             send_report(execute, args, log)
         return log
@@ -43,7 +39,7 @@ def close_connection(execute):
     return wrapper
 
 
-def execute(operations):
+def execute(operations, async=False):
     """ generates and executes the operations on the servers """
     router = import_class(settings.ORCHESTRATION_ROUTER)
     scripts = {}
@@ -71,7 +67,7 @@ def execute(operations):
         backend.commit()
         execute = as_task(backend.execute)
         execute = close_connection(execute)
-        thread = threading.Thread(target=execute, args=(server,))
+        thread = threading.Thread(target=execute, args=(server,), kwargs={'async': async})
         thread.start()
         threads.append(thread)
         executions.append((execute, operations))

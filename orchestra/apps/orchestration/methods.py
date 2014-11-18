@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 transports = {}
 
 
-def BashSSH(backend, log, server, cmds):
+def BashSSH(backend, log, server, cmds, async=False):
     script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
     script = script.replace('\r', '')
     digest = hashlib.md5(script).hexdigest()
@@ -75,10 +75,7 @@ def BashSSH(backend, log, server, cmds):
         
         # Log results
         logger.debug('%s running on %s' % (backend, server))
-        if True: # TODO if not async
-            log.stdout += channel.makefile('rb', -1).read().decode('utf-8')
-            log.stderr += channel.makefile_stderr('rb', -1).read().decode('utf-8')
-        else:
+        if async:
             while True:
                 # Non-blocking is the secret ingridient in the async sauce
                 select.select([channel], [], [])
@@ -89,6 +86,10 @@ def BashSSH(backend, log, server, cmds):
                 log.save(update_fields=['stdout', 'stderr'])
                 if channel.exit_status_ready():
                     break
+        else:
+            log.stdout += channel.makefile('rb', -1).read().decode('utf-8')
+            log.stderr += channel.makefile_stderr('rb', -1).read().decode('utf-8')
+        
         log.exit_code = exit_code = channel.recv_exit_status()
         log.state = log.SUCCESS if exit_code == 0 else log.FAILURE
         logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
@@ -106,7 +107,7 @@ def BashSSH(backend, log, server, cmds):
             ssh.close()
 
 
-def Python(backend, log, server, cmds):
+def Python(backend, log, server, cmds, async=False):
     script = [ str(cmd.func.func_name) + str(cmd.args) for cmd in cmds ]
     script = json.dumps(script, indent=4).replace('"', '')
     log.script = '\n'.join([log.script, script])

@@ -1,7 +1,9 @@
+from django.conf.urls import patterns, url
 from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes import generic
 from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
@@ -95,12 +97,24 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     actions = (run_monitor,)
     change_view_actions = actions
     ordering = ('-updated_at',)
-    list_select_related = ('resource',)
+    list_select_related = ('resource__content_type',)
     prefetch_related = ('content_object',)
     
     resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')
     display_updated = admin_date('updated_at', short_description=_("Updated"))
+    
+    def get_urls(self):
+        """Returns the additional urls for the change view links"""
+        urls = super(ResourceDataAdmin, self).get_urls()
+        admin_site = self.admin_site
+        opts = self.model._meta
+        return patterns('',
+            url('^(\d+)/used-monitordata/$',
+                admin_site.admin_view(self.used_monitordata_view),
+                name='%s_%s_used_monitordata' % (opts.app_label, opts.model_name)
+            )
+        ) + urls
     
     def display_unit(self, data):
         return data.unit
@@ -110,6 +124,21 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     def display_used(self, data):
         if not data.used:
             return ''
+        url = reverse('admin:resources_resourcedata_used_monitordata', args=(data.pk,))
+        return '<a href="%s">%s</a>' % (url, data.used)
+    display_used.short_description = _("Used")
+    display_used.admin_order_field = 'used'
+    display_used.allow_tags = True
+    
+    def has_add_permission(self, *args, **kwargs):
+        return False
+    
+    def used_monitordata_view(self, request, object_id):
+        """
+        Does the redirect on a separated view for performance reassons
+        (calculate this on a changelist is expensive)
+        """
+        data = self.get_object(request, object_id)
         ids = []
         for dataset in data.get_monitor_datasets():
             if isinstance(dataset, MonitorData):
@@ -118,12 +147,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
                 ids += dataset.values_list('id', flat=True)
         url = reverse('admin:resources_monitordata_changelist')
         url += '?id__in=%s' % ','.join(map(str, ids))
-        return '<a href="%s">%s</a>' % (url, data.used)
-    display_used.short_description = _("Used")
-    display_used.allow_tags = True
-    
-    def has_add_permission(self, *args, **kwargs):
-        return False
+        return redirect(url)
 
 
 class MonitorDataAdmin(ExtendedModelAdmin):

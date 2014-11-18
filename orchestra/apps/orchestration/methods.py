@@ -112,11 +112,12 @@ def Python(backend, log, server, cmds, async=False):
     script = json.dumps(script, indent=4).replace('"', '')
     log.script = '\n'.join([log.script, script])
     log.save(update_fields=['script'])
-    stdout = ''
     try:
         for cmd in cmds:
             result = cmd(server)
-            stdout += str(result)
+            log.stdout += str(result)
+            if async:
+                log.save(update_fields=['stdout'])
     except:
         log.exit_code = 1
         log.state = log.FAILURE
@@ -124,5 +125,4 @@ def Python(backend, log, server, cmds, async=False):
     else:
         log.exit_code = 0
         log.state = log.SUCCESS
-    log.stdout += stdout
     log.save()

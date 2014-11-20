@@ -1,14 +1,13 @@
 import os
 
 from django.contrib.auth.hashers import make_password
-from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
+from orchestra.core import services, validators
 
 from . import settings
 
@@ -25,9 +24,7 @@ class SystemUser(models.Model):
     """ System users """
     username = models.CharField(_("username"), max_length=64, unique=True,
             help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
-            validators=[
-                validators.RegexValidator(r'^[\w.-]+$', _("Enter a valid username."))
-            ])
+            validators=[validators.validate_username])
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='systemusers')

@@ -14,6 +14,7 @@ class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = (
         'dispaly_name', 'email', 'phone', 'phone2', 'country', 'account_link'
     )
+    # TODO email usage custom filter contains
     list_filter = ('email_usage',)
     search_fields = (
         'contact__account__name', 'short_name', 'full_name', 'phone', 'phone2',

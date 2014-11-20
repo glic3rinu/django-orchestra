@@ -96,7 +96,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
 
 class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'email', 'domain_link', 'display_mailboxes', 'display_forward', 'account_link'
+        'email', 'account_link', 'domain_link', 'display_mailboxes', 'display_forward',
     )
     list_filter = (HasMailboxListFilter, HasForwardListFilter)
     fields = ('account_link', ('name', 'domain'), 'mailboxes', 'forward')

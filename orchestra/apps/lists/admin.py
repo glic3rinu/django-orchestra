@@ -46,6 +46,7 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
     change_readonly_fields = ('name',)
     form = ListChangeForm
     add_form = ListCreationForm
+    list_select_related = ('account', 'address_domain',)
     filter_by_account_fields = ['address_domain']
     
     address_domain_link = admin_link('address_domain', order='address_domain__name')

@@ -218,49 +218,55 @@ class Apache2Traffic(ServiceMonitor):
     verbose_name = _("Apache 2 Traffic")
     
     def prepare(self):
-        current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
+        ignore_hosts = '\\|'.join(settings.WEBSITES_TRAFFIC_IGNORE_HOSTS)
+        context = {
+            'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
+            'ignore_hosts': '-v "%s"' % ignore_hosts if ignore_hosts else '',
+        }
         self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
-                INI_DATE=$2
+                INI_DATE=$(date "+%%Y%%m%%d%%H%%M%%S" -d "$2")
+                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
                 LOG_FILE="$3"
                 {
-                    awk -v ini="${INI_DATE}" -v end="$(date '+%%Y%%m%%d%%H%%M%%S' -d '%s')" '
-                    BEGIN {
-                        sum = 0
-                        months["Jan"] = "01";
-                        months["Feb"] = "02";
-                        months["Mar"] = "03";
-                        months["Apr"] = "04";
-                        months["May"] = "05";
-                        months["Jun"] = "06";
-                        months["Jul"] = "07";
-                        months["Aug"] = "08";
-                        months["Sep"] = "09";
-                        months["Oct"] = "10";
-                        months["Nov"] = "11";
-                        months["Dec"] = "12";
-                    } {
-                        # date = [11/Jul/2014:13:50:41
-                        date = substr($4, 2)
-                        year = substr(date, 8, 4)
-                        month = months[substr(date, 4, 3)];
-                        day = substr(date, 1, 2)
-                        hour = substr(date, 13, 2)
-                        minute = substr(date, 16, 2)
-                        second = substr(date, 19, 2)
-                        line_date = year month day hour minute second
-                        if ( line_date > ini && line_date < end)
-                            sum += $NF
-                    } END {
-                        print sum
-                    }' "${LOG_FILE}" || echo 0
+                    { grep "%(ignore_hosts)s" "${LOG_FILE}" || echo '\\n'; } \\
+                        | awk -v ini="${INI_DATE}" -v end="${END_DATE}" '
+                            BEGIN {
+                                sum = 0
+                                months["Jan"] = "01";
+                                months["Feb"] = "02";
+                                months["Mar"] = "03";
+                                months["Apr"] = "04";
+                                months["May"] = "05";
+                                months["Jun"] = "06";
+                                months["Jul"] = "07";
+                                months["Aug"] = "08";
+                                months["Sep"] = "09";
+                                months["Oct"] = "10";
+                                months["Nov"] = "11";
+                                months["Dec"] = "12";
+                            } {
+                                # date = [11/Jul/2014:13:50:41
+                                date = substr($4, 2)
+                                year = substr(date, 8, 4)
+                                month = months[substr(date, 4, 3)];
+                                day = substr(date, 1, 2)
+                                hour = substr(date, 13, 2)
+                                minute = substr(date, 16, 2)
+                                second = substr(date, 19, 2)
+                                line_date = year month day hour minute second
+                                if ( line_date > ini && line_date < end)
+                                    sum += $NF
+                            } END {
+                                print sum
+                            }' || [[ $? == 1 ]] && true
                 } | xargs echo ${OBJECT_ID}
-            }""" % current_date))
+            }""" % context))
     
     def monitor(self, site):
         context = self.get_context(site)
-        self.append('monitor {object_id} $(date "+%Y%m%d%H%M%S" -d "{last_date}") {log_file}'.format(**context))
+        self.append('monitor {object_id} "{last_date}" {log_file}'.format(**context))
     
     def get_context(self, site):
         return {

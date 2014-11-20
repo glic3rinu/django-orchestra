@@ -84,6 +84,10 @@ def validate_hostname(hostname):
             raise ValidationError(_("Not a valid hostname (%s).") % name)
 
 
+def validate_username(value):
+    validators.RegexValidator(r'^[\w.-]+$', _("Enter a valid username."))(value)
+
+
 def validate_password(value):
     try:
         crack.VeryFascistCheck(value)

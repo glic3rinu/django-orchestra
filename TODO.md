@@ -181,3 +181,26 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Move plugins back from apps to orchestra main app
 
 * BackendLog.updated_at (tasks that run over several minutes when finished they do not appear first on the changelist) (like celery tasks.when)
+
+
+* rename admin prefetch_related to list_prefetch_related for consistency
+
+
+* LAST resource monitor option -> SUM(last backend)
+
+* Resource.monitor(async=True) admin action
+
+* Validate a model path exists between resource.content_type and backend.model
+
+* Add support for whitelisted IPs on traffic monitoring ['127.0.0.1',]
+
+
+* Periodic task for cleaning old monitoring data
+
+* Generate reports of Account contracted services
+
+* Create an admin service_view with icons (like SaaS app)
+
+* Fix ftp traffic
+
+* Resource graph for each related object

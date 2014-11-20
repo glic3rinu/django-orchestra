@@ -1,17 +1,14 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps.plugins.forms import PluginDataForm
-
-from .options import SoftwareService
+from .options import SoftwareService, SoftwareServiceForm
 
 
-class PHPListForm(PluginDataForm):
-    email = forms.EmailField(label=_("Email"))
+class PHPListForm(SoftwareServiceForm):
+    email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size':'40'}))
 
 
 class PHPListService(SoftwareService):
     verbose_name = "phpList"
     form = PHPListForm
-    description_field = 'email'
     icon = 'saas/icons/Phplist.png'

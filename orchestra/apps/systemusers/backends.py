@@ -99,52 +99,55 @@ class SystemUserDisk(ServiceMonitor):
 class FTPTraffic(ServiceMonitor):
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.TRAFFIC
-    verbose_name = _('Main FTP traffic')
+    verbose_name = _('Systemuser FTP traffic')
     
     def prepare(self):
         current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
-                INI_DATE=$2
+                INI_DATE=$(date "+%%Y%%m%%d%%H%%M%%S" -d "$2")
+                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
                 USERNAME="$3"
                 LOG_FILE="$4"
-                grep "UPLOAD\|DOWNLOAD" "${LOG_FILE}" \\
-                    | grep " \\[${USERNAME}\\] " \\
-                    | awk -v ini="${INI_DATE}" end="$(date '+%%Y%%m%%d%%H%%M%%S' -d '%s')" '
-                        BEGIN {
-                            sum = 0
-                            months["Jan"] = "01"
-                            months["Feb"] = "02"
-                            months["Mar"] = "03"
-                            months["Apr"] = "04"
-                            months["May"] = "05"
-                            months["Jun"] = "06"
-                            months["Jul"] = "07"
-                            months["Aug"] = "08"
-                            months["Sep"] = "09"
-                            months["Oct"] = "10"
-                            months["Nov"] = "11"
-                            months["Dec"] = "12"
-                        } {
-                            # log: Fri Jul 11 13:23:17 2014
-                            split($4, t, ":")
-                            # line_date = year month day hour minute second
-                            line_date = $5 months[$2] $3 t[1] t[2] t[3]
-                            if ( line_date > ini && line_date < end)
-                                split($0, l, "\\", ")
-                                split(l[3], b, " ")
-                                sum += b[1]
-                        } END {
-                            print sum
-                        }
-                    ' | xargs echo ${OBJECT_ID}
+                {
+                    grep "UPLOAD\|DOWNLOAD" "${LOG_FILE}" \\
+                        | grep " \\[${USERNAME}\\] " \\
+                        | awk -v ini="${INI_DATE}" -v end="${END_DATE}" '
+                            BEGIN {
+                                sum = 0
+                                months["Jan"] = "01"
+                                months["Feb"] = "02"
+                                months["Mar"] = "03"
+                                months["Apr"] = "04"
+                                months["May"] = "05"
+                                months["Jun"] = "06"
+                                months["Jul"] = "07"
+                                months["Aug"] = "08"
+                                months["Sep"] = "09"
+                                months["Oct"] = "10"
+                                months["Nov"] = "11"
+                                months["Dec"] = "12"
+                            } {
+                                # log: Fri Jul 11 13:23:17 2014
+                                split($4, t, ":")
+                                # line_date = year month day hour minute second
+                                line_date = $5 months[$2] $3 t[1] t[2] t[3]
+                                if ( line_date > ini && line_date < end) {
+                                    split($0, l, "\\", ")
+                                    split(l[3], b, " ")
+                                    sum += b[1]
+                                }
+                            } END {
+                                print sum
+                            }' || [[ $? == 1 ]] && true
+                } | xargs echo ${OBJECT_ID}
             }""" % current_date))
     
     def monitor(self, user):
         context = self.get_context(user)
         self.append(
-            'monitor %{object_id} $(date "+%Y%m%d%H%M%S" -d "{last_date}") "{username}" "{log_file}"'.format(**context)
+            'monitor {object_id} "{last_date}" "{username}" {log_file}'.format(**context)
         )
     
     def get_context(self, user):

@@ -162,7 +162,7 @@ FLUENT_DASHBOARD_APP_GROUPS = (
             'orchestra.apps.orchestration.models.BackendLog',
             'orchestra.apps.orchestration.models.Server',
             'orchestra.apps.resources.models.Resource',
-            'orchestra.apps.resources.models.Monitor',
+            'orchestra.apps.resources.models.ResourceData',
             'orchestra.apps.services.models.Service',
             'orchestra.apps.plans.models.Plan',
             'orchestra.apps.miscellaneous.models.MiscService',
@@ -206,7 +206,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'orchestration/route': 'hal.png',
     'orchestration/backendlog': 'scriptlog.png',
     'resources/resource': "gauge.png",
-    'resources/monitor': "Utilities-system-monitor.png",
+    'resources/resourcedata': "monitor.png",
     'plans/plan': 'Pack.png',
 }
 

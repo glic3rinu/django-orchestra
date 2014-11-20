@@ -102,6 +102,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     
     resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')
+    content_object_link.admin_order_field = None
     display_updated = admin_date('updated_at', short_description=_("Updated"))
     
     def get_urls(self):

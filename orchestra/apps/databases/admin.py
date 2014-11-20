@@ -42,7 +42,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     readonly_fields = ('account_link', 'display_users',)
     filter_horizontal = ['users']
     filter_by_account_fields = ('users',)
-    prefetch_related = ('users',)
+    list_prefetch_related = ('users',)
     
     def display_users(self, db):
         links = []
@@ -90,7 +90,7 @@ class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, Exten
     )
     readonly_fields = ('account_link', 'display_databases',)
     filter_by_account_fields = ('databases',)
-    prefetch_related = ('databases',)
+    list_prefetch_related = ('databases',)
     
     def display_databases(self, user):
         links = []

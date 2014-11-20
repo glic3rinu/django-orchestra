@@ -29,7 +29,7 @@ def compute_resource_usage(data):
                 has_result = True
                 result += sum(values)
         elif resource.period == resource.LAST:
-            result = dataset.value
+            result += dataset.value
             has_result = True
         else:
             raise NotImplementedError("%s support not implemented" % data.period)

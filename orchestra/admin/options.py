@@ -95,7 +95,7 @@ class ChangeViewActionsMixin(object):
         return views
     
     def change_view(self, request, object_id, **kwargs):
-        if not 'extra_context' in kwargs:
+        if kwargs.get('extra_context', None) is None:
             kwargs['extra_context'] = {}
         obj = self.get_object(request, unquote(object_id))
         kwargs['extra_context']['object_tools_items'] = [
@@ -153,12 +153,12 @@ class ChangeAddFieldsMixin(object):
 
 
 class ExtendedModelAdmin(ChangeViewActionsMixin, ChangeAddFieldsMixin, admin.ModelAdmin):
-    prefetch_related = None
+    list_prefetch_related = None
     
     def get_queryset(self, request):
         qs = super(ExtendedModelAdmin, self).get_queryset(request)
-        if self.prefetch_related:
-            qs = qs.prefetch_related(*self.prefetch_related)
+        if self.list_prefetch_related:
+            qs = qs.prefetch_related(*self.list_prefetch_related)
         return qs
 
 

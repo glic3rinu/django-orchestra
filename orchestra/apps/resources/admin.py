@@ -40,6 +40,8 @@ class ResourceAdmin(ExtendedModelAdmin):
             'fields': ('monitors', 'crontab'),
         }),
     )
+    actions = (run_monitor,)
+    change_view_actions = actions
     change_readonly_fields = ('name', 'content_type')
     prepopulated_fields = {'name': ('verbose_name',)}
     
@@ -60,7 +62,8 @@ class ResourceAdmin(ExtendedModelAdmin):
                 ) % {
                     'not_routed': ', '.join(not_routed)
                 })
-        return super(ResourceAdmin, self).changeform_view(request, object_id, form_url, extra_context)
+        return super(ResourceAdmin, self).change_view(request, object_id, form_url=form_url,
+                extra_context=extra_context)
     
     def save_model(self, request, obj, form, change):
         super(ResourceAdmin, self).save_model(request, obj, form, change)
@@ -98,7 +101,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     change_view_actions = actions
     ordering = ('-updated_at',)
     list_select_related = ('resource__content_type',)
-    prefetch_related = ('content_object',)
+    list_prefetch_related = ('content_object',)
     
     resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')

@@ -66,7 +66,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         }),
     )
     filter_by_account_fields = ['domains']
-    prefetch_related = ('domains', 'content_set__webapp')
+    list_prefetch_related = ('domains', 'content_set__webapp')
     search_fields = ('name', 'account__username', 'domains__name')
     
     def display_domains(self, website):

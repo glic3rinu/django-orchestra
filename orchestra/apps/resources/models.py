@@ -126,6 +126,11 @@ class Resource(models.Model):
     
     def get_verbose_name(self):
         return self.verbose_name or self.name
+    
+    def monitor(self, async=True):
+        if async:
+            return tasks.monitor.delay(self.pk, async=async)
+        tasks.monitor(self.pk, async=async)
 
 
 class ResourceData(models.Model):
@@ -174,8 +179,11 @@ class ResourceData(models.Model):
         self.updated_at = timezone.now()
         self.save(update_fields=['used', 'updated_at'])
     
-    def monitor(self):
-        tasks.monitor(self.resource_id, ids=(self.object_id,))
+    def monitor(self, async=False):
+        ids = (self.object_id,)
+        if async:
+            return tasks.monitor.delay(self.resource_id, ids=ids, async=async)
+        return tasks.monitor(self.resource_id, ids=ids, async=async)
     
     def get_monitor_datasets(self):
         resource = self.resource

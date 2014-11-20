@@ -60,7 +60,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     change_readonly_fields = ('name',)
     add_form = MailboxCreationForm
     form = MailboxChangeForm
-    prefetch_related = ('addresses__domain',)
+    list_prefetch_related = ('addresses__domain',)
     
     def display_addresses(self, mailbox):
         addresses = []
@@ -106,7 +106,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_by_account_fields = ('domain', 'mailboxes')
     filter_horizontal = ['mailboxes']
     form = AddressForm
-    prefetch_related = ('mailboxes', 'domain')
+    list_prefetch_related = ('mailboxes', 'domain')
     
     domain_link = admin_link('domain', order='domain__name')
     

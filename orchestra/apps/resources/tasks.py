@@ -7,7 +7,7 @@ from .backends import ServiceMonitor
 
 
 @shared_task(name='resources.Monitor')
-def monitor(resource_id, ids=None):
+def monitor(resource_id, ids=None, async=True):
     from .models import ResourceData, Resource
     
     resource = Resource.objects.get(pk=resource_id)
@@ -28,7 +28,7 @@ def monitor(resource_id, ids=None):
         for obj in model.objects.filter(**kwargs):
             operations.append(Operation.create(backend, obj, Operation.MONITOR))
         # TODO async=TRue only when running with celery
-        Operation.execute(operations, async=True)
+        Operation.execute(operations, async=async)
     
     kwargs = {'id__in': ids} if ids else {}
     # Update used resources and trigger resource exceeded and revovery

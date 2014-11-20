@@ -45,7 +45,7 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')
-    prefetch_related = ('content_set__website',)
+    list_prefetch_related = ('content_set__website',)
     
     TYPE_HELP_TEXT = {
         k: str(unicode(v.get('help_text', '')))

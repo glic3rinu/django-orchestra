@@ -1,10 +1,12 @@
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.decorators import action_with_confirmation
+from orchestra.core import services
 
 
 @transaction.atomic
@@ -33,3 +35,19 @@ def list_contacts(modeladmin, request, queryset):
     url += '?account__in=%s' % ','.join(map(str, ids))
     return redirect(url)
 list_contacts.verbose_name = _("List contacts")
+
+
+def service_report(modeladmin, request, queryset):
+    accounts = []
+    for account in queryset:
+        items = []
+        for service in services.get():
+            if service != type(account):
+                items.append((service._meta, service.objects.filter(account=account)))
+        sorted(items, key=lambda i: i[0].verbose_name_plural.lower())
+        accounts.append((account, items))
+    context = {
+        'accounts': accounts,
+        'date': timezone.now().today()
+    }
+    return render(request, 'admin/accounts/account/service_report.html', context)

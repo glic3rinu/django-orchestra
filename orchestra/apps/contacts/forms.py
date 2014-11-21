@@ -2,6 +2,8 @@ from django import forms
 from django.core import validators
 from django.utils.translation import ungettext, ugettext_lazy as _
 
+from orchestra.forms.widgets import ShowTextWidget
+
 from . import settings
 
 

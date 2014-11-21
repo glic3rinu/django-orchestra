@@ -1,0 +1,54 @@
+{% load utils %}
+<html>
+<head>
+    <title>{% block title %}Service Report{% endblock %}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    {% block head %}{% endblock %}
+    <style type="text/css">
+        body {
+            max-width: 670px;
+            margin: 20 auto !important;
+            float: none !important;
+            font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;
+            font-size: 12px;
+            color: #2E2E2E;
+        }
+        #date {
+            float: right;
+            color: #666;
+        }
+        .account-content {
+            margin: 0px 0px 40px 20px;
+        }
+        .item-title {
+            list-style-type: none;
+            font-weight: bold;
+        }
+        .items-ul {
+            padding: 0px;
+            margin: 5px 0px 10px 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="date">Service report generated on {{ date | date }}</div>
+{% for account, items in accounts %}
+    <h3>{{ account.get_full_name }} ({{ account.username }})</h3>
+    <hr>
+    <div class="account-content">
+        {{ account.get_type_display }} account registered on {{ account.date_joined | date }}<br>
+        <ul class="items-ul">
+        {% for opts, related in items %}
+            <li class="item-title">{{ opts.verbose_name_plural|capfirst }}</li>
+            <ul>
+            {% for obj in related %}
+                <li>{{ obj }}{% if not obj|isactive %} (disabled){% endif %}</li>
+            {% endfor %}
+            </ul>
+        {% endfor %}
+        </ul>
+    </div>
+{% endfor %}
+</body>
+</html>

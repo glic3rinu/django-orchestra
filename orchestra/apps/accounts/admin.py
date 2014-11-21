@@ -18,7 +18,7 @@ from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
 
 from . import settings
-from .actions import disable, list_contacts
+from .actions import disable, list_contacts, service_report
 from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm
 from .models import Account
@@ -61,8 +61,8 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     filter_horizontal = ()
     change_readonly_fields = ('username', 'main_systemuser_link')
     change_form_template = 'admin/accounts/account/change_form.html'
-    actions = [disable, list_contacts]
-    change_view_actions = [disable]
+    actions = [disable, list_contacts, service_report]
+    change_view_actions = [disable, service_report]
     list_select_related = ('billcontact',)
     ordering = ()
     

@@ -56,3 +56,8 @@ def is_checkbox(field):
 @register.filter
 def admin_url(obj):
     return change_url(obj)
+
+
+@register.filter
+def isactive(obj):
+    return getattr(obj, 'is_active', True)

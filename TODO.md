@@ -14,34 +14,16 @@
 * use Code: https://github.com/django/django/blob/master/django/forms/forms.py#L415 for domain.refresh_serial()
 * Permissions .filter_queryset()
 
-* git deploy in addition to FTP?
 * env vars instead of multiple settings files: https://devcenter.heroku.com/articles/config-vars ?
-* optional chroot shell?
-
-* make sure prefetch_related() is used correctly 
-Remember that, as always with QuerySets, any subsequent chained methods which imply a different database query will ignore previously cached results, and retrieve data using a fresh database query. 
-* profile select_related vs prefetch_related
-
 
 * Log changes from rest api (serialized objects)
-* passlib; nano /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py SortedDict -> collections.OrderedDict
-* pip install pyinotify
-
-* Timezone awareness on monitoring system (reading server-side logs with different TZ than orchestra) maybe a settings value? (use UTC internally, timezone.localtime() when interacting with servers)
 
 * EMAIL backend operations which contain stderr messages (because under certain failures status code is still 0)
 
 * Settings dictionary like DRF2 in order to better override large settings like WEBSITES_APPLICATIONS.etc
 
-* DOCUMENT: orchestration.middleware: we need to know when an operation starts and ends in order to perform bulk server updates and also to wait for related objects to be saved (base object is saved first and then related)
-            orders.signales: we perform changes right away because data model state can change under monitoring and other periodik task, and we should keep orders consistency under any situation.
-                             dependency collector with max_recursion that matches the number of dots on service.match and service.metric
-
-
 * backend logs with hal logo
-* Use logs for storing monitored values
 * set_password orchestration method?
-
 
 * make account_link to autoreplace account on change view.
 
@@ -50,11 +32,8 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * translations
         from django.utils import translation
         with translation.override('en'):
-* Plurals!
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
-
-* underescore *every* private function
 
 * create log file at /var/log/orchestra.log and rotate
 
@@ -71,7 +50,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * move icons to apps, and use appconfig to cleanup config stuff
 
-* when using modeladmin to store shit like self.account, make sure to have a cleanslate in each request
+* when using modeladmin to store shit like self.account, make sure to have a cleanslate in each request?
 
 * jabber with mailbox accounts (dovecto mail notification)
 
@@ -114,9 +93,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
     * ignore_fields = ()
     * based on a merge set of save(update_fields)
 
-* textwrap.dedent( \\)
 * parmiko write to a channel instead of transfering files?  http://sysadmin.circularvale.com/programming/paramiko-channel-hangs/
-
 
 * proforma without billing contact?
 
@@ -140,11 +117,7 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * consider removing mailbox support on forward (user@pangea.org instead)
 
-* remove ordering in account admin and others admininlines
-
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
-
-* Change (correct) permissions periodically on the web server, to ensure security ?
 
 * Root owned logs on user's home ? yes
 
@@ -191,3 +164,5 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 * Fix ftp traffic
 
 * Resource graph for each related object
+
+* contacts filter by email_usage fix exact for contains

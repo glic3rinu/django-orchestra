@@ -2,22 +2,23 @@ from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from orchestra.admin import AtLeastOneRequiredInlineFormSet
+from orchestra.admin import AtLeastOneRequiredInlineFormSet, ExtendedModelAdmin
 from orchestra.admin.utils import insertattr, admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdmin, AccountAdminMixin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
+from .actions import SendEmail
 from .models import Contact
 
 
-class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
+class ContactAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'dispaly_name', 'email', 'phone', 'phone2', 'country', 'account_link'
     )
     # TODO email usage custom filter contains
     list_filter = ('email_usage',)
     search_fields = (
-        'contact__account__name', 'short_name', 'full_name', 'phone', 'phone2',
+        'account__username', 'account__full_name', 'short_name', 'full_name', 'phone', 'phone2',
         'email'
     )
     fieldsets = (
@@ -38,6 +39,7 @@ class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
             'fields': ('address', ('zipcode', 'city'), 'country')
         }),
     )
+    # TODO don't repeat all only for account_link do it on accountadmin
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
@@ -49,13 +51,14 @@ class ContactAdmin(AccountAdminMixin, admin.ModelAdmin):
         }),
         (_("Phone"), {
             'classes': ('wide',),
-            'fields': ('phone', 'phone_alternative'),
+            'fields': ('phone', 'phone2'),
         }),
         (_("Postal address"), {
             'classes': ('wide',),
-            'fields': ('address', ('zip_code', 'city'), 'country')
+            'fields': ('address', ('zipcode', 'city'), 'country')
         }),
     )
+    actions = [SendEmail(),]
     
     def dispaly_name(self, contact):
         return unicode(contact)

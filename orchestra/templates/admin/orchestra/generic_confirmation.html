@@ -54,8 +54,8 @@
     <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
     {% endfor %}
     <input type="hidden" name="action" value="{{ action_value }}" />
-    <input type="hidden" name="post" value="generic_confirmation" />
-    <input type="submit" value="{% trans "Yes, I'm sure" %}" />
+    <input type="hidden" name="post" value="{{ post_value|default:'generic_confirmation' }}" />
+    <input type="submit" value="{{ submit_value|default:_("Yes, I'm sure") }}" />
     </div>
     </form>
 {% endblock %}

@@ -14,3 +14,6 @@ CONTACTS_COUNTRIES = getattr(settings, 'CONTACTS_COUNTRIES', ((k,v) for k,v in d
 
 
 CONTACTS_DEFAULT_COUNTRY = getattr(settings, 'CONTACTS_DEFAULT_COUNTRY', 'ES')
+
+
+CONTACTS_DEFAULT_FROM_EMAIL = getattr(settings, 'CONTACTS_DEFAULT_FROM_EMAIL', 'support@orchestra.lan')

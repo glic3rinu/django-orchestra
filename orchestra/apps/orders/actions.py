@@ -7,8 +7,7 @@ from django.shortcuts import render
 
 from orchestra.admin.utils import change_url
 
-from .forms import (BillSelectedOptionsForm, BillSelectConfirmationForm,
-        BillSelectRelatedForm)
+from .forms import BillSelectedOptionsForm, BillSelectConfirmationForm, BillSelectRelatedForm
 
 
 class BillSelectedOrders(object):

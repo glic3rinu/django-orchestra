@@ -174,15 +174,11 @@ Remember that, as always with QuerySets, any subsequent chained methods which im
 
 * admin systemuser home/directory, add default home and empty directory with has_shell on admin
 
-
 * Resource used_list_display=True, allocated_list_displat=True, allow resources to show up on list_display
-
 
 * Move plugins back from apps to orchestra main app
 
 * BackendLog.updated_at (tasks that run over several minutes when finished they do not appear first on the changelist) (like celery tasks.when)
-
-* Resource.monitor(async=True) admin action
 
 * Validate a model path exists between resource.content_type and backend.model
 

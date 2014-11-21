@@ -74,7 +74,7 @@ class SystemUserDisk(ServiceMonitor):
     verbose_name = _('Systemuser disk')
     
     def prepare(self):
-        """ slower """
+        super(SystemUserDisk, self).prepare()
         self.append(textwrap.dedent("""\
             function monitor () {
                 { du -bs "$1" || echo 0; } | awk {'print $1'}
@@ -102,6 +102,7 @@ class FTPTraffic(ServiceMonitor):
     verbose_name = _('Systemuser FTP traffic')
     
     def prepare(self):
+        super(FTPTraffic, self).prepare()
         current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {

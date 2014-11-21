@@ -18,8 +18,14 @@ logger = logging.getLogger(__name__)
 transports = {}
 
 
-def BashSSH(backend, log, server, cmds, async=False):
-    script = '\n'.join(['set -e', 'set -o pipefail'] + cmds + ['exit 0'])
+def SSH(backend, log, server, cmds, async=False):
+    """
+    Executes cmds to remote server using SSH
+    
+    The script is first copied using SCP in order to overflood the channel with large scripts
+    Then the script is executed using the defined backend.script_executable
+    """
+    script = '\n'.join(cmds)
     script = script.replace('\r', '')
     digest = hashlib.md5(script).hexdigest()
     path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_PATH, digest)
@@ -41,9 +47,9 @@ def BashSSH(backend, log, server, cmds, async=False):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         addr = server.get_address()
+        key = settings.ORCHESTRATION_SSH_KEY_PATH
         try:
-            # TODO timeout
-            ssh.connect(addr, username='root', key_filename=settings.ORCHESTRATION_SSH_KEY_PATH, timeout=10)
+            ssh.connect(addr, username='root', key_filename=key, timeout=10)
         except socket.error:
             logger.error('%s timed out on %s' % (backend, server))
             log.state = log.TIMEOUT
@@ -60,12 +66,13 @@ def BashSSH(backend, log, server, cmds, async=False):
         
         # Execute it
         context = {
+            'executable': backend.script_executable,
             'remote_path': remote_path,
             'digest': digest,
             'remove': '' if djsettings.DEBUG else "rm -fr %(remote_path)s\n",
         }
         cmd = (
-            "[[ $(md5sum %(remote_path)s|awk {'print $1'}) == %(digest)s ]] && bash %(remote_path)s\n"
+            "[[ $(md5sum %(remote_path)s|awk {'print $1'}) == %(digest)s ]] && %(executable)s %(remote_path)s\n"
             "RETURN_CODE=$?\n"
             "%(remove)s"
             "exit $RETURN_CODE" % context
@@ -108,6 +115,7 @@ def BashSSH(backend, log, server, cmds, async=False):
 
 
 def Python(backend, log, server, cmds, async=False):
+    # TODO collect stdout?
     script = [ str(cmd.func.func_name) + str(cmd.args) for cmd in cmds ]
     script = json.dumps(script, indent=4).replace('"', '')
     log.script = '\n'.join([log.script, script])

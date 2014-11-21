@@ -37,7 +37,7 @@ class WebApp(models.Model):
         return self.name or settings.WEBAPPS_BLANK_NAME
     
     def get_fpm_port(self):
-        return settings.WEBAPPS_FPM_START_PORT + self.account.pk
+        return settings.WEBAPPS_FPM_START_PORT + self.account_id
     
     def get_directive(self):
         directive = settings.WEBAPPS_TYPES[self.type]['directive']

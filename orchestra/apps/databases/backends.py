@@ -109,7 +109,7 @@ class MysqlDisk(ServiceMonitor):
         ))
         
     def prepare(self):
-        """ slower """
+        super(MysqlDisk, self).prepare()
         self.append(textwrap.dedent("""\
             function monitor () {
                 { du -bs "/var/lib/mysql/$1" || echo 0; } | awk {'print $1'}

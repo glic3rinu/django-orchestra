@@ -218,6 +218,7 @@ class Apache2Traffic(ServiceMonitor):
     verbose_name = _("Apache 2 Traffic")
     
     def prepare(self):
+        super(Apache2Traffic, self).prepare()
         ignore_hosts = '\\|'.join(settings.WEBSITES_TRAFFIC_IGNORE_HOSTS)
         context = {
             'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),

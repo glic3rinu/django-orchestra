@@ -146,6 +146,7 @@ class MailmanTraffic(ServiceMonitor):
     verbose_name = _("Mailman traffic")
     
     def prepare(self):
+        super(MailmanTraffic, self).prepare()
         current_date = timezone.localtime(self.current_date)
         current_date = current_date.strftime("%b %d %H:%M:%S")
         self.append(textwrap.dedent("""\

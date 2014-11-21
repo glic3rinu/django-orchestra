@@ -12,6 +12,7 @@ def monitor(resource_id, ids=None, async=True):
     
     resource = Resource.objects.get(pk=resource_id)
     resource_model = resource.content_type.model_class()
+    operations = []
     # Execute monitors
     for monitor_name in resource.monitors:
         backend = ServiceMonitor.get_backend(monitor_name)
@@ -23,16 +24,18 @@ def monitor(resource_id, ids=None, async=True):
             kwargs = {
                 path: ids
             }
-        operations = []
         # Execute monitor
+        monitorings = []
         for obj in model.objects.filter(**kwargs):
-            operations.append(Operation.create(backend, obj, Operation.MONITOR))
+            op = Operation.create(backend, obj, Operation.MONITOR)
+            operations.append(op)
+            monitorings.append(op)
         # TODO async=TRue only when running with celery
-        Operation.execute(operations, async=async)
+        Operation.execute(monitorings, async=async)
     
     kwargs = {'id__in': ids} if ids else {}
     # Update used resources and trigger resource exceeded and revovery
-    operations = []
+    triggers = []
     model = resource.content_type.model_class()
     for obj in model.objects.filter(**kwargs):
         data = ResourceData.get_or_create(obj, resource)
@@ -40,8 +43,9 @@ def monitor(resource_id, ids=None, async=True):
         if not resource.disable_trigger:
             if data.used > data.allocated:
                 op = Operation.create(backend, obj, Operation.EXCEED)
-                operations.append(op)
+                triggers.append(op)
             elif data.used < data.allocated:
                 op = Operation.create(backend, obj, Operation.RECOVERY)
-                operations.append(op)
-    Operation.execute(operations)
+                triggers.append(op)
+    Operation.execute(triggers)
+    return operations

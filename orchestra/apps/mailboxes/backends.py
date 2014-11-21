@@ -216,6 +216,7 @@ class MaildirDisk(ServiceMonitor):
     verbose_name = _("Maildir disk usage")
     
     def prepare(self):
+        super(MaildirDisk, self).prepare()
         current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {

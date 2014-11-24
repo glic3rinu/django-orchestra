@@ -161,4 +161,23 @@
 
 * Rename apache logs ending on .log in order to logrotate easily
 
-* SaaS wordpress multiple blogs per user? separate users from sites?
+* SaaS wordpress multiple blogs per user? separate users from sites? SaaSUser SaaSSite models
+* Custom domains for SaaS apps (wordpress Vhost) SaaSSite.domain ?
+
+* Change account and orders
+
+
+==== SaaS ====
+Wordpress
+---------
+* site_name
+* email
+* site_title
+* site_domain (optional)
+
+BSCW
+----
+* email
+* username
+* quota
+* password (optional)

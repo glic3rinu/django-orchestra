@@ -12,5 +12,7 @@ class EmailUsageListFilter(SimpleListFilter):
         return Contact.email_usage.field.choices
     
     def queryset(self, request, queryset):
-        value = self.value().split(',')
-        return queryset.filter(email_usages=value)
+        value = self.value()
+        if value is None:
+            return queryset
+        return queryset.filter(email_usages=value.split(','))

@@ -92,13 +92,15 @@ class Resource(models.Model):
             try:
                 self.get_model_path(monitor)
             except (RuntimeError, LookupError):
-                monitor_errors.append(monitor)
+                model = get_model(ServiceMonitor.get_backend(monitor).model)
+                monitor_errors.append(model._meta.model_name)
         if monitor_errors:
+            model_name = self.content_type.model_class()._meta.model_name
             raise validators.ValidationError({
                 'monitors': [
                     _("Path does not exists between '%s' and '%s'") % (
-                        get_model(ServiceMonitor.get_backend(monitor).model)._meta.model_name,
-                        self.content_type.model_class()._meta.model_name,
+                        error,
+                        model_name,
                     ) for error in monitor_errors
                 ]})
     

@@ -86,6 +86,21 @@ class Resource(models.Model):
     
     def clean(self):
         self.verbose_name = self.verbose_name.strip()
+        # Validate that model path exists between ct and each monitor.model
+        monitor_errors = []
+        for monitor in self.monitors:
+            try:
+                self.get_model_path(monitor)
+            except (RuntimeError, LookupError):
+                monitor_errors.append(monitor)
+        if monitor_errors:
+            raise validators.ValidationError({
+                'monitors': [
+                    _("Path does not exists between '%s' and '%s'") % (
+                        get_model(ServiceMonitor.get_backend(monitor).model)._meta.model_name,
+                        self.content_type.model_class()._meta.model_name,
+                    ) for error in monitor_errors
+                ]})
     
     def save(self, *args, **kwargs):
         created = not self.pk
@@ -98,6 +113,13 @@ class Resource(models.Model):
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
         name = 'monitor.%s' % str(self)
+    
+    def get_model_path(self, monitor):
+        """ returns a model path between self.content_type and monitor.model """
+        resource_model = self.content_type.model_class()
+        model_path = ServiceMonitor.get_backend(monitor).model
+        monitor_model = get_model(model_path)
+        return get_model_field_path(monitor_model, resource_model)
     
     def sync_periodic_task(self):
         name = 'monitor.%s' % str(self)
@@ -190,17 +212,14 @@ class ResourceData(models.Model):
         today = timezone.now()
         datasets = []
         for monitor in resource.monitors:
-            resource_model = self.content_type.model_class()
-            model_path = ServiceMonitor.get_backend(monitor).model
-            monitor_model = get_model(model_path)
-            if resource_model == monitor_model:
+            path = self.resource.get_model_path(monitor)
+            if path == []:
                 dataset = MonitorData.objects.filter(
                     monitor=monitor,
                     content_type=self.content_type_id,
                     object_id=self.object_id
                 )
             else:
-                path = get_model_field_path(monitor_model, resource_model)
                 fields = '__'.join(path)
                 objects = monitor_model.objects.filter(**{fields: self.object_id})
                 pks = objects.values_list('id', flat=True)

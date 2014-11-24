@@ -3,11 +3,12 @@ from django.contrib import admin
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import AtLeastOneRequiredInlineFormSet, ExtendedModelAdmin
+from orchestra.admin.actions import SendEmail
 from orchestra.admin.utils import insertattr, admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdmin, AccountAdminMixin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
-from .actions import SendEmail
+from .filters import EmailUsageListFilter
 from .models import Contact
 
 
@@ -16,7 +17,7 @@ class ContactAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'dispaly_name', 'email', 'phone', 'phone2', 'country', 'account_link'
     )
     # TODO email usage custom filter contains
-    list_filter = ('email_usage',)
+    list_filter = (EmailUsageListFilter,)
     search_fields = (
         'account__username', 'account__full_name', 'short_name', 'full_name', 'phone', 'phone2',
         'email'

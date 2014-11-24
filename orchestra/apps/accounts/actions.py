@@ -39,13 +39,22 @@ list_contacts.verbose_name = _("List contacts")
 
 def service_report(modeladmin, request, queryset):
     accounts = []
-    for account in queryset:
+    fields = []
+    # First we get related manager names to fire a prefetch related
+    for name, field in queryset.model._meta._name_map.iteritems():
+        model = field[0].model
+        if model in services.get() and model != queryset.model:
+            fields.append((model, name))
+    sorted(fields, key=lambda i: i[0]._meta.verbose_name_plural.lower())
+    fields = [field for model, field in fields]
+    
+    for account in queryset.prefetch_related(*fields):
         items = []
-        for service in services.get():
-            if service != type(account):
-                items.append((service._meta, service.objects.filter(account=account)))
-        sorted(items, key=lambda i: i[0].verbose_name_plural.lower())
+        for field in fields:
+            related_manager = getattr(account, field)
+            items.append((related_manager.model._meta, related_manager.all()))
         accounts.append((account, items))
+    
     context = {
         'accounts': accounts,
         'date': timezone.now().today()

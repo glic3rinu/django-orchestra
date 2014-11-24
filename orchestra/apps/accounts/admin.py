@@ -13,6 +13,7 @@ from django.utils.six.moves.urllib.parse import parse_qsl
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
+from orchestra.admin.actions import SendEmail
 from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, change_url
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
@@ -61,7 +62,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     filter_horizontal = ()
     change_readonly_fields = ('username', 'main_systemuser_link')
     change_form_template = 'admin/accounts/account/change_form.html'
-    actions = [disable, list_contacts, service_report]
+    actions = [disable, list_contacts, service_report, SendEmail()]
     change_view_actions = [disable, service_report]
     list_select_related = ('billcontact',)
     ordering = ()

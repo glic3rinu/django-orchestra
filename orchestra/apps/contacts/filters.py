@@ -1,0 +1,16 @@
+from django.contrib.admin import SimpleListFilter
+from django.utils.translation import ugettext_lazy as _
+
+from .models import Contact
+
+
+class EmailUsageListFilter(SimpleListFilter):
+    title = _("email usages")
+    parameter_name = 'email_usages'
+    
+    def lookups(self, request, model_admin):
+        return Contact.email_usage.field.choices
+    
+    def queryset(self, request, queryset):
+        value = self.value().split(',')
+        return queryset.filter(email_usages=value)

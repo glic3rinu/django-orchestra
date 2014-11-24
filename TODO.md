@@ -149,15 +149,9 @@
 
 * Resource used_list_display=True, allocated_list_displat=True, allow resources to show up on list_display
 
-* Move plugins back from apps to orchestra main app
-
 * BackendLog.updated_at (tasks that run over several minutes when finished they do not appear first on the changelist) (like celery tasks.when)
 
-* Validate a model path exists between resource.content_type and backend.model
-
 * Periodic task for cleaning old monitoring data
-
-* Generate reports of Account contracted services
 
 * Create an admin service_view with icons (like SaaS app)
 
@@ -165,4 +159,6 @@
 
 * Resource graph for each related object
 
-* contacts filter by email_usage fix exact for contains
+* Rename apache logs ending on .log in order to logrotate easily
+
+* SaaS wordpress multiple blogs per user? separate users from sites?

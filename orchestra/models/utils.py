@@ -47,3 +47,4 @@ def get_model_field_path(origin, target):
                 new_path = list(path)
                 new_path.append(field.name)
                 queue.append((new_model, new_path))
+    raise LookupError("Path does not exists between '%s' and '%s' models" % (origin, target))

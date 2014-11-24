@@ -3,8 +3,8 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.apps import plugins
-from orchestra.apps.plugins.forms import PluginDataForm
+from orchestra import plugins
+from orchestra.plugins.forms import PluginDataForm
 from orchestra.core import validators
 from orchestra.forms import widgets
 from orchestra.utils.functional import cached
@@ -71,6 +71,7 @@ class SoftwareServiceForm(PluginDataForm):
         if not self.is_change:
             obj.set_password(self.cleaned_data["password1"])
         return obj
+
 
 class SoftwareService(plugins.Plugin):
     form = SoftwareServiceForm

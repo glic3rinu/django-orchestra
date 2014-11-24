@@ -31,3 +31,8 @@ API_ROOT_VIEW = getattr(settings, 'API_ROOT_VIEW', 'orchestra.api.root.APIRoot')
 
 
 ORCHESTRA_MIGRATION_MODE = getattr(settings, 'ORCHESTRA_MIGRATION_MODE', False)
+
+
+ORCHESTRA_DEFAULT_SUPPORT_FROM_EMAIL = getattr(settings, 'ORCHESTRA_DEFAULT_SUPPORT_FROM_EMAIL',
+    'support@orchestra.lan'
+)

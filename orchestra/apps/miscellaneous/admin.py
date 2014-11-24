@@ -8,8 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link
 from orchestra.apps.accounts.admin import AccountAdminMixin
-from orchestra.apps.plugins import PluginModelAdapter
-from orchestra.apps.plugins.admin import SelectPluginAdminMixin
+from orchestra.plugins import PluginModelAdapter
+from orchestra.plugins.admin import SelectPluginAdminMixin
 
 from . import settings
 from .models import MiscService, Miscellaneous
@@ -26,7 +26,9 @@ class MiscServiceAdmin(ExtendedModelAdmin):
     )
     list_editable = ('is_active',)
     list_filter = ('has_identifier', 'has_amount', 'is_active')
-    fields = ('verbose_name', 'name', 'description', 'has_identifier', 'has_amount', 'is_active')
+    fields = (
+        'verbose_name', 'name', 'description', 'has_identifier', 'has_amount', 'is_active'
+    )
     prepopulated_fields = {'name': ('verbose_name',)}
     change_readonly_fields = ('name',)
     
@@ -51,9 +53,12 @@ class MiscServiceAdmin(ExtendedModelAdmin):
 
 
 class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelAdmin):
-    list_display = ('__unicode__', 'service_link', 'amount', 'dispaly_active', 'account_link')
+    list_display = (
+        '__unicode__', 'service_link', 'amount', 'dispaly_active', 'account_link'
+    )
     list_filter = ('service__name', 'is_active')
     list_select_related = ('service', 'account')
+    search_fields = ('identifier', 'description')
     plugin_field = 'service'
     plugin = MiscServicePlugin
     

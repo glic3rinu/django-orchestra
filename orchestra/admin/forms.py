@@ -2,9 +2,12 @@ from functools import partial
 
 from django import forms
 from django.contrib.admin import helpers
+from django.core import validators
 from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
+
+from orchestra.forms.widgets import ShowTextWidget, ReadOnlyWidget
 
 from ..core.validators import validate_password
 
@@ -129,3 +132,39 @@ class AdminPasswordChangeForm(forms.Form):
         return ['password']
     changed_data = property(_get_changed_data)
 
+
+class SendEmailForm(forms.Form):
+    email_from = forms.EmailField(label=_("From"),
+            widget=forms.TextInput(attrs={'size':'118'}))
+    to = forms.CharField(label="To", required=False,
+            widget=ShowTextWidget())
+    extra_to = forms.CharField(label="To (extra)", required=False,
+            widget=forms.TextInput(attrs={'size':'118'}))
+    subject = forms.CharField(label=_("Subject"),
+            widget=forms.TextInput(attrs={'size':'118'}))
+    message = forms.CharField(label=_("Message"),
+            widget=forms.Textarea(attrs={'cols': 118, 'rows': 15}))
+    
+    def __init__(self, *args, **kwargs):
+        super(SendEmailForm, self).__init__(*args, **kwargs)
+        initial = kwargs.get('initial')
+        if 'to' in initial:
+            self.fields['to'].widget = ReadOnlyWidget(initial['to'])
+        else:
+            self.fields.pop('to')
+    
+    def clean_comma_separated_emails(self, value):
+        clean_value = []
+        for email in value.split(','):
+            email = email.strip()
+            if email:
+                try:
+                    validators.validate_email(email)
+                except validators.ValidationError:
+                    raise validators.ValidationError("Comma separated email addresses.")
+                clean_value.append(email)
+        return clean_value
+    
+    def clean_extra_to(self):
+        extra_to = self.cleaned_data['extra_to']
+        return self.clean_comma_separated_emails(extra_to)

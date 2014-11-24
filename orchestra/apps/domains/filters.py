@@ -1,11 +1,10 @@
 from django.contrib.admin import SimpleListFilter
-from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 
 class TopDomainListFilter(SimpleListFilter):
     """ Filter Nodes by group according to request.user """
-    title = _("Top domains")
+    title = _("top domains")
     parameter_name = 'top_domain'
     
     def lookups(self, request, model_admin):

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.accounts.admin import AccountAdminMixin
-from orchestra.apps.plugins.admin import SelectPluginAdminMixin
+from orchestra.plugins.admin import SelectPluginAdminMixin
 
 from .models import SaaS
 from .services import SoftwareService

@@ -159,7 +159,8 @@ class Bill(models.Model):
         return now + relativedelta(months=1)
     
     def close(self, payment=False):
-        assert self.is_open, "Bill not in Open state"
+        if not self.is_open:
+            raise TypeError("Bill not in Open state.")
         if payment is False:
             payment = self.account.paymentsources.get_default()
         if not self.due_on:

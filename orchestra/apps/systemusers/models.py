@@ -66,13 +66,17 @@ class SystemUser(models.Model):
     def has_shell(self):
         return self.shell not in settings.SYSTEMUSERS_DISABLED_SHELLS
     
+    def get_description(self):
+        return self.get_shell_display()
+    
     def save(self, *args, **kwargs):
         if not self.home:
             self.home = self.get_base_home()
         super(SystemUser, self).save(*args, **kwargs)
     
     def clean(self):
-        self.home = os.path.normpath(self.home)
+        if self.home:
+            self.home = os.path.normpath(self.home)
         if self.directory:
             directory_error = None
             if self.has_shell:
@@ -119,10 +123,7 @@ class SystemUser(models.Model):
         return os.path.normpath(settings.SYSTEMUSERS_HOME % context)
     
     def get_home(self):
-        return os.path.join(
-            self.home or self.get_base_home(),
-            self.directory
-        )
+        return os.path.join(self.home, self.directory)
 
 
 services.register(SystemUser)

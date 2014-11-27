@@ -59,6 +59,26 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', {
         'help_text': _("This creates a Webalizer application under "
                        "~/webapps/&lt;app_name&gt;-&lt;site_name&gt;")
     },
+    'wordpress-mu': {
+        'verbose_name': _("Wordpress (SaaS)"),
+        'directive': ('fpm', 'fcgi://127.0.0.1:8990/home/httpd/wordpress-mu/'),
+        'help_text': _("This creates a Wordpress site on a multi-tenant Wordpress server.<br>"
+                       "By default this blog is accessible via &lt;app_name&gt;.blogs.orchestra.lan")
+    },
+    'dokuwiki-mu': {
+        'verbose_name': _("DokuWiki (SaaS)"),
+        'directive': ('alias', '/home/httpd/wikifarm/farm/'),
+        'help_text': _("This create a Dokuwiki wiki into a shared Dokuwiki server.<br>"
+                       "By default this wiki is accessible via &lt;app_name&gt;.wikis.orchestra.lan")
+    },
+    'drupal-mu': {
+        'verbose_name': _("Drupdal (SaaS)"),
+        'directive': ('fpm', 'fcgi://127.0.0.1:8991/home/httpd/drupal-mu/'),
+        'help_text': _("This creates a Drupal site into a multi-tenant Drupal server.<br>"
+                       "The installation will be completed after visiting "
+                       "http://&lt;app_name&gt;.drupal.orchestra.lan/install.php?profile=standard<br>"
+                       "By default this site will be accessible via &lt;app_name&gt;.drupal.orchestra.lan")
+    }
 })
 
 
@@ -282,3 +302,22 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
         r'^[^ ]+$'
     ),
 })
+
+
+
+WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD = getattr(settings, 'WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD',
+    'secret')
+
+WEBAPPS_WORDPRESSMU_BASE_URL = getattr(settings, 'WEBAPPS_WORDPRESSMU_BASE_URL', 
+    'http://blogs.orchestra.lan/')
+
+
+WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH',
+    '/home/httpd/htdocs/wikifarm/template.tar.gz')
+
+WEBAPPS_DOKUWIKIMU_FARM_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_FARM_PATH',
+    '/home/httpd/htdocs/wikifarm/farm')
+
+
+WEBAPPS_DRUPAL_SITES_PATH = getattr(settings, 'WEBAPPS_DRUPAL_SITES_PATH',
+    '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s')

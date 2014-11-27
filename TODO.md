@@ -161,23 +161,23 @@
 
 * Rename apache logs ending on .log in order to logrotate easily
 
-* SaaS wordpress multiple blogs per user? separate users from sites? SaaSUser SaaSSite models
-* Custom domains for SaaS apps (wordpress Vhost) SaaSSite.domain ?
+* multitenant webapps modeled on WepApp -> name unique for all accounts
+
+* webapp compat webapp-options
+* webapps modeled on classes instead of settings?
 
 * Change account and orders
 
+* Mix webapps type with backends (two for the price of one)
 
-==== SaaS ====
-Wordpress
----------
-* site_name
-* email
-* site_title
-* site_domain (optional)
+* Webapp options and type compatibility
 
-BSCW
-----
-* email
-* username
-* quota
-* password (optional)
+Multi-tenant WebApps
+--------------------
+* SaaS - Those apps that can't use custom domain
+* WebApp - Those apps that can use custom domain
+
+* Howto upgrade webapp PHP version? <FilesMatch \.php$> SetHandler php54-cgi</FilesMatch> ? or create a new app 
+
+
+* prevent @pangea.org email addresses on contacts

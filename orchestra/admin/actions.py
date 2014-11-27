@@ -38,7 +38,7 @@ class SendEmail(object):
             raise PermissionDenied
         initial={
             'email_from': self.default_from,
-            'to': ' '.join(self.queryset.values_list('email', flat=True))
+            'to': ' '.join(self.get_queryset_emails())
         }
         form = self.form(initial=initial)
         if request.POST.get('post'):
@@ -63,8 +63,10 @@ class SendEmail(object):
         # Display confirmation page
         return render(request, self.template, self.context)
     
+    def get_queryset_emails(self):
+        return self.queryset.value_list('email', flat=True)
+    
     def confirm_email(self, request, **options):
-        num = len(self.queryset)
         email_from = options['email_from']
         extra_to = options['extra_to']
         subject = options['subject']
@@ -72,13 +74,15 @@ class SendEmail(object):
         # The user has already confirmed
         if request.POST.get('post') == 'email_confirmation':
             emails = []
-            for contact in self.queryset.all():
-                emails.append((subject, message, email_from, [contact.email]))
+            num = 0
+            for email in self.get_queryset_emails():
+                emails.append((subject, message, email_from, [email]))
+                num += 1
             if extra_to:
                 emails.append((subject, message, email_from, extra_to))
-            send_mass_mail(emails)
+            send_mass_mail(emails, fail_silently=False)
             msg = ungettext(
-                _("Message has been sent to %s.") % str(contact),
+                _("Message has been sent to one %s.") % self.opts.verbose_name_plural,
                 _("Message has been sent to %i %s.") % (num, self.opts.verbose_name_plural),
                 num
             )

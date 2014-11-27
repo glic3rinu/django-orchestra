@@ -37,8 +37,8 @@ class MailmanBackend(ServiceController):
                 [[ $(grep "^\s*%(address_domain)s\s*$" %(virtual_alias_domains)s) ]] || {
                     echo "%(address_domain)s" >> %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                }""" % context
-            ))
+                }""") % context
+            )
     
     def exclude_virtual_alias_domain(self, context):
         address_domain = context['address_domain']
@@ -58,13 +58,11 @@ class MailmanBackend(ServiceController):
         self.append(textwrap.dedent("""\
             [[ ! -e %(mailman_root)s/lists/%(name)s ]] && {
                 newlist --quiet --emailhost='%(domain)s' '%(name)s' '%(admin)s' '%(password)s'
-            }""" % context))
+            }""") % context)
         # Custom domain
         if mail_list.address:
-            aliases = self.get_virtual_aliases(context)
+            context['aliases'] = self.get_virtual_aliases(context)
             # Preserve indentation
-            spaces = '    '*4
-            context['aliases'] = spaces + aliases.replace('\n', '\n'+spaces)
             self.append(textwrap.dedent("""\
                 if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
                     echo '# %(banner)s\n%(aliases)s
@@ -78,23 +76,28 @@ class MailmanBackend(ServiceController):
                         ' >> %(virtual_alias)s
                         UPDATED_VIRTUAL_ALIAS=1
                     fi
-                fi""" % context
-            ))
-            self.append('echo "require_explicit_destination = 0" | '
-                        '%(mailman_root)s/bin/config_list -i /dev/stdin %(name)s' % context)
+                fi""") % context
+            )
+            self.append(
+                'echo "require_explicit_destination = 0" | '
+                '%(mailman_root)s/bin/config_list -i /dev/stdin %(name)s' % context
+            )
             self.append(textwrap.dedent("""\
                 echo "host_name = '%(address_domain)s'" | \
-                    %(mailman_root)s/bin/config_list -i /dev/stdin %(name)s""" % context))
+                    %(mailman_root)s/bin/config_list -i /dev/stdin %(name)s""") % context
+            )
         else:
             # Cleanup shit
             self.append(textwrap.dedent("""\
                 if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
                     sed -i "/^.*\s%(name)s\s*$/d" %(virtual_alias)s
-                fi""" % context
-            ))
+                fi""") % context
+            )
         # Update
         if context['password'] is not None:
-            self.append('%(mailman_root)s/bin/change_pw --listname="%(name)s" --password="%(password)s"' % context)
+            self.append(
+                '%(mailman_root)s/bin/change_pw --listname="%(name)s" --password="%(password)s"' % context
+            )
         self.include_virtual_alias_domain(context)
     
     def delete(self, mail_list):
@@ -102,8 +105,8 @@ class MailmanBackend(ServiceController):
         self.exclude_virtual_alias_domain(context)
         self.append(textwrap.dedent("""\
             sed -i -e '/^.*\s%(name)s\(%(address_regex)s\)\s*$/d' \\
-                   -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s""" % context
-        ))
+                   -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s""") % context
+        )
         self.append("rmlist -a %(name)s" % context)
     
     def commit(self):
@@ -111,8 +114,8 @@ class MailmanBackend(ServiceController):
         self.append(textwrap.dedent("""
             [[ $UPDATED_VIRTUAL_ALIAS == 1 ]] && { postmap %(virtual_alias)s; }
             [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { /etc/init.d/postfix reload; }
-            """ % context
-        ))
+            """) % context
+        )
     
     def get_context_files(self):
         return {
@@ -163,7 +166,7 @@ class MailmanTraffic(ServiceMonitor):
                        | tr '\\n' '+' \\
                        | xargs -i echo {} )
                 echo ${OBJECT_ID} $(( ${SIZE}*${SUBSCRIBERS} ))
-            }""" % current_date))
+            }""") % current_date)
     
     def monitor(self, mail_list):
         context = self.get_context(mail_list)

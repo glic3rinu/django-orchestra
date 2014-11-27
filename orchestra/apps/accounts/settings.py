@@ -47,3 +47,7 @@ ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
         _("Designates whether to creates a related subdomain &lt;username&gt;.orchestra.lan or not."),
     ),
 ))
+
+
+ACCOUNTS_SERVICE_REPORT_TEMPLATE = getattr(settings, 'ACCOUNTS_SERVICE_REPORT_TEMPLATE',
+    'admin/accounts/account/service_report.html')

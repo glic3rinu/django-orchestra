@@ -54,7 +54,10 @@
             <li class="item-title">{{ opts.verbose_name_plural|capfirst }}</li>
             <ul>
             {% for obj in related %}
-                <li class="related"><a href="{{ obj|admin_url }}">{{ obj }}</a>{% if not obj|isactive %} ({% trans "disabled" %}){% endif %}</li>
+                <li class="related"><a href="{{ obj|admin_url }}">{{ obj }}</a>
+                    {% if not obj|isactive %} ({% trans "disabled" %}){% endif %}
+                    {{ obj.get_description|capfirst }}
+                </li>
             {% endfor %}
             </ul>
         {% endfor %}

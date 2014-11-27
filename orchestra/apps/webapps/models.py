@@ -29,9 +29,28 @@ class WebApp(models.Model):
     def __unicode__(self):
         return self.get_name()
     
+    def get_description(self):
+        return self.get_type_display()
+    
+    def clean(self):
+        # Validate unique webapp names
+        if self.app_type.get('unique_name', False):
+            try:
+                webapp = WebApp.objects.exclude(id=self.pk).get(name=self.name, type=self.type)
+            except WebApp.DoesNotExist:
+                pass
+            else:
+                raise ValidationError({
+                    'name': _("A webapp with this name already exists."),
+                })
+    
     @cached
     def get_options(self):
         return { opt.name: opt.value for opt in self.options.all() }
+    
+    @property
+    def app_type(self):
+        return settings.WEBAPPS_TYPES[self.type]
     
     def get_name(self):
         return self.name or settings.WEBAPPS_BLANK_NAME
@@ -40,7 +59,7 @@ class WebApp(models.Model):
         return settings.WEBAPPS_FPM_START_PORT + self.account_id
     
     def get_directive(self):
-        directive = settings.WEBAPPS_TYPES[self.type]['directive']
+        directive = self.app_type['directive']
         args = directive[1:] if len(directive) > 1 else ()
         return directive[0], args
     

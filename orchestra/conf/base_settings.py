@@ -122,8 +122,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-#TODO  Email config
-#EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+# Email config
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 
 
 #################################

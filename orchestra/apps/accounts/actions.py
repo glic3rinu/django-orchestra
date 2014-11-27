@@ -8,6 +8,8 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 from orchestra.admin.decorators import action_with_confirmation
 from orchestra.core import services
 
+from . import settings
+
 
 @transaction.atomic
 @action_with_confirmation()
@@ -38,6 +40,7 @@ list_contacts.verbose_name = _("List contacts")
 
 
 def service_report(modeladmin, request, queryset):
+    # TODO resources
     accounts = []
     fields = []
     # First we get related manager names to fire a prefetch related
@@ -59,4 +62,4 @@ def service_report(modeladmin, request, queryset):
         'accounts': accounts,
         'date': timezone.now().today()
     }
-    return render(request, 'admin/accounts/account/service_report.html', context)
+    return render(request, settings.ACCOUNTS_SERVICE_REPORT_TEMPLATE, context)

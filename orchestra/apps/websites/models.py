@@ -12,6 +12,7 @@ from . import settings
 
 
 class Website(models.Model):
+    """ Models a web site, also known as virtual host """
     name = models.CharField(_("name"), max_length=128, unique=True,
             validators=[validators.validate_name])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),

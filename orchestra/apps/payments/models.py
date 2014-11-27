@@ -119,23 +119,27 @@ class Transaction(models.Model):
             if amount >= self.bill.total:
                 raise ValidationError(_("New transactions can not be allocated for this bill."))
     
+    def check_state(*args):
+        if self.state not in args:
+            raise TypeError("Transaction not in %s" % ' or '.join(args))
+    
     def mark_as_processed(self):
-        assert self.state == self.WAITTING_PROCESSING
+        self.check_state(self.WAITTING_PROCESSING)
         self.state = self.WAITTING_EXECUTION
         self.save(update_fields=['state'])
     
     def mark_as_executed(self):
-        assert self.state == self.WAITTING_EXECUTION
+        self.check_state(self.WAITTING_EXECUTION)
         self.state = self.EXECUTED
         self.save(update_fields=['state'])
     
     def mark_as_secured(self):
-        assert self.state == self.EXECUTED
+        self.check_state(self.EXECUTED)
         self.state = self.SECURED
         self.save(update_fields=['state'])
     
     def mark_as_rejected(self):
-        assert self.state == self.EXECUTED
+        self.check_state(self.EXECUTED)
         self.state = self.REJECTED
         self.save(update_fields=['state'])
 
@@ -167,22 +171,26 @@ class TransactionProcess(models.Model):
     def __unicode__(self):
         return '#%i' % self.id
     
+    def check_state(*args):
+        if self.state not in args:
+            raise TypeError("Transaction process not in %s" % ' or '.join(args))
+    
     def mark_as_executed(self):
-        assert self.state == self.CREATED
+        self.check_state(self.CREATED)
         self.state = self.EXECUTED
         for transaction in self.transactions.all():
             transaction.mark_as_executed()
         self.save(update_fields=['state'])
     
     def abort(self):
-        assert self.state in [self.CREATED, self.EXCECUTED]
+        self.check_state(self.CREATED, self.EXCECUTED)
         self.state = self.ABORTED
         for transaction in self.transaction.all():
             transaction.mark_as_aborted()
         self.save(update_fields=['state'])
     
     def commit(self):
-        assert self.state in [self.CREATED, self.EXECUTED]
+        self.check_state(self.CREATED, self.EXECUTED)
         self.state = self.COMMITED
         for transaction in self.transactions.processing():
             transaction.mark_as_secured()

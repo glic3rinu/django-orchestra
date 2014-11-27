@@ -119,8 +119,7 @@ class Resource(models.Model):
     def get_model_path(self, monitor):
         """ returns a model path between self.content_type and monitor.model """
         resource_model = self.content_type.model_class()
-        model_path = ServiceMonitor.get_backend(monitor).model
-        monitor_model = get_model(model_path)
+        monitor_model = ServiceMonitor.get_backend(monitor).model_class()
         return get_model_field_path(monitor_model, resource_model)
     
     def sync_periodic_task(self):
@@ -223,6 +222,7 @@ class ResourceData(models.Model):
                 )
             else:
                 fields = '__'.join(path)
+                monitor_model = ServiceMonitor.get_backend(monitor).model_class()
                 objects = monitor_model.objects.filter(**{fields: self.object_id})
                 pks = objects.values_list('id', flat=True)
                 ct = ContentType.objects.get_for_model(monitor_model)

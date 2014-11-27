@@ -60,6 +60,9 @@ class Miscellaneous(models.Model):
         except type(self).account.field.rel.to.DoesNotExist:
             return self.is_active
     
+    def get_description(self):
+        return ' '.join((str(self.amount), self.service.description or self.service.verbose_name))
+    
     def clean(self):
         if self.identifier:
             self.identifier = self.identifier.strip()

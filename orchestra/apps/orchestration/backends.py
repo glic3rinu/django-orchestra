@@ -10,6 +10,14 @@ from orchestra import plugins
 from . import methods
 
 
+class ServiceMount(plugins.PluginMount):
+    def __init__(cls, name, bases, attrs):
+        # Make sure backends specify a model attribute
+        if not (attrs.get('abstract', False) or name == 'ServiceBackend' or cls.model):
+                raise AttributeError("'%s' does not have a defined model attribute." % cls)
+        super(ServiceMount, cls).__init__(name, bases, attrs)
+
+
 class ServiceBackend(plugins.Plugin):
     """
     Service management backend base class
@@ -27,7 +35,7 @@ class ServiceBackend(plugins.Plugin):
     ignore_fields = []
     actions = []
     
-    __metaclass__ = plugins.PluginMount
+    __metaclass__ = ServiceMount
     
     def __unicode__(self):
         return type(self).__name__

@@ -89,10 +89,10 @@ class PasswdVirtualUserBackend(ServiceController):
         context = {
             'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH
         }
-        self.append(
-            "[[ $UPDATED_VIRTUAL_MAILBOX_MAPS == 1 ]] && { postmap %(virtual_mailbox_maps)s; }"
-             % context
-        )
+        self.append(textwrap.dedent("""\
+            [[ $UPDATED_VIRTUAL_MAILBOX_MAPS == 1 ]] && {
+                postmap %(virtual_mailbox_maps)s
+            }""" % context))
     
     def get_context(self, mailbox):
         context = {
@@ -123,8 +123,7 @@ class PostfixAddressBackend(ServiceController):
             [[ $(grep "^\s*%(domain)s\s*$" %(virtual_alias_domains)s) ]] || {
                 echo "%(domain)s" >> %(virtual_alias_domains)s
                 UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-            }""" % context
-        ))
+            }""") % context)
     
     def exclude_virtual_alias_domain(self, context):
         domain = context['domain']
@@ -151,8 +150,7 @@ class PostfixAddressBackend(ServiceController):
                        sed -i "s/^%(email)s\s.*$/${LINE}/" %(virtual_alias_maps)s
                        UPDATED_VIRTUAL_ALIAS_MAPS=1
                    fi
-                fi""" % context
-            ))
+                fi""") % context)
         else:
             logger.warning("Address %i is empty" % address.pk)
             self.append('sed -i "/^%(email)s\s/d" %(virtual_alias_maps)s')
@@ -163,8 +161,7 @@ class PostfixAddressBackend(ServiceController):
             if [[ $(grep "^%(email)s\s" %(virtual_alias_maps)s) ]]; then
                sed -i "/^%(email)s\s.*$/d" %(virtual_alias_maps)s
                UPDATED_VIRTUAL_ALIAS_MAPS=1
-            fi""" % context
-        ))
+            fi""") % context)
     
     def save(self, address):
         context = self.get_context(address)
@@ -181,8 +178,8 @@ class PostfixAddressBackend(ServiceController):
         self.append(textwrap.dedent("""
             [[ $UPDATED_VIRTUAL_ALIAS_MAPS == 1 ]] && { postmap %(virtual_alias_maps)s; }
             [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { /etc/init.d/postfix reload; }
-            """ % context
-        ))
+            """) % context
+        )
     
     def get_context_files(self):
         return {

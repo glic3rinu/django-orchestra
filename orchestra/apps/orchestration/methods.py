@@ -50,10 +50,11 @@ def SSH(backend, log, server, cmds, async=False):
         key = settings.ORCHESTRATION_SSH_KEY_PATH
         try:
             ssh.connect(addr, username='root', key_filename=key, timeout=10)
-        except socket.error:
-            logger.error('%s timed out on %s' % (backend, server))
+        except socket.error, e:
+            logger.error('%s timed out on %s' % (backend, addr))
             log.state = log.TIMEOUT
-            log.save(update_fields=['state'])
+            log.stderr = str(e)
+            log.save(update_fields=['state', 'stderr'])
             return
         transport = ssh.get_transport()
         

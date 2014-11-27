@@ -11,6 +11,8 @@ from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin, AccountAdminMixin
 
+from . import settings
+from .actions import SendMailboxEmail
 from .filters import HasMailboxListFilter, HasForwardListFilter, HasAddressListFilter
 from .forms import MailboxCreationForm, MailboxChangeForm, AddressForm
 from .models import Mailbox, Address, Autoresponse
@@ -70,6 +72,13 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         return '<br>'.join(addresses)
     display_addresses.short_description = _("Addresses")
     display_addresses.allow_tags = True
+    
+    def get_actions(self, request):
+        if settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
+            self.actions = (SendMailboxEmail(),)
+        else:
+            self.actions = ()
+        return super(MailboxAdmin, self).get_actions(request)
     
     def get_fieldsets(self, request, obj=None):
         fieldsets = super(MailboxAdmin, self).get_fieldsets(request, obj=obj)

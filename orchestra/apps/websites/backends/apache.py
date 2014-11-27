@@ -50,8 +50,8 @@ class Apache2Backend(ServiceController):
             } || {
                 echo -e '%(apache_conf)s' > %(sites_available)s
                 UPDATED=1
-            }""" % context
-        ))
+            }""") % context
+        )
         self.enable_or_disable(site)
     
     def delete(self, site):
@@ -92,7 +92,7 @@ class Apache2Backend(ServiceController):
                 Options +ExecCGI
                 AddHandler fcgid-script .php
                 FcgidWrapper %(fcgid_path)s\
-            """ % context)
+            """) % context
         for option in content.webapp.options.filter(name__startswith='Fcgid'):
             fcgid += "    %s %s\n" % (option.name, option.value)
         fcgid += "</Directory>\n"
@@ -231,7 +231,7 @@ class Apache2Traffic(ServiceMonitor):
                 END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
                 LOG_FILE="$3"
                 {
-                    { grep "%(ignore_hosts)s" "${LOG_FILE}" || echo '\\n'; } \\
+                    { grep %(ignore_hosts)s "${LOG_FILE}" || echo '\\n'; } \\
                         | awk -v ini="${INI_DATE}" -v end="${END_DATE}" '
                             BEGIN {
                                 sum = 0

@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.core import services
 from orchestra.core.validators import validate_ipv4_address, validate_ipv6_address, validate_ascii
@@ -49,6 +49,15 @@ class Domain(models.Model):
     @property
     def subdomains(self):
         return Domain.objects.filter(name__regex='\.%s$' % self.name)
+    
+    def get_description(self):
+        if self.is_top:
+            num = self.subdomains.count()
+            return ungettext(
+                _("top domain with one subdomain"),
+                _("top domain with %d subdomains") % num,
+                num)
+        return _("subdomain")
     
     def get_absolute_url(self):
         return 'http://%s' % self.name

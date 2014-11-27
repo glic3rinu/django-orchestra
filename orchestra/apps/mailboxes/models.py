@@ -77,6 +77,11 @@ class Mailbox(models.Model):
                 address.delete()
             else:
                 address.save()
+    
+    def get_local_address(self):
+        if not settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
+            raise AttributeError("Mailboxes do not have a defined local address domain")
+        return '@'.join((self.name, settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN))
 
 
 class Address(models.Model):

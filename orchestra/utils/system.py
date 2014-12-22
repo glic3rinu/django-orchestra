@@ -61,30 +61,35 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='')
     make_async(p.stdout)
     make_async(p.stderr)
     
-    stdout = unicode()
-    stderr = unicode()
-    
     # Async reading of stdout and sterr
     while True:
-        # Wait for data to become available 
-        select.select([p.stdout, p.stderr], [], [])
+        # TODO https://github.com/isagalaev/ijson/issues/15
+        stdout = unicode()
+        sdterr = unicode()
+        # Get complete unicode chunks
+        while True:
+            select.select([p.stdout, p.stderr], [], [])
+            stdoutPiece = read_async(p.stdout)
+            stderrPiece = read_async(p.stderr)
+            try:
+                stdout += stdoutPiece.decode("utf8")
+                sdterr += stderrPiece.decode("utf8")
+            except UnicodeDecodeError:
+                pass
+            else:
+                break
         
-        # Try reading some data from each
-        stdoutPiece = read_async(p.stdout)
-        stderrPiece = read_async(p.stderr)
-        
-        if display and stdoutPiece:
-            sys.stdout.write(stdoutPiece)
+        if display and stdout:
+            sys.stdout.write(stdout)
         if display and stderrPiece:
-            sys.stderr.write(stderrPiece)
+            sys.stderr.write(stderr)
         
-        return_code = p.poll()
-        state = _AttributeUnicode(stdoutPiece.decode("utf8"))
-        state.stderr = stderrPiece.decode("utf8")
-        state.return_code = return_code
+        state = _AttributeUnicode(stdout)
+        state.stderr = sdterr
+        state.return_code =  p.poll()
         yield state
         
-        if return_code != None:
+        if state.return_code != None:
             p.stdout.close()
             p.stderr.close()
             raise StopIteration

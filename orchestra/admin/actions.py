@@ -64,7 +64,7 @@ class SendEmail(object):
         return render(request, self.template, self.context)
     
     def get_queryset_emails(self):
-        return self.queryset.value_list('email', flat=True)
+        return self.queryset.values_list('email', flat=True)
     
     def confirm_email(self, request, **options):
         email_from = options['email_from']

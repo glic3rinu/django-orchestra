@@ -172,6 +172,8 @@
 
 * Webapp options and type compatibility
 
+* SaaS model splitted into SaaSUser and SaaSSite?
+
 Multi-tenant WebApps
 --------------------
 * SaaS - Those apps that can't use custom domain
@@ -179,5 +181,13 @@ Multi-tenant WebApps
 
 * Howto upgrade webapp PHP version? <FilesMatch \.php$> SetHandler php54-cgi</FilesMatch> ? or create a new app 
 
-
 * prevent @pangea.org email addresses on contacts
+
+
+
+
+* fcgid kill instead of apache reload?
+
+
+* chomod user:group
+* username maximum as group user in UNIX

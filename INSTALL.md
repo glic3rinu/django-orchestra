@@ -19,7 +19,7 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 2. Install django-orchestra's source code
     ```bash
     sudo apt-get install python-pip
-    sudo pip install django-orchestra # ==dev if you want the in-devel version
+    sudo pip install django-orchestra==dev
     ```
 
 3. Install requirements

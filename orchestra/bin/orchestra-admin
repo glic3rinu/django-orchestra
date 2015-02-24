@@ -145,7 +145,7 @@ function install_requirements () {
          kombu==3.0.23 \
          billiard==3.3.0.18 \
          Markdown==2.4 \
-         djangorestframework==2.3.14 \
+         djangorestframework==2.4.4 \
          paramiko==1.15.1 \
          ecdsa==0.11 \
          Pygments==1.6 \

@@ -32,6 +32,8 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
     cd ~orchestra
     orchestra-admin startproject <project_name> # e.g. panel
     cd <project_name>
+    sudo touch /var/log/orchestra.log
+    sudo chown orchestra /var/log/orchestra.log
     ```
 
 5. Create and configure a Postgres database

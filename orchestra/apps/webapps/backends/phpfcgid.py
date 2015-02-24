@@ -27,7 +27,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
                 echo -e '%(wrapper_content)s' > %(wrapper_path)s; UPDATED_APACHE=1
             }""" % context))
         self.append("chmod +x %(wrapper_path)s" % context)
-        self.append("chown -R %(user)s.%(group)s %(wrapper_dir)s" % context)
+        self.append("chown -R %(user)s:%(group)s %(wrapper_dir)s" % context)
     
     def delete(self, webapp):
         if not self.valid_directive(webapp):

@@ -1,5 +1,5 @@
 {% extends "rest_framework/base.html" %}
-{% load rest_framework utils %}
+{% load rest_framework utils staticfiles %}
 
 {% block head %}
     {{ block.super }}
@@ -17,7 +17,7 @@
                 <b class="caret"></b>
             </a>
             <ul class="dropdown-menu">
-                <li>{% optional_logout request %}</li>
+                <li>{% optional_logout request user %}</li>
             </ul>
         </li>
     {% else %}

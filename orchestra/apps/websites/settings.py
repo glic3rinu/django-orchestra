@@ -26,8 +26,13 @@ WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
     ),
     'redirect': (
         _("HTTPD - Redirection"),
-        _("<tt>[permanent] &lt;website path&gt; &lt;destination URL&gt;</tt>"),
-        r'^(permanent\s[^ ]+|[^ ]+)\s[^ ]+$',
+        _("<tt>&lt;website path&gt; &lt;destination URL&gt;</tt>"),
+        r'^[^ ]+\s[^ ]+$',
+    ),
+    'proxy': (
+        _("HTTPD - Proxy"),
+        _("<tt>&lt;website path&gt; &lt;target URL&gt;</tt>"),
+        r'^[^ ]+\shttp[^ ]+(timeout=[0-9]{1,3}|retry=[0-9]|\s)*$',
     ),
     'ssl_ca': (
         "HTTPD - SSL CA",

@@ -124,6 +124,12 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTIO
 
 WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
     # { name: ( verbose_name, [help_text], validation_regex ) }
+    # Filesystem
+    'public-root': (
+        _("Public root"),
+        _("Document root relative to webapps/&lt;webapp&gt;/"),
+        r'[^ ]+',
+    ),
     # Processes
     'timeout': (
         _("Process timeout"),
@@ -220,6 +226,12 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
           "(Integer between 0 and 999)."),
         r'^[0-9]{1,3}$'
     ),
+    'PHP-max_input_vars': (
+        _("PHP - Max input vars"),
+        _("How many input variables may be accepted (limit is applied to $_GET, $_POST and $_COOKIE superglobal separately) "
+          "(Integer between 0 and 9999)."),
+        r'^[0-9]{1,4}$'
+    ),
     'PHP-memory_limit': (
         _("PHP - Memory limit"),
         _("This sets the maximum amount of memory in bytes that a script is allowed to allocate "
@@ -269,7 +281,12 @@ WEBAPPS_OPTIONS = getattr(settings, 'WEBAPPS_OPTIONS', {
         r'^(On|Off|on|off)$'
     ),
     'PHP-suhosin.post.max_vars': (
-        _("PHP - Suhosin post max vars"),
+        _("PHP - Suhosin POST max vars"),
+        _("Number between 0 and 9999."),
+        r'^[0-9]{1,4}$'
+    ),
+    'PHP-suhosin.get.max_vars': (
+        _("PHP - Suhosin GET max vars"),
         _("Number between 0 and 9999."),
         r'^[0-9]{1,4}$'
     ),

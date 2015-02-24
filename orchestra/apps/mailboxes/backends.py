@@ -36,7 +36,7 @@ class PasswdVirtualUserBackend(ServiceController):
             fi""" % context
         ))
         self.append("mkdir -p %(home)s" % context)
-        self.append("chown %(uid)s.%(gid)s %(home)s" % context)
+        self.append("chown %(uid)s:%(gid)s %(home)s" % context)
     
     def set_mailbox(self, context):
         self.append(textwrap.dedent("""

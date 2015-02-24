@@ -100,7 +100,7 @@ class SendEmail(object):
             'content_message': _(
                 "Are you sure you want to send the following message to the following %s?"
             ) % self.opts.verbose_name_plural,
-            'display_objects': ["%s (%s)" % (contact, contact.email) for contact in self.queryset],
+            'display_objects': [u"%s (%s)" % (contact, contact.email) for contact in self.queryset],
             'form': form,
             'subject': subject,
             'message': message,

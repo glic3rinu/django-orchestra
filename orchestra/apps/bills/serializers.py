@@ -14,13 +14,14 @@ class BillLineSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class BillSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
-    lines = BillLineSerializer(source='billlines')
+#    lines = BillLineSerializer(source='lines')
     
     class Meta:
         model = Bill
         fields = (
             'url', 'number', 'type', 'total', 'is_sent', 'created_on', 'due_on',
-            'comments', 'html', 'lines'
+            'comments',
+#             'lines'
         )
 
 

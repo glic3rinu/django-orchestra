@@ -25,7 +25,7 @@ class SystemUserBackend(ServiceController):
                useradd %(username)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             fi
             mkdir -p %(home)s
-            chown %(username)s.%(username)s %(home)s""" % context
+            chown %(username)s:%(username)s %(home)s""" % context
         ))
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
             context['member'] = member

@@ -6,6 +6,6 @@ def html_to_pdf(html):
     return run(
         'PATH=$PATH:/usr/local/bin/\n'
         'xvfb-run -a -s "-screen 0 640x4800x16" '
-            'wkhtmltopdf --footer-center "Page [page] of [topage]" --footer-font-size 9 - -',
-        stdin=html.encode('utf-8'), display=False
-    )
+            'wkhtmltopdf -q --footer-center "Page [page] of [topage]" --footer-font-size 9 - -',
+        stdin=html.encode('utf-8'), force_unicode=False
+    ).stdout

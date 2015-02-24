@@ -17,8 +17,8 @@ class APIRoot(views.APIView):
             '<%s>; rel="%s"' % (token_url, 'api-get-auth-token'),
         ]
         body = {
-            'accountancy': [],
-            'services': [],
+            'accountancy': {},
+            'services': {},
         }
         if not request.user.is_anonymous():
             list_name = '{basename}-list'
@@ -44,12 +44,11 @@ class APIRoot(views.APIView):
                     group = 'accountancy'
                     menu = accounts[model].menu
                 if group and menu:
-                    body[group].append({
+                    body[group][basename] = {
                         'url': url,
-                        'name': basename,
                         'verbose_name': model._meta.verbose_name,
                         'verbose_name_plural': model._meta.verbose_name_plural,
-                    })
+                    }
         headers = {
             'Link': ', '.join(links)
         }

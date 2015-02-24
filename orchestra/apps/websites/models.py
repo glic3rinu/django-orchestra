@@ -30,7 +30,7 @@ class Website(models.Model):
     
     @property
     def unique_name(self):
-        return "%s-%s" % (self.account, self.name)
+        return "%s-%i" % (self.name, self.pk)
     
     @cached
     def get_options(self):

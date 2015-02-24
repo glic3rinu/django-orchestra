@@ -17,7 +17,7 @@ class WebalizerBackend(ServiceController):
         self.append("[[ ! -e %(webalizer_path)s/index.html ]] && "
                     "echo 'Webstats are coming soon' > %(webalizer_path)s/index.html" % context)
         self.append("echo '%(webalizer_conf)s' > %(webalizer_conf_path)s" % context)
-        self.append("chown %(user)s.www-data %(webalizer_path)s" % context)
+        self.append("chown %(user)s:www-data %(webalizer_path)s" % context)
     
     def delete(self, content):
         context = self.get_context(content)

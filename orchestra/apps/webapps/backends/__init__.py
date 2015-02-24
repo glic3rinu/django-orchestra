@@ -18,7 +18,7 @@ class WebAppServiceMixin(object):
                 path="${path}/${dir}"
                 [ -d $path ] || {
                     mkdir "${path}"
-                    chown %(user)s.%(group)s "${path}"
+                    chown %(user)s:%(group)s "${path}"
                 }
             done
         """ % context))

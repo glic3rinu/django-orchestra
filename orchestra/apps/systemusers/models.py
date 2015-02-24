@@ -21,8 +21,13 @@ class SystemUserQuerySet(models.QuerySet):
 
 
 class SystemUser(models.Model):
-    """ System users """
-    username = models.CharField(_("username"), max_length=64, unique=True,
+    """
+    System users
+    
+    Username max_length determined by min(user, group) on common LINUX systems; min(32, 16)
+    """
+    # TODO max_length
+    username = models.CharField(_("username"), max_length=32, unique=True,
             help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.validate_username])
     password = models.CharField(_("password"), max_length=128)

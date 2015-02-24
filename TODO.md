@@ -166,7 +166,7 @@
 * webapp compat webapp-options
 * webapps modeled on classes instead of settings?
 
-* Change account and orders
+* Service.account change and orders consistency
 
 * Mix webapps type with backends (two for the price of one)
 
@@ -181,13 +181,10 @@ Multi-tenant WebApps
 
 * Howto upgrade webapp PHP version? <FilesMatch \.php$> SetHandler php54-cgi</FilesMatch> ? or create a new app 
 
-* prevent @pangea.org email addresses on contacts
-
-
-
+* prevent @pangea.org email addresses on contacts, enforce at least one email without @pangea.org
 
 * fcgid kill instead of apache reload?
 
-
-* chomod user:group
 * username maximum as group user in UNIX
+
+* forms autocomplete="off"

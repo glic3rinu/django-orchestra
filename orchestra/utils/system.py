@@ -21,11 +21,10 @@ def check_root(func):
     return wrapped
 
 
-class _AttributeUnicode(unicode):
+class _Attribute(object):
     """ Simple string subclass to allow arbitrary attribute access. """
-    @property
-    def stdout(self):
-        return unicode(self)
+    def __init__(self, stdout):
+        self.stdout = stdout
 
 
 def make_async(fd):
@@ -46,7 +45,7 @@ def read_async(fd):
             return u''
 
 
-def runiterator(command, display=False, error_codes=[0], silent=False, stdin=''):
+def runiterator(command, display=False, error_codes=[0], silent=False, stdin='', force_unicode=True):
     """ Subprocess wrapper for running commands concurrently """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)
@@ -62,29 +61,29 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='')
     make_async(p.stderr)
     
     # Async reading of stdout and sterr
+    # TODO cleanup
     while True:
         # TODO https://github.com/isagalaev/ijson/issues/15
-        stdout = unicode()
-        sdterr = unicode()
+        stdout = unicode() if force_unicode else ''
+        sdterr = unicode() if force_unicode else ''
         # Get complete unicode chunks
         while True:
             select.select([p.stdout, p.stderr], [], [])
             stdoutPiece = read_async(p.stdout)
             stderrPiece = read_async(p.stderr)
             try:
-                stdout += stdoutPiece.decode("utf8")
-                sdterr += stderrPiece.decode("utf8")
-            except UnicodeDecodeError:
+                stdout += unicode(stdoutPiece.decode("utf8")) if force_unicode else stdoutPiece
+                sdterr += unicode(stderrPiece.decode("utf8")) if force_unicode else stderrPiece
+            except UnicodeDecodeError, e:
                 pass
             else:
                 break
-        
         if display and stdout:
             sys.stdout.write(stdout)
-        if display and stderrPiece:
+        if display and stderr:
             sys.stderr.write(stderr)
         
-        state = _AttributeUnicode(stdout)
+        state = _Attribute(stdout)
         state.stderr = sdterr
         state.return_code =  p.poll()
         yield state
@@ -95,8 +94,8 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='')
             raise StopIteration
 
 
-def run(command, display=False, error_codes=[0], silent=False, stdin='', async=False):
-    iterator = runiterator(command, display, error_codes, silent, stdin)
+def run(command, display=False, error_codes=[0], silent=False, stdin='', async=False, force_unicode=True):
+    iterator = runiterator(command, display, error_codes, silent, stdin, force_unicode)
     iterator.next()
     if async:
         return iterator
@@ -109,7 +108,7 @@ def run(command, display=False, error_codes=[0], silent=False, stdin='', async=F
     
     return_code = state.return_code
     
-    out = _AttributeUnicode(stdout.strip())
+    out = _Attribute(stdout.strip())
     err = stderr.strip()
     
     out.failed = False

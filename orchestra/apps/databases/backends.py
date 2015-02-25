@@ -38,7 +38,7 @@ class MySQLBackend(ServiceController):
             return
         context = self.get_context(database)
         self.append("mysql -e 'DROP DATABASE `%(database)s`;'" % context)
-        self.append("mysql mysql -e 'DELETE FROM db WHERE db = `%(database)s`;'" % context)
+        self.append("mysql mysql -e 'DELETE FROM db WHERE db = \"%(database)s\";'" % context)
         
     def commit(self):
         self.append("mysql -e 'FLUSH PRIVILEGES;'")

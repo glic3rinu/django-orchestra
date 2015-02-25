@@ -67,6 +67,8 @@ def execute(operations, async=False):
         backend.commit()
         execute = as_task(backend.execute)
         execute = close_connection(execute)
+        # DEBUG: substitute all thread related stuff for this function
+        #execute(server, async=async)
         thread = threading.Thread(target=execute, args=(server,), kwargs={'async': async})
         thread.start()
         threads.append(thread)

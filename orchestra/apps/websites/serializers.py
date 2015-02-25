@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -49,3 +50,17 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         model = Website
         fields = ('url', 'name', 'port', 'domains', 'is_active', 'contents', 'options')
         postonly_fileds = ('name',)
+    
+    def full_clean(self, instance):
+        """ Prevent multiples domains on the same port """
+        existing = []
+        for domain in instance._m2m_data['domains']:
+            if domain.websites.filter(port=instance.port).exclude(pk=instance.pk).exists():
+                existing.append(domain.name)
+        if existing:
+            context = (', '.join(existing), instance.port)
+            raise ValidationError({
+                'domains': 'A website is already defined for "%s" on port %s' % context
+            })
+        return instance
+

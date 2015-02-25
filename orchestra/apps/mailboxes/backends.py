@@ -131,15 +131,17 @@ class PostfixAddressBackend(ServiceController):
             self.append('sed -i "/^%(domain)s\s*/d" %(virtual_alias_domains)s' % context)
     
     def update_virtual_alias_maps(self, address, context):
-        destination = []
-        for mailbox in address.get_mailboxes():
-            context['mailbox'] = mailbox
-            destination.append("%(mailbox)s@%(mailbox_domain)s" % context)
-        for forward in address.forward:
-            if '@' in forward:
-                destination.append(forward)
+        # Virtual mailbox stuff
+#        destination = []
+#        for mailbox in address.get_mailboxes():
+#            context['mailbox'] = mailbox
+#            destination.append("%(mailbox)s@%(mailbox_domain)s" % context)
+#        for forward in address.forward:
+#            if '@' in forward:
+#                destination.append(forward)
+        destination = address.destination
         if destination:
-            context['destination'] = ' '.join(destination)
+            context['destination'] = destination
             self.append(textwrap.dedent("""
                 LINE="%(email)s\t%(destination)s"
                 if [[ ! $(grep "^%(email)s\s" %(virtual_alias_maps)s) ]]; then
@@ -153,7 +155,7 @@ class PostfixAddressBackend(ServiceController):
                 fi""") % context)
         else:
             logger.warning("Address %i is empty" % address.pk)
-            self.append('sed -i "/^%(email)s\s/d" %(virtual_alias_maps)s')
+            self.append('sed -i "/^%(email)s\s/d" %(virtual_alias_maps)s' % context)
             self.append('UPDATED_VIRTUAL_ALIAS_MAPS=1')
     
     def exclude_virtual_alias_maps(self, context):
@@ -180,6 +182,7 @@ class PostfixAddressBackend(ServiceController):
             [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { /etc/init.d/postfix reload; }
             """) % context
         )
+        self.append('exit 0')
     
     def get_context_files(self):
         return {

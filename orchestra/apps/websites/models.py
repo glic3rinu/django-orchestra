@@ -32,12 +32,6 @@ class Website(models.Model):
     def unique_name(self):
         return "%s-%i" % (self.name, self.pk)
     
-    @cached
-    def get_options(self):
-        return {
-            opt.name: opt.value for opt in self.options.all()
-        }
-    
     @property
     def protocol(self):
         if self.port == 80:
@@ -45,6 +39,12 @@ class Website(models.Model):
         if self.port == 443:
             return 'https'
         raise TypeError('No protocol for port "%s"' % self.port)
+    
+    @cached
+    def get_options(self):
+        return {
+            opt.name: opt.value for opt in self.options.all()
+        }
     
     def get_absolute_url(self):
         domain = self.domains.first()

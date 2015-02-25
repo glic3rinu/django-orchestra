@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib import admin
+from django.core.urlresolvers import resolve
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
+
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, change_url
@@ -8,6 +11,7 @@ from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminM
 from orchestra.forms.widgets import DynamicHelpTextSelect
 
 from . import settings
+from .forms import WebsiteAdminForm
 from .models import Content, Website, WebsiteOption
 
 
@@ -65,6 +69,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
             'fields': ('account_link', 'name', 'port', 'domains', 'is_active'),
         }),
     )
+    form = WebsiteAdminForm
     filter_by_account_fields = ['domains']
     list_prefetch_related = ('domains', 'content_set__webapp')
     search_fields = ('name', 'account__username', 'domains__name')
@@ -91,9 +96,21 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     display_webapps.short_description = _("Web apps")
     
     def formfield_for_dbfield(self, db_field, **kwargs):
-        if db_field.name == 'root':
-            kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
-        return super(WebsiteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        """
+        Exclude domains with exhausted ports
+        has to be done here, on the form doesn't work because of filter_by_account_fields
+        """
+        formfield = super(WebsiteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'domains':
+            qset = Q()
+            for port, __ in settings.WEBSITES_PORT_CHOICES:
+                qset = qset & Q(websites__port=port)
+            args = resolve(kwargs['request'].path).args
+            if args:
+                object_id = args[0]
+                qset = Q(qset & ~Q(websites__pk=object_id))
+            formfield.queryset = formfield.queryset.exclude(qset)
+        return formfield
 
 
 admin.site.register(Website, WebsiteAdmin)

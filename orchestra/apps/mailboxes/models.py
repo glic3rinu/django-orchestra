@@ -111,12 +111,12 @@ class Address(models.Model):
     def email(self):
         return "%s@%s" % (self.name, self.domain)
     
-#    @property
-#    def destination(self):
-#        destinations = list(self.mailboxes.values_list('name', flat=True))
-#        if self.forward:
-#            destinations.append(self.forward)
-#        return ' '.join(destinations)
+    @cached_property
+    def destination(self):
+        destinations = list(self.mailboxes.values_list('name', flat=True))
+        if self.forward:
+            destinations += self.forward
+        return ' '.join(destinations)
     
     def clean(self):
         if self.account_id:

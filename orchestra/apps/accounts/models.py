@@ -77,10 +77,11 @@ class Account(auth.AbstractBaseUser):
         self.save(update_fields=['is_active'])
         # Trigger save() on related objects that depend on this account
         for rel in self._meta.get_all_related_objects():
-            if not rel.model in services:
+            source = getattr(rel, 'related_model', rel.model)
+            if not source in services:
                 continue
             try:
-                rel.model._meta.get_field_by_name('is_active')
+                source._meta.get_field_by_name('is_active')
             except models.FieldDoesNotExist: 
                 continue
             else:

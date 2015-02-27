@@ -95,7 +95,7 @@ INSTALLED_APPS = (
     'admin_tools',
     'admin_tools.theming',
     'admin_tools.menu',
-    'admin_tools.dashboard',
+#    'admin_tools.dashboard',
     'rest_framework',
     'rest_framework.authtoken',
     'passlib.ext.django',

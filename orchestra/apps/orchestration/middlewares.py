@@ -1,7 +1,7 @@
 from threading import local
 
 from django.core.urlresolvers import resolve
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 from django.http.response import HttpResponseServerError
 
@@ -22,6 +22,17 @@ def post_save_collector(sender, *args, **kwargs):
 def pre_delete_collector(sender, *args, **kwargs):
     if sender not in [BackendLog, Operation]:
         OperationsMiddleware.collect(Operation.DELETE, **kwargs)
+
+@receiver(m2m_changed, dispatch_uid='orchestration.m2m_collector')
+def m2m_collector(sender, *args, **kwargs):
+    # m2m relations without intermediary models are shit
+    # model.post_save is not sent and by the time related.post_save is sent
+    # the objects are not accessible with RelatedManager.all()
+    # We have to use this inefficient technique of collecting the instances via m2m_changed.post_add
+    if kwargs.pop('action') == 'post_add':
+        for pk in kwargs['pk_set']:
+            kwargs['instance'] = kwargs['model'].objects.get(pk=pk)
+            OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
 
 class OperationsMiddleware(object):
@@ -51,19 +62,25 @@ class OperationsMiddleware(object):
         pending_operations = cls.get_pending_operations()
         for backend in ServiceBackend.get_backends():
             # Check if there exists a related instance to be executed for this backend
-            instance = None
+            instances = []
             if backend.is_main(kwargs['instance']):
-                instance = kwargs['instance']
+                instances = [(kwargs['instance'], action)]
             else:
                 candidate = backend.get_related(kwargs['instance'])
                 if candidate:
-                    delete = Operation.create(backend, candidate, Operation.DELETE)
-                    if delete not in pending_operations:
-                        instance = candidate
-                        # related objects with backend.model trigger save()
-                        action = Operation.SAVE
-            # Maintain consistent state of pending_operations based on save/delete behaviour
-            if instance is not None:
+                    if candidate.__class__.__name__ == 'ManyRelatedManager':
+                        candidates = candidate.all()
+                    else:
+                        candidates = [candidate]
+                    for candidate in candidates:
+                        # Check if a delete for candidate is in pending_operations
+                        delete = Operation.create(backend, candidate, Operation.DELETE)
+                        if delete not in pending_operations:
+                            # related objects with backend.model trigger save()
+                            action = Operation.SAVE
+                            instances.append((candidate, action))
+            for instance, action in instances:
+                # Maintain consistent state of pending_operations based on save/delete behaviour
                 # Prevent creating a deleted instance by deleting existing saves
                 if action == Operation.DELETE:
                     save = Operation.create(backend, instance, Operation.SAVE)

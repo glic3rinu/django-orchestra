@@ -115,7 +115,7 @@ class Address(models.Model):
     def destination(self):
         destinations = list(self.mailboxes.values_list('name', flat=True))
         if self.forward:
-            destinations += self.forward
+            destinations += self.forward.split()
         return ' '.join(destinations)
     
     def clean(self):

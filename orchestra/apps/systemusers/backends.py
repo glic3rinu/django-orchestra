@@ -25,6 +25,7 @@ class SystemUserBackend(ServiceController):
                useradd %(username)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             fi
             mkdir -p %(home)s
+            chmod 750 %(home)s
             chown %(username)s:%(username)s %(home)s""" % context
         ))
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
@@ -46,7 +47,7 @@ class SystemUserBackend(ServiceController):
         # TODO setacl
     
     def delete_home(self, context, user):
-        if user.is_main:
+        if user.home.rstrip('/') == user.get_base_home().rstrip('/'):
             # TODO delete instead of this shit
             context['deleted'] = context['home'].rstrip('/') + '.deleted'
             self.append("mv %(home)s %(deleted)s" % context)

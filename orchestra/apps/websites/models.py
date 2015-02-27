@@ -13,7 +13,7 @@ from . import settings
 
 class Website(models.Model):
     """ Models a web site, also known as virtual host """
-    name = models.CharField(_("name"), max_length=128, unique=True,
+    name = models.CharField(_("name"), max_length=128,
             validators=[validators.validate_name])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='websites')
@@ -25,12 +25,21 @@ class Website(models.Model):
     contents = models.ManyToManyField('webapps.WebApp', through='websites.Content')
     is_active = models.BooleanField(_("active"), default=True)
     
+    class Meta:
+        unique_together = ('name', 'account')
+    
     def __unicode__(self):
         return self.name
     
     @property
     def unique_name(self):
-        return "%s-%i" % (self.name, self.pk)
+        return settings.WEBSITES_UNIQUE_NAME_FORMAT % {
+            'id': self.id,
+            'pk': self.pk,
+            'account': self.account.username,
+            'port': self.port,
+            'name': self.name,
+        }
     
     @property
     def protocol(self):
@@ -53,8 +62,8 @@ class Website(models.Model):
     
     def get_www_log_path(self):
         context = {
-            'user_home': self.account.main_systemuser.get_home(),
-            'username': self.account.username,
+            'home': self.account.main_systemuser.get_home(),
+            'account': self.account.username,
             'name': self.name,
             'unique_name': self.unique_name
         }

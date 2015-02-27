@@ -2,6 +2,10 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 
+WEBSITES_UNIQUE_NAME_FORMAT = getattr(settings, 'WEBSITES_UNIQUE_NAME_FORMAT',
+    '%(account)s-%(name)s')
+
+
 WEBSITES_PORT_CHOICES = getattr(settings, 'WEBSITES_PORT_CHOICES', (
     (80, 'HTTP'),
     (443, 'HTTPS'),
@@ -87,8 +91,7 @@ WEBSITES_WEBALIZER_PATH = getattr(settings, 'WEBSITES_WEBALIZER_PATH',
 
 
 WEBSITES_WEBSITE_WWW_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_LOG_PATH',
-    # %(user_home)s %(name)s %(unique_name)s %(username)s
-    '/var/log/apache2/virtual/%(unique_name)s')
+    '/var/log/apache2/virtual/%(unique_name)s.log')
 
 
 WEBSITES_TRAFFIC_IGNORE_HOSTS = getattr(settings, 'WEBSITES_TRAFFIC_IGNORE_HOSTS',

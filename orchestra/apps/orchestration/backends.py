@@ -1,6 +1,6 @@
 from functools import partial
 
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -93,24 +93,27 @@ class ServiceBackend(plugins.Plugin):
         return None
     
     @classmethod
-    def get_backends(cls, instance=None, action=None):
+    def get_backends(cls, instance=None, action=None, active=True):
+        from .models import Route
         backends = cls.get_plugins()
         included = []
+        if active:
+            active_backends = Route.objects.filter(is_active=True).values_list('backend', flat=True)
         # Filter for instance or action
-        if instance or action:
-            for backend in backends:
-                include = True
-                if instance:
-                    opts = instance._meta
-                    if backend.model != '.'.join((opts.app_label, opts.object_name)):
-                        include = False
-                if include and action:
-                    if action not in backend.get_actions():
-                        include = False
-                if include:
-                    included.append(backend)
-            backends = included
-        return backends
+        for backend in backends:
+            if active and backend.get_name() not in active_backends:
+                continue
+            include = True
+            if instance:
+                opts = instance._meta
+                if backend.model != '.'.join((opts.app_label, opts.object_name)):
+                    include = False
+            if include and action:
+                if action not in backend.get_actions():
+                    include = False
+            if include:
+                included.append(backend)
+        return included
     
     @classmethod
     def get_backend(cls, name):
@@ -118,7 +121,7 @@ class ServiceBackend(plugins.Plugin):
     
     @classmethod
     def model_class(cls):
-        return get_model(cls.model)
+        return apps.get_model(cls.model)
     
     @property
     def scripts(self):

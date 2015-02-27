@@ -164,3 +164,18 @@ def text2int(textnum, numwords={}):
     
     return result + current
 
+
+UNITS_CONVERSIONS = {
+    1024**4: ['TB', 'TiB', 'TERABYTES'],
+    1024**3: ['GB', 'GiB', 'GYGABYTES'],
+    1024**2: ['MB', 'MiB', 'MEGABYTES'],
+    1024: ['KB', 'KiB', 'KYLOBYTES'],
+    1: ['B', 'BYTES'],
+}
+
+def unit_to_bytes(unit):
+    unit = unit.upper()
+    for bytes, units in UNITS_CONVERSIONS.iteritems():
+        if unit in units:
+            return bytes
+    raise KeyError("%s is not a valid unit." % unit)

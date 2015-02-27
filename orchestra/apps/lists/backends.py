@@ -160,26 +160,25 @@ class MailmanTraffic(ServiceMonitor):
                 MAILMAN_LOG="$4"
                 
                 SUBSCRIBERS=$(list_members ${LIST_NAME} | wc -l)
-                SIZE=$(grep ' post to ${LIST_NAME} ' "${MAILMAN_LOG}" \\
+                SIZE=$(grep " post to ${LIST_NAME} " "${MAILMAN_LOG}" \\
                        | awk '"$LAST_DATE"<=$0 && $0<="%s"' \\
                        | sed 's/.*size=\([0-9]*\).*/\\1/' \\
                        | tr '\\n' '+' \\
-                       | xargs -i echo {} )
+                       | xargs -i echo {}0 )
                 echo ${OBJECT_ID} $(( ${SIZE}*${SUBSCRIBERS} ))
             }""") % current_date)
     
     def monitor(self, mail_list):
         context = self.get_context(mail_list)
         self.append(
-            'monitor %(object_id)i %(last_date)s "%(list_name)s" "%(mailman_log)s{,.1}"' % context)
+            'monitor %(object_id)i "%(last_date)s" "%(list_name)s" %(mailman_log)s{,.1}' % context)
     
     def get_context(self, mail_list):
-        last_date = timezone.localtime(self.get_last_date(mail_list.pk))
         return {
             'mailman_log': settings.LISTS_MAILMAN_POST_LOG_PATH,
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
-            'last_date': last_date.strftime("%b %d %H:%M:%S"),
+            'last_date': self.get_last_date(mail_list.pk).strftime("%b %d %H:%M:%S"),
         }
 
 

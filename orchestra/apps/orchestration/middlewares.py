@@ -25,13 +25,12 @@ def pre_delete_collector(sender, *args, **kwargs):
 
 @receiver(m2m_changed, dispatch_uid='orchestration.m2m_collector')
 def m2m_collector(sender, *args, **kwargs):
-    # m2m relations without intermediary models are shit
-    # model.post_save is not sent and by the time related.post_save is sent
-    # the objects are not accessible with RelatedManager.all()
+    # m2m relations without intermediary models are shit. Model.post_save is not sent and
+    # by the time related.post_save is sent rel objects are not accessible via RelatedManager.all()
     # We have to use this inefficient technique of collecting the instances via m2m_changed.post_add
-    if kwargs.pop('action') == 'post_add':
-        for pk in kwargs['pk_set']:
-            kwargs['instance'] = kwargs['model'].objects.get(pk=pk)
+    if kwargs.pop('action') == 'post_add' and kwargs['pk_set']:
+        for instance in kwargs['model'].objects.filter(pk__in=kwargs['pk_set']):
+            kwargs['instance'] = instance
             OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
 

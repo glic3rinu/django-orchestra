@@ -41,10 +41,12 @@ def monitor(resource_id, ids=None, async=True):
         data = ResourceData.get_or_create(obj, resource)
         data.update()
         if not resource.disable_trigger:
-            if data.used > data.allocated:
-                op = Operation.create(backend, obj, Operation.EXCEED)
+            a = data.used
+            b = data.allocated
+            if data.used > (data.allocated or 0):
+                op = Operation.create(backend, obj, Operation.EXCEEDED)
                 triggers.append(op)
-            elif data.used < data.allocated:
+            elif data.used < (data.allocated or 0):
                 op = Operation.create(backend, obj, Operation.RECOVERY)
                 triggers.append(op)
     Operation.execute(triggers)

@@ -99,6 +99,8 @@ class BackendOperation(models.Model):
     DELETE = 'delete'
     SAVE = 'save'
     MONITOR = 'monitor'
+    EXCEEDED = 'exceeded'
+    RECOVERY = 'recovery'
     
     log = models.ForeignKey('orchestration.BackendLog', related_name='operations')
     backend = models.CharField(_("backend"), max_length=256)

@@ -46,7 +46,7 @@ class Command(BaseCommand):
             'server {\n'
             '    listen 80;\n'
             '    listen [::]:80 ipv6only=on;\n'
-            '    rewrite ^/$ /admin;\n'
+            '    rewrite ^/$ /admin/;\n'
             '    client_max_body_size 500m;\n'
             '    location / {\n'
             '        uwsgi_pass unix:///var/run/uwsgi/app/%(project_name)s/socket;\n'

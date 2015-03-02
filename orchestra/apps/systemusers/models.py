@@ -105,9 +105,9 @@ class SystemUser(models.Model):
             shell=data.get('shell') or self.shell,
         )
         if 'home' in data and data['home']:
-            home = data['home'].rstrip('/')
-            user_home = user.get_base_home().rstrip('/')
-            account_home = account.main_systemuser.get_home().rstrip('/')
+            home = os.path.normpath(data['home'])
+            user_home = user.get_base_home()
+            account_home = account.main_systemuser.get_home()
             if user.has_shell:
                 if home != user_home:
                     raise ValidationError({
@@ -128,7 +128,7 @@ class SystemUser(models.Model):
         return os.path.normpath(settings.SYSTEMUSERS_HOME % context)
     
     def get_home(self):
-        return os.path.join(self.home, self.directory)
+        return os.path.normpath(os.path.join(self.home, self.directory))
 
 
 services.register(SystemUser)

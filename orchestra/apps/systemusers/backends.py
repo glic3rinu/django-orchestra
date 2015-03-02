@@ -87,7 +87,7 @@ class SystemUserDisk(ServiceMonitor):
         if user.is_main or os.path.normpath(user.home) == user.get_base_home():
             self.append("echo %(object_id)s $(monitor %(home)s)" % context)
         else:
-            # Home appears to be included in other user home
+            # Home is already included in other user home
             self.append("echo %(object_id)s 0" % context)
     
     def get_context(self, user):
@@ -109,11 +109,11 @@ class FTPTraffic(ServiceMonitor):
             function monitor () {
                 OBJECT_ID=$1
                 INI_DATE=$(date "+%%Y%%m%%d%%H%%M%%S" -d "$2")
-                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
+                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%s')
                 USERNAME="$3"
                 LOG_FILE="$4"
                 {
-                    grep "UPLOAD\|DOWNLOAD" "${LOG_FILE}" \\
+                    grep "UPLOAD\|DOWNLOAD" ${LOG_FILE} \\
                         | grep " \\[${USERNAME}\\] " \\
                         | awk -v ini="${INI_DATE}" -v end="${END_DATE}" '
                             BEGIN {
@@ -131,14 +131,12 @@ class FTPTraffic(ServiceMonitor):
                                 months["Nov"] = "11"
                                 months["Dec"] = "12"
                             } {
-                                # log: Fri Jul 11 13:23:17 2014
-                                split($4, t, ":")
+                                # Fri Jul 11 13:23:17 2014
+                                split($4, time, ":")
                                 # line_date = year month day hour minute second
-                                line_date = $5 months[$2] $3 t[1] t[2] t[3]
+                                line_date = $5 months[$2] $3 time[1] time[2] time[3]
                                 if ( line_date > ini && line_date < end) {
-                                    split($0, l, "\\", ")
-                                    split(l[3], b, " ")
-                                    sum += b[1]
+                                    sum += $(NF-2)
                                 }
                             } END {
                                 print sum

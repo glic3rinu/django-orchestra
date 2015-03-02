@@ -60,15 +60,23 @@ class Website(models.Model):
         if domain:
             return '%s://%s' % (self.protocol, domain)
     
-    def get_www_log_path(self):
-        context = {
+    def get_www_log_context(self):
+        return {
             'home': self.account.main_systemuser.get_home(),
             'account': self.account.username,
             'name': self.name,
             'unique_name': self.unique_name
         }
-        return settings.WEBSITES_WEBSITE_WWW_LOG_PATH % context
-
+    
+    def get_www_access_log_path(self):
+        context = self.get_www_log_context()
+        path = settings.WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH % context
+        return path.replace('//', '/')
+    
+    def get_www_error_log_path(self):
+        context = self.get_www_log_context()
+        path = settings.WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH % context
+        return path.replace('//', '/')
 
 class WebsiteOption(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),

@@ -10,12 +10,6 @@ WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
     '127.0.0.1:%(fpm_port)s')
 
 
-WEBAPPS_ALLOW_BLANK_NAME = getattr(settings, 'WEBAPPS_ALLOW_BLANK_NAME', False)
-
-# Default name when blank
-WEBAPPS_BLANK_NAME = getattr(settings, 'WEBAPPS_BLANK_NAME', 'webapp')
-
-
 WEBAPPS_FPM_START_PORT = getattr(settings, 'WEBAPPS_FPM_START_PORT', 10000)
 
 

@@ -1,4 +1,5 @@
 import os
+import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -13,71 +14,76 @@ class WebalizerBackend(ServiceController):
     
     def save(self, content):
         context = self.get_context(content)
-        self.append("mkdir -p %(webalizer_path)s" % context)
-        self.append("[[ ! -e %(webalizer_path)s/index.html ]] && "
-                    "echo 'Webstats are coming soon' > %(webalizer_path)s/index.html" % context)
-        self.append("echo '%(webalizer_conf)s' > %(webalizer_conf_path)s" % context)
-        self.append("chown %(user)s:www-data %(webalizer_path)s" % context)
+        self.append(textwrap.dedent("""\
+            mkdir -p %(webalizer_path)s
+            if [[ ! -e %(webalizer_path)s/index.html ]]; then
+                echo 'Webstats are coming soon' > %(webalizer_path)s/index.html
+            fi
+            echo '%(webalizer_conf)s' > %(webalizer_conf_path)s
+            chown %(user)s:www-data %(webalizer_path)s""" % context
+        ))
     
     def delete(self, content):
-        context = self.get_context(content)
-        self.append("rm -fr %(webalizer_path)s" % context)
-        self.append("rm %(webalizer_conf_path)s" % context)
+        pass
+        # TODO delete has to be done on webapp deleteion, not content deletion
+#        context = self.get_context(content)
+#        self.append("rm -fr %(webalizer_path)s" % context)
+#        self.append("rm %(webalizer_conf_path)s" % context)
     
     def get_context(self, content):
-        conf_file = "%s.conf" % content.website.name
+        conf_file = "%s.conf" % content.website.unique_name
         context = {
-            'site_logs': os.path.join(settings.WEBSITES_BASE_APACHE_LOGS, content.website.unique_name),
+            'site_logs': content.website.get_www_access_log_path(),
             'site_name': content.website.name,
             'webalizer_path': os.path.join(content.webapp.get_path(), content.website.name),
             'webalizer_conf_path': os.path.join(settings.WEBSITES_WEBALIZER_PATH, conf_file),
-            'user': content.webapp.account.user,
+            'user': content.webapp.account.username,
             'banner': self.get_banner(),
         }
-        context['webalizer_conf'] = (
-            "# %(banner)s\n"
-            "LogFile            %(site_logs)s\n"
-            "LogType            clf\n"
-            "OutputDir          %(webalizer_path)s\n"
-            "HistoryName        webalizer.hist\n"
-            "Incremental        yes\n"
-            "IncrementalName    webalizer.current\n"
-            "ReportTitle        Stats of\n"
-            "HostName           %(site_name)s\n"
-            "\n"
-            "PageType       htm*\n"
-            "PageType       php*\n"
-            "PageType       shtml\n"
-            "PageType       cgi\n"
-            "PageType       pl\n"
-            "\n"
-            "DNSCache       /var/lib/dns_cache.db\n"
-            "DNSChildren    15\n"
-            "\n"
-            "HideURL        *.gif\n"
-            "HideURL        *.GIF\n"
-            "HideURL        *.jpg\n"
-            "HideURL        *.JPG\n"
-            "HideURL        *.png\n"
-            "HideURL        *.PNG\n"
-            "HideURL        *.ra\n"
-            "\n"
-            "IncludeURL     *\n"
-            "\n"
-            "SearchEngine   yahoo.com       p=\n"
-            "SearchEngine   altavista.com   q=\n"
-            "SearchEngine   google.com      q=\n"
-            "SearchEngine   eureka.com      q=\n"
-            "SearchEngine   lycos.com       query=\n"
-            "SearchEngine   hotbot.com      MT=\n"
-            "SearchEngine   msn.com         MT=\n"
-            "SearchEngine   infoseek.com    qt=\n"
-            "SearchEngine   webcrawler      searchText=\n"
-            "SearchEngine   excite          search=\n"
-            "SearchEngine   netscape.com    search=\n"
-            "SearchEngine   mamma.com       query=\n"
-            "SearchEngine   alltheweb.com   query=\n"
-            "\n"
-            "DumpSites      yes\n"
-        ) % context
+        context['webalizer_conf'] = textwrap.dedent("""\
+            # %(banner)s
+            LogFile            %(site_logs)s
+            LogType            clf
+            OutputDir          %(webalizer_path)s
+            HistoryName        webalizer.hist
+            Incremental        yes
+            IncrementalName    webalizer.current
+            ReportTitle        Stats of
+            HostName           %(site_name)s
+            
+            PageType       htm*
+            PageType       php*
+            PageType       shtml
+            PageType       cgi
+            PageType       pl
+            
+            DNSCache       /var/lib/dns_cache.db
+            DNSChildren    15
+            
+            HideURL        *.gif
+            HideURL        *.GIF
+            HideURL        *.jpg
+            HideURL        *.JPG
+            HideURL        *.png
+            HideURL        *.PNG
+            HideURL        *.ra
+            
+            IncludeURL     *
+            
+            SearchEngine   yahoo.com       p=
+            SearchEngine   altavista.com   q=
+            SearchEngine   google.com      q=
+            SearchEngine   eureka.com      q=
+            SearchEngine   lycos.com       query=
+            SearchEngine   hotbot.com      MT=
+            SearchEngine   msn.com         MT=
+            SearchEngine   infoseek.com    qt=
+            SearchEngine   webcrawler      searchText=
+            SearchEngine   excite          search=
+            SearchEngine   netscape.com    search=
+            SearchEngine   mamma.com       query=
+            SearchEngine   alltheweb.com   query=
+            
+            DumpSites      yes""" % context
+        )
         return context

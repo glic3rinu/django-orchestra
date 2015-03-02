@@ -32,12 +32,15 @@ class Apache2Backend(ServiceController):
             <VirtualHost {{ ip }}:{{ site.port }}>
                 ServerName {{ site.domains.all|first }}\
             {% if site.domains.all|slice:"1:" %}
-                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}
-                CustomLog {{ logs }} common
+                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}\
+            {% if access_log %}
+                CustomLog {{ access_log }} common{% endif %}\
+            {% if error_log %}
+                ErrorLog {{ error_log }}{% endif %}
                 SuexecUserGroup {{ user }} {{ group }}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
-                IncludeOptional /etc/apache2/extra-vhos[t]/{{ site_unique_name }}.con[f]
+                #IncludeOptional /etc/apache2/extra-vhos[t]/{{ site_unique_name }}.con[f]
             </VirtualHost>"""
         ))
         apache_conf = apache_conf.render(Context(context))
@@ -61,7 +64,7 @@ class Apache2Backend(ServiceController):
     
     def commit(self):
         """ reload Apache2 if necessary """
-        self.append('[[ $UPDATED == 1 ]] && service apache2 reload')
+        self.append('[[ $UPDATED == 1 ]] && service apache2 reload || true')
     
     def get_content_directives(self, site):
         directives = ''
@@ -159,15 +162,22 @@ class Apache2Backend(ServiceController):
     
     def enable_or_disable(self, site):
         context = self.get_context(site)
-        self.append("ls -l %(sites_enabled)s > /dev/null; DISABLED=$?" % context)
         if site.is_active:
-            self.append(
-                "if [[ $DISABLED ]]; then a2ensite %(site_unique_name)s.conf;\n"
-                "else UPDATED=0; fi" % context)
+            self.append(textwrap.dedent("""\
+                if [[ ! -f %(sites_enabled)s ]]; then
+                    a2ensite %(site_unique_name)s.conf
+                else
+                    UPDATED=0
+                fi""" % context
+            ))
         else:
-            self.append(
-                "if [[ ! $DISABLED ]]; then a2dissite %(site_unique_name)s.conf;\n"
-                "else UPDATED=0; fi" % context)
+            self.append(textwrap.dedent("""\
+                if [[ -f %(sites_enabled)s ]]; then
+                    a2dissite %(site_unique_name)s.conf;
+                else
+                    UPDATED=0
+                fi""" % context
+            ))
     
     def get_username(self, site):
         option = site.options.filter(name='user_group').first()
@@ -193,9 +203,10 @@ class Apache2Backend(ServiceController):
             'site_unique_name': site.unique_name,
             'user': self.get_username(site),
             'group': self.get_groupname(site),
-            'sites_enabled': sites_enabled,
+            'sites_enabled': "%s.conf" % os.path.join(sites_enabled, site.unique_name),
             'sites_available': "%s.conf" % os.path.join(sites_available, site.unique_name),
-            'logs': site.get_www_log_path(),
+            'access_log': site.get_www_access_log_path(),
+            'error_log': site.get_www_error_log_path(),
             'banner': self.get_banner(),
         }
         return context
@@ -231,22 +242,22 @@ class Apache2Traffic(ServiceMonitor):
                 END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
                 LOG_FILE="$3"
                 {
-                    { grep %(ignore_hosts)s "${LOG_FILE}" || echo '\\n'; } \\
+                    { grep %(ignore_hosts)s ${LOG_FILE} || echo -e '\\r'; } \\
                         | awk -v ini="${INI_DATE}" -v end="${END_DATE}" '
                             BEGIN {
                                 sum = 0
-                                months["Jan"] = "01";
-                                months["Feb"] = "02";
-                                months["Mar"] = "03";
-                                months["Apr"] = "04";
-                                months["May"] = "05";
-                                months["Jun"] = "06";
-                                months["Jul"] = "07";
-                                months["Aug"] = "08";
-                                months["Sep"] = "09";
-                                months["Oct"] = "10";
-                                months["Nov"] = "11";
-                                months["Dec"] = "12";
+                                months["Jan"] = "01"
+                                months["Feb"] = "02"
+                                months["Mar"] = "03"
+                                months["Apr"] = "04"
+                                months["May"] = "05"
+                                months["Jun"] = "06"
+                                months["Jul"] = "07"
+                                months["Aug"] = "08"
+                                months["Sep"] = "09"
+                                months["Oct"] = "10"
+                                months["Nov"] = "11"
+                                months["Dec"] = "12"
                             } {
                                 # date = [11/Jul/2014:13:50:41
                                 date = substr($4, 2)

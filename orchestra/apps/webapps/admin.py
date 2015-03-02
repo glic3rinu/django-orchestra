@@ -38,7 +38,7 @@ class WebAppOptionInline(admin.TabularInline):
 
 
 class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('display_name', 'type', 'display_websites', 'account_link')
+    list_display = ('name', 'type', 'display_websites', 'account_link')
     list_filter = ('type',)
     add_fields = ('account', 'name', 'type')
     fields = ('account_link', 'name', 'type')
@@ -51,11 +51,6 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
         k: str(unicode(v.get('help_text', '')))
             for k, v in settings.WEBAPPS_TYPES.iteritems()
     }
-    
-    def display_name(self, webapp):
-        return webapp.get_name()
-    display_name.short_description = _("Name")
-    display_name.admin_order_field = 'name'
     
     def display_websites(self, webapp):
         websites = []

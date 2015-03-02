@@ -18,20 +18,19 @@ def post_save_collector(sender, *args, **kwargs):
     if sender not in [BackendLog, Operation]:
         OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
+
 @receiver(pre_delete, dispatch_uid='orchestration.pre_delete_collector')
 def pre_delete_collector(sender, *args, **kwargs):
     if sender not in [BackendLog, Operation]:
         OperationsMiddleware.collect(Operation.DELETE, **kwargs)
 
+
 @receiver(m2m_changed, dispatch_uid='orchestration.m2m_collector')
 def m2m_collector(sender, *args, **kwargs):
     # m2m relations without intermediary models are shit. Model.post_save is not sent and
     # by the time related.post_save is sent rel objects are not accessible via RelatedManager.all()
-    # We have to use this inefficient technique of collecting the instances via m2m_changed.post_add
     if kwargs.pop('action') == 'post_add' and kwargs['pk_set']:
-        for instance in kwargs['model'].objects.filter(pk__in=kwargs['pk_set']):
-            kwargs['instance'] = instance
-            OperationsMiddleware.collect(Operation.SAVE, **kwargs)
+        OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
 
 class OperationsMiddleware(object):
@@ -68,23 +67,26 @@ class OperationsMiddleware(object):
                 candidate = backend.get_related(kwargs['instance'])
                 if candidate:
                     if candidate.__class__.__name__ == 'ManyRelatedManager':
-                        candidates = candidate.all()
+                        if 'pk_set' in kwargs:
+                            # m2m_changed signal
+                            candidates = kwargs['model'].objects.filter(pk__in=kwargs['pk_set'])
+                        else:
+                            candidates = candidate.all()
                     else:
                         candidates = [candidate]
                     for candidate in candidates:
                         # Check if a delete for candidate is in pending_operations
-                        delete = Operation.create(backend, candidate, Operation.DELETE)
-                        if delete not in pending_operations:
+                        delete_mock = Operation.create(backend, candidate, Operation.DELETE)
+                        if delete_mock not in pending_operations:
                             # related objects with backend.model trigger save()
-                            action = Operation.SAVE
-                            instances.append((candidate, action))
-            for instance, action in instances:
+                            instances.append((candidate, Operation.SAVE))
+            for instance, iaction in instances:
                 # Maintain consistent state of pending_operations based on save/delete behaviour
                 # Prevent creating a deleted instance by deleting existing saves
-                if action == Operation.DELETE:
-                    save = Operation.create(backend, instance, Operation.SAVE)
+                if iaction == Operation.DELETE:
+                    save_mock = Operation.create(backend, instance, Operation.SAVE)
                     try:
-                        pending_operations.remove(save)
+                        pending_operations.remove(save_mock)
                     except KeyError:
                         pass
                 else:
@@ -100,8 +102,8 @@ class OperationsMiddleware(object):
                                     break
                             if not execute:
                                 continue
-                operation = Operation.create(backend, instance, action)
-                if action != Operation.DELETE:
+                operation = Operation.create(backend, instance, iaction)
+                if iaction != Operation.DELETE:
                     # usually we expect to be using last object state,
                     # except when we are deleting it
                     pending_operations.discard(operation)

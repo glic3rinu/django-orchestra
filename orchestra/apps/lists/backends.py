@@ -150,35 +150,61 @@ class MailmanTraffic(ServiceMonitor):
     
     def prepare(self):
         super(MailmanTraffic, self).prepare()
-        current_date = timezone.localtime(self.current_date)
-        current_date = current_date.strftime("%b %d %H:%M:%S")
+        current_date =  self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
-                LAST_DATE=$2
+                # Dates convertions are done server-side because of timezone discrepancies
+                INI_DATE=$(date "+%%Y%%m%%d%%H%%M%%S" -d "$2")
+                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%s')
                 LIST_NAME="$3"
                 MAILMAN_LOG="$4"
                 
                 SUBSCRIBERS=$(list_members ${LIST_NAME} | wc -l)
-                SIZE=$(grep " post to ${LIST_NAME} " "${MAILMAN_LOG}" \\
-                       | awk '"$LAST_DATE"<=$0 && $0<="%s"' \\
-                       | sed 's/.*size=\([0-9]*\).*/\\1/' \\
-                       | tr '\\n' '+' \\
-                       | xargs -i echo {}0 )
-                echo ${OBJECT_ID} $(( ${SIZE}*${SUBSCRIBERS} ))
+                {
+                    { grep " post to ${LIST_NAME} " ${MAILMAN_LOG} || echo '\\r'; } \\
+                        | awk -v ini="${INI_DATE}" -v end="${END_DATE}" -v subs="${SUBSCRIBERS}" '
+                            BEGIN {
+                                sum = 0
+                                months["Jan"] = "01"
+                                months["Feb"] = "02"
+                                months["Mar"] = "03"
+                                months["Apr"] = "04"
+                                months["May"] = "05"
+                                months["Jun"] = "06"
+                                months["Jul"] = "07"
+                                months["Aug"] = "08"
+                                months["Sep"] = "09"
+                                months["Oct"] = "10"
+                                months["Nov"] = "11"
+                                months["Dec"] = "12"
+                            } {
+                                # Mar 01 08:29:02 2015
+                                month = months[$1]
+                                day = $2
+                                year = $4
+                                split($3, time, ":")
+                                line_date = year month day time[1] time[2] time[3]
+                                if ( line_date > ini && line_date < end)
+                                    sum += substr($11, 6, length($11)-6)
+                            } END {
+                                print sum * subs
+                            }' || [[ $? == 1 ]] && true
+                } | xargs echo ${OBJECT_ID}
             }""") % current_date)
     
     def monitor(self, mail_list):
         context = self.get_context(mail_list)
         self.append(
-            'monitor %(object_id)i "%(last_date)s" "%(list_name)s" %(mailman_log)s{,.1}' % context)
+            'monitor %(object_id)i "%(last_date)s" "%(list_name)s" %(mailman_log)s{,.1}' % context
+        )
     
     def get_context(self, mail_list):
         return {
             'mailman_log': settings.LISTS_MAILMAN_POST_LOG_PATH,
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
-            'last_date': self.get_last_date(mail_list.pk).strftime("%b %d %H:%M:%S"),
+            'last_date': self.get_last_date(mail_list.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
 
 

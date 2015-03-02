@@ -90,8 +90,12 @@ WEBSITES_WEBALIZER_PATH = getattr(settings, 'WEBSITES_WEBALIZER_PATH',
     '/home/httpd/webalizer/')
 
 
-WEBSITES_WEBSITE_WWW_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_LOG_PATH',
+WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH',
     '/var/log/apache2/virtual/%(unique_name)s.log')
+
+
+WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH',
+    '')
 
 
 WEBSITES_TRAFFIC_IGNORE_HOSTS = getattr(settings, 'WEBSITES_TRAFFIC_IGNORE_HOSTS',

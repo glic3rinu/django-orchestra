@@ -49,13 +49,13 @@ def message_user(request, logs):
         url = reverse('admin:orchestration_backendlog_change', args=ids)
     if errors:
         msg = ungettext(
-            _('{errors} out of {total} <a href="{url}">banckends</a> has fail to execute.'),
-            _('{errors} out of {total} <a href="{url}">banckends</a> have fail to execute.'),
+            _('{errors} out of {total} <a href="{url}">backends</a> has fail to execute.'),
+            _('{errors} out of {total} <a href="{url}">backends</a> have fail to execute.'),
             errors)
         messages.error(request, mark_safe(msg.format(errors=errors, total=total, url=url)))
     else:
         msg = ungettext(
-            _('{total} <a href="{url}">banckend</a> has been executed.'),
-            _('{total} <a href="{url}">banckends</a> have been executed.'),
+            _('{total} <a href="{url}">backend</a> has been executed.'),
+            _('{total} <a href="{url}">backends</a> have been executed.'),
             total)
         messages.success(request, mark_safe(msg.format(total=total, url=url)))

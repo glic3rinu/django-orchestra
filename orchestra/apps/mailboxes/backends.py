@@ -117,7 +117,6 @@ class PasswdVirtualUserBackend(ServiceController):
 class PostfixAddressBackend(ServiceController):
     verbose_name = _("Postfix address")
     model = 'mailboxes.Address'
-     # TODO
     related_models = (
         ('mailboxes.Mailbox', 'addresses'),
     )

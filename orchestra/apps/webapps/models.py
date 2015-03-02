@@ -13,8 +13,7 @@ from . import settings
 
 class WebApp(models.Model):
     """ Represents a web application """
-    name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name],
-            blank=settings.WEBAPPS_ALLOW_BLANK_NAME)
+    name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name])
     type = models.CharField(_("type"), max_length=32,
             choices=dict_setting_to_choices(settings.WEBAPPS_TYPES),
             default=settings.WEBAPPS_DEFAULT_TYPE)
@@ -27,7 +26,7 @@ class WebApp(models.Model):
         verbose_name_plural = _("Web Apps")
     
     def __unicode__(self):
-        return self.get_name()
+        return self.name
     
     def get_description(self):
         return self.get_type_display()
@@ -52,9 +51,6 @@ class WebApp(models.Model):
     def app_type(self):
         return settings.WEBAPPS_TYPES[self.type]
     
-    def get_name(self):
-        return self.name or settings.WEBAPPS_BLANK_NAME
-    
     def get_fpm_port(self):
         return settings.WEBAPPS_FPM_START_PORT + self.account_id
     
@@ -66,9 +62,10 @@ class WebApp(models.Model):
     def get_path(self):
         context = {
             'home': self.get_user().get_home(),
-            'app_name': self.get_name(),
+            'app_name': self.name,
         }
-        return settings.WEBAPPS_BASE_ROOT % context
+        path = settings.WEBAPPS_BASE_ROOT % context
+        return path.replace('//', '/')
     
     def get_user(self):
         return self.account.main_systemuser

@@ -188,3 +188,19 @@ Multi-tenant WebApps
 * username maximum as group user in UNIX
 
 * forms autocomplete="off", doesn't work in chrome
+
+
+
+ln -s /proc/self/fd /dev/fd
+
+
+* http-https/https-only/http-only
+
+
+POST INSTALL
+------------
+
+* Generate a password-less ssh key, and copy it to the servers you want to orchestrate.
+ssh-keygen
+ssh-copy-id root@<server-address>
+

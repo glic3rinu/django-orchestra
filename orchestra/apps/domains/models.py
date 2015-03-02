@@ -50,6 +50,26 @@ class Domain(models.Model):
     def subdomains(self):
         return Domain.objects.filter(name__regex='\.%s$' % self.name)
     
+    def clean(self):
+        self.name = self.name.lower()
+    
+    def save(self, *args, **kwargs):
+        """ create top relation """
+        update = False
+        if not self.pk:
+            top = self.get_top()
+            if top:
+                self.top = top
+                self.account_id = self.account_id or top.account_id
+            else:
+                update = True
+        super(Domain, self).save(*args, **kwargs)
+        if update:
+            for domain in self.subdomains.exclude(pk=self.pk):
+                # queryset.update() is not used because we want to trigger backend to delete ex-topdomains
+                domain.top = self
+                domain.save(update_fields=['top'])
+    
     def get_description(self):
         if self.is_top:
             num = self.subdomains.count()
@@ -167,23 +187,6 @@ class Domain(models.Model):
                 value=record.value
             )
         return result
-    
-    def save(self, *args, **kwargs):
-        """ create top relation """
-        update = False
-        if not self.pk:
-            top = self.get_top()
-            if top:
-                self.top = top
-                self.account_id = self.account_id or top.account_id
-            else:
-                update = True
-        super(Domain, self).save(*args, **kwargs)
-        if update:
-            for domain in self.subdomains.exclude(pk=self.pk):
-                # queryset.update() is not used because we want to trigger backend to delete ex-topdomains
-                domain.top = self
-                domain.save(update_fields=['top'])
 
 
 class Record(models.Model):

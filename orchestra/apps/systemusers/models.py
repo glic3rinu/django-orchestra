@@ -24,7 +24,7 @@ class SystemUser(models.Model):
     """
     System users
     
-    Username max_length determined by min(user, group) on common LINUX systems; min(32, 16)
+    Username max_length determined by LINUX system user lentgh: 32
     """
     # TODO max_length
     username = models.CharField(_("username"), max_length=32, unique=True,

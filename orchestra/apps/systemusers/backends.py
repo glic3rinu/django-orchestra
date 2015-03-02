@@ -36,10 +36,12 @@ class SystemUserBackend(ServiceController):
     
     def delete(self, user):
         context = self.get_context(user)
-        self.append("{ sleep 2 && killall -u %(username)s -s KILL; } &" % context)
-        self.append("killall -u %(username)s || true" % context)
-        self.append("userdel %(username)s || true" % context)
-        self.append("groupdel %(username)s || true" % context)
+        self.append(textwrap.dedent("""\
+            { sleep 2 && killall -u %(username)s -s KILL; } &
+            killall -u %(username)s || true
+            userdel %(username)s || true
+            groupdel %(username)s || true""" % context
+        ))
         self.delete_home(context, user)
     
     def grant_permission(self, user):
@@ -131,10 +133,11 @@ class FTPTraffic(ServiceMonitor):
                                 months["Nov"] = "11"
                                 months["Dec"] = "12"
                             } {
-                                # Fri Jul 11 13:23:17 2014
+                                # Fri Jul  1 13:23:17 2014
                                 split($4, time, ":")
+                                day = sprintf("%02d", $3)
                                 # line_date = year month day hour minute second
-                                line_date = $5 months[$2] $3 time[1] time[2] time[3]
+                                line_date = $5 months[$2] day time[1] time[2] time[3]
                                 if ( line_date > ini && line_date < end) {
                                     sum += $(NF-2)
                                 }

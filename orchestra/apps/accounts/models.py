@@ -13,7 +13,8 @@ from . import settings
 
 
 class Account(auth.AbstractBaseUser):
-    username = models.CharField(_("username"), max_length=64, unique=True,
+    # Username max_length determined by LINUX system user lentgh: 32
+    username = models.CharField(_("username"), max_length=32, unique=True,
             help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.RegexValidator(r'^[\w.-]+$',
                         _("Enter a valid username."), 'invalid')])

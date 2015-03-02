@@ -87,12 +87,12 @@ class ResourceAdmin(ExtendedModelAdmin):
 
 class ResourceDataAdmin(ExtendedModelAdmin):
     list_display = (
-        'id', 'resource_link', 'content_object_link', 'display_used', 'allocated', 'display_unit',
+        'id', 'resource_link', 'content_object_link', 'allocated', 'display_used', 'display_unit',
         'display_updated'
     )
     list_filter = ('resource',)
     fields = (
-        'resource_link', 'content_type', 'content_object_link', 'display_used', 'display_updated',
+        'resource_link', 'content_type', 'content_object_link', 'display_updated', 'display_used',
         'allocated', 'display_unit'
     )
     search_fields = ('object_id',)

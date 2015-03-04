@@ -29,12 +29,6 @@ class SoftwareServiceForm(PluginDataForm):
         super(SoftwareServiceForm, self).__init__(*args, **kwargs)
         self.is_change = bool(self.instance and self.instance.pk)
         if self.is_change:
-            for field in self.plugin.change_readonly_fileds + ('username',):
-                value = getattr(self.instance, field, None) or self.instance.data[field]
-                self.fields[field].required = False
-                self.fields[field].widget = widgets.ReadOnlyWidget(value)
-                self.fields[field].help_text = None
-            
             site_name = self.instance.get_site_name()
             self.fields['password1'].required = False
             self.fields['password1'].widget = forms.HiddenInput()
@@ -79,7 +73,7 @@ class SoftwareService(plugins.Plugin):
     site_name = None
     site_name_base_domain = 'orchestra.lan'
     icon = 'orchestra/icons/apps.png'
-    change_readonly_fileds = ()
+    change_readonly_fileds = ('username',)
     class_verbose_name = _("Software as a Service")
     
     @classmethod
@@ -97,6 +91,10 @@ class SoftwareService(plugins.Plugin):
         if not serializer.is_valid():
             raise ValidationError(serializer.errors)
         return serializer.data
+    
+    @classmethod
+    def get_change_readonly_fileds(cls):
+        return cls.change_readonly_fileds + ('username',)
     
     def get_site_name(self, saas):
         return self.site_name or '.'.join((saas.site_name, self.site_name_base_domain))

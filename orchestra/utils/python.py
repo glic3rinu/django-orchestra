@@ -1,4 +1,6 @@
 import collections
+import random
+import string
 
 
 def import_class(cls):
@@ -6,6 +8,10 @@ def import_class(cls):
     cls = cls.split('.')[-1]
     module = __import__(module, fromlist=[module])
     return getattr(module, cls)
+
+
+def random_ascii(length):
+    return ''.join([random.choice(string.hexdigits) for i in range(0, length)]).lower()
 
 
 class OrderedSet(collections.MutableSet):

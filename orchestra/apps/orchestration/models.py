@@ -11,7 +11,7 @@ from orchestra.core.validators import validate_ip_address, ValidationError
 from orchestra.models.fields import NullableCharField
 #from orchestra.utils.apps import autodiscover
 
-from . import settings, manager
+from . import settings
 from .backends import ServiceBackend
 
 
@@ -119,35 +119,42 @@ class BackendOperation(models.Model):
     
     def __hash__(self):
         """ set() """
-        backend = getattr(self, 'backend', self.backend)
-        return hash(backend) + hash(self.instance) + hash(self.action)
+        backend_cls = type(self.backend)
+        return hash(backend_cls) + hash(self.instance) + hash(self.action)
     
     def __eq__(self, operation):
         """ set() """
         return hash(self) == hash(operation)
     
     @classmethod
-    def create(cls, backend, instance, action):
-        op = cls(backend=backend.get_name(), instance=instance, action=action)
-        op.backend = backend
+    def create(cls, backend_cls, instance, action, servers=None):
+        op = cls(backend=backend_cls.get_name(), instance=instance, action=action)
+        op.backend = backend_cls()
         # instance should maintain any dynamic attribute until backend execution
         # deep copy is prefered over copy otherwise objects will share same atributes (queryset cache)
         op.instance = copy.deepcopy(instance)
-        if action == cls.DELETE:
-            # Heuristic, running get_context will prevent most of related objects do not exist errors
-            if hasattr(backend, 'get_context'):
-                backend().get_context(op.instance)
+        op.servers = servers
         return op
     
     @classmethod
     def execute(cls, operations, async=False):
+        from . import manager
         return manager.execute(operations, async=async)
     
     @classmethod
     def execute_action(cls, instance, action):
         backends = ServiceBackend.get_backends(instance=instance, action=action)
-        operations = [cls.create(backend, instance, action) for backend in backends]
+        operations = [cls.create(backend_cls, instance, action) for backend_cls in backends]
         return cls.execute(operations)
+    
+    def preload_context(self):
+        """
+        Heuristic
+        Running get_context will prevent most of related objects do not exist errors
+        """
+        if self.action == self.DELETE:
+            if hasattr(self.backend, 'get_context'):
+                self.backend.get_context(op.instance)
     
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
@@ -187,14 +194,14 @@ class Route(models.Model):
     def get_servers(cls, operation, **kwargs):
         cache = kwargs.get('cache', {})
         servers = []
-        backend = operation.backend
-        key = (backend.get_name(), operation.action)
+        backend_cls = type(operation.backend)
+        key = (backend_cls.get_name(), operation.action)
         try:
             routes = cache[key]
         except KeyError:
             cache[key] = []
-            for route in cls.objects.filter(is_active=True, backend=backend.get_name()):
-                for action in backend.get_actions():
+            for route in cls.objects.filter(is_active=True, backend=backend_cls.get_name()):
+                for action in backend_cls.get_actions():
                     _key = (route.backend, action)
                     try:
                         cache[_key].append(route)

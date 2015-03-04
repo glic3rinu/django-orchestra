@@ -115,7 +115,7 @@ class FTPTraffic(ServiceMonitor):
                 USERNAME="$3"
                 LOG_FILE="$4"
                 {
-                    grep "UPLOAD\|DOWNLOAD" ${LOG_FILE} \\
+                    grep " bytes, " ${LOG_FILE} \\
                         | grep " \\[${USERNAME}\\] " \\
                         | awk -v ini="${INI_DATE}" -v end="${END_DATE}" '
                             BEGIN {
@@ -135,7 +135,7 @@ class FTPTraffic(ServiceMonitor):
                             } {
                                 # Fri Jul  1 13:23:17 2014
                                 split($4, time, ":")
-                                day = sprintf("%02d", $3)
+                                day = sprintf("%%02d", $3)
                                 # line_date = year month day hour minute second
                                 line_date = $5 months[$2] day time[1] time[2] time[3]
                                 if ( line_date > ini && line_date < end) {

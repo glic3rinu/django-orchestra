@@ -10,7 +10,7 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 
-from . import settings
+from . import settings, options
 from .forms import WebsiteAdminForm
 from .models import Content, Website, WebsiteOption
 
@@ -20,8 +20,7 @@ class WebsiteOptionInline(admin.TabularInline):
     extra = 1
     
     OPTIONS_HELP_TEXT = {
-        k: str(unicode(v[1])) if len(v) == 3 else ''
-            for k, v in settings.WEBSITES_OPTIONS.iteritems()
+        op.name: str(unicode(op.help_text)) for op in options.get_enabled().values()
     }
     
 #    class Media:

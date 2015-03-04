@@ -4,6 +4,7 @@ import textwrap
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
+from orchestra.apps.orchestration.models import BackendOperation as Operation
 from orchestra.utils.python import AttrDict
 
 from . import settings
@@ -75,10 +76,11 @@ class Bind9MasterDomainBackend(ServiceController):
         self.append('[[ $UPDATED == 1 ]] && service bind9 reload')
     
     def get_servers(self, domain, backend):
-        from orchestra.apps.orchestration.models import Route
-        operation = AttrDict(backend=backend, action='save', instance=domain)
+        """ Get related server IPs from registered backend routes """
+        from orchestra.apps.orchestration.manager import router
+        operation = Operation.create(backend_cls=backend, action=Operation.SAVE, instance=domain)
         servers = []
-        for server in Route.get_servers(operation):
+        for server in router.get_servers(operation):
             servers.append(server.get_ip())
         return servers
     

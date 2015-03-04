@@ -1,7 +1,5 @@
 import datetime
 import os
-import string
-import random
 from functools import wraps
 
 from django.conf import settings
@@ -15,9 +13,8 @@ from xvfbwrapper import Xvfb
 
 from orchestra.apps.accounts.models import Account
 
+from .python import random_ascii
 
-def random_ascii(length):
-    return ''.join([random.choice(string.hexdigits) for i in range(0, length)]).lower()
 
 
 class AppDependencyMixin(object):

@@ -22,7 +22,7 @@ class BSCWService(SoftwareService):
     verbose_name = "BSCW"
     form = BSCWForm
     serializer = BSCWDataSerializer
-    icon = 'saas/icons/BSCW.png'
+    icon = 'orchestra/icons/apps/BSCW.png'
     # TODO override from settings
     site_name = 'bascw.orchestra.lan'
     change_readonly_fileds = ('email',)

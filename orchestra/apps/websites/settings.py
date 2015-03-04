@@ -6,11 +6,19 @@ WEBSITES_UNIQUE_NAME_FORMAT = getattr(settings, 'WEBSITES_UNIQUE_NAME_FORMAT',
     '%(account)s-%(name)s')
 
 
+# TODO 'http', 'https', 'https-only', 'http and https' and rename to PROTOCOL
 WEBSITES_PORT_CHOICES = getattr(settings, 'WEBSITES_PORT_CHOICES', (
     (80, 'HTTP'),
     (443, 'HTTPS'),
 ))
 
+
+WEBSITES_PROTOCOL_CHOICES = getattr(settings, 'WEBSITES_PROTOCOL_CHOICES', (
+    ('http', 'HTTP'),
+    ('https', 'HTTPS'),
+    ('http-https', 'HTTP and HTTPS),
+    ('https-only', 'HTTPS only'),
+))
 
 WEBSITES_DEFAULT_PORT = getattr(settings, 'WEBSITES_DEFAULT_PORT', 80)
 
@@ -21,65 +29,18 @@ WEBSITES_DEFAULT_IP = getattr(settings, 'WEBSITES_DEFAULT_IP', '*')
 WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL', 'domains.Domain')
 
 
-WEBSITES_OPTIONS = getattr(settings, 'WEBSITES_OPTIONS', {
-    # { name: ( verbose_name, [help_text], validation_regex ) }
-    'directory_protection': (
-        _("HTTPD - Directory protection"),
-        _("Space separated ..."),
-        r'^([\w/_]+)\s+(\".*\")\s+([\w/_\.]+)$',
-    ),
-    'redirect': (
-        _("HTTPD - Redirection"),
-        _("<tt>&lt;website path&gt; &lt;destination URL&gt;</tt>"),
-        r'^[^ ]+\s[^ ]+$',
-    ),
-    'proxy': (
-        _("HTTPD - Proxy"),
-        _("<tt>&lt;website path&gt; &lt;target URL&gt;</tt>"),
-        r'^[^ ]+\shttp[^ ]+(timeout=[0-9]{1,3}|retry=[0-9]|\s)*$',
-    ),
-    'ssl_ca': (
-        "HTTPD - SSL CA",
-        _("Filesystem path of the CA certificate file."),
-        r'^[^ ]+$'
-    ),
-    'ssl_cert': (
-        _("HTTPD - SSL cert"),
-        _("Filesystem path of the certificate file."),
-        r'^[^ ]+$'
-    ),
-    'ssl_key': (
-        _("HTTPD - SSL key"),
-        _("Filesystem path of the key file."),
-        r'^[^ ]+$',
-    ),
-    'sec_rule_remove': (
-        "HTTPD - SecRuleRemoveById",
-        _("Space separated ModSecurity rule IDs."),
-        r'^[0-9\s]+$',
-    ),
-    'sec_engine': (
-        "HTTPD - Modsecurity engine",
-        _("<tt>On</tt> or <tt>Off</tt>, defaults to On"),
-        r'^(On|Off)$',
-    ),
-    'user_group': (
-        "HTTPD - SuexecUserGroup",
-        _("<tt>user [group]</tt>, username and optional groupname."),
-        # TODO validate existing user/group
-        r'^[\w/_]+(\s[\w/_]+)*$',
-    ),
-    # TODO backend support
-    'error_document': (
-        "HTTPD - ErrorDocumentRoot",
-        _("&lt;error code&gt; &lt;URL/path/message&gt;<br>"
-          "<tt>&nbsp;500 http://foo.example.com/cgi-bin/tester</tt><br>"
-          "<tt>&nbsp;404 /cgi-bin/bad_urls.pl</tt><br>"
-          "<tt>&nbsp;401 /subscription_info.html</tt><br>"
-          "<tt>&nbsp;403 \"Sorry can't allow you access today\"</tt>"),
-        r'[45]0[0-9]\s.*',
-    )
-})
+WEBSITES_ENABLED_OPTIONS = getattr(settings, 'WEBSITES_ENABLED_OPTIONS', (
+    'orchestra.apps.websites.options.directory_protection',
+    'orchestra.apps.websites.options.redirect',
+    'orchestra.apps.websites.options.proxy',
+    'orchestra.apps.websites.options.ssl_ca',
+    'orchestra.apps.websites.options.ssl_cert',
+    'orchestra.apps.websites.options.ssl_key',
+    'orchestra.apps.websites.options.sec_rule_remove',
+    'orchestra.apps.websites.options.sec_engine',
+    'orchestra.apps.websites.options.user_group',
+    'orchestra.apps.websites.options.error_document',
+))
 
 
 WEBSITES_BASE_APACHE_CONF = getattr(settings, 'WEBSITES_BASE_APACHE_CONF',

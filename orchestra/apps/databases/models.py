@@ -37,7 +37,9 @@ class Database(models.Model):
         return users.order_by('id').first().databaseuser
 
 
-Database.users.through._meta.unique_together = (('database', 'databaseuser'),)
+Database.users.through._meta.unique_together = (
+    ('database', 'databaseuser'),
+)
 
 
 class DatabaseUser(models.Model):

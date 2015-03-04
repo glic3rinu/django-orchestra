@@ -161,6 +161,22 @@ class AccountAdminMixin(object):
     account_link.allow_tags = True
     account_link.admin_order_field = 'account__username'
     
+    def get_fields(self, request, obj=None):
+        """ remove account or account_link depending on the case """
+        fields = super(AccountAdminMixin, self).get_fields(request, obj)
+        fields = list(fields)
+        if obj is not None or getattr(self, 'account_id', None):
+            try:
+                fields.remove('account')
+            except ValueError:
+                pass
+        else:
+            try:
+                fields.remove('account_link')
+            except ValueError:
+                pass
+        return fields
+    
     def get_readonly_fields(self, request, obj=None):
         """ provide account for filter_by_account_fields """
         if obj:

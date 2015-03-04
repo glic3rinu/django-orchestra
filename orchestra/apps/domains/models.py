@@ -96,7 +96,14 @@ class Domain(models.Model):
     def render_zone(self):
         origin = self.origin
         zone = origin.render_records()
+        tail = []
         for subdomain in origin.get_subdomains():
+            if subdomain.name.startswith('*'):
+                # This subdomains needs to be rendered last in order to avoid undesired matches
+                tail.append(subdomain)
+            else:
+                zone += subdomain.render_records()
+        for subdomain in sorted(tail, key=lambda x: len(x.name), reverse=True):
             zone += subdomain.render_records()
         return zone
     

@@ -1,7 +1,6 @@
 from django.conf.urls import patterns, url
 from django.contrib.admin.utils import unquote
 from django.shortcuts import render, redirect
-from django.utils.text import camel_case_to_spaces
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.utils import wrap_admin_view
@@ -11,13 +10,28 @@ from orchestra.utils.functional import cached
 class SelectPluginAdminMixin(object):
     plugin = None
     plugin_field = None
+    plugin_title = None
     
     def get_form(self, request, obj=None, **kwargs):
         if obj:
-            self.form = getattr(obj, '%s_class' % self.plugin_field)().get_form()
+            plugin = getattr(obj, '%s_instance' % self.plugin_field)
+            self.form = getattr(plugin, 'get_change_form', plugin.get_form)()
         else:
-            self.form = self.plugin.get_plugin(self.plugin_value)().get_form()
+            plugin = self.plugin.get_plugin(self.plugin_value)()
+            self.form = plugin.get_form()
         return super(SelectPluginAdminMixin, self).get_form(request, obj=obj, **kwargs)
+    
+    def get_fields(self, request, obj=None):
+        """ Try to maintain original field ordering """
+        fields = super(SelectPluginAdminMixin, self).get_fields(request, obj=obj)
+        head_fields = list(self.get_readonly_fields(request, obj))
+        head, tail = [], []
+        for field in fields:
+            if field in head_fields:
+                head.append(field)
+            else:
+                tail.append(field)
+        return head + tail
     
     def get_urls(self):
         """ Hooks select account url """
@@ -34,6 +48,7 @@ class SelectPluginAdminMixin(object):
     def select_plugin_view(self, request):
         opts = self.model._meta
         context = {
+            'plugin_title': self.plugin_title or 'Plugins',
             'opts': opts,
             'app_label': opts.app_label,
             'field': self.plugin_field,
@@ -52,8 +67,9 @@ class SelectPluginAdminMixin(object):
                 self.plugin_value = plugin_value
                 if not plugin_value:
                     self.plugin_value = self.plugin.get_plugins()[0].get_name()
+                plugin = self.plugin.get_plugin(self.plugin_value)
                 context = {
-                    'title': _("Add new %s") % camel_case_to_spaces(self.plugin_value),
+                    'title': _("Add new %s") % plugin.verbose_name,
                 }
                 context.update(extra_context or {})
                 return super(SelectPluginAdminMixin, self).add_view(request, form_url=form_url,
@@ -62,9 +78,9 @@ class SelectPluginAdminMixin(object):
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
         obj = self.get_object(request, unquote(object_id))
-        plugin_value = getattr(obj, self.plugin_field)
+        plugin = getattr(obj, '%s_class' % self.plugin_field)
         context = {
-            'title': _("Change %s") % camel_case_to_spaces(str(plugin_value)),
+            'title': _("Change %s") % plugin.verbose_name,
         }
         context.update(extra_context or {})
         return super(SelectPluginAdminMixin, self).change_view(request, object_id,

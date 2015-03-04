@@ -14,6 +14,7 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     """ Per-webapp php application """
     verbose_name = _("PHP-FPM")
     directive = 'fpm'
+    default_route_match = "webapp.type.endswith('-fpm')"
     
     def save(self, webapp):
         if not self.valid_directive(webapp):
@@ -26,7 +27,8 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
             } || {
                 echo -e '%(fpm_config)s' > %(fpm_path)s
                 UPDATEDFPM=1
-            }""" % context))
+            }""" % context
+        ))
     
     def delete(self, webapp):
         if not self.valid_directive(webapp):

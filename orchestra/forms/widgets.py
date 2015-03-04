@@ -69,10 +69,11 @@ def paddingCheckboxSelectMultiple(padding):
 class DynamicHelpTextSelect(forms.Select):
     def __init__(self, target, help_text, *args, **kwargs):
         help_text = self.get_dynamic_help_text(target, help_text)
-        attrs = {
+        attrs = kwargs.get('attrs', {})
+        attrs.update({
             'onClick': help_text,
             'onChange': help_text,
-        }
+        })
         attrs.update(kwargs.get('attrs', {}))
         kwargs['attrs'] = attrs
         super(DynamicHelpTextSelect, self).__init__(*args, **kwargs)
@@ -81,8 +82,8 @@ class DynamicHelpTextSelect(forms.Select):
         return textwrap.dedent("""\
             siteoptions = {help_text};
             valueelement = $("#" + {target});
+            help_text = siteoptions[this.options[this.selectedIndex].value] || ""
             valueelement.parent().find('p').remove();
-            valueelement.parent().append(
-            "<p class='help'>" + siteoptions[this.options[this.selectedIndex].value] + "</p>"
-            );""".format(target=target, help_text=str(help_text))
+            valueelement.parent().append("<p class='help'>" + help_text + "</p>");\
+            """.format(target=target, help_text=str(help_text))
         )

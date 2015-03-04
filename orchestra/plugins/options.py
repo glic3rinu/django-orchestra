@@ -6,10 +6,11 @@ class Plugin(object):
     # Used on select plugin view
     class_verbose_name = None
     icon = None
+    change_readonly_fileds = ()
     
     @classmethod
     def get_name(cls):
-        return cls.__name__
+        return getattr(cls, 'name', cls.__name__)
     
     @classmethod
     def get_plugins(cls):
@@ -39,6 +40,10 @@ class Plugin(object):
             verbose = plugin.get_verbose_name()
             choices.append((plugin.get_name(), verbose))
         return sorted(choices, key=lambda e: e[1])
+    
+    @classmethod
+    def get_change_readonly_fileds(cls):
+        return cls.change_readonly_fileds
 
 
 class PluginModelAdapter(Plugin):

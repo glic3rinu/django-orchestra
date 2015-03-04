@@ -11,6 +11,7 @@ from .. import settings
 class WordpressMuBackend(ServiceController):
     verbose_name = _("Wordpress multisite")
     model = 'webapps.WebApp'
+    default_route_match = "webapp.type == 'wordpress-mu'"
     
     @property
     def script(self):
@@ -85,7 +86,7 @@ class WordpressMuBackend(ServiceController):
             self.validate_response(response)
     
     def delete_blog(self, webapp, server):
-        # OH, I've enjoied so much coding this methods that I want to thanks
+        # OH, I've enjoied so much coding this methods that I want to thank
         # the wordpress team for the excellent software they are producing
         session = requests.Session()
         self.login(session)

@@ -7,8 +7,10 @@ from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
+from orchestra.plugins.admin import SelectPluginAdminMixin
 
-from . import settings
+from . import settings, options
+from .applications import App
 from .models import WebApp, WebAppOption
 
 
@@ -17,8 +19,7 @@ class WebAppOptionInline(admin.TabularInline):
     extra = 1
     
     OPTIONS_HELP_TEXT = {
-        k: str(unicode(v[1])) if len(v) == 3 else ''
-            for k, v in settings.WEBAPPS_OPTIONS.iteritems()
+        op.name: str(unicode(op.help_text)) for op in options.get_enabled().values()
     }
     
     class Media:
@@ -30,6 +31,12 @@ class WebAppOptionInline(admin.TabularInline):
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         if db_field.name == 'name':
+            if self.parent_object:
+                plugin = self.parent_object.type_class
+            else:
+                request = kwargs['request']
+                plugin = App.get_plugin(request.GET['type'])
+            kwargs['choices'] = plugin.get_options_choices()
             # Help text based on select widget
             kwargs['widget'] = DynamicHelpTextSelect(
                 'this.id.replace("name", "value")', self.OPTIONS_HELP_TEXT
@@ -37,20 +44,22 @@ class WebAppOptionInline(admin.TabularInline):
         return super(WebAppOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
+class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_websites', 'account_link')
     list_filter = ('type',)
-    add_fields = ('account', 'name', 'type')
-    fields = ('account_link', 'name', 'type')
+#    add_fields = ('account', 'name', 'type')
+#    fields = ('account_link', 'name', 'type')
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')
     list_prefetch_related = ('content_set__website',)
+    plugin = App
+    plugin_field = 'type'
+    plugin_title = _("Web application type")
     
-    TYPE_HELP_TEXT = {
-        k: str(unicode(v.get('help_text', '')))
-            for k, v in settings.WEBAPPS_TYPES.iteritems()
-    }
+#    TYPE_HELP_TEXT = {
+#        app.get_name(): str(unicode(app.help_text)) for app in App.get_plugins()
+#    }
     
     def display_websites(self, webapp):
         websites = []
@@ -68,14 +77,14 @@ class WebAppAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_websites.short_description = _("web sites")
     display_websites.allow_tags = True
     
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        """ Make value input widget bigger """
-        if db_field.name == 'type':
-            # Help text based on select widget
-            kwargs['widget'] = DynamicHelpTextSelect(
-                'this.id.replace("name", "value")', self.TYPE_HELP_TEXT
-            )
-            kwargs['help_text'] = self.TYPE_HELP_TEXT.get(db_field.default, '')
-        return super(WebAppAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+#    def formfield_for_dbfield(self, db_field, **kwargs):
+#        """ Make value input widget bigger """
+#        if db_field.name == 'type':
+#            # Help text based on select widget
+#            kwargs['widget'] = DynamicHelpTextSelect(
+#                'this.id.replace("name", "value")', self.TYPE_HELP_TEXT
+#            )
+#            kwargs['help_text'] = self.TYPE_HELP_TEXT.get(db_field.default, '')
+#        return super(WebAppAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 admin.site.register(WebApp, WebAppAdmin)

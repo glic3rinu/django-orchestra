@@ -34,6 +34,7 @@ class ServiceBackend(plugins.Plugin):
     type = 'task' # 'sync'
     ignore_fields = []
     actions = []
+    default_route_match = 'True'
     
     __metaclass__ = ServiceMount
     

@@ -11,4 +11,4 @@ class PHPListForm(SoftwareServiceForm):
 class PHPListService(SoftwareService):
     verbose_name = "phpList"
     form = PHPListForm
-    icon = 'saas/icons/Phplist.png'
+    icon = 'orchestra/icons/apps/Phplist.png'

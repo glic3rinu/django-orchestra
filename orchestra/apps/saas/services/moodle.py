@@ -17,4 +17,4 @@ class MoodleService(SoftwareService):
     verbose_name = "Moodle"
     form = MoodleForm
     description_field = 'site_name'
-    icon = 'saas/icons/Moodle.png'
+    icon = 'orchestra/icons/apps/Moodle.png'

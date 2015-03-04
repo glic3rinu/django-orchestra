@@ -2,23 +2,25 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+from jsonfield import JSONField
 
 from orchestra.core import validators, services
-from orchestra.utils import tuple_setting_to_choices, dict_setting_to_choices
 from orchestra.utils.functional import cached
 
-from . import settings
+from . import settings, options
+from .types import AppType
 
 
 class WebApp(models.Model):
     """ Represents a web application """
     name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name])
     type = models.CharField(_("type"), max_length=32,
-            choices=dict_setting_to_choices(settings.WEBAPPS_TYPES),
-            default=settings.WEBAPPS_DEFAULT_TYPE)
+            choices=AppType.get_plugin_choices())
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='webapps')
+    data = JSONField(_("data"), help_text=_("Extra information dependent of each service."))
     
     class Meta:
         unique_together = ('name', 'account')
@@ -31,21 +33,25 @@ class WebApp(models.Model):
     def get_description(self):
         return self.get_type_display()
     
+    @cached_property
+    def type_class(self):
+        return AppType.get_plugin(self.type)
+    
+    @cached_property
+    def type_instance(self):
+        """ Per request lived type_instance """
+        return self.type_class()
+    
     def clean(self):
-        # Validate unique webapp names
-        if self.app_type.get('unique_name', False):
-            try:
-                webapp = WebApp.objects.exclude(id=self.pk).get(name=self.name, type=self.type)
-            except WebApp.DoesNotExist:
-                pass
-            else:
-                raise ValidationError({
-                    'name': _("A webapp with this name already exists."),
-                })
+        apptype = self.type_instance
+        apptype.validate(self)
+        self.data = apptype.clean_data(self)
     
     @cached
     def get_options(self):
-        return { opt.name: opt.value for opt in self.options.all() }
+        return {
+            opt.name: opt.value for opt in self.options.all()
+        }
     
     @property
     def app_type(self):
@@ -81,7 +87,7 @@ class WebAppOption(models.Model):
     webapp = models.ForeignKey(WebApp, verbose_name=_("Web application"),
             related_name='options')
     name = models.CharField(_("name"), max_length=128,
-            choices=tuple_setting_to_choices(settings.WEBAPPS_OPTIONS))
+            choices=((op.name, op.verbose_name) for op in options.get_enabled().values()))
     value = models.CharField(_("value"), max_length=256)
     
     class Meta:
@@ -93,16 +99,24 @@ class WebAppOption(models.Model):
         return self.name
     
     def clean(self):
-        """ validates name and value according to WEBAPPS_OPTIONS """
-        regex = settings.WEBAPPS_OPTIONS[self.name][-1]
-        if not re.match(regex, self.value):
-            raise ValidationError({
-                'value': ValidationError(_("'%(value)s' does not match %(regex)s."),
-                    params={
-                        'value': self.value,
-                        'regex': regex
-                    }),
-            })
+        option = options.get_enabled()[self.name]
+        option.validate(self)
 
 
 services.register(WebApp)
+
+
+# Admin bulk deletion doesn't call model.delete(), we use signals instead of model method overriding
+
+from django.db.models.signals import pre_save, pre_delete
+from django.dispatch import receiver
+
+@receiver(pre_save, sender=WebApp, dispatch_uid='webapps.type.save')
+def type_save(sender, *args, **kwargs):
+    instance = kwargs['instance']
+    instance.type_instance.save(instance)
+
+@receiver(pre_delete, sender=WebApp, dispatch_uid='webapps.type.delete')
+def type_delete(sender, *args, **kwargs):
+    instance = kwargs['instance']
+    instance.type_instance.delete(instance)

@@ -5,10 +5,9 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import validators, services
-from orchestra.utils import tuple_setting_to_choices
 from orchestra.utils.functional import cached
 
-from . import settings
+from . import settings, options
 
 
 class Website(models.Model):
@@ -78,15 +77,16 @@ class Website(models.Model):
         path = settings.WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH % context
         return path.replace('//', '/')
 
+
 class WebsiteOption(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
             related_name='options')
     name = models.CharField(_("name"), max_length=128,
-            choices=tuple_setting_to_choices(settings.WEBSITES_OPTIONS))
+        choices=((op.name, op.verbose_name) for op in options.get_enabled().values()))
     value = models.CharField(_("value"), max_length=256)
     
     class Meta:
-        unique_together = ('website', 'name')
+#        unique_together = ('website', 'name')
         verbose_name = _("option")
         verbose_name_plural = _("options")
     
@@ -94,16 +94,8 @@ class WebsiteOption(models.Model):
         return self.name
     
     def clean(self):
-        """ validates name and value according to WEBSITES_WEBSITEOPTIONS """
-        regex = settings.WEBSITES_OPTIONS[self.name][-1]
-        if not re.match(regex, self.value):
-            raise ValidationError({
-                'value': ValidationError(_("'%(value)s' does not match %(regex)s."),
-                    params={
-                        'value': self.value,
-                        'regex': regex
-                    }),
-            })
+        option = options.get_enabled()[self.name]
+        option.validate(self)
 
 
 class Content(models.Model):

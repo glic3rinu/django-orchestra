@@ -30,8 +30,8 @@
 * LAST version of this shit http://wkhtmltopdf.org/downloads.html
 
 * translations
-        from django.utils import translation
-        with translation.override('en'):
+    from django.utils import translation
+    with translation.override('en'):
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
@@ -190,7 +190,6 @@ Multi-tenant WebApps
 * forms autocomplete="off", doesn't work in chrome
 
 
-
 ln -s /proc/self/fd /dev/fd
 
 
@@ -203,4 +202,7 @@ POST INSTALL
 * Generate a password-less ssh key, and copy it to the servers you want to orchestrate.
 ssh-keygen
 ssh-copy-id root@<server-address>
+
+
+* symbolicLink webapp (link stuff from other places)
 

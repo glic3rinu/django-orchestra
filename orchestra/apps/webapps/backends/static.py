@@ -8,6 +8,7 @@ from . import WebAppServiceMixin
 class StaticBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("Static")
     directive = 'static'
+    default_route_match = "webapp.type == 'static'"
     
     def save(self, webapp):
         if not self.valid_directive(webapp):

@@ -13,6 +13,7 @@ class SaaSAdmin(SelectPluginAdminMixin, AccountAdminMixin, admin.ModelAdmin):
     list_filter = ('service',)
     plugin = SoftwareService
     plugin_field = 'service'
+    plugin_title = 'Software as a Service'
     
     def display_site_name(self, saas):
         site_name = saas.get_site_name()
@@ -20,15 +21,6 @@ class SaaSAdmin(SelectPluginAdminMixin, AccountAdminMixin, admin.ModelAdmin):
     display_site_name.short_description = _("Site name")
     display_site_name.allow_tags = True
     display_site_name.admin_order_field = 'site_name'
-    
-    def get_fields(self, request, obj=None):
-        fields = super(SaaSAdmin, self).get_fields(request, obj)
-        fields = list(fields)
-        # TODO do it in AccountAdminMixin?
-        if obj is not None:
-            fields.remove('account')
-        else:
-            fields.remove('account_link')
-        return fields
+
 
 admin.site.register(SaaS, SaaSAdmin)

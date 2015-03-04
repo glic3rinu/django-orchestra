@@ -7,6 +7,7 @@ from orchestra.forms import UserCreationForm, UserChangeForm
 from . import settings
 from .models import SystemUser
 
+
 class SystemUserFormMixin(object):
     MOCK_USERNAME = '<username>'
     

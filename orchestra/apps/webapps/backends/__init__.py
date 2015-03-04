@@ -12,16 +12,8 @@ class WebAppServiceMixin(object):
         return settings.WEBAPPS_TYPES[webapp.type]['directive'][0] == self.directive
     
     def create_webapp_dir(self, context):
-        self.append(textwrap.dedent("""
-            path=""
-            for dir in $(echo %(app_path)s | tr "/" "\n"); do
-                path="${path}/${dir}"
-                [ -d $path ] || {
-                    mkdir "${path}"
-                    chown %(user)s:%(group)s "${path}"
-                }
-            done
-        """ % context))
+        self.append("mkdir -p %(app_path)s" % context)
+        self.append("chown %(user)s:%(group)s %(app_path)s" % context)
     
     def get_php_init_vars(self, webapp, per_account=False):
         """
@@ -54,7 +46,7 @@ class WebAppServiceMixin(object):
         return {
             'user': webapp.get_username(),
             'group': webapp.get_groupname(),
-            'app_name': webapp.get_name(),
+            'app_name': webapp.name,
             'type': webapp.type,
             'app_path': webapp.get_path().rstrip('/'),
             'banner': self.get_banner(),

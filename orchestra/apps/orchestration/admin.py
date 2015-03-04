@@ -3,13 +3,12 @@ from django.contrib import admin
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.admin.html import monospace_format
 from orchestra.admin.utils import admin_link, admin_date, admin_colored
 
 from .backends import ServiceBackend
 from .models import Server, Route, BackendLog, BackendOperation
-
+from .widgets import RouteBackendSelect
 
 STATE_COLORS = {
     BackendLog.RECEIVED: 'darkorange',
@@ -22,17 +21,21 @@ STATE_COLORS = {
 }
 
 
+
 class RouteAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'backend', 'host', 'match', 'display_model', 'display_actions',
         'is_active'
     ]
-    list_editable = ['backend', 'host', 'match', 'is_active']
+    list_editable = ['host', 'match', 'is_active']
     list_filter = ['host', 'is_active', 'backend']
     
     BACKEND_HELP_TEXT = {
         backend: "This backend operates over '%s'" % ServiceBackend.get_backend(backend).model
             for backend, __ in ServiceBackend.get_plugin_choices()
+    }
+    DEFAULT_MATCH = {
+        backend.get_name(): backend.default_route_match for backend in ServiceBackend.get_backends(active=False)
     }
     
     def display_model(self, route):
@@ -54,7 +57,7 @@ class RouteAdmin(admin.ModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Provides dynamic help text on backend form field """
         if db_field.name == 'backend':
-            kwargs['widget'] = DynamicHelpTextSelect('this.id', self.BACKEND_HELP_TEXT)
+            kwargs['widget'] = RouteBackendSelect('this.id', self.BACKEND_HELP_TEXT, self.DEFAULT_MATCH)
         return super(RouteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
     
     def get_form(self, request, obj=None, **kwargs):

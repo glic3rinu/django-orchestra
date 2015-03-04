@@ -11,6 +11,7 @@ from . import settings
 class MySQLBackend(ServiceController):
     verbose_name = "MySQL database"
     model = 'databases.Database'
+    default_route_match = "database.type == 'mysql'"
     
     def save(self, database):
         if database.type != database.MYSQL:
@@ -53,6 +54,7 @@ class MySQLBackend(ServiceController):
 class MySQLUserBackend(ServiceController):
     verbose_name = "MySQL user"
     model = 'databases.DatabaseUser'
+    default_route_match = "databaseuser.type == 'mysql'"
     
     def save(self, user):
         if user.type != user.MYSQL:

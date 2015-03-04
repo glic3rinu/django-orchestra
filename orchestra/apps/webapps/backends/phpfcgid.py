@@ -13,6 +13,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     """ Per-webapp fcgid application """
     verbose_name = _("PHP-Fcgid")
     directive = 'fcgi'
+    default_route_match = "webapp.type.endswith('-fcgi')"
     
     def save(self, webapp):
         if not self.valid_directive(webapp):

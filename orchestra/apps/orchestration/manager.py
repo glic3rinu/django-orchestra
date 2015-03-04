@@ -10,6 +10,7 @@ from .helpers import send_report
 
 
 logger = logging.getLogger(__name__)
+router = import_class(settings.ORCHESTRATION_ROUTER)
 
 
 def as_task(execute):
@@ -41,17 +42,17 @@ def close_connection(execute):
 
 def execute(operations, async=False):
     """ generates and executes the operations on the servers """
-    router = import_class(settings.ORCHESTRATION_ROUTER)
     scripts = {}
     cache = {}
     # Generate scripts per server+backend
     for operation in operations:
         logger.debug("Queued %s" % str(operation))
-        servers = router.get_servers(operation, cache=cache)
-        for server in servers:
+        if operation.servers is None:
+            operation.servers = router.get_servers(operation, cache=cache)
+        for server in operation.servers:
             key = (server, operation.backend)
             if key not in scripts:
-                scripts[key] = (operation.backend(), [operation])
+                scripts[key] = (operation.backend, [operation])
                 scripts[key][0].prepare()
             else:
                 scripts[key][1].append(operation)

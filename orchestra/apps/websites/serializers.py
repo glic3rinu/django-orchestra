@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -7,6 +8,7 @@ from orchestra.api.serializers import HyperlinkedModelSerializer
 from orchestra.apps.accounts.serializers import AccountSerializerMixin
 
 from .models import Website, Content
+from .validators import validate_domain_protocol
 
 
 class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
@@ -53,14 +55,11 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     
     def full_clean(self, instance):
         """ Prevent multiples domains on the same port """
-        existing = []
         for domain in instance._m2m_data['domains']:
-            if domain.websites.filter(port=instance.port).exclude(pk=instance.pk).exists():
-                existing.append(domain.name)
-        if existing:
-            context = (', '.join(existing), instance.port)
-            raise ValidationError({
-                'domains': 'A website is already defined for "%s" on port %s' % context
-            })
+            try:
+                validate_domain_protocol(instance, domain, instance.protocol)
+            except ValidationError as e:
+                # TODO not sure about this one
+                self.add_error(None, e)
         return instance
 

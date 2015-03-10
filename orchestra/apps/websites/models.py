@@ -27,7 +27,9 @@ class Website(models.Model):
             related_name='websites')
     protocol = models.CharField(_("protocol"), max_length=16,
             choices=settings.WEBSITES_PROTOCOL_CHOICES,
-            default=settings.WEBSITES_DEFAULT_PROTOCOL)
+            default=settings.WEBSITES_DEFAULT_PROTOCOL,
+            help_text=_("Select the protocol(s) for this website<br>"
+                        "<tt>HTTPS only</tt> performs a redirection from <tt>http</tt> to <tt>https</tt>."))
 #    port = models.PositiveIntegerField(_("port"),
 #            choices=settings.WEBSITES_PORT_CHOICES,
 #            default=settings.WEBSITES_DEFAULT_PORT)

@@ -147,50 +147,49 @@ class Apache2Backend(ServiceController):
             """) % context
     
     def get_ssl(self, directives):
-        config = []
+        config = ''
         ca = directives.get('ssl_ca')
         if ca:
-            config.append("SSLCACertificateFile %s" % ca[0])
+            config += "SSLCACertificateFile %s\n" % ca[0]
         cert = directives.get('ssl_cert')
         if cert:
-            config.append("SSLCertificateFile %" % cert[0])
+            config += "SSLCertificateFile %\n" % cert[0]
         key = directives.get('ssl_key')
         if key:
-            config.append("SSLCertificateKeyFile %s" % key[0])
-        return '\n'.join(config)
+            config += "SSLCertificateKeyFile %s\n" % key[0]
+        return config
         
     def get_security(self, directives):
-        config = []
+        config = ''
         for rules in directives.get('sec_rule_remove', []):
             for rule in rules.value.split():
-                config.append("SecRuleRemoveById %i" % int(rule))
+                config += "SecRuleRemoveById %i\n" % int(rule)
         for modsecurity in directives.get('sec_rule_off', []):
-            config.append(textwrap.dedent("""\
+            config += textwrap.dedent("""\
                 <Location %s>
                     SecRuleEngine off
-                </LocationMatch>\
+                </LocationMatch>
                 """) % modsecurity
-            )
-        return '\n'.join(config)
+        return config
     
     def get_redirects(self, directives):
-        config = []
+        config = ''
         for redirect in directives.get('redirect', []):
             source, target = redirect.split()
             if re.match(r'^.*[\^\*\$\?\)]+.*$', redirect):
-                config.append("RedirectMatch %s %s" % (source, target))
+                config += "RedirectMatch %s %s\n" % (source, target)
             else:
-                config.append("Redirect %s %s" % (source, target))
-        return '\n'.join(config)
+                config += "Redirect %s %s\n" % (source, target)
+        return config
     
     def get_proxies(self, directives):
-        config = []
+        config = ''
         for proxy in directives.get('proxy', []):
-            source, target = redirect.split()
+            source, target = proxy.split()
             source = normurlpath(source)
-            config.append('ProxyPass %s %s' % (source, target))
-            config.append('ProxyPassReverse %s %s' % (source, target))
-        return '\n'.join(directives)
+            config += 'ProxyPass %s %s\n' % (source, target)
+            config += 'ProxyPassReverse %s %s\n' % (source, target)
+        return config
         
 #    def get_protections(self, site):
 #        protections = ''

@@ -13,12 +13,9 @@ from .. import settings
 class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     """ Per-webapp php application """
     verbose_name = _("PHP-FPM")
-    directive = 'fpm'
     default_route_match = "webapp.type.endswith('-fpm')"
     
     def save(self, webapp):
-        if not self.valid_directive(webapp):
-            return
         context = self.get_context(webapp)
         self.create_webapp_dir(context)
         self.append(textwrap.dedent("""\
@@ -31,8 +28,6 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
         ))
     
     def delete(self, webapp):
-        if not self.valid_directive(webapp):
-            return
         context = self.get_context(webapp)
         self.append("rm '%(fpm_path)s'" % context)
         self.delete_webapp_dir(context)
@@ -43,8 +38,8 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
         super(PHPFPMBackend, self).commit()
         self.append(textwrap.dedent("""
             [[ $UPDATEDFPM == 1 ]] && {
-                service php5-fpm start
                 service php5-fpm reload
+                service php5-fpm start
             }"""))
     
     def get_context(self, webapp):

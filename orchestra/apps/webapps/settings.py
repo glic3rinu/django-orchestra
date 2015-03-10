@@ -2,29 +2,30 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 
-WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '%(home)s/webapps/%(app_name)s/')
+WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '{home}/webapps/{app_name}/')
+
 
 
 WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
-#    '/var/run/%(user)s-%(app_name)s.sock')
-    '127.0.0.1:%(fpm_port)s')
-
+    # '127.0.0.1:9{app_id:03d}
+    '/opt/php/5.4/socks/{user}-{app_name}.sock'
+)
 
 WEBAPPS_FPM_START_PORT = getattr(settings, 'WEBAPPS_FPM_START_PORT', 10000)
 
 
 WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
-    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf')
+    '/etc/php5/fpm/pool.d/{user}-{app_name}.conf')
 
 
 WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
-    '/home/httpd/fcgid/%(user)s/%(app_name)s-wrapper')
+    '/home/httpd/fcgid/{user}/{app_name}-wrapper')
 
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
-    'orchestra.apps.webapps.types.Php55App',
-    'orchestra.apps.webapps.types.Php52App',
-    'orchestra.apps.webapps.types.Php4App',
+    'orchestra.apps.webapps.types.PHP54App',
+    'orchestra.apps.webapps.types.PHP52App',
+    'orchestra.apps.webapps.types.PHP4App',
     'orchestra.apps.webapps.types.StaticApp',
     'orchestra.apps.webapps.types.WebalizerApp',
     'orchestra.apps.webapps.types.WordPressMuApp',
@@ -33,6 +34,7 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
     'orchestra.apps.webapps.types.SymbolicLinkApp',
     'orchestra.apps.webapps.types.WordPressApp',
 ))
+
 
 
 #WEBAPPS_TYPES_OVERRIDE = getattr(settings, 'WEBAPPS_TYPES_OVERRIDE', {})
@@ -76,49 +78,54 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTIO
 
 
 WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
-    'orchestra.apps.webapps.options.public_root',
-    'orchestra.apps.webapps.options.timeout',
-    'orchestra.apps.webapps.options.processes',
-    'orchestra.apps.webapps.options.php_enabled_functions',
-    'orchestra.apps.webapps.options.php_allow_url_include',
-    'orchestra.apps.webapps.options.php_allow_url_fopen',
-    'orchestra.apps.webapps.options.php_auto_append_file',
-    'orchestra.apps.webapps.options.php_auto_prepend_file',
-    'orchestra.apps.webapps.options.php_date_timezone',
-    'orchestra.apps.webapps.options.php_default_socket_timeout',
-    'orchestra.apps.webapps.options.php_display_errors',
-    'orchestra.apps.webapps.options.php_extension',
-    'orchestra.apps.webapps.options.php_magic_quotes_gpc',
-    'orchestra.apps.webapps.options.php_magic_quotes_runtime',
-    'orchestra.apps.webapps.options.php_magic_quotes_sybase',
-    'orchestra.apps.webapps.options.php_max_execution_time',
-    'orchestra.apps.webapps.options.php_max_input_time',
-    'orchestra.apps.webapps.options.php_max_input_vars',
-    'orchestra.apps.webapps.options.php_memory_limit',
-    'orchestra.apps.webapps.options.php_mysql_connect_timeout',
-    'orchestra.apps.webapps.options.php_output_buffering',
-    'orchestra.apps.webapps.options.php_register_globals',
-    'orchestra.apps.webapps.options.php_post_max_size',
-    'orchestra.apps.webapps.options.php_sendmail_path',
-    'orchestra.apps.webapps.options.php_session_bug_compat_warn',
-    'orchestra.apps.webapps.options.php_session_auto_start',
-    'orchestra.apps.webapps.options.php_safe_mode',
-    'orchestra.apps.webapps.options.php_suhosin_post_max_vars',
-    'orchestra.apps.webapps.options.php_suhosin_get_max_vars',
-    'orchestra.apps.webapps.options.php_suhosin_request_max_vars',
-    'orchestra.apps.webapps.options.php_suhosin_session_encrypt',
-    'orchestra.apps.webapps.options.php_suhosin_simulation',
-    'orchestra.apps.webapps.options.php_suhosin_executor_include_whitelist',
-    'orchestra.apps.webapps.options.php_upload_max_filesize',
-    'orchestra.apps.webapps.options.php_zend_extension',
+    'orchestra.apps.webapps.options.PublicRoot',
+    'orchestra.apps.webapps.options.DirectoryProtection',
+    'orchestra.apps.webapps.options.Timeout',
+    'orchestra.apps.webapps.options.Processes',
+    'orchestra.apps.webapps.options.PHPEnabledFunctions',
+    'orchestra.apps.webapps.options.PHPAllowURLInclude',
+    'orchestra.apps.webapps.options.PHPAllowURLFopen',
+    'orchestra.apps.webapps.options.PHPAutoAppendFile',
+    'orchestra.apps.webapps.options.PHPAutoPrependFile',
+    'orchestra.apps.webapps.options.PHPDateTimeZone',
+    'orchestra.apps.webapps.options.PHPDefaultSocketTimeout',
+    'orchestra.apps.webapps.options.PHPDisplayErrors',
+    'orchestra.apps.webapps.options.PHPExtension',
+    'orchestra.apps.webapps.options.PHPMagicQuotesGPC',
+    'orchestra.apps.webapps.options.PHPMagicQuotesRuntime',
+    'orchestra.apps.webapps.options.PHPMaginQuotesSybase',
+    'orchestra.apps.webapps.options.PHPMaxExecutonTime',
+    'orchestra.apps.webapps.options.PHPMaxInputTime',
+    'orchestra.apps.webapps.options.PHPMaxInputVars',
+    'orchestra.apps.webapps.options.PHPMemoryLimit',
+    'orchestra.apps.webapps.options.PHPMySQLConnectTimeout',
+    'orchestra.apps.webapps.options.PHPOutputBuffering',
+    'orchestra.apps.webapps.options.PHPRegisterGlobals',
+    'orchestra.apps.webapps.options.PHPPostMaxSize',
+    'orchestra.apps.webapps.options.PHPSendmailPath',
+    'orchestra.apps.webapps.options.PHPSessionBugCompatWarn',
+    'orchestra.apps.webapps.options.PHPSessionAutoStart',
+    'orchestra.apps.webapps.options.PHPSafeMode',
+    'orchestra.apps.webapps.options.PHPSuhosinPostMaxVars',
+    'orchestra.apps.webapps.options.PHPSuhosinGetMaxVars',
+    'orchestra.apps.webapps.options.PHPSuhosinRequestMaxVars',
+    'orchestra.apps.webapps.options.PHPSuhosinSessionEncrypt',
+    'orchestra.apps.webapps.options.PHPSuhosinSimulation',
+    'orchestra.apps.webapps.options.PHPSuhosinExecutorIncludeWhitelist',
+    'orchestra.apps.webapps.options.PHPUploadMaxFileSize',
+    'orchestra.apps.webapps.options.PHPPostMaxSize',
 ))
 
 
 WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD = getattr(settings, 'WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD',
     'secret')
 
-WEBAPPS_WORDPRESSMU_BASE_URL = getattr(settings, 'WEBAPPS_WORDPRESSMU_BASE_URL', 
+WEBAPPS_WORDPRESSMU_BASE_URL = getattr(settings, 'WEBAPPS_WORDPRESSMU_BASE_URL',
     'http://blogs.orchestra.lan/')
+
+WEBAPPS_WORDPRESSMU_LISTEN = getattr(settings, 'WEBAPPS_WORDPRESSMU_LISTEN',
+    '/opt/php/5.4/socks/wordpress-mu.sock'
+)
 
 
 WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH',
@@ -127,9 +134,22 @@ WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_TEMPLAT
 WEBAPPS_DOKUWIKIMU_FARM_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_FARM_PATH',
     '/home/httpd/htdocs/wikifarm/farm')
 
+WEBAPPS_DOKUWIKIMU_LISTEN = getattr(settings, 'WEBAPPS_DOKUWIKIMU_LISTEN',
+    '/opt/php/5.4/socks/dokuwiki-mu.sock'
+)
 
-WEBAPPS_DRUPAL_SITES_PATH = getattr(settings, 'WEBAPPS_DRUPAL_SITES_PATH',
-    '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s')
+
+WEBAPPS_DRUPALMU_SITES_PATH = getattr(settings, 'WEBAPPS_DRUPALMU_SITES_PATH',
+    '/home/httpd/htdocs/drupal-mu/sites/{site_name}')
+
+WEBAPPS_DRUPALMU_LISTEN = getattr(settings, 'WEBAPPS_DRUPALMU_LISTEN',
+    '/opt/php/5.4/socks/drupal-mu.sock'
+)
+
+
+WEBAPPS_MOODLEMU_LISTEN = getattr(settings, 'WEBAPPS_MOODLEMU_LISTEN',
+    '/opt/php/5.4/socks/moodle-mu.sock'
+)
 
 
 WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = getattr(settings, 'WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST',

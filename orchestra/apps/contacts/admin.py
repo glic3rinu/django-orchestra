@@ -106,8 +106,7 @@ class ContactInline(admin.StackedInline):
 
 insertattr(AccountAdmin, 'inlines', ContactInline)
 search_fields = (
-    'contacts__short_name', 'contacts__full_name', 'contacts__phone',
-    'contacts__phone2', 'contacts__email'
+    'contacts__short_name', 'contacts__full_name',
 )
 for field in search_fields:
     insertattr(AccountAdmin, 'search_fields', field)

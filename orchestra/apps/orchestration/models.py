@@ -119,17 +119,17 @@ class BackendOperation(models.Model):
     
     def __hash__(self):
         """ set() """
-        backend_cls = type(self.backend)
-        return hash(backend_cls) + hash(self.instance) + hash(self.action)
+        backend = getattr(self, 'backend', self.backend)
+        return hash(backend) + hash(self.instance) + hash(self.action)
     
     def __eq__(self, operation):
         """ set() """
         return hash(self) == hash(operation)
     
     @classmethod
-    def create(cls, backend_cls, instance, action, servers=None):
-        op = cls(backend=backend_cls.get_name(), instance=instance, action=action)
-        op.backend = backend_cls()
+    def create(cls, backend, instance, action, servers=None):
+        op = cls(backend=backend.get_name(), instance=instance, action=action)
+        op.backend = backend
         # instance should maintain any dynamic attribute until backend execution
         # deep copy is prefered over copy otherwise objects will share same atributes (queryset cache)
         op.instance = copy.deepcopy(instance)
@@ -154,7 +154,7 @@ class BackendOperation(models.Model):
         """
         if self.action == self.DELETE:
             if hasattr(self.backend, 'get_context'):
-                self.backend.get_context(op.instance)
+                self.backend.get_context(self.instance)
     
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
@@ -194,7 +194,7 @@ class Route(models.Model):
     def get_servers(cls, operation, **kwargs):
         cache = kwargs.get('cache', {})
         servers = []
-        backend_cls = type(operation.backend)
+        backend_cls = operation.backend
         key = (backend_cls.get_name(), operation.action)
         try:
             routes = cache[key]

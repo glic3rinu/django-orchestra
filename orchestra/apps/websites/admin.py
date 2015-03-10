@@ -10,17 +10,18 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 
-from . import settings, options
+from . import settings
+from .directives import SiteDirective
 from .forms import WebsiteAdminForm
-from .models import Content, Website, WebsiteOption
+from .models import Content, Website, Directive
 
 
-class WebsiteOptionInline(admin.TabularInline):
-    model = WebsiteOption
+class DirectiveInline(admin.TabularInline):
+    model = Directive
     extra = 1
     
-    OPTIONS_HELP_TEXT = {
-        op.name: str(unicode(op.help_text)) for op in options.get_enabled().values()
+    DIRECTIVES_HELP_TEXT = {
+        op.name: str(unicode(op.help_text)) for op in SiteDirective.get_plugins()
     }
     
 #    class Media:
@@ -34,9 +35,9 @@ class WebsiteOptionInline(admin.TabularInline):
         if db_field.name == 'name':
             # Help text based on select widget
             kwargs['widget'] = DynamicHelpTextSelect(
-                'this.id.replace("name", "value")', self.OPTIONS_HELP_TEXT
+                'this.id.replace("name", "value")', self.DIECTIVES_HELP_TEXT
             )
-        return super(WebsiteOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
+        return super(DirectiveInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 class ContentInline(AccountAdminMixin, admin.TabularInline):
@@ -60,7 +61,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'display_domains', 'display_webapps', 'account_link')
     list_filter = ('port', 'is_active')
     change_readonly_fields = ('name',)
-    inlines = [ContentInline, WebsiteOptionInline]
+    inlines = [ContentInline, DirectiveInline]
     filter_horizontal = ['domains']
     fieldsets = (
         (None, {
@@ -70,7 +71,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     )
     form = WebsiteAdminForm
     filter_by_account_fields = ['domains']
-    list_prefetch_related = ('domains', 'content_set__webapp')
+    list_prefetch_related = ('domains', 'contents__webapp')
     search_fields = ('name', 'account__username', 'domains__name')
     
     def display_domains(self, website):
@@ -85,7 +86,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     
     def display_webapps(self, website):
         webapps = []
-        for content in website.content_set.all():
+        for content in website.contents.all():
             webapp = content.webapp
             url = change_url(webapp)
             name = "%s on %s" % (webapp.get_type_display(), content.path)

@@ -11,6 +11,7 @@ from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from . import options, settings
+from .options import AppOption
 
 
 class AppType(plugins.Plugin):
@@ -22,11 +23,7 @@ class AppType(plugins.Plugin):
     serializer = None
     icon = 'orchestra/icons/apps.png'
     unique_name = False
-    options = (
-        ('Process', options.process),
-        ('PHP', options.php),
-        ('File system', options.filesystem),
-    )
+    option_groups = (AppOption.FILESYSTEM, AppOption.PROCESS, AppOption.PHP)
     
     @classmethod
     @cached
@@ -36,15 +33,17 @@ class AppType(plugins.Plugin):
             plugins.append(import_class(cls))
         return plugins
     
-    @classmethod
-    def clean_data(cls, webapp):
+    def clean_data(self, webapp):
         """ model clean, uses cls.serizlier by default """
-        if cls.serializer:
-            serializer = cls.serializer(data=webapp.data)
+        if self.serializer:
+            serializer = self.serializer(data=webapp.data)
             if not serializer.is_valid():
                 raise ValidationError(serializer.errors)
             return serializer.data
         return {}
+    
+    def get_directive(self, webapp):
+        return ('static', webapp.get_path())
     
     def get_form(self):
         self.form.plugin = self
@@ -69,19 +68,40 @@ class AppType(plugins.Plugin):
                     'name': _("A WordPress blog with this name already exists."),
                 })
     
-    def get_options(self):
-        pass
+    @classmethod
+    @cached
+    def get_php_options(cls):
+        php_version = getattr(cls, 'php_version', 1)
+        php_options = AppOption.get_option_groups()[AppOption.PHP]
+        return [op for op in php_options if getattr(cls, 'deprecated', 99) > php_version]
+    
+    @classmethod
+    @cached
+    def get_options(cls):
+        """ Get enabled options based on cls.option_groups """
+        groups = AppOption.get_option_groups()
+        options = []
+        for group in cls.option_groups:
+            group_options = groups[group]
+            if group == AppOption.PHP:
+                group_options = cls.get_php_options()
+            if group is None:
+                options.insert(0, (group, group_options))
+            else:
+                options.append((group, group_options))
+        return options
     
     @classmethod
     def get_options_choices(cls):
-        enabled = options.get_enabled().values()
+        """ Generates grouped choices ready to use in Field.choices """
+        # generators can not be @cached
         yield (None, '-------')
-        for option in cls.options:
-            if hasattr(option, '__iter__'):
-                yield (option[0], [(op.name, op.verbose_name) for op in option[1] if op in enabled])
-            elif option in enabled:
-                yield (option.name, option.verbose_name)
-    
+        for group, options in cls.get_options():
+            if group is None:
+                for option in options:
+                    yield (option.name, option.verbose_name)
+            else:
+                yield (group, [(op.name, op.verbose_name) for op in options])
     
     def save(self, instance):
         pass
@@ -91,36 +111,84 @@ class AppType(plugins.Plugin):
     
     def get_related_objects(self, instance):
         pass
+    
+    def get_directive_context(self, webapp):
+        return {
+            'app_id': webapp.id,
+            'app_name': webapp.name,
+            'user': webapp.account.username,
+        }
 
 
-class Php55App(AppType):
-    name = 'php5.5-fpm'
-    verbose_name = "PHP 5.5 FPM"
-#        'fpm', ('unix:/var/run/%(user)s-%(app_name)s.sock|fcgi://127.0.0.1%(app_path)s',),
-    directive = ('fpm', 'fcgi://{}%(app_path)s'.format(settings.WEBAPPS_FPM_LISTEN))
+class PHPAppType(AppType):
+    php_version = 5.4
+    fpm_listen = settings.WEBAPPS_FPM_LISTEN
+    
+    def get_directive(self, webapp):
+        context = self.get_directive_context(webapp)
+        socket_type = 'unix'
+        if ':' in self.fpm_listen:
+            socket_type = 'tcp'
+        socket = self.fpm_listen.format(context)
+        return ('fpm', socket_type, socket, webapp.get_path())
+    
+    def get_php_init_vars(self, webapp, per_account=False):
+        """
+        process php options for inclusion on php.ini
+        per_account=True merges all (account, webapp.type) options
+        """
+        init_vars = []
+        php_options = type(self).get_php_options()
+        options = webapp.options.all()
+        if per_account:
+            options = webapp.account.webapps.filter(webapp_type=webapp.type)
+        php_options = [option.name for option in php_options]
+        for opt in options:
+            if opt.option_class in php_options:
+                init_vars.append(
+                    (opt.name, opt.value)
+                )
+        enabled_functions = []
+        for value in options.filter(name='enabled_functions').values_list('value', flat=True):
+            enabled_functions += enabled_functions.get().value.split(',')
+        if enabled_functions:
+            disabled_functions = []
+            for function in settings.WEBAPPS_PHP_DISABLED_FUNCTIONS:
+                if function not in enabled_functions:
+                    disabled_functions.append(function)
+            init_vars.append(
+                ('dissabled_functions', ','.join(disabled_functions))
+            )
+        return init_vars
+
+
+class PHP54App(PHPAppType):
+    name = 'php5.4-fpm'
+    php_version = 5.4
+    verbose_name = "PHP 5.4 FPM"
     help_text = _("This creates a PHP5.5 application under ~/webapps/&lt;app_name&gt;<br>"
                   "PHP-FPM will be used to execute PHP files.")
-    options = (
-        ('Process', options.process),
-        ('PHP', [op for op in options.php if getattr(op, 'deprecated', 99) > 5.5]),
-        ('File system', options.filesystem),
-    )
     icon = 'orchestra/icons/apps/PHPFPM.png'
 
 
-class Php52App(AppType):
-    name = 'php5.2-fcgi'
-    verbose_name = "PHP 5.2 FCGI"
-    directive = ('fcgi', settings.WEBAPPS_FCGID_PATH)
+class PHP52App(PHPAppType):
+    name = 'php5.2-fcgid'
+    php_version = 5.2
+    verbose_name = "PHP 5.2 FCGID"
     help_text = _("This creates a PHP5.2 application under ~/webapps/&lt;app_name&gt;<br>"
                   "Apache-mod-fcgid will be used to execute PHP files.")
     icon = 'orchestra/icons/apps/PHPFCGI.png'
+    
+    def get_directive(self, webapp):
+        context = self.get_directive_context(webapp)
+        wrapper_path = settings.WEBAPPS_FCGID_PATH.format(context)
+        return ('fcgi', webapp.get_path(), wrapper_path)
 
 
-class Php4App(AppType):
-    name = 'php4-fcgi'
-    verbose_name = "PHP 4 FCGI"
-    directive = ('fcgi', settings.WEBAPPS_FCGID_PATH)
+class PHP4App(PHP52App):
+    name = 'php4-fcgid'
+    php_version = 4
+    verbose_name = "PHP 4 FCGID"
     help_text = _("This creates a PHP4 application under ~/webapps/&lt;app_name&gt;<br>"
                   "Apache-mod-fcgid will be used to execute PHP files.")
     icon = 'orchestra/icons/apps/PHPFCGI.png'
@@ -129,13 +197,11 @@ class Php4App(AppType):
 class StaticApp(AppType):
     name = 'static'
     verbose_name = "Static"
-    directive = ('static',)
     help_text = _("This creates a Static application under ~/webapps/&lt;app_name&gt;<br>"
                   "Apache2 will be used to serve static content and execute CGI files.")
     icon = 'orchestra/icons/apps/Static.png'
-    options = (
-        ('File system', options.filesystem),
-    )
+    option_groups = (AppOption.FILESYSTEM,)
+
 
 class WebalizerApp(AppType):
     name = 'webalizer'
@@ -144,10 +210,13 @@ class WebalizerApp(AppType):
     help_text = _("This creates a Webalizer application under "
                   "~/webapps/&lt;app_name&gt;-&lt;site_name&gt;")
     icon = 'orchestra/icons/apps/Stats.png'
-    options = ()
+    option_groups = ()
+    
+    def get_directive(self, webapp):
+        return ('static', webapp.get_path())
 
 
-class WordPressMuApp(AppType):
+class WordPressMuApp(PHPAppType):
     name = 'wordpress-mu'
     verbose_name = "WordPress (SaaS)"
     directive = ('fpm', 'fcgi://127.0.0.1:8990/home/httpd/wordpress-mu/')
@@ -155,10 +224,11 @@ class WordPressMuApp(AppType):
                   "By default this blog is accessible via &lt;app_name&gt;.blogs.orchestra.lan")
     icon = 'orchestra/icons/apps/WordPressMu.png'
     unique_name = True
-    options = ()
+    option_groups = ()
+    fpm_listen = settings.WEBAPPS_WORDPRESSMU_LISTEN
 
 
-class DokuWikiMuApp(AppType):
+class DokuWikiMuApp(PHPAppType):
     name = 'dokuwiki-mu'
     verbose_name = "DokuWiki (SaaS)"
     directive = ('alias', '/home/httpd/wikifarm/farm/')
@@ -166,10 +236,11 @@ class DokuWikiMuApp(AppType):
                   "By default this wiki is accessible via &lt;app_name&gt;.wikis.orchestra.lan")
     icon = 'orchestra/icons/apps/DokuWikiMu.png'
     unique_name = True
-    options = ()
+    option_groups = ()
+    fpm_listen = settings.WEBAPPS_DOKUWIKIMU_LISTEN
 
 
-class MoodleMuApp(AppType):
+class MoodleMuApp(PHPAppType):
     name = 'moodle-mu'
     verbose_name = "Moodle (SaaS)"
     directive = ('alias', '/home/httpd/wikifarm/farm/')
@@ -177,10 +248,11 @@ class MoodleMuApp(AppType):
                   "By default this wiki is accessible via &lt;app_name&gt;.moodle.orchestra.lan")
     icon = 'orchestra/icons/apps/MoodleMu.png'
     unique_name = True
-    options = ()
+    option_groups = ()
+    fpm_listen = settings.WEBAPPS_MOODLEMU_LISTEN
 
 
-class DrupalMuApp(AppType):
+class DrupalMuApp(PHPAppType):
     name = 'drupal-mu'
     verbose_name = "Drupdal (SaaS)"
     directive = ('fpm', 'fcgi://127.0.0.1:8991/home/httpd/drupal-mu/')
@@ -190,7 +262,8 @@ class DrupalMuApp(AppType):
                   "By default this site will be accessible via &lt;app_name&gt;.drupal.orchestra.lan")
     icon = 'orchestra/icons/apps/DrupalMu.png'
     unique_name = True
-    options = ()
+    option_groups = ()
+    fpm_listen = settings.WEBAPPS_DRUPALMU_LISTEN
 
 
 from rest_framework import serializers
@@ -204,7 +277,7 @@ class SymbolicLinkSerializer(serializers.Serializer):
     path = serializers.CharField(label=_("Path"))
 
 
-class SymbolicLinkApp(AppType):
+class SymbolicLinkApp(PHPAppType):
     name = 'symbolic-link'
     verbose_name = "Symbolic link"
     form = SymbolicLinkForm
@@ -231,7 +304,7 @@ from orchestra.apps.databases.models import Database, DatabaseUser
 from orchestra.utils.python import random_ascii
 
 
-class WordPressApp(AppType):
+class WordPressApp(PHPAppType):
     name = 'wordpress'
     verbose_name = "WordPress"
     icon = 'orchestra/icons/apps/WordPress.png'

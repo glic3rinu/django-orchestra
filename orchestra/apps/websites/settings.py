@@ -14,10 +14,10 @@ WEBSITES_PORT_CHOICES = getattr(settings, 'WEBSITES_PORT_CHOICES', (
 
 
 WEBSITES_PROTOCOL_CHOICES = getattr(settings, 'WEBSITES_PROTOCOL_CHOICES', (
-    ('http', 'HTTP'),
-    ('https', 'HTTPS'),
-    ('http-https', 'HTTP and HTTPS),
-    ('https-only', 'HTTPS only'),
+    ('http', "HTTP"),
+    ('https', "HTTPS"),
+    ('http-https', _("HTTP and HTTPS")),
+    ('https-only', _("HTTPS only")),
 ))
 
 WEBSITES_DEFAULT_PORT = getattr(settings, 'WEBSITES_DEFAULT_PORT', 80)
@@ -29,17 +29,16 @@ WEBSITES_DEFAULT_IP = getattr(settings, 'WEBSITES_DEFAULT_IP', '*')
 WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL', 'domains.Domain')
 
 
-WEBSITES_ENABLED_OPTIONS = getattr(settings, 'WEBSITES_ENABLED_OPTIONS', (
-    'orchestra.apps.websites.options.directory_protection',
-    'orchestra.apps.websites.options.redirect',
-    'orchestra.apps.websites.options.proxy',
-    'orchestra.apps.websites.options.ssl_ca',
-    'orchestra.apps.websites.options.ssl_cert',
-    'orchestra.apps.websites.options.ssl_key',
-    'orchestra.apps.websites.options.sec_rule_remove',
-    'orchestra.apps.websites.options.sec_engine',
-    'orchestra.apps.websites.options.user_group',
-    'orchestra.apps.websites.options.error_document',
+WEBSITES_ENABLED_DIRECTIVES = getattr(settings, 'WEBSITES_ENABLED_DIRECTIVES', (
+    'orchestra.apps.websites.directives.Redirect',
+    'orchestra.apps.websites.directives.Proxy',
+    'orchestra.apps.websites.directives.UserGroup',
+    'orchestra.apps.websites.directives.ErrorDocument',
+    'orchestra.apps.websites.directives.SSLCA',
+    'orchestra.apps.websites.directives.SSLCert',
+    'orchestra.apps.websites.directives.SSLKey',
+    'orchestra.apps.websites.directives.SecRuleRemove',
+    'orchestra.apps.websites.directives.SecEngine',
 ))
 
 

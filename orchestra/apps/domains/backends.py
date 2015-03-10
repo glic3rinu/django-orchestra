@@ -33,7 +33,10 @@ class Bind9MasterDomainBackend(ServiceController):
         self.append(textwrap.dedent("""\
             echo -e '%(zone)s' > %(zone_path)s.tmp
             diff -N -I'^\s*;;' %(zone_path)s %(zone_path)s.tmp || UPDATED=1
-            mv %(zone_path)s.tmp %(zone_path)s""" % context
+            mv %(zone_path)s.tmp %(zone_path)s
+            # Because bind realod will not display any fucking error
+            named-checkzone -k fail -n fail %(name)s %(zone_path)s
+            """ % context
         ))
         self.update_conf(context)
     
@@ -78,7 +81,7 @@ class Bind9MasterDomainBackend(ServiceController):
     def get_servers(self, domain, backend):
         """ Get related server IPs from registered backend routes """
         from orchestra.apps.orchestration.manager import router
-        operation = Operation.create(backend_cls=backend, action=Operation.SAVE, instance=domain)
+        operation = Operation.create(backend, peration.SAVE, domain)
         servers = []
         for server in router.get_servers(operation):
             servers.append(server.get_ip())

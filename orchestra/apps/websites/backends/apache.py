@@ -68,36 +68,54 @@ class Apache2Backend(ServiceController):
     
     def get_content_directives(self, site):
         directives = ''
-        for content in site.content_set.all().order_by('-path'):
-            method, args = content.webapp.get_directive()
+        for content in site.contents.all().order_by('-path'):
+            directive = content.webapp.get_directive()
+            method, agrs = directive[0], directive[1:]
             method = getattr(self, 'get_%s_directives' % method)
             directives += method(content, *args)
         return directives
     
-    def get_static_directives(self, content, *args):
+    def get_static_directives(self, content, app_path):
         context = self.get_content_context(content)
-        context['path'] = args[0] % context if args else content.webapp.get_path()
+        context['app_path'] = app_path
         return "Alias %(location)s %(path)s\n" % context
     
-    def get_fpm_directives(self, content, *args):
+    def get_fpm_directives(self, content, socket_type, socket, app_path):
+        if socket_type == 'unix':
+            target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/'
+            if content.path != '/':
+                target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/$1'
+        elif socket_type == 'tcp':
+            target = 'fcgi://%(socket)s%(app_path)s/$1'
+        else:
+            raise TypeError("%s socket not supported." % socket_type)
         context = self.get_content_context(content)
-        context['fcgi_path'] = args[0] % context
-        directive = "ProxyPassMatch ^%(location)s(.*\.php(/.*)?)$ %(fcgi_path)s$1\n"
-        return directive % context
+        context.update({
+            'app_path': app_path,
+            'socket': socket,
+        })
+        return textwrap.dedent("""\
+            ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}
+            Alias %(location)s/ %(app_path)s/
+            """.format(target=target) % context
+        )
     
-    def get_fcgi_directives(self, content, fcgid_path):
+    def get_fcgi_directives(self, content, app_path, wrapper_path):
         context = self.get_content_context(content)
-        context['fcgid_path'] = fcgid_path % context
-        fcgid = self.get_static_directives(content)
-        fcgid += textwrap.dedent("""\
+        context.update({
+            'app_path': app_path,
+            'wrapper_path': wrapper_path,
+        })
+        fcgid = textwrap.dedent("""\
+            Alias %(location)s %(app_path)s
             ProxyPass %(location)s !
             <Directory %(app_path)s>
                 Options +ExecCGI
                 AddHandler fcgid-script .php
-                FcgidWrapper %(fcgid_path)s\
+                FcgidWrapper %(wrapper_path)s\
             """) % context
         for option in content.webapp.options.filter(name__startswith='Fcgid'):
-            fcgid += "    %s %s\n" % (option.name, option.value)
+            fcgid += "        %s %s\n" % (option.name, option.value)
         fcgid += "</Directory>\n"
         return fcgid
     

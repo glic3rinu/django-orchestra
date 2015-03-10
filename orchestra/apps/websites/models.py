@@ -2,12 +2,14 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import validators, services
 from orchestra.utils.functional import cached
 
-from . import settings, options
+from . import settings
+from .directives import SiteDirective
 
 
 class Website(models.Model):
@@ -16,6 +18,7 @@ class Website(models.Model):
             validators=[validators.validate_name])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='websites')
+    # TODO protocol
     port = models.PositiveIntegerField(_("port"),
             choices=settings.WEBSITES_PORT_CHOICES,
             default=settings.WEBSITES_DEFAULT_PORT)
@@ -49,9 +52,9 @@ class Website(models.Model):
         raise TypeError('No protocol for port "%s"' % self.port)
     
     @cached
-    def get_options(self):
+    def get_directives(self):
         return {
-            opt.name: opt.value for opt in self.options.all()
+            opt.name: opt.value for opt in self.directives.all()
         }
     
     def get_absolute_url(self):
@@ -78,29 +81,34 @@ class Website(models.Model):
         return path.replace('//', '/')
 
 
-class WebsiteOption(models.Model):
+class Directive(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
-            related_name='options')
+            related_name='directives')
     name = models.CharField(_("name"), max_length=128,
-        choices=((op.name, op.verbose_name) for op in options.get_enabled().values()))
+            choices=SiteDirective.get_plugin_choices())
     value = models.CharField(_("value"), max_length=256)
-    
-    class Meta:
-#        unique_together = ('website', 'name')
-        verbose_name = _("option")
-        verbose_name_plural = _("options")
     
     def __unicode__(self):
         return self.name
     
+    @cached_property
+    def directive_class(self):
+        return SiteDirective.get_plugin(self.name)
+    
+    @cached_property
+    def directive_instance(self):
+        """ Per request lived directive instance """
+        return self.directive_class()
+    
     def clean(self):
-        option = options.get_enabled()[self.name]
-        option.validate(self)
+        self.directive_instance.validate(self)
 
 
 class Content(models.Model):
-    webapp = models.ForeignKey('webapps.WebApp', verbose_name=_("web application"))
-    website = models.ForeignKey('websites.Website', verbose_name=_("web site"))
+    webapp = models.ForeignKey('webapps.WebApp', verbose_name=_("web application"),
+            related_name='contents')
+    website = models.ForeignKey('websites.Website', verbose_name=_("web site"),
+            related_name='contents')
     path = models.CharField(_("path"), max_length=256, blank=True,
             validators=[validators.validate_url_path])
     

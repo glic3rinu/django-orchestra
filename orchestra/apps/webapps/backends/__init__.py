@@ -1,43 +1,14 @@
 import pkgutil
 import textwrap
 
-from .. import settings
-
 
 class WebAppServiceMixin(object):
     model = 'webapps.WebApp'
     directive = None
     
-    def valid_directive(self, webapp):
-        return settings.WEBAPPS_TYPES[webapp.type]['directive'][0] == self.directive
-    
     def create_webapp_dir(self, context):
         self.append("mkdir -p %(app_path)s" % context)
         self.append("chown %(user)s:%(group)s %(app_path)s" % context)
-    
-    def get_php_init_vars(self, webapp, per_account=False):
-        """
-        process php options for inclusion on php.ini
-        per_account=True merges all (account, webapp.type) options
-        """
-        init_vars = []
-        options = webapp.options.all()
-        if per_account:
-            options = webapp.account.webapps.filter(webapp_type=webapp.type)
-        for opt in options:
-            name = opt.name.replace('PHP-', '')
-            value = "%s" % opt.value
-            init_vars.append((name, value))
-        enabled_functions = []
-        for value in options.filter(name='php-enabled_functions').values_list('value', flat=True):
-            enabled_functions += enabled_functions.get().value.split(',')
-        if enabled_functions:
-            disabled_functions = []
-            for function in settings.WEBAPPS_PHP_DISABLED_FUNCTIONS:
-                if function not in enabled_functions:
-                    disabled_functions.append(function)
-            init_vars.append(('dissabled_functions', ','.join(disabled_functions)))
-        return init_vars
     
     def delete_webapp_dir(self, context):
         self.append("rm -fr %(app_path)s" % context)

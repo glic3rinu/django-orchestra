@@ -1,7 +1,8 @@
 def cached(func):
     """ caches func return value """
     def cached_func(self, *args, **kwargs):
-        attr = '_cached_' + func.__name__
+        # id(self) prevents sharing within subclasses
+        attr = '_cached_%s_%i' % (func.__name__, id(self))
         key = (args, tuple(kwargs.items()))
         try:
             return getattr(self, attr)[key]
@@ -13,4 +14,3 @@ def cached(func):
             setattr(self, attr, {key: value})
         return value
     return cached_func
-

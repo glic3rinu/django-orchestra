@@ -42,7 +42,7 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
             'fields': ('shell', ('home', 'directory'), 'groups'),
         }),
     )
-    search_fields = ['username']
+    search_fields = ('username', 'account__username')
     readonly_fields = ('account_link',)
     change_readonly_fields = ('username',)
     filter_horizontal = ('groups',)

@@ -206,3 +206,10 @@ ssh-copy-id root@<server-address>
 
 * symbolicLink webapp (link stuff from other places)
 
+* logs on panle/logs/ ? mkdir ~webapps, backend post save signal? 
+* transaction abortion on backend.generation, transaction fault tolerant on backend.execute()
+* <IfModule security2_module> and other IfModule on backend SecRule
+
+
+* webalizer backend on webapps and check webapps.websites.all()
+* monitor in batches doesnt work!!!

@@ -160,14 +160,14 @@ class Domain(models.Model):
                     type=Record.SOA,
                     value=' '.join(soa)
                 ))
-        is_a = not types or Record.A in types or Record.AAAA in types
-        if Record.MX not in types and is_a:
+        is_host = self.is_top or not types or Record.A in types or Record.AAAA in types
+        if Record.MX not in types and is_host:
             for mx in settings.DOMAINS_DEFAULT_MX:
                 records.append(AttrDict(
                     type=Record.MX,
                     value=mx
                 ))
-        if (Record.A not in types and Record.AAAA not in types) and is_a:
+        if (Record.A not in types and Record.AAAA not in types) and is_host:
             records.append(AttrDict(
                 type=Record.A,
                 value=settings.DOMAINS_DEFAULT_A
@@ -249,5 +249,6 @@ class Record(models.Model):
     
     def get_ttl(self):
         return self.ttl or settings.DOMAINS_DEFAULT_TTL
+
 
 services.register(Domain)

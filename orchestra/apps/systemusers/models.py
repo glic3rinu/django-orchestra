@@ -26,7 +26,6 @@ class SystemUser(models.Model):
     
     Username max_length determined by LINUX system user lentgh: 32
     """
-    # TODO max_length
     username = models.CharField(_("username"), max_length=32, unique=True,
             help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.validate_username])

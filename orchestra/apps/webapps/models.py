@@ -2,6 +2,8 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.signals import pre_save, pre_delete
+from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
@@ -9,7 +11,7 @@ from jsonfield import JSONField
 from orchestra.core import validators, services
 from orchestra.utils.functional import cached
 
-from . import settings, options
+from . import settings
 from .types import AppType
 
 
@@ -53,17 +55,11 @@ class WebApp(models.Model):
             opt.name: opt.value for opt in self.options.all()
         }
     
-    @property
-    def app_type(self):
-        return settings.WEBAPPS_TYPES[self.type]
-    
     def get_fpm_port(self):
         return settings.WEBAPPS_FPM_START_PORT + self.account_id
     
     def get_directive(self):
-        directive = self.app_type['directive']
-        args = directive[1:] if len(directive) > 1 else ()
-        return directive[0], args
+        return self.type_instance.get_directive(self)
     
     def get_path(self):
         context = {
@@ -86,8 +82,7 @@ class WebApp(models.Model):
 class WebAppOption(models.Model):
     webapp = models.ForeignKey(WebApp, verbose_name=_("Web application"),
             related_name='options')
-    name = models.CharField(_("name"), max_length=128,
-            choices=((op.name, op.verbose_name) for op in options.get_enabled().values()))
+    name = models.CharField(_("name"), max_length=128, choices=AppType.get_options_choices())
     value = models.CharField(_("value"), max_length=256)
     
     class Meta:
@@ -98,18 +93,24 @@ class WebAppOption(models.Model):
     def __unicode__(self):
         return self.name
     
+    @cached_property
+    def option_class(self):
+        return SiteDirective.get_plugin(self.name)
+    
+    @cached_property
+    def option_instance(self):
+        """ Per request lived option instance """
+        return self.option_class()
+    
     def clean(self):
-        option = options.get_enabled()[self.name]
-        option.validate(self)
+        self.option_instance.validate(self)
 
 
 services.register(WebApp)
 
 
-# Admin bulk deletion doesn't call model.delete(), we use signals instead of model method overriding
-
-from django.db.models.signals import pre_save, pre_delete
-from django.dispatch import receiver
+# Admin bulk deletion doesn't call model.delete()
+# So, signals are used instead of model method overriding
 
 @receiver(pre_save, sender=WebApp, dispatch_uid='webapps.type.save')
 def type_save(sender, *args, **kwargs):

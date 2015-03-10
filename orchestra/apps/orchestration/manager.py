@@ -52,7 +52,7 @@ def execute(operations, async=False):
         for server in operation.servers:
             key = (server, operation.backend)
             if key not in scripts:
-                scripts[key] = (operation.backend, [operation])
+                scripts[key] = (operation.backend(), [operation])
                 scripts[key][0].prepare()
             else:
                 scripts[key][1].append(operation)

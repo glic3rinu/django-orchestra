@@ -43,7 +43,7 @@ class ContentSerializer(serializers.HyperlinkedModelSerializer):
 class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     domains = RelatedDomainSerializer(many=True, allow_add_remove=True, required=False)
     contents = ContentSerializer(required=False, many=True, allow_add_remove=True,
-            source='content_set')
+            source='contents')
     options = OptionField(required=False)
     
     class Meta:

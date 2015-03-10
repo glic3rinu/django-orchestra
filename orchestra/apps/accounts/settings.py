@@ -42,7 +42,7 @@ ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
     ('domains.Domain',
         'name',
         {
-            'name': '"%s.orchestra.lan" % account.username'
+            'name': '"%s.orchestra.lan" % account.username.replace("_", "-")',
         },
         _("Designates whether to creates a related subdomain &lt;username&gt;.orchestra.lan or not."),
     ),

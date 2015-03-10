@@ -9,8 +9,9 @@ from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
-from . import settings, options
-from .applications import App
+from . import settings
+from .options import AppOption
+from .types import AppType
 from .models import WebApp, WebAppOption
 
 
@@ -19,7 +20,7 @@ class WebAppOptionInline(admin.TabularInline):
     extra = 1
     
     OPTIONS_HELP_TEXT = {
-        op.name: str(unicode(op.help_text)) for op in options.get_enabled().values()
+        op.name: str(unicode(op.help_text)) for op in AppOption.get_plugins()
     }
     
     class Media:
@@ -35,7 +36,7 @@ class WebAppOptionInline(admin.TabularInline):
                 plugin = self.parent_object.type_class
             else:
                 request = kwargs['request']
-                plugin = App.get_plugin(request.GET['type'])
+                plugin = AppType.get_plugin(request.GET['type'])
             kwargs['choices'] = plugin.get_options_choices()
             # Help text based on select widget
             kwargs['widget'] = DynamicHelpTextSelect(
@@ -52,8 +53,8 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')
-    list_prefetch_related = ('content_set__website',)
-    plugin = App
+    list_prefetch_related = ('contents__website',)
+    plugin = AppType
     plugin_field = 'type'
     plugin_title = _("Web application type")
     
@@ -63,7 +64,7 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     
     def display_websites(self, webapp):
         websites = []
-        for content in webapp.content_set.all():
+        for content in webapp.contents.all():
             website = content.website
             url = change_url(website)
             name = "%s on %s" % (website.name, content.path)

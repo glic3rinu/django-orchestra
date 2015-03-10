@@ -24,17 +24,21 @@ class WebalizerBackend(ServiceController):
         ))
     
     def delete(self, content):
-        pass
-        # TODO delete has to be done on webapp deleteion, not content deletion
-#        context = self.get_context(content)
-#        self.append("rm -fr %(webalizer_path)s" % context)
-#        self.append("rm %(webalizer_conf_path)s" % context)
+        context = self.get_context(content)
+        delete_webapp = not content.webapp.pk
+        # TODO remove when confirmed that it works, otherwise create a second WebalizerBackend for WebApps
+        if delete_webapp:
+            self.append("mv %(webapp_path)s %(webapp_path)s.deleted" % context)
+        if delete_webapp or not content.webapp.contents.filter(website=content.website).exists():
+            self.append("mv %(webalizer_path)s %(webalizer_path)s.deleted" % context)
+            self.append("rm %(webalizer_conf_path)s" % context)
     
     def get_context(self, content):
         conf_file = "%s.conf" % content.website.unique_name
         context = {
             'site_logs': content.website.get_www_access_log_path(),
             'site_name': content.website.name,
+            'webapp_path': content.webapp.get_path(),
             'webalizer_path': os.path.join(content.webapp.get_path(), content.website.name),
             'webalizer_conf_path': os.path.join(settings.WEBSITES_WEBALIZER_PATH, conf_file),
             'user': content.webapp.account.username,

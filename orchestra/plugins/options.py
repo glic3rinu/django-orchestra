@@ -17,12 +17,12 @@ class Plugin(object):
         return cls.plugins
     
     @classmethod
-    @cached
     def get_plugin(cls, name):
-        for plugin in cls.get_plugins():
-            if plugin.get_name() == name:
-                return plugin
-        raise KeyError('This plugin is not registered')
+        if not hasattr(cls, '_registry'):
+            cls._registry = {
+                plugin.get_name(): plugin for plugin in cls.get_plugins()
+            }
+        return cls._registry[name]
     
     @classmethod
     def get_verbose_name(cls):
@@ -38,7 +38,9 @@ class Plugin(object):
         choices = []
         for plugin in cls.get_plugins():
             verbose = plugin.get_verbose_name()
-            choices.append((plugin.get_name(), verbose))
+            choices.append(
+                (plugin.get_name(), verbose)
+            )
         return sorted(choices, key=lambda e: e[1])
     
     @classmethod

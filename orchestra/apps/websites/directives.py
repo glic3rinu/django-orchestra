@@ -1,3 +1,5 @@
+import re
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
@@ -60,7 +62,7 @@ class SiteDirective(Plugin):
 
 class Redirect(SiteDirective):
     name = 'redirect'
-    verbose_name=_("Redirection")
+    verbose_name = _("Redirection")
     help_text = _("<tt>&lt;website path&gt; &lt;destination URL&gt;</tt>")
     regex = r'^[^ ]+\s[^ ]+$'
     group = SiteDirective.HTTPD
@@ -68,7 +70,7 @@ class Redirect(SiteDirective):
 
 class Proxy(SiteDirective):
     name = 'proxy'
-    verbose_name=_("Proxy")
+    verbose_name = _("Proxy")
     help_text = _("<tt>&lt;website path&gt; &lt;target URL&gt;</tt>")
     regex = r'^[^ ]+\shttp[^ ]+(timeout=[0-9]{1,3}|retry=[0-9]|\s)*$'
     group = SiteDirective.HTTPD
@@ -76,7 +78,7 @@ class Proxy(SiteDirective):
 
 class UserGroup(SiteDirective):
     name = 'user_group'
-    verbose_name=_("SuexecUserGroup")
+    verbose_name = _("SuexecUserGroup")
     help_text = _("<tt>user [group]</tt>, username and optional groupname.")
     regex = r'^[\w/_]+(\s[\w/_]+)*$'
     group = SiteDirective.HTTPD
@@ -101,7 +103,7 @@ class UserGroup(SiteDirective):
 
 class ErrorDocument(SiteDirective):
     name = 'error_document'
-    verbose_name=_("ErrorDocumentRoot")
+    verbose_name = _("ErrorDocumentRoot")
     help_text = _("&lt;error code&gt; &lt;URL/path/message&gt;<br>"
                   "<tt>&nbsp;500 http://foo.example.com/cgi-bin/tester</tt><br>"
                   "<tt>&nbsp;404 /cgi-bin/bad_urls.pl</tt><br>"
@@ -113,7 +115,7 @@ class ErrorDocument(SiteDirective):
 
 class SSLCA(SiteDirective):
     name = 'ssl_ca'
-    verbose_name=_("SSL CA")
+    verbose_name = _("SSL CA")
     help_text = _("Filesystem path of the CA certificate file.")
     regex = r'^[^ ]+$'
     group = SiteDirective.SSL
@@ -121,7 +123,7 @@ class SSLCA(SiteDirective):
 
 class SSLCert(SiteDirective):
     name = 'ssl_cert'
-    verbose_name=_("SSL cert")
+    verbose_name = _("SSL cert")
     help_text = _("Filesystem path of the certificate file.")
     regex = r'^[^ ]+$'
     group = SiteDirective.SSL
@@ -129,7 +131,7 @@ class SSLCert(SiteDirective):
 
 class SSLKey(SiteDirective):
     name = 'ssl_key'
-    verbose_name=_("SSL key")
+    verbose_name = _("SSL key")
     help_text = _("Filesystem path of the key file.")
     regex = r'^[^ ]+$'
     group = SiteDirective.SSL
@@ -137,7 +139,7 @@ class SSLKey(SiteDirective):
 
 class SecRuleRemove(SiteDirective):
     name = 'sec_rule_remove'
-    verbose_name=_("SecRuleRemoveById")
+    verbose_name = _("SecRuleRemoveById")
     help_text = _("Space separated ModSecurity rule IDs.")
     regex = r'^[0-9\s]+$'
     group = SiteDirective.SEC
@@ -145,7 +147,7 @@ class SecRuleRemove(SiteDirective):
 
 class SecEngine(SiteDirective):
     name = 'sec_engine'
-    verbose_name=_("Modsecurity engine")
-    help_text = _("<tt>On</tt> or <tt>Off</tt>, defaults to On")
-    regex = r'^(On|Off)$'
+    verbose_name = _("Modsecurity engine")
+    help_text = _("URL location for disabling modsecurity engine.")
+    regex = r'^[^ ]+$'
     group = SiteDirective.SEC

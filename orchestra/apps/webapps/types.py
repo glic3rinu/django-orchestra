@@ -167,7 +167,8 @@ class PHPAppType(AppType):
             init_vars['dissabled_functions'] = ','.join(disabled_functions)
         if settings.WEBAPPS_PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:
             context = self.get_context(webapp)
-            init_vars['error_log'] = settings.WEBAPPS_PHP_ERROR_LOG_PATH % context
+            error_log_path = os.path.normpath(settings.WEBAPPS_PHP_ERROR_LOG_PATH % context)
+            init_vars['error_log'] = error_log_path
         return init_vars
 
 
@@ -192,7 +193,7 @@ class PHP53App(PHPAppType):
     
     def get_directive(self, webapp):
         context = self.get_directive_context(webapp)
-        wrapper_path = settings.WEBAPPS_FCGID_PATH % context
+        wrapper_path = os.path.normpath(settings.WEBAPPS_FCGID_PATH % context)
         return ('fcgid', webapp.get_path(), wrapper_path)
 
 
@@ -236,7 +237,9 @@ class WebalizerApp(AppType):
     option_groups = ()
     
     def get_directive(self, webapp):
-        return ('static', os.path.join(webapp.get_path(), '%(site_name)s/'))
+        webalizer_path = os.path.join(webapp.get_path(), '%(site_name)s')
+        webalizer_path = os.path.normpath(webalizer_path)
+        return ('static', webalizer_path)
 
 
 class WordPressMuApp(PHPAppType):

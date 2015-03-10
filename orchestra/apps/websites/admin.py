@@ -59,14 +59,14 @@ class ContentInline(AccountAdminMixin, admin.TabularInline):
 
 class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'display_domains', 'display_webapps', 'account_link')
-    list_filter = ('port', 'is_active')
+    list_filter = ('protocol', 'is_active',)
     change_readonly_fields = ('name',)
     inlines = [ContentInline, DirectiveInline]
     filter_horizontal = ['domains']
     fieldsets = (
         (None, {
             'classes': ('extrapretty',),
-            'fields': ('account_link', 'name', 'port', 'domains', 'is_active'),
+            'fields': ('account_link', 'name', 'protocol', 'domains', 'is_active'),
         }),
     )
     form = WebsiteAdminForm
@@ -77,7 +77,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     def display_domains(self, website):
         domains = []
         for domain in website.domains.all():
-            url = '%s://%s' % (website.protocol, domain)
+            url = '%s://%s' % (website.get_protocol(), domain)
             domains.append('<a href="%s">%s</a>' % (url, url))
         return '<br>'.join(domains)
     display_domains.short_description = _("domains")
@@ -102,9 +102,12 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         """
         formfield = super(WebsiteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
         if db_field.name == 'domains':
-            qset = Q()
-            for port, __ in settings.WEBSITES_PORT_CHOICES:
-                qset = qset & Q(websites__port=port)
+            qset = Q(
+                Q(websites__protocol=Website.HTTPS_ONLY) |
+                Q(websites__protocol=Website.HTTP_AND_HTTPS) | Q(
+                    Q(websites__protocol=Website.HTTP) & Q(websites__protocol=Website.HTTPS)
+                )
+            )
             args = resolve(kwargs['request'].path).args
             if args:
                 object_id = args[0]

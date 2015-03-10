@@ -19,28 +19,28 @@ class SystemUserBackend(ServiceController):
         groups = ','.join(self.get_groups(user))
         context['groups_arg'] = '--groups %s' % groups if groups else ''
         self.append(textwrap.dedent("""
-            if [[ $( id %(username)s ) ]]; then
-               usermod  %(username)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+            if [[ $( id %(user)s ) ]]; then
+               usermod  %(user)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             else
-               useradd %(username)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+               useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             fi
             mkdir -p %(home)s
             chmod 750 %(home)s
-            chown %(username)s:%(username)s %(home)s""") % context
+            chown %(user)s:%(user)s %(home)s""") % context
         )
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
             context['member'] = member
-            self.append('usermod -a -G %(username)s %(member)s' % context)
+            self.append('usermod -a -G %(user)s %(member)s' % context)
         if not user.is_main:
-            self.append('usermod -a -G %(username)s %(mainusername)s' % context)
+            self.append('usermod -a -G %(user)s %(mainuser)s' % context)
     
     def delete(self, user):
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
-            { sleep 2 && killall -u %(username)s -s KILL; } &
-            killall -u %(username)s || true
-            userdel %(username)s || true
-            groupdel %(username)s || true""") % context
+            { sleep 2 && killall -u %(user)s -s KILL; } &
+            killall -u %(user)s || true
+            userdel %(user)s || true
+            groupdel %(group)s || true""") % context
         )
         self.delete_home(context, user)
     
@@ -51,8 +51,7 @@ class SystemUserBackend(ServiceController):
     def delete_home(self, context, user):
         if user.home.rstrip('/') == user.get_base_home().rstrip('/'):
             # TODO delete instead of this shit
-            context['deleted'] = context['home'].rstrip('/') + '.deleted'
-            self.append("mv %(home)s %(deleted)s" % context)
+            self.append("mv %(home)s %(home)s.deleted" % context)
     
     def get_groups(self, user):
         if user.is_main:
@@ -62,10 +61,11 @@ class SystemUserBackend(ServiceController):
     def get_context(self, user):
         context = {
             'object_id': user.pk,
-            'username': user.username,
+            'user': user.username,
+            'group': user.username,
             'password': user.password if user.active else '*%s' % user.password,
             'shell': user.shell,
-            'mainusername': user.username if user.is_main else user.account.username,
+            'mainuser': user.username if user.is_main else user.account.username,
             'home': user.get_home()
         }
         return context

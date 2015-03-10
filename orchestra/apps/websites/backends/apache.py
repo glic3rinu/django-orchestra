@@ -9,27 +9,31 @@ from orchestra.apps.orchestration import ServiceController
 from orchestra.apps.resources import ServiceMonitor
 
 from .. import settings
+from ..utils import normurlpath
 
 
 class Apache2Backend(ServiceController):
+    HTTP_PORT = 80
+    HTTPS_PORT = 443
+    
     model = 'websites.Website'
     related_models = (
         ('websites.Content', 'website'),
     )
     verbose_name = _("Apache 2")
     
-    def save(self, site):
-        context = self.get_context(site)
+    def render_virtual_host(self, site, context, ssl=False):
+        context['port'] = self.HTTPS_PORT if ssl else self.HTTP_PORT
         extra_conf = self.get_content_directives(site)
-        if site.protocol is 'https':
-            extra_conf += self.get_ssl(site)
-        extra_conf += self.get_security(site)
-        extra_conf += self.get_redirect(site)
+        directives = site.get_directives()
+        if ssl:
+            extra_conf += self.get_ssl(directives)
+        extra_conf += self.get_security(directives)
+        extra_conf += self.get_redirects(directives)
+        extra_conf += self.get_proxies(directives)
         context['extra_conf'] = extra_conf
-        
-        apache_conf = Template(textwrap.dedent("""\
-            # {{ banner }}
-            <VirtualHost {{ ip }}:{{ site.port }}>
+        return Template(textwrap.dedent("""\
+            <VirtualHost {{ ip }}:{{ port }}>
                 ServerName {{ site.domains.all|first }}\
             {% if site.domains.all|slice:"1:" %}
                 ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}\
@@ -41,12 +45,38 @@ class Apache2Backend(ServiceController):
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
                 #IncludeOptional /etc/apache2/extra-vhos[t]/{{ site_unique_name }}.con[f]
-            </VirtualHost>"""
-        ))
-        apache_conf = apache_conf.render(Context(context))
-#        apache_conf += self.get_protections(site)
+            </VirtualHost>
+            """)
+        ).render(Context(context))
+    
+    def render_redirect_https(self, context):
+        context['port'] = self.HTTP_PORT
+        return Template(textwrap.dedent("""
+            <VirtualHost {{ ip }}:{{ port }}>
+                ServerName {{ site.domains.all|first }}\
+            {% if site.domains.all|slice:"1:" %}
+                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}\
+            {% if access_log %}
+                CustomLog {{ access_log }} common{% endif %}\
+            {% if error_log %}
+                ErrorLog {{ error_log }}{% endif %}
+                RewriteEngine On
+                RewriteCond %{HTTPS} off
+                RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+            </VirtualHost>
+            """)
+        ).render(Context(context))
+    
+    def save(self, site):
+        context = self.get_context(site)
+        apache_conf = '# %(banner)s\n' % context
+        if site.protocol in (site.HTTP, site.HTTP_AND_HTTPS):
+            apache_conf += self.render_virtual_host(site, context, ssl=False)
+        if site.protocol in (site.HTTP_AND_HTTPS, site.HTTPS_ONLY, site.HTTPS):
+            apache_conf += self.render_virtual_host(site, context, ssl=True)
+        if site.protocol == site.HTTPS_ONLY:
+            apache_conf += self.render_redirect_https(context)
         context['apache_conf'] = apache_conf
-        
         self.append(textwrap.dedent("""\
             {
                 echo -e '%(apache_conf)s' | diff -N -I'^\s*#' %(sites_available)s -
@@ -78,7 +108,7 @@ class Apache2Backend(ServiceController):
     def get_static_directives(self, content, app_path):
         context = self.get_content_context(content)
         context['app_path'] = app_path % context
-        return "Alias %(location)s %(app_path)s\n" % context
+        return "Alias %(location)s/ %(app_path)s/\n" % context
     
     def get_fpm_directives(self, content, socket_type, socket, app_path):
         if socket_type == 'unix':
@@ -95,8 +125,8 @@ class Apache2Backend(ServiceController):
             'socket': socket,
         })
         return textwrap.dedent("""\
-            ProxyPassMatch ^%(location)s(.*\.php(/.*)?)$ {target}
-            Alias %(location)s %(app_path)s/
+            ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}
+            Alias %(location)s/ %(app_path)s/
             """.format(target=target) % context
         )
     
@@ -107,52 +137,61 @@ class Apache2Backend(ServiceController):
             'wrapper_path': wrapper_path,
         })
         return textwrap.dedent("""\
-            Alias %(location)s %(app_path)s
-            ProxyPass %(location)s !
-            <Directory %(app_path)s>
+            Alias %(location)s/ %(app_path)s/
+            ProxyPass %(location)s/ !
+            <Directory %(app_path)s/>
                 Options +ExecCGI
                 AddHandler fcgid-script .php
                 FcgidWrapper %(wrapper_path)s
             </Directory>
             """) % context
     
-    def get_ssl(self, site):
-        cert = settings.WEBSITES_DEFAULT_HTTPS_CERT
-        custom_cert = site.options.filter(name='ssl')
-        if custom_cert:
-            cert = tuple(custom_cert[0].value.split())
-        # TODO separate directtives?
-        directives = textwrap.dedent("""\
-            SSLEngine on
-            SSLCertificateFile %s
-            SSLCertificateKeyFile %s\
-            """) % cert
-        return directives
-    
-    def get_security(self, site):
-        directives = ''
-        for rules in site.directives.filter(name='sec_rule_remove'):
+    def get_ssl(self, directives):
+        config = []
+        ca = directives.get('ssl_ca')
+        if ca:
+            config.append("SSLCACertificateFile %s" % ca[0])
+        cert = directives.get('ssl_cert')
+        if cert:
+            config.append("SSLCertificateFile %" % cert[0])
+        key = directives.get('ssl_key')
+        if key:
+            config.append("SSLCertificateKeyFile %s" % key[0])
+        return '\n'.join(config)
+        
+    def get_security(self, directives):
+        config = []
+        for rules in directives.get('sec_rule_remove', []):
             for rule in rules.value.split():
-                directives += "SecRuleRemoveById %i\n" % int(rule)
-        for modsecurity in site.directives.filter(name='sec_rule_off'):
-            directives += textwrap.dedent("""\
-                <LocationMatch %s>
-                    SecRuleEngine Off
+                config.append("SecRuleRemoveById %i" % int(rule))
+        for modsecurity in directives.get('sec_rule_off', []):
+            config.append(textwrap.dedent("""\
+                <Location %s>
+                    SecRuleEngine off
                 </LocationMatch>\
-                """) % modsecurity.value
-        if directives:
-            directives = '<IfModule mod_security2.c>\n%s\n</IfModule>' % directives
-        return directives
+                """) % modsecurity
+            )
+        return '\n'.join(config)
     
-    def get_redirect(self, site):
-        directives = ''
-        for redirect in site.directives.filter(name='redirect'):
-            if re.match(r'^.*[\^\*\$\?\)]+.*$', redirect.value):
-                directives += "RedirectMatch %s" % redirect.value
+    def get_redirects(self, directives):
+        config = []
+        for redirect in directives.get('redirect', []):
+            source, target = redirect.split()
+            if re.match(r'^.*[\^\*\$\?\)]+.*$', redirect):
+                config.append("RedirectMatch %s %s" % (source, target))
             else:
-                directives += "Redirect %s" % redirect.value
-        return directives
+                config.append("Redirect %s %s" % (source, target))
+        return '\n'.join(config)
     
+    def get_proxies(self, directives):
+        config = []
+        for proxy in directives.get('proxy', []):
+            source, target = redirect.split()
+            source = normurlpath(source)
+            config.append('ProxyPass %s %s' % (source, target))
+            config.append('ProxyPassReverse %s %s' % (source, target))
+        return '\n'.join(directives)
+        
 #    def get_protections(self, site):
 #        protections = ''
 #        context = self.get_context(site)
@@ -192,15 +231,15 @@ class Apache2Backend(ServiceController):
             )
     
     def get_username(self, site):
-        option = site.directives.filter(name='user_group').first()
+        option = site.get_directives().get('user_group')
         if option:
-            return option.value.split()[0]
+            return option[0]
         return site.account.username
     
     def get_groupname(self, site):
-        option = site.directives.filter(name='user_group').first()
-        if option and ' ' in option.value:
-            user, group = option.value.split()
+        option = site.get_directives().get('user_group')
+        if option and ' ' in option:
+            user, group = option.split()
             return group
         return site.account.username
     
@@ -227,7 +266,7 @@ class Apache2Backend(ServiceController):
         context = self.get_context(content.website)
         context.update({
             'type': content.webapp.type,
-            'location': content.path,
+            'location': normurlpath(content.path),
             'app_name': content.webapp.name,
             'app_path': content.webapp.get_path(),
         })

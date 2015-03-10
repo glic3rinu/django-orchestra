@@ -10,6 +10,7 @@ from .backends import ServiceBackend
 from .models import Server, Route, BackendLog, BackendOperation
 from .widgets import RouteBackendSelect
 
+
 STATE_COLORS = {
     BackendLog.RECEIVED: 'darkorange',
     BackendLog.TIMEOUT: 'red',

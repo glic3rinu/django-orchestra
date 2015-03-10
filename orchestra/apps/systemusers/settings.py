@@ -20,7 +20,7 @@ SYSTEMUSERS_DISABLED_SHELLS = getattr(settings, 'SYSTEMUSERS_DISABLED_SHELLS', (
 ))
 
 
-SYSTEMUSERS_HOME = getattr(settings, 'SYSTEMUSERS_HOME', '/home/./%(username)s')
+SYSTEMUSERS_HOME = getattr(settings, 'SYSTEMUSERS_HOME', '/home/./%(user)s')
 
 
 SYSTEMUSERS_FTP_LOG_PATH = getattr(settings, 'SYSTEMUSERS_FTP_LOG_PATH', '/var/log/vsftpd.log')

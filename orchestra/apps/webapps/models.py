@@ -1,3 +1,4 @@
+import os
 import re
 
 from django.core.exceptions import ValidationError
@@ -68,7 +69,7 @@ class WebApp(models.Model):
         public_root = self.options.filter(name='public-root').first()
         if public_root:
             path = os.path.join(path, public_root.value)
-        return path.replace('//', '/')
+        return os.path.normpath(path.replace('//', '/'))
     
     def get_user(self):
         return self.account.main_systemuser

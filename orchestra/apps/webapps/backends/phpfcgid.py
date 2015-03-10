@@ -40,7 +40,8 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     
     def delete(self, webapp):
         context = self.get_context(webapp)
-        self.append("rm '%(wrapper_path)s'" % context)
+        self.append("rm -f '%(wrapper_path)s'" % context)
+        self.append("rm -f '%(cmd_options_path)s'" % context)
         self.delete_webapp_dir(context)
     
     def commit(self):
@@ -75,7 +76,8 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
             if value:
                 cmd_options.append("%s %s" % (directive, value))
         if cmd_options:
-            cmd_options.insert(0, 'FcgidCmdOptions %(wrapper_path)s' % context)
+            head = '# %(banner)s\nFcgidCmdOptions %(wrapper_path)s' % context
+            cmd_options.insert(0, head)
             return ' \\\n    '.join(cmd_options)
     
     def get_context(self, webapp):

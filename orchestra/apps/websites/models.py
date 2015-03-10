@@ -1,3 +1,4 @@
+import os
 import re
 
 from django.core.exceptions import ValidationError
@@ -10,18 +11,26 @@ from orchestra.utils.functional import cached
 
 from . import settings
 from .directives import SiteDirective
+from .utils import normurlpath
 
 
 class Website(models.Model):
     """ Models a web site, also known as virtual host """
+    HTTP = 'http'
+    HTTPS = 'https'
+    HTTP_AND_HTTPS = 'http/https'
+    HTTPS_ONLY = 'https-only'
+    
     name = models.CharField(_("name"), max_length=128,
             validators=[validators.validate_name])
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='websites')
-    # TODO protocol
-    port = models.PositiveIntegerField(_("port"),
-            choices=settings.WEBSITES_PORT_CHOICES,
-            default=settings.WEBSITES_DEFAULT_PORT)
+    protocol = models.CharField(_("protocol"), max_length=16,
+            choices=settings.WEBSITES_PROTOCOL_CHOICES,
+            default=settings.WEBSITES_DEFAULT_PROTOCOL)
+#    port = models.PositiveIntegerField(_("port"),
+#            choices=settings.WEBSITES_PORT_CHOICES,
+#            default=settings.WEBSITES_DEFAULT_PORT)
     domains = models.ManyToManyField(settings.WEBSITES_DOMAIN_MODEL,
             related_name='websites', verbose_name=_("domains"))
     contents = models.ManyToManyField('webapps.WebApp', through='websites.Content')
@@ -39,28 +48,29 @@ class Website(models.Model):
             'id': self.id,
             'pk': self.pk,
             'account': self.account.username,
-            'port': self.port,
+            'protocol': self.protocol,
             'name': self.name,
         }
     
-    @property
-    def protocol(self):
-        if self.port == 80:
-            return 'http'
-        if self.port == 443:
-            return 'https'
-        raise TypeError('No protocol for port "%s"' % self.port)
+    def get_protocol(self):
+        if self.protocol in (self.HTTP, self.HTTP_AND_HTTPS):
+            return self.HTTP
+        return self.HTTPS
     
     @cached
     def get_directives(self):
-        return {
-            opt.name: opt.value for opt in self.directives.all()
-        }
+        directives = {}
+        for opt in self.directives.all():
+            try:
+                directives[opt.name].append(opt.value)
+            except KeyError:
+                directives[opt.name] = [opt.value]
+        return directives
     
     def get_absolute_url(self):
         domain = self.domains.first()
         if domain:
-            return '%s://%s' % (self.protocol, domain)
+            return '%s://%s' % (self.get_protocol(), domain)
     
     def get_www_log_context(self):
         return {
@@ -74,12 +84,12 @@ class Website(models.Model):
     def get_www_access_log_path(self):
         context = self.get_www_log_context()
         path = settings.WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH % context
-        return path.replace('//', '/')
+        return os.path.normpath(path.replace('//', '/'))
     
     def get_www_error_log_path(self):
         context = self.get_www_log_context()
         path = settings.WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH % context
-        return path.replace('//', '/')
+        return os.path.normpath(path.replace('//', '/'))
 
 
 class Directive(models.Model):
@@ -122,15 +132,12 @@ class Content(models.Model):
             return self.path
     
     def clean(self):
-        if not self.path.startswith('/'):
-            self.path = '/' + self.path
-        if not self.path.endswith('/'):
-            self.path = self.path + '/'
+        self.path = normurlpath(self.path)
     
     def get_absolute_url(self):
         domain = self.website.domains.first()
         if domain:
-            return '%s://%s%s' % (self.website.protocol, domain, self.path)
+            return '%s://%s%s' % (self.website.get_protocol(), domain, self.path)
 
 
 services.register(Website)

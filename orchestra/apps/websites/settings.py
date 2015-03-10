@@ -7,18 +7,20 @@ WEBSITES_UNIQUE_NAME_FORMAT = getattr(settings, 'WEBSITES_UNIQUE_NAME_FORMAT',
 
 
 # TODO 'http', 'https', 'https-only', 'http and https' and rename to PROTOCOL
-WEBSITES_PORT_CHOICES = getattr(settings, 'WEBSITES_PORT_CHOICES', (
-    (80, 'HTTP'),
-    (443, 'HTTPS'),
-))
+#WEBSITES_PORT_CHOICES = getattr(settings, 'WEBSITES_PORT_CHOICES', (
+#    (80, 'HTTP'),
+#    (443, 'HTTPS'),
+#))
 
 
 WEBSITES_PROTOCOL_CHOICES = getattr(settings, 'WEBSITES_PROTOCOL_CHOICES', (
     ('http', "HTTP"),
     ('https', "HTTPS"),
-    ('http-https', _("HTTP and HTTPS")),
+    ('http/https', _("HTTP and HTTPS")),
     ('https-only', _("HTTPS only")),
 ))
+
+WEBSITES_DEFAULT_PROTOCOL = getattr(settings, 'WEBSITES_DEFAULT_PROTOCOL', 'http')
 
 WEBSITES_DEFAULT_PORT = getattr(settings, 'WEBSITES_DEFAULT_PORT', 80)
 
@@ -60,3 +62,13 @@ WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_ER
 
 WEBSITES_TRAFFIC_IGNORE_HOSTS = getattr(settings, 'WEBSITES_TRAFFIC_IGNORE_HOSTS',
     ('127.0.0.1',))
+
+
+#WEBSITES_DEFAULT_SSl_CA = getattr(settings, 'WEBSITES_DEFAULT_SSl_CA',
+#    '')
+
+#WEBSITES_DEFAULT_SSl_CERT = getattr(settings, 'WEBSITES_DEFAULT_SSl_CERT',
+#    '')
+
+#WEBSITES_DEFAULT_SSl_KEY = getattr(settings, 'WEBSITES_DEFAULT_SSl_KEY',
+#    '')

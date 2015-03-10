@@ -9,7 +9,7 @@ from .. import settings
 
 
 class WebalizerBackend(ServiceController):
-    verbose_name = _("Webalizer")
+    verbose_name = _("Webalizer Content")
     model = 'websites.Content'
     
     def save(self, content):
@@ -27,7 +27,7 @@ class WebalizerBackend(ServiceController):
         context = self.get_context(content)
         delete_webapp = type(content.webapp).objects.filter(pk=content.webapp.pk).exists()
         if delete_webapp:
-            self.append("mv %(webapp_path)s %(webapp_path)s.deleted" % context)
+            self.append("rm -f %(webapp_path)s" % context)
         if delete_webapp or not content.webapp.content_set.filter(website=content.website).exists():
             self.append("rm -fr %(webalizer_path)s" % context)
             self.append("rm -f %(webalizer_conf_path)s" % context)

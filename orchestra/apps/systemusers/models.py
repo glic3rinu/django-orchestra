@@ -122,6 +122,7 @@ class SystemUser(models.Model):
     
     def get_base_home(self):
         context = {
+            'user': self.username,
             'username': self.username,
         }
         return os.path.normpath(settings.SYSTEMUSERS_HOME % context)

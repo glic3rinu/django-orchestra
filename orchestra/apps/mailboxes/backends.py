@@ -7,7 +7,9 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
+from orchestra.apps.systemusers.backends import SystemUserBackend
 from orchestra.apps.resources import ServiceMonitor
+from orchestra.utils.humanize import unit_to_bytes
 
 from . import settings
 from .models import Address
@@ -20,6 +22,59 @@ from .models import Address
 logger = logging.getLogger(__name__)
 
 
+class MailSystemUserBackend(ServiceController):
+    verbose_name = _("Mail system users")
+    model = 'mailboxes.Mailbox'
+    
+    def save(self, mailbox):
+        context = self.get_context(mailbox)
+        self.append(textwrap.dedent("""
+            if [[ $( id %(user)s ) ]]; then
+               usermod  %(user)s --password '%(password)s' --shell %(initial_shell)s
+            else
+               useradd %(user)s --home %(home)s --password '%(password)s'
+            fi
+            mkdir -p %(home)s
+            chmod 751 %(home)s
+            chown %(user)s:%(group)s %(home)s""") % context
+        )
+        if hasattr(mailbox, 'resources') and hasattr(mailbox.resources, 'disk'):
+            self.set_quota(mailbox, context)
+    
+    def set_quota(self, mailbox, context):
+        context['quota'] = mailbox.resources.disk.allocated * unit_to_bytes(mailbox.resources.disk.unit)
+        self.append(textwrap.dedent("""
+            mkdir -p %(home)s/Maildir
+            chown %(user)s:%(group)s %(home)s/Maildir
+            if [[ ! -f %(home)s/Maildir/maildirsize ]]; then
+                echo "%(quota)iS" > %(home)s/Maildir/maildirsize
+                chown %(user)s:%(group)s %(home)s/Maildir/maildirsize
+            else
+                sed -i '1s/.*/%(quota)iS/' %(home)s/Maildir/maildirsize
+            fi""") % context
+        )
+    
+    def delete(self, mailbox):
+        context = self.get_context(mailbox)
+        self.append(textwrap.dedent("""
+            { sleep 2 && killall -u %(user)s -s KILL; } &
+            killall -u %(user)s || true
+            userdel %(user)s || true
+            groupdel %(user)s || true""") % context
+        )
+        self.append('mv %(home)s %(home)s.deleted' % context)
+    
+    def get_context(self, mailbox):
+        context = {
+            'user': mailbox.name,
+            'group': mailbox.name,
+            'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
+            'home': mailbox.get_home(),
+            'initial_shell': '/dev/null',
+        }
+        return context
+
+
 class PasswdVirtualUserBackend(ServiceController):
     verbose_name = _("Mail virtual user (passwd-file)")
     model = 'mailboxes.Mailbox'
@@ -29,8 +84,8 @@ class PasswdVirtualUserBackend(ServiceController):
     
     def set_user(self, context):
         self.append(textwrap.dedent("""
-            if [[ $( grep "^%(username)s:" %(passwd_path)s ) ]]; then
-               sed -i 's#^%(username)s:.*#%(passwd)s#' %(passwd_path)s
+            if [[ $( grep "^%(user)s:" %(passwd_path)s ) ]]; then
+               sed -i 's#^%(user)s:.*#%(passwd)s#' %(passwd_path)s
             else
                echo '%(passwd)s' >> %(passwd_path)s
             fi""") % context
@@ -40,14 +95,14 @@ class PasswdVirtualUserBackend(ServiceController):
     
     def set_mailbox(self, context):
         self.append(textwrap.dedent("""
-            if [[ ! $(grep "^%(username)s@%(mailbox_domain)s\s" %(virtual_mailbox_maps)s) ]]; then
-                echo "%(username)s@%(mailbox_domain)s\tOK" >> %(virtual_mailbox_maps)s
+            if [[ ! $(grep "^%(user)s@%(mailbox_domain)s\s" %(virtual_mailbox_maps)s) ]]; then
+                echo "%(user)s@%(mailbox_domain)s\tOK" >> %(virtual_mailbox_maps)s
                 UPDATED_VIRTUAL_MAILBOX_MAPS=1
             fi""") % context
         )
     
     def generate_filter(self, mailbox, context):
-        self.append("doveadm mailbox create -u %(username)s Spam" % context)
+        self.append("doveadm mailbox create -u %(user)s Spam" % context)
         context['filtering_path'] = settings.MAILBOXES_SIEVE_PATH % context
         filtering = mailbox.get_filtering()
         if filtering:
@@ -67,8 +122,8 @@ class PasswdVirtualUserBackend(ServiceController):
         context = self.get_context(mailbox)
         self.append("{ sleep 2 && killall -u %(uid)s -s KILL; } &" % context)
         self.append("killall -u %(uid)s || true" % context)
-        self.append("sed -i '/^%(username)s:.*/d' %(passwd_path)s" % context)
-        self.append("sed -i '/^%(username)s@%(mailbox_domain)s\s.*/d' %(virtual_mailbox_maps)s" % context)
+        self.append("sed -i '/^%(user)s:.*/d' %(passwd_path)s" % context)
+        self.append("sed -i '/^%(user)s@%(mailbox_domain)s\s.*/d' %(virtual_mailbox_maps)s" % context)
         self.append("UPDATED_VIRTUAL_MAILBOX_MAPS=1")
         # TODO delete
         context['deleted'] = context['home'].rstrip('/') + '.deleted'
@@ -99,7 +154,7 @@ class PasswdVirtualUserBackend(ServiceController):
     def get_context(self, mailbox):
         context = {
             'name': mailbox.name,
-            'username': mailbox.name,
+            'user': mailbox.name,
             'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
             'uid': 10000 + mailbox.pk,
             'gid': 10000 + mailbox.pk,
@@ -112,7 +167,7 @@ class PasswdVirtualUserBackend(ServiceController):
             'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
         }
         context['extra_fields'] = self.get_extra_fields(mailbox, context)
-        context['passwd'] = '{username}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context)
+        context['passwd'] = '{user}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context)
         return context
 
 

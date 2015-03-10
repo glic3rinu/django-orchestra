@@ -53,7 +53,7 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')
-    list_prefetch_related = ('contents__website',)
+    list_prefetch_related = ('content_set__website',)
     plugin = AppType
     plugin_field = 'type'
     plugin_title = _("Web application type")
@@ -64,7 +64,7 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     
     def display_websites(self, webapp):
         websites = []
-        for content in webapp.contents.all():
+        for content in webapp.content_set.all():
             website = content.website
             url = change_url(website)
             name = "%s on %s" % (website.name, content.path)

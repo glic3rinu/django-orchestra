@@ -35,7 +35,7 @@ class DirectiveInline(admin.TabularInline):
         if db_field.name == 'name':
             # Help text based on select widget
             kwargs['widget'] = DynamicHelpTextSelect(
-                'this.id.replace("name", "value")', self.DIECTIVES_HELP_TEXT
+                'this.id.replace("name", "value")', self.DIRECTIVES_HELP_TEXT
             )
         return super(DirectiveInline, self).formfield_for_dbfield(db_field, **kwargs)
 
@@ -71,7 +71,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     )
     form = WebsiteAdminForm
     filter_by_account_fields = ['domains']
-    list_prefetch_related = ('domains', 'contents__webapp')
+    list_prefetch_related = ('domains', 'content_set__webapp')
     search_fields = ('name', 'account__username', 'domains__name')
     
     def display_domains(self, website):
@@ -86,7 +86,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     
     def display_webapps(self, website):
         webapps = []
-        for content in website.contents.all():
+        for content in website.content_set.all():
             webapp = content.webapp
             url = change_url(webapp)
             name = "%s on %s" % (webapp.get_type_display(), content.path)

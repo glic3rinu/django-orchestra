@@ -33,8 +33,8 @@ class PasswdVirtualUserBackend(ServiceController):
                sed -i 's#^%(username)s:.*#%(passwd)s#' %(passwd_path)s
             else
                echo '%(passwd)s' >> %(passwd_path)s
-            fi""" % context
-        ))
+            fi""") % context
+        )
         self.append("mkdir -p %(home)s" % context)
         self.append("chown %(uid)s:%(gid)s %(home)s" % context)
     
@@ -43,7 +43,8 @@ class PasswdVirtualUserBackend(ServiceController):
             if [[ ! $(grep "^%(username)s@%(mailbox_domain)s\s" %(virtual_mailbox_maps)s) ]]; then
                 echo "%(username)s@%(mailbox_domain)s\tOK" >> %(virtual_mailbox_maps)s
                 UPDATED_VIRTUAL_MAILBOX_MAPS=1
-            fi""" % context))
+            fi""") % context
+        )
     
     def generate_filter(self, mailbox, context):
         self.append("doveadm mailbox create -u %(username)s Spam" % context)
@@ -92,7 +93,8 @@ class PasswdVirtualUserBackend(ServiceController):
         self.append(textwrap.dedent("""\
             [[ $UPDATED_VIRTUAL_MAILBOX_MAPS == 1 ]] && {
                 postmap %(virtual_mailbox_maps)s
-            }""" % context))
+            }""") % context
+        )
     
     def get_context(self, mailbox):
         context = {

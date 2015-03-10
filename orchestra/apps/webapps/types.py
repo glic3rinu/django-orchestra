@@ -1,3 +1,5 @@
+import os
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
@@ -129,25 +131,31 @@ class PHPAppType(AppType):
         socket_type = 'unix'
         if ':' in self.fpm_listen:
             socket_type = 'tcp'
-        socket = self.fpm_listen.format(context)
+        socket = self.fpm_listen % context
         return ('fpm', socket_type, socket, webapp.get_path())
+    
+    def get_context(self, webapp):
+        """ context used to format settings """
+        return {
+            'home': webapp.account.main_systemuser.get_home(),
+            'account': webapp.account.username,
+            'user': webapp.account.username,
+            'app_name': webapp.name,
+        }
     
     def get_php_init_vars(self, webapp, per_account=False):
         """
         process php options for inclusion on php.ini
         per_account=True merges all (account, webapp.type) options
         """
-        init_vars = []
-        php_options = type(self).get_php_options()
+        init_vars = {}
         options = webapp.options.all()
         if per_account:
             options = webapp.account.webapps.filter(webapp_type=webapp.type)
-        php_options = [option.name for option in php_options]
+        php_options = [option.name for option in type(self).get_php_options()]
         for opt in options:
-            if opt.option_class in php_options:
-                init_vars.append(
-                    (opt.name, opt.value)
-                )
+            if opt.name in php_options:
+                init_vars[opt.name] = opt.value
         enabled_functions = []
         for value in options.filter(name='enabled_functions').values_list('value', flat=True):
             enabled_functions += enabled_functions.get().value.split(',')
@@ -156,9 +164,10 @@ class PHPAppType(AppType):
             for function in settings.WEBAPPS_PHP_DISABLED_FUNCTIONS:
                 if function not in enabled_functions:
                     disabled_functions.append(function)
-            init_vars.append(
-                ('dissabled_functions', ','.join(disabled_functions))
-            )
+            init_vars['dissabled_functions'] = ','.join(disabled_functions)
+        if settings.WEBAPPS_PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:
+            context = self.get_context(webapp)
+            init_vars['error_log'] = settings.WEBAPPS_PHP_ERROR_LOG_PATH % context
         return init_vars
 
 
@@ -171,23 +180,37 @@ class PHP54App(PHPAppType):
     icon = 'orchestra/icons/apps/PHPFPM.png'
 
 
-class PHP52App(PHPAppType):
-    name = 'php5.2-fcgid'
-    php_version = 5.2
-    verbose_name = "PHP 5.2 FCGID"
-    help_text = _("This creates a PHP5.2 application under ~/webapps/&lt;app_name&gt;<br>"
+class PHP53App(PHPAppType):
+    name = 'php5.3-fcgid'
+    php_version = 5.3
+    php_binary = '/usr/bin/php5-cgi'
+    php_rc = '/etc/php5/cgi/'
+    verbose_name = "PHP 5.3 FCGID"
+    help_text = _("This creates a PHP5.3 application under ~/webapps/&lt;app_name&gt;<br>"
                   "Apache-mod-fcgid will be used to execute PHP files.")
     icon = 'orchestra/icons/apps/PHPFCGI.png'
     
     def get_directive(self, webapp):
         context = self.get_directive_context(webapp)
-        wrapper_path = settings.WEBAPPS_FCGID_PATH.format(context)
-        return ('fcgi', webapp.get_path(), wrapper_path)
+        wrapper_path = settings.WEBAPPS_FCGID_PATH % context
+        return ('fcgid', webapp.get_path(), wrapper_path)
 
 
-class PHP4App(PHP52App):
+class PHP52App(PHP53App):
+    name = 'php5.2-fcgid'
+    php_version = 5.2
+    php_binary = '/usr/bin/php5.2-cgi'
+    php_rc = '/etc/php5.2/cgi/'
+    verbose_name = "PHP 5.2 FCGID"
+    help_text = _("This creates a PHP5.2 application under ~/webapps/&lt;app_name&gt;<br>"
+                  "Apache-mod-fcgid will be used to execute PHP files.")
+    icon = 'orchestra/icons/apps/PHPFCGI.png'
+
+
+class PHP4App(PHP53App):
     name = 'php4-fcgid'
     php_version = 4
+    php_binary = '/usr/bin/php4-cgi'
     verbose_name = "PHP 4 FCGID"
     help_text = _("This creates a PHP4 application under ~/webapps/&lt;app_name&gt;<br>"
                   "Apache-mod-fcgid will be used to execute PHP files.")
@@ -213,7 +236,7 @@ class WebalizerApp(AppType):
     option_groups = ()
     
     def get_directive(self, webapp):
-        return ('static', webapp.get_path())
+        return ('static', os.path.join(webapp.get_path(), '%(site_name)s/'))
 
 
 class WordPressMuApp(PHPAppType):

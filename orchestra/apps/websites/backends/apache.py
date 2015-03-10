@@ -44,7 +44,7 @@ class Apache2Backend(ServiceController):
             </VirtualHost>"""
         ))
         apache_conf = apache_conf.render(Context(context))
-        apache_conf += self.get_protections(site)
+#        apache_conf += self.get_protections(site)
         context['apache_conf'] = apache_conf
         
         self.append(textwrap.dedent("""\
@@ -64,21 +64,21 @@ class Apache2Backend(ServiceController):
     
     def commit(self):
         """ reload Apache2 if necessary """
-        self.append('[[ $UPDATED == 1 ]] && service apache2 reload || true')
+        self.append('if [[ $UPDATED == 1 ]]; then service apache2 reload; fi')
     
     def get_content_directives(self, site):
         directives = ''
-        for content in site.contents.all().order_by('-path'):
+        for content in site.content_set.all().order_by('-path'):
             directive = content.webapp.get_directive()
-            method, agrs = directive[0], directive[1:]
+            method, args = directive[0], directive[1:]
             method = getattr(self, 'get_%s_directives' % method)
             directives += method(content, *args)
         return directives
     
     def get_static_directives(self, content, app_path):
         context = self.get_content_context(content)
-        context['app_path'] = app_path
-        return "Alias %(location)s %(path)s\n" % context
+        context['app_path'] = app_path % context
+        return "Alias %(location)s %(app_path)s\n" % context
     
     def get_fpm_directives(self, content, socket_type, socket, app_path):
         if socket_type == 'unix':
@@ -95,29 +95,26 @@ class Apache2Backend(ServiceController):
             'socket': socket,
         })
         return textwrap.dedent("""\
-            ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}
-            Alias %(location)s/ %(app_path)s/
+            ProxyPassMatch ^%(location)s(.*\.php(/.*)?)$ {target}
+            Alias %(location)s %(app_path)s/
             """.format(target=target) % context
         )
     
-    def get_fcgi_directives(self, content, app_path, wrapper_path):
+    def get_fcgid_directives(self, content, app_path, wrapper_path):
         context = self.get_content_context(content)
         context.update({
             'app_path': app_path,
             'wrapper_path': wrapper_path,
         })
-        fcgid = textwrap.dedent("""\
+        return textwrap.dedent("""\
             Alias %(location)s %(app_path)s
             ProxyPass %(location)s !
             <Directory %(app_path)s>
                 Options +ExecCGI
                 AddHandler fcgid-script .php
-                FcgidWrapper %(wrapper_path)s\
+                FcgidWrapper %(wrapper_path)s
+            </Directory>
             """) % context
-        for option in content.webapp.options.filter(name__startswith='Fcgid'):
-            fcgid += "        %s %s\n" % (option.name, option.value)
-        fcgid += "</Directory>\n"
-        return fcgid
     
     def get_ssl(self, site):
         cert = settings.WEBSITES_DEFAULT_HTTPS_CERT
@@ -129,54 +126,53 @@ class Apache2Backend(ServiceController):
             SSLEngine on
             SSLCertificateFile %s
             SSLCertificateKeyFile %s\
-            """ % cert
-        )
+            """) % cert
         return directives
     
     def get_security(self, site):
         directives = ''
-        for rules in site.options.filter(name='sec_rule_remove'):
+        for rules in site.directives.filter(name='sec_rule_remove'):
             for rule in rules.value.split():
                 directives += "SecRuleRemoveById %i\n" % int(rule)
-        for modsecurity in site.options.filter(name='sec_rule_off'):
+        for modsecurity in site.directives.filter(name='sec_rule_off'):
             directives += textwrap.dedent("""\
                 <LocationMatch %s>
                     SecRuleEngine Off
                 </LocationMatch>\
-                """ % modsecurity.value)
+                """) % modsecurity.value
         if directives:
             directives = '<IfModule mod_security2.c>\n%s\n</IfModule>' % directives
         return directives
     
     def get_redirect(self, site):
         directives = ''
-        for redirect in site.options.filter(name='redirect'):
+        for redirect in site.directives.filter(name='redirect'):
             if re.match(r'^.*[\^\*\$\?\)]+.*$', redirect.value):
                 directives += "RedirectMatch %s" % redirect.value
             else:
                 directives += "Redirect %s" % redirect.value
         return directives
     
-    def get_protections(self, site):
-        protections = ''
-        context = self.get_context(site)
-        for protection in site.options.filter(name='directory_protection'):
-            path, name, passwd = protection.value.split()
-            path = os.path.join(context['root'], path)
-            passwd = os.path.join(self.USER_HOME % context, passwd)
-            protections += textwrap.dedent("""
-                <Directory %s>
-                    AllowOverride All
-                    #AuthPAM_Enabled off
-                    AuthType Basic
-                    AuthName %s
-                    AuthUserFile %s
-                    <Limit GET POST>
-                        require valid-user
-                    </Limit>
-                </Directory>""" % (path, name, passwd)
-            )
-        return protections
+#    def get_protections(self, site):
+#        protections = ''
+#        context = self.get_context(site)
+#        for protection in site.directives.filter(name='directory_protection'):
+#            path, name, passwd = protection.value.split()
+#            path = os.path.join(context['root'], path)
+#            passwd = os.path.join(self.USER_HOME % context, passwd)
+#            protections += textwrap.dedent("""
+#                <Directory %s>
+#                    AllowOverride All
+#                    #AuthPAM_Enabled off
+#                    AuthType Basic
+#                    AuthName %s
+#                    AuthUserFile %s
+#                    <Limit GET POST>
+#                        require valid-user
+#                    </Limit>
+#                </Directory>""" % (path, name, passwd)
+#            )
+#        return protections
     
     def enable_or_disable(self, site):
         context = self.get_context(site)
@@ -184,27 +180,25 @@ class Apache2Backend(ServiceController):
             self.append(textwrap.dedent("""\
                 if [[ ! -f %(sites_enabled)s ]]; then
                     a2ensite %(site_unique_name)s.conf
-                else
-                    UPDATED=0
-                fi""" % context
-            ))
+                    UPDATED=1
+                fi""") % context
+            )
         else:
             self.append(textwrap.dedent("""\
                 if [[ -f %(sites_enabled)s ]]; then
                     a2dissite %(site_unique_name)s.conf;
-                else
-                    UPDATED=0
-                fi""" % context
-            ))
+                    UPDATED=1
+                fi""") % context
+            )
     
     def get_username(self, site):
-        option = site.options.filter(name='user_group').first()
+        option = site.directives.filter(name='user_group').first()
         if option:
             return option.value.split()[0]
         return site.account.username
     
     def get_groupname(self, site):
-        option = site.options.filter(name='user_group').first()
+        option = site.directives.filter(name='user_group').first()
         if option and ' ' in option.value:
             user, group = option.value.split()
             return group
@@ -236,7 +230,6 @@ class Apache2Backend(ServiceController):
             'location': content.path,
             'app_name': content.webapp.name,
             'app_path': content.webapp.get_path(),
-            'fpm_port': content.webapp.get_fpm_port(),
         })
         return context
 
@@ -292,7 +285,7 @@ class Apache2Traffic(ServiceMonitor):
                                 print sum
                             }' || [[ $? == 1 ]] && true
                 } | xargs echo ${OBJECT_ID}
-            }""" % context))
+            }""") % context)
     
     def monitor(self, site):
         context = self.get_context(site)

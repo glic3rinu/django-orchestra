@@ -10,9 +10,9 @@ from . import settings
 
 # TODO multiple and unique validation support in the formset
 class SiteDirective(Plugin):
-    HTTPD = 'httpd'
-    SEC = 'sec'
-    SSL = 'ssl'
+    HTTPD = 'HTTPD'
+    SEC = 'ModSecurity'
+    SSL = 'SSL'
     
     help_text = ""
     unique = True

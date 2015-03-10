@@ -31,8 +31,8 @@ class MySQLBackend(ServiceController):
             })
             self.append(textwrap.dedent("""\
                 mysql -e 'GRANT ALL PRIVILEGES ON `%(database)s`.* TO "%(username)s"@"%(host)s" %(grant)s;' \
-                """ % context
-            ))
+                """) % context
+            )
     
     def delete(self, database):
         if database.type != database.MYSQL:
@@ -62,12 +62,12 @@ class MySQLUserBackend(ServiceController):
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
             mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true \
-            """ % context
-        ))
+            """) % context
+        )
         self.append(textwrap.dedent("""\
             mysql -e 'UPDATE mysql.user SET Password="%(password)s" WHERE User="%(username)s";' \
-            """ % context
-        ))
+            """) % context
+        )
     
     def delete(self, user):
         if user.type != user.MYSQL:
@@ -75,8 +75,8 @@ class MySQLUserBackend(ServiceController):
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
             mysql -e 'DROP USER "%(username)s"@"%(host)s";' \
-            """ % context
-        ))
+            """) % context
+        )
     
     def commit(self):
         self.append("mysql -e 'FLUSH PRIVILEGES;'")
@@ -99,8 +99,8 @@ class MysqlDisk(ServiceMonitor):
         context = self.get_context(db)
         self.append(textwrap.dedent("""\
             mysql -e 'UPDATE db SET Insert_priv="N", Create_priv="N" WHERE Db="%(db_name)s";'\
-            """ % context
-        ))
+            """) % context
+        )
     
     def recovery(self, db):
         if db.type != db.MYSQL:
@@ -108,8 +108,8 @@ class MysqlDisk(ServiceMonitor):
         context = self.get_context(db)
         self.append(textwrap.dedent("""\
             mysql -e 'UPDATE db SET Insert_priv="Y", Create_priv="Y" WHERE Db="%(db_name)s";'\
-            """ % context
-        ))
+            """) % context
+        )
         
     def prepare(self):
         super(MysqlDisk, self).prepare()

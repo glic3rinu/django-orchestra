@@ -66,7 +66,8 @@ class Website(models.Model):
         return {
             'home': self.account.main_systemuser.get_home(),
             'account': self.account.username,
-            'name': self.name,
+            'user': self.account.username,
+            'site_name': self.name,
             'unique_name': self.unique_name
         }
     
@@ -105,10 +106,9 @@ class Directive(models.Model):
 
 
 class Content(models.Model):
-    webapp = models.ForeignKey('webapps.WebApp', verbose_name=_("web application"),
-            related_name='contents')
-    website = models.ForeignKey('websites.Website', verbose_name=_("web site"),
-            related_name='contents')
+    # related_name is content_set to differentiate between website.content -> webapp
+    webapp = models.ForeignKey('webapps.WebApp', verbose_name=_("web application"))
+    website = models.ForeignKey('websites.Website', verbose_name=_("web site"))
     path = models.CharField(_("path"), max_length=256, blank=True,
             validators=[validators.validate_url_path])
     
@@ -124,6 +124,8 @@ class Content(models.Model):
     def clean(self):
         if not self.path.startswith('/'):
             self.path = '/' + self.path
+        if not self.path.endswith('/'):
+            self.path = self.path + '/'
     
     def get_absolute_url(self):
         domain = self.website.domains.first()

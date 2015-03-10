@@ -213,3 +213,7 @@ ssh-copy-id root@<server-address>
 
 * webalizer backend on webapps and check webapps.websites.all()
 * monitor in batches doesnt work!!!
+
+
+* mv: cannot move `/home/marcay/webapps/webalizer/' to a subdirectory of itself, `/home/marcay/webapps/webalizer/.deleted'
+* Create utility for dealing with web paths '//', leading and ending '/'

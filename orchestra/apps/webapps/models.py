@@ -12,6 +12,7 @@ from orchestra.core import validators, services
 from orchestra.utils.functional import cached
 
 from . import settings
+from .options import AppOption
 from .types import AppType
 
 
@@ -55,9 +56,6 @@ class WebApp(models.Model):
             opt.name: opt.value for opt in self.options.all()
         }
     
-    def get_fpm_port(self):
-        return settings.WEBAPPS_FPM_START_PORT + self.account_id
-    
     def get_directive(self):
         return self.type_instance.get_directive(self)
     
@@ -67,6 +65,9 @@ class WebApp(models.Model):
             'app_name': self.name,
         }
         path = settings.WEBAPPS_BASE_ROOT % context
+        public_root = self.options.filter(name='public-root').first()
+        if public_root:
+            path = os.path.join(path, public_root.value)
         return path.replace('//', '/')
     
     def get_user(self):
@@ -95,7 +96,7 @@ class WebAppOption(models.Model):
     
     @cached_property
     def option_class(self):
-        return SiteDirective.get_plugin(self.name)
+        return AppOption.get_plugin(self.name)
     
     @cached_property
     def option_instance(self):

@@ -30,8 +30,8 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
                 mkdir %(app_path)s/wp-content/uploads
                 chmod 750 %(app_path)s/wp-content/uploads
                 chown -R %(user)s:%(group)s %(app_path)s
-            fi""" % context
-        ))
+            fi""") % context
+        )
     
     def delete(self, webapp):
         context = self.get_context(webapp)

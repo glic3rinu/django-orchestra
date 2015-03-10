@@ -20,18 +20,17 @@ class WebalizerBackend(ServiceController):
                 echo 'Webstats are coming soon' > %(webalizer_path)s/index.html
             fi
             echo '%(webalizer_conf)s' > %(webalizer_conf_path)s
-            chown %(user)s:www-data %(webalizer_path)s""" % context
-        ))
+            chown %(user)s:www-data %(webalizer_path)s""") % context
+        )
     
     def delete(self, content):
         context = self.get_context(content)
-        delete_webapp = not content.webapp.pk
-        # TODO remove when confirmed that it works, otherwise create a second WebalizerBackend for WebApps
+        delete_webapp = type(content.webapp).objects.filter(pk=content.webapp.pk).exists()
         if delete_webapp:
             self.append("mv %(webapp_path)s %(webapp_path)s.deleted" % context)
-        if delete_webapp or not content.webapp.contents.filter(website=content.website).exists():
-            self.append("mv %(webalizer_path)s %(webalizer_path)s.deleted" % context)
-            self.append("rm %(webalizer_conf_path)s" % context)
+        if delete_webapp or not content.webapp.content_set.filter(website=content.website).exists():
+            self.append("rm -fr %(webalizer_path)s" % context)
+            self.append("rm -f %(webalizer_conf_path)s" % context)
     
     def get_context(self, content):
         conf_file = "%s.conf" % content.website.unique_name
@@ -88,6 +87,5 @@ class WebalizerBackend(ServiceController):
             SearchEngine   mamma.com       query=
             SearchEngine   alltheweb.com   query=
             
-            DumpSites      yes""" % context
-        )
+            DumpSites      yes""") % context
         return context

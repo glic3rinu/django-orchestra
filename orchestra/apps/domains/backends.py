@@ -36,8 +36,8 @@ class Bind9MasterDomainBackend(ServiceController):
             mv %(zone_path)s.tmp %(zone_path)s
             # Because bind realod will not display any fucking error
             named-checkzone -k fail -n fail %(name)s %(zone_path)s
-            """ % context
-        ))
+            """) % context
+        )
         self.update_conf(context)
     
     def update_conf(self, context):
@@ -47,13 +47,13 @@ class Bind9MasterDomainBackend(ServiceController):
                        -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s
                 echo '%(conf)s' >> %(conf_path)s
                 UPDATED=1
-            }""" % context
-        ))
+            }""") % context
+        )
         # Delete ex-top-domains that are now subdomains
         self.append(textwrap.dedent("""\
             sed -i -e '/zone\s\s*".*\.%(name)s".*/,/^\s*};\s*$/d' \\
-                   -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s""" % context
-        ))
+                   -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s""") % context
+        )
         if 'zone_path' in context:
             context['zone_subdomains_path'] = re.sub(r'^(.*/)', r'\1*.', context['zone_path'])
             self.append('rm -f %(zone_subdomains_path)s' % context)
@@ -69,19 +69,19 @@ class Bind9MasterDomainBackend(ServiceController):
             return
         self.append(textwrap.dedent("""\
             sed -e '/zone\s\s*"%(name)s".*/,/^\s*};\s*$/d' \\
-                -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s > %(conf_path)s.tmp""" % context
-        ))
+                -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s > %(conf_path)s.tmp""") % context
+        )
         self.append('diff -B -I"^\s*//" %(conf_path)s.tmp %(conf_path)s || UPDATED=1' % context)
         self.append('mv %(conf_path)s.tmp %(conf_path)s' % context)
     
     def commit(self):
         """ reload bind if needed """
-        self.append('[[ $UPDATED == 1 ]] && service bind9 reload')
+        self.append('if [[ $UPDATED == 1 ]]; then service bind9 reload; fi')
     
     def get_servers(self, domain, backend):
         """ Get related server IPs from registered backend routes """
         from orchestra.apps.orchestration.manager import router
-        operation = Operation.create(backend, peration.SAVE, domain)
+        operation = Operation.create(backend, domain, Operation.SAVE)
         servers = []
         for server in router.get_servers(operation):
             servers.append(server.get_ip())
@@ -110,7 +110,7 @@ class Bind9MasterDomainBackend(ServiceController):
                     allow-transfer { %(slaves)s; };
                     also-notify { %(also_notify)s };
                     notify yes;
-                };""" % context)
+                };""") % context
         })
         return context
 
@@ -131,7 +131,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     
     def commit(self):
         """ ideally slave should be restarted after master """
-        self.append('[[ $UPDATED == 1 ]] && { sleep 1 && service bind9 reload; } &')
+        self.append('if [[ $UPDATED == 1 ]]; then { sleep 1 && service bind9 reload; } & fi')
     
     def get_masters(self, domain):
         return self.get_servers(domain, Bind9MasterDomainBackend)
@@ -152,6 +152,6 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
                     file "%(name)s";
                     masters { %(masters)s; };
                     allow-notify { %(masters)s; };
-                };""" % context)
+                };""") % context
         })
         return context

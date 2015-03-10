@@ -154,7 +154,7 @@ class BackendOperation(models.Model):
         """
         if self.action == self.DELETE:
             if hasattr(self.backend, 'get_context'):
-                self.backend.get_context(self.instance)
+                self.backend().get_context(self.instance)
     
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)

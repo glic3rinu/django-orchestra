@@ -7,17 +7,13 @@ from . import WebAppServiceMixin
 
 class StaticBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("Static")
-    directive = 'static'
     default_route_match = "webapp.type == 'static'"
     
     def save(self, webapp):
-        if not self.valid_directive(webapp):
-            return
         context = self.get_context(webapp)
         self.create_webapp_dir(context)
+        self.set_under_construction(context)
     
     def delete(self, webapp):
-        if not self.valid_directive(webapp):
-            return
         context = self.get_context(webapp)
         self.delete_webapp_dir(context)

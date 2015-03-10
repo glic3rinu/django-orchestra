@@ -26,8 +26,8 @@ class SystemUserBackend(ServiceController):
             fi
             mkdir -p %(home)s
             chmod 750 %(home)s
-            chown %(username)s:%(username)s %(home)s""" % context
-        ))
+            chown %(username)s:%(username)s %(home)s""") % context
+        )
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
             context['member'] = member
             self.append('usermod -a -G %(username)s %(member)s' % context)
@@ -40,8 +40,8 @@ class SystemUserBackend(ServiceController):
             { sleep 2 && killall -u %(username)s -s KILL; } &
             killall -u %(username)s || true
             userdel %(username)s || true
-            groupdel %(username)s || true""" % context
-        ))
+            groupdel %(username)s || true""") % context
+        )
         self.delete_home(context, user)
     
     def grant_permission(self, user):
@@ -145,7 +145,7 @@ class FTPTraffic(ServiceMonitor):
                                 print sum
                             }' || [[ $? == 1 ]] && true
                 } | xargs echo ${OBJECT_ID}
-            }""" % current_date))
+            }""") % current_date)
     
     def monitor(self, user):
         context = self.get_context(user)

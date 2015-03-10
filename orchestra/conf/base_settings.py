@@ -36,7 +36,9 @@ MEDIA_URL = '/media/'
 ALLOWED_HOSTS = '*'
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
-ATOMIC_REQUESTS = True
+# ATOMIC REQUESTS do not wrap middlewares (orchestra.apps.orchestration.middlewares.OperationsMiddleware)
+ATOMIC_REQUESTS = False
+
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
@@ -46,9 +48,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'orchestra.core.caches.RequestCacheMiddleware',
+    # ATOMIC REQUESTS do not wrap middlewares
+    'orchestra.core.middlewares.TransactionMiddleware',
     'orchestra.apps.orchestration.middlewares.OperationsMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 )
 
 

@@ -2,28 +2,31 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 
-WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '{home}/webapps/{app_name}/')
-
-
+WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '%(home)s/webapps/%(app_name)s/')
 
 WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
-    # '127.0.0.1:9{app_id:03d}
-    '/opt/php/5.4/socks/{user}-{app_name}.sock'
+    # '127.0.0.1:9%(app_id)03d
+    '/opt/php/5.4/socks/%(user)s-%(app_name)s.sock'
 )
 
-WEBAPPS_FPM_START_PORT = getattr(settings, 'WEBAPPS_FPM_START_PORT', 10000)
-
-
 WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
-    '/etc/php5/fpm/pool.d/{user}-{app_name}.conf')
+    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf')
 
 
 WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
-    '/home/httpd/fcgid/{user}/{app_name}-wrapper')
+    '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper')
 
+
+WEBAPPS_FCGID_CMD_OPTIONS_PATH = getattr(settings, 'WEBAPPS_FCGID_CMD_OPTIONS_PATH',
+    '/etc/apache2/fcgid-conf/%(user)s-%(app_name)s.conf')
+
+
+WEBAPPS_PHP_ERROR_LOG_PATH = getattr(settings, 'WEBAPPS_PHP_ERROR_LOG_PATH',
+    '')
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
     'orchestra.apps.webapps.types.PHP54App',
+    'orchestra.apps.webapps.types.PHP53App',
     'orchestra.apps.webapps.types.PHP52App',
     'orchestra.apps.webapps.types.PHP4App',
     'orchestra.apps.webapps.types.StaticApp',
@@ -35,7 +38,10 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
     'orchestra.apps.webapps.types.WordPressApp',
 ))
 
-
+WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_PATH',
+    # Server-side path where a under construction stock page is
+    # '/var/www/undercontruction/index.html',
+    '')
 
 #WEBAPPS_TYPES_OVERRIDE = getattr(settings, 'WEBAPPS_TYPES_OVERRIDE', {})
 #for webapp_type, value in WEBAPPS_TYPES_OVERRIDE.iteritems():
@@ -79,7 +85,6 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTIO
 
 WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
     'orchestra.apps.webapps.options.PublicRoot',
-    'orchestra.apps.webapps.options.DirectoryProtection',
     'orchestra.apps.webapps.options.Timeout',
     'orchestra.apps.webapps.options.Processes',
     'orchestra.apps.webapps.options.PHPEnabledFunctions',
@@ -140,7 +145,7 @@ WEBAPPS_DOKUWIKIMU_LISTEN = getattr(settings, 'WEBAPPS_DOKUWIKIMU_LISTEN',
 
 
 WEBAPPS_DRUPALMU_SITES_PATH = getattr(settings, 'WEBAPPS_DRUPALMU_SITES_PATH',
-    '/home/httpd/htdocs/drupal-mu/sites/{site_name}')
+    '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s')
 
 WEBAPPS_DRUPALMU_LISTEN = getattr(settings, 'WEBAPPS_DRUPALMU_LISTEN',
     '/opt/php/5.4/socks/drupal-mu.sock'

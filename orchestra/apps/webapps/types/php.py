@@ -57,16 +57,23 @@ class PHPAppType(AppType):
         return init_vars
 
 
+help_message = _("Version of PHP used to execute this webapp. <br>"
+    "Changing the PHP version may result in application malfunction, "
+    "make sure that everything continue to work as expected.")
+
+
 class PHPFPMAppForm(PluginDataForm):
     php_version = forms.ChoiceField(label=_("PHP version"),
             choices=settings.WEBAPPS_PHP_FPM_VERSIONS,
-            initial=settings.WEBAPPS_PHP_FPM_DEFAULT_VERSION)
+            initial=settings.WEBAPPS_PHP_FPM_DEFAULT_VERSION,
+            help_text=help_message)
 
 
 class PHPFPMAppSerializer(serializers.Serializer):
     php_version = serializers.ChoiceField(label=_("PHP version"),
             choices=settings.WEBAPPS_PHP_FPM_VERSIONS,
-            default=settings.WEBAPPS_PHP_FPM_DEFAULT_VERSION)
+            default=settings.WEBAPPS_PHP_FPM_DEFAULT_VERSION,
+            help_text=help_message)
 
 
 class PHPFPMApp(PHPAppType):
@@ -91,13 +98,15 @@ class PHPFPMApp(PHPAppType):
 class PHPFCGIDAppForm(PluginDataForm):
     php_version = forms.ChoiceField(label=_("PHP version"),
             choices=settings.WEBAPPS_PHP_FCGID_VERSIONS,
-            initial=settings.WEBAPPS_PHP_FCGID_DEFAULT_VERSION)
+            initial=settings.WEBAPPS_PHP_FCGID_DEFAULT_VERSION,
+            help_text=help_message)
 
 
 class PHPFCGIDAppSerializer(serializers.Serializer):
     php_version = serializers.ChoiceField(label=_("PHP version"),
             choices=settings.WEBAPPS_PHP_FCGID_VERSIONS,
-            default=settings.WEBAPPS_PHP_FCGID_DEFAULT_VERSION)
+            default=settings.WEBAPPS_PHP_FCGID_DEFAULT_VERSION,
+            help_text=help_message)
 
 
 class PHPFCGIDApp(PHPAppType):

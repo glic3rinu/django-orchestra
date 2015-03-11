@@ -10,7 +10,7 @@ from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
 from .actions import view_zone
-from .forms import RecordInlineFormSet, CreateDomainAdminForm
+from .forms import RecordInlineFormSet, BatchDomainCreationAdminForm
 from .filters import TopDomainListFilter
 from .models import Domain, Record
 
@@ -68,7 +68,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_filter = [TopDomainListFilter]
     change_readonly_fields = ('name',)
     search_fields = ['name',]
-    add_form = CreateDomainAdminForm
+    add_form = BatchDomainCreationAdminForm
     change_view_actions = [view_zone]
     
     def structured_name(self, domain):
@@ -115,11 +115,37 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
             qs = qs.prefetch_related('websites')
         return qs
     
-#    def save_related(self, request, form, formsets, change):
-#        super(DomainAdmin, self).save_related(request, form, formsets, change)
-#        if form.cleaned_data['migrate_subdomains']:
-#            domain = form.instance
-#            domain.subdomains.update(account_id=domain.account_id)
+    def save_model(self, request, obj, form, change):
+        """ batch domain creation support """
+        super(DomainAdmin, self).save_model(request, obj, form, change)
+        self.extra_domains = []
+        if not change:
+            for name in form.extra_names:
+                domain = Domain.objects.create(name=name, account_id=obj.account_id)
+                self.extra_domains.append(domain)
+    
+    def save_formset(self, request, form, formset, change):
+        """
+        Given an inline formset save it to the database.
+        """
+        formset.save()
+    
+    def save_related(self, request, form, formsets, change):
+        """ batch domain creation support """
+        super(DomainAdmin, self).save_related(request, form, formsets, change)
+        if not change:
+            # Clone records to extra_domains, if any
+            for formset in formsets:
+                if formset.model is Record:
+                    for domain in self.extra_domains:
+                        # Reset pk value of the record instances to force creation of new ones
+                        for record_form in formset.forms:
+                            record = record_form.instance
+                            if record.pk:
+                                record.pk = None
+                        formset.instance = domain
+                        form.instance = domain
+                        self.save_formset(request, form, formset, change=change)
 
 
 admin.site.register(Domain, DomainAdmin)

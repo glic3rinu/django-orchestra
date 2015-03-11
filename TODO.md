@@ -11,21 +11,16 @@
 * add `BackendLog` retry action
 * webmail identities and addresses
 
-* use Code: https://github.com/django/django/blob/master/django/forms/forms.py#L415 for domain.refresh_serial()
 * Permissions .filter_queryset()
 
 * env vars instead of multiple settings files: https://devcenter.heroku.com/articles/config-vars ?
 
 * Log changes from rest api (serialized objects)
 
-* EMAIL backend operations which contain stderr messages (because under certain failures status code is still 0)
-
-* Settings dictionary like DRF2 in order to better override large settings like WEBSITES_APPLICATIONS.etc
 
 * backend logs with hal logo
 * set_password orchestration method?
 
-* make account_link to autoreplace account on change view.
 
 * LAST version of this shit http://wkhtmltopdf.org/downloads.html
 
@@ -48,22 +43,20 @@
 
 * Maildir billing tests/ webdisk billing tests (avg metric)
 
-* move icons to apps, and use appconfig to cleanup config stuff
 
-* when using modeladmin to store shit like self.account, make sure to have a cleanslate in each request?
+* when using modeladmin to store shit like self.account, make sure to have a cleanslate in each request? no, better reuse the last one
 
-* jabber with mailbox accounts (dovecto mail notification)
+* jabber with mailbox accounts (dovecot mail notification)
 
 * rename accounts register to "account", and reated api and admin references
 
-* take a look icons from ajenti ;)
 
 * Disable services is_active should be computed on the fly in order to distinguish account.is_active from service.is_active when reactivation.
     * Perhaps it is time to create a ServiceModel ?
 
 * prevent deletion of main user by the user itself
 
-* AccountAdminMixin auto adds 'account__name' on searchfields and handle account_link on fieldsets
+* AccountAdminMixin auto adds 'account__name' on searchfields
 
 * Separate panel from server passwords?  Store passwords on panel? set_password special backend operation?
 
@@ -75,16 +68,15 @@
 
 * delete main user -> delete account or prevent delete main user
 
-* Ansible orchestration *method* (methods.py)
-* multiple domains creation; line separated domains
-* Move MU webapps to SaaS?
 
-* offer to create mailbox on account creation
+* multiple domains creation; line separated domains
+
+
 * init.d celery scripts
     -# Required-Start:    $network $local_fs $remote_fs postgresql celeryd
     -# Required-Stop:     $network $local_fs $remote_fs postgresql celeryd
 
-* for list virtual_domains cleaning up we need to know the old domain name when a list changes its address domain, but this is not possible with the current design.
+
 * regenerate virtual_domains every time (configure a separate file for orchestra on postfix)
 * update_fields=[] doesn't trigger post save!
 
@@ -97,9 +89,10 @@
 
 * proforma without billing contact?
 
+* print open invoices as proforma?
+
 * env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest
 
-* Pangea modifications: domain registered/non-registered list_display and field with register link: inconsistent, what happen to related objects with a domain that is converted to register-only?
 
 * ForeignKey.swappable
 * Field.editable
@@ -111,15 +104,11 @@
 
 * multiple files monitoring
 
-* Split plans into a separate app (plans and rates / services ) interface ?
-
 * sync() ServiceController method that synchronizes orchestra and servers (delete or import)
 
 * consider removing mailbox support on forward (user@pangea.org instead)
 
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
-
-* Root owned logs on user's home ? yes
 
 * reconsider binding webapps to systemusers (pangea multiple users wordpress-ftp, moodle-pangea, etc)
 * Secondary user home in /home/secondaryuser and simlink to /home/main/webapps/app so it can have private storage?
@@ -155,7 +144,6 @@
 
 * Create an admin service_view with icons (like SaaS app)
 
-* Fix ftp traffic
 
 * Resource graph for each related object
 
@@ -179,21 +167,14 @@ Multi-tenant WebApps
 * SaaS - Those apps that can't use custom domain
 * WebApp - Those apps that can use custom domain
 
-* Howto upgrade webapp PHP version? <FilesMatch \.php$> SetHandler php54-cgi</FilesMatch> ? or create a new app 
 
 * prevent @pangea.org email addresses on contacts, enforce at least one email without @pangea.org
-
-* fcgid kill instead of apache reload?
-
-* username maximum as group user in UNIX
 
 * forms autocomplete="off", doesn't work in chrome
 
 
 ln -s /proc/self/fd /dev/fd
 
-
-* http-https/https-only/http-only
 
 
 POST INSTALL
@@ -212,9 +193,10 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 * <IfModule security2_module> and other IfModule on backend SecRule
 
 
-* webalizer backend on webapps and check webapps.websites.all()
 * monitor in batches doesnt work!!!
 
 
-* mv: cannot move `/home/marcay/webapps/webalizer/' to a subdirectory of itself, `/home/marcay/webapps/webalizer/.deleted'
-* Create utility for dealing with web paths '//', leading and ending '/'
+* Orchestra global search box on the header, based https://github.com/django/django/blob/master/django/contrib/admin/options.py#L866 and iterating over all registered services and inspectin its admin.search_fields
+
+
+* contain error on plugin missing key (plugin dissabled)

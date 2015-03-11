@@ -33,9 +33,9 @@ class Bind9MasterDomainBackend(ServiceController):
         self.append(textwrap.dedent("""\
             echo -e '%(zone)s' > %(zone_path)s.tmp
             diff -N -I'^\s*;;' %(zone_path)s %(zone_path)s.tmp || UPDATED=1
+            # Because bind reload will not display any fucking error
+            named-checkzone -k fail -n fail %(name)s %(zone_path)s.tmp
             mv %(zone_path)s.tmp %(zone_path)s
-            # Because bind realod will not display any fucking error
-            named-checkzone -k fail -n fail %(name)s %(zone_path)s
             """) % context
         )
         self.update_conf(context)

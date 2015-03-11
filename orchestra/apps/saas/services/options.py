@@ -84,10 +84,9 @@ class SoftwareService(plugins.Plugin):
             plugins.append(import_class(cls))
         return plugins
     
-    @classmethod
-    def clean_data(cls, saas):
+    def clean_data(cls):
         """ model clean, uses cls.serizlier by default """
-        serializer = cls.serializer(data=saas.data)
+        serializer = cls.serializer(data=self.instance.data)
         if not serializer.is_valid():
             raise ValidationError(serializer.errors)
         return serializer.data
@@ -96,8 +95,10 @@ class SoftwareService(plugins.Plugin):
     def get_change_readonly_fileds(cls):
         return cls.change_readonly_fileds + ('username',)
     
-    def get_site_name(self, saas):
-        return self.site_name or '.'.join((saas.site_name, self.site_name_base_domain))
+    def get_site_name(self):
+        return self.site_name or '.'.join(
+            (self.instance.site_name, self.site_name_base_domain)
+        )
     
     def get_form(self):
         self.form.plugin = self

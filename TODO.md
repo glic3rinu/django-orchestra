@@ -203,11 +203,12 @@ POST INSTALL
 ssh-keygen
 ssh-copy-id root@<server-address>
 
+Php binaries should have this format: /usr/bin/php5.2-cgi
 
-* symbolicLink webapp (link stuff from other places)
 
-* logs on panle/logs/ ? mkdir ~webapps, backend post save signal? 
-* transaction abortion on backend.generation, transaction fault tolerant on backend.execute()
+
+* logs on panel/logs/ ? mkdir ~webapps, backend post save signal? 
+* transaction fault tolerant on backend.execute()
 * <IfModule security2_module> and other IfModule on backend SecRule
 
 

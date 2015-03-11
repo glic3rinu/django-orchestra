@@ -8,6 +8,10 @@ class Plugin(object):
     icon = None
     change_readonly_fileds = ()
     
+    def __init__(self, instance=None):
+        # Related model instance of this plugin
+        self.instance = instance
+    
     @classmethod
     def get_name(cls):
         return getattr(cls, 'name', cls.__name__)

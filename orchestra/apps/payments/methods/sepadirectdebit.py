@@ -45,9 +45,9 @@ class SEPADirectDebit(PaymentMethod):
     serializer = SEPADirectDebitSerializer
     due_delta = datetime.timedelta(days=5)
     
-    def get_bill_message(self, source):
+    def get_bill_message(self):
         return _("This bill will been automatically charged to your bank account "
-                 " with IBAN number<br><strong>%s</strong>.") % source.number
+                 " with IBAN number<br><strong>%s</strong>.") % self.instance.number
     
     @classmethod
     def process(cls, transactions):

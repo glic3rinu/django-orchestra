@@ -36,27 +36,27 @@ class PaymentSource(models.Model):
     @cached_property
     def service_instance(self):
         """ Per request lived method_instance """
-        return self.method_class()
+        return self.method_class(self)
     
     @cached_property
     def label(self):
-        return self.method_instance.get_label(self.data)
+        return self.method_instance.get_label()
     
     @cached_property
     def number(self):
-        return self.method_instance.get_number(self.data)
+        return self.method_instance.get_number()
     
     def get_bill_context(self):
         method = self.method_instance
         return {
-            'message': method.get_bill_message(self),
+            'message': method.get_bill_message(),
         }
     
     def get_due_delta(self):
         return self.method_instance.due_delta
     
     def clean(self):
-        self.data = self.method_instance.clean_data(self.data)
+        self.data = self.method_instance.clean_data()
 
 
 class TransactionQuerySet(models.QuerySet):

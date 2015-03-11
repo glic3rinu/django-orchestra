@@ -13,7 +13,7 @@ from .. import settings
 class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     """ Per-webapp php application """
     verbose_name = _("PHP-FPM")
-    default_route_match = "webapp.type.endswith('-fpm')"
+    default_route_match = "webapp.type_class.php_execution == 'fpm'"
     
     def save(self, webapp):
         context = self.get_context(webapp)
@@ -45,7 +45,7 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
     
     def get_fpm_config(self, webapp, context):
         context.update({
-            'init_vars': webapp.type_instance.get_php_init_vars(webapp),
+            'init_vars': webapp.type_instance.get_php_init_vars(),
             'fpm_port': webapp.get_fpm_port(),
             'max_children': webapp.get_options().get('processes', False),
             'request_terminate_timeout': webapp.get_options().get('timeout', False),
@@ -76,4 +76,3 @@ class PHPFPMBackend(WebAppServiceMixin, ServiceController):
             'fpm_path': settings.WEBAPPS_PHPFPM_POOL_PATH % context,
         })
         return context
-

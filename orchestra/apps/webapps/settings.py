@@ -2,7 +2,9 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 
-WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT', '%(home)s/webapps/%(app_name)s/')
+WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT',
+    '%(home)s/webapps/%(app_name)s/')
+
 
 WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
     # '127.0.0.1:9%(app_id)03d
@@ -13,11 +15,12 @@ WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
     '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf')
 
 
-WEBAPPS_FCGID_PATH = getattr(settings, 'WEBAPPS_FCGID_PATH',
+WEBAPPS_FCGID_WRAPPER_PATH = getattr(settings, 'WEBAPPS_FCGID_WRAPPER_PATH',
     '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper')
 
 
 WEBAPPS_FCGID_CMD_OPTIONS_PATH = getattr(settings, 'WEBAPPS_FCGID_CMD_OPTIONS_PATH',
+    # Loaded by Apache
     '/etc/apache2/fcgid-conf/%(user)s-%(app_name)s.conf')
 
 
@@ -25,18 +28,49 @@ WEBAPPS_PHP_ERROR_LOG_PATH = getattr(settings, 'WEBAPPS_PHP_ERROR_LOG_PATH',
     '')
 
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
-    'orchestra.apps.webapps.types.PHP54App',
-    'orchestra.apps.webapps.types.PHP53App',
-    'orchestra.apps.webapps.types.PHP52App',
-    'orchestra.apps.webapps.types.PHP4App',
-    'orchestra.apps.webapps.types.StaticApp',
-    'orchestra.apps.webapps.types.WebalizerApp',
-    'orchestra.apps.webapps.types.WordPressMuApp',
-    'orchestra.apps.webapps.types.DokuWikiMuApp',
-    'orchestra.apps.webapps.types.DrupalMuApp',
-    'orchestra.apps.webapps.types.SymbolicLinkApp',
-    'orchestra.apps.webapps.types.WordPressApp',
+    'orchestra.apps.webapps.types.php.PHPFPMApp',
+    'orchestra.apps.webapps.types.php.PHPFCGIDApp',
+    'orchestra.apps.webapps.types.misc.StaticApp',
+    'orchestra.apps.webapps.types.misc.WebalizerApp',
+    'orchestra.apps.webapps.types.saas.WordPressMuApp',
+    'orchestra.apps.webapps.types.saas.DokuWikiMuApp',
+    'orchestra.apps.webapps.types.saas.DrupalMuApp',
+    'orchestra.apps.webapps.types.misc.SymbolicLinkApp',
+    'orchestra.apps.webapps.types.wordpress.WordPressFPMApp',
+    'orchestra.apps.webapps.types.wordpress.WordPressFCGIDApp',
 ))
+
+
+
+WEBAPPS_PHP_FCGID_VERSIONS = getattr(settings, 'WEBAPPS_PHP_FCGID_VERSIONS', (
+    ('5.4', '5.4'),
+    ('5.3', '5.3'),
+    ('5.2', '5.2'),
+    ('4', '4'),
+))
+
+
+WEBAPPS_PHP_FCGID_DEFAULT_VERSION = getattr(settings, 'WEBAPPS_PHP_FCGID_DEFAULT_VERSION',
+    '5.4')
+
+
+WEBAPPS_PHP_CGI_BINARY_PATH = getattr(settings, 'WEBAPPS_PHP_CGI_BINARY_PATH',
+    # Path of the cgi binary used by fcgid
+    '/usr/bin/php%(php_version)s-cgi')
+
+WEBAPPS_PHP_CGI_RC_PATH = getattr(settings, 'WEBAPPS_PHP_CGI_RC_PATH',
+    # Path to php.ini
+    '/etc/php%(php_version)s/cgi/')
+
+
+WEBAPPS_PHP_FPM_VERSIONS = getattr(settings, 'WEBAPPS_PHP_FPM_VERSIONS', (
+    ('5.4', '5.4'),
+))
+
+
+WEBAPPS_PHP_FPM_DEFAULT_VERSION = getattr(settings, 'WEBAPPS_PHP_DEFAULT_VERSION',
+    '5.4')
+
 
 WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_PATH',
     # Server-side path where a under construction stock page is
@@ -49,14 +83,6 @@ WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_
 #        WEBAPPS_TYPES.pop(webapp_type, None)
 #    else:
 #        WEBAPPS_TYPES[webapp_type] = value
-
-
-WEBAPPS_DEFAULT_TYPE = getattr(settings, 'WEBAPPS_DEFAULT_TYPE', 'php5.5')
-
-
-WEBAPPS_DEFAULT_HTTPS_CERT = getattr(settings, 'WEBAPPS_DEFAULT_HTTPS_CERT',
-    ('/etc/apache2/cert', '/etc/apache2/cert.key')
-)
 
 
 WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTION', [

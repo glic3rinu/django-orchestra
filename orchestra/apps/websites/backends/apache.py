@@ -1,6 +1,6 @@
-import textwrap
 import os
 import re
+import textwrap
 
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _

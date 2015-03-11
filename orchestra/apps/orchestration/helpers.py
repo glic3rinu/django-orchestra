@@ -38,24 +38,30 @@ def message_user(request, logs):
     ids = []
     for log in logs:
         total += 1
-        ids.append(log.pk)
+        if log.state != log.EXCEPTION:
+            # EXCEPTION logs are not stored on the database
+            ids.append(log.pk)
         if log.state == log.SUCCESS:
             successes += 1
     errors = total-successes
-    if total > 1:
+    if len(ids) == 1:
+        url = reverse('admin:orchestration_backendlog_change', args=ids)
+        href = '<a href="{}">backends</a>'.format(url)
+    elif len(ids) > 1:
         url = reverse('admin:orchestration_backendlog_changelist')
         url += '?id__in=%s' % ','.join(map(str, ids))
+        href = '<a href="{}">backends</a>'.format(url)
     else:
-        url = reverse('admin:orchestration_backendlog_change', args=ids)
+        href = ''
     if errors:
         msg = ungettext(
-            _('{errors} out of {total} <a href="{url}">backends</a> has fail to execute.'),
-            _('{errors} out of {total} <a href="{url}">backends</a> have fail to execute.'),
+            _('{errors} out of {total} {href} has fail to execute.'),
+            _('{errors} out of {total} {href} have fail to execute.'),
             errors)
-        messages.error(request, mark_safe(msg.format(errors=errors, total=total, url=url)))
+        messages.error(request, mark_safe(msg.format(errors=errors, total=total, href=href)))
     else:
         msg = ungettext(
-            _('{total} <a href="{url}">backend</a> has been executed.'),
-            _('{total} <a href="{url}">backends</a> have been executed.'),
+            _('{total} {href} has been executed.'),
+            _('{total} {href} have been executed.'),
             total)
-        messages.success(request, mark_safe(msg.format(total=total, url=url)))
+        messages.success(request, mark_safe(msg.format(total=total, href=href)))

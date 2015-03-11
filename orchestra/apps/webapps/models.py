@@ -44,12 +44,12 @@ class WebApp(models.Model):
     @cached_property
     def type_instance(self):
         """ Per request lived type_instance """
-        return self.type_class()
+        return self.type_class(self)
     
     def clean(self):
         apptype = self.type_instance
-        apptype.validate(self)
-        self.data = apptype.clean_data(self)
+        apptype.validate()
+        self.data = apptype.clean_data()
     
     @cached
     def get_options(self):
@@ -58,7 +58,7 @@ class WebApp(models.Model):
         }
     
     def get_directive(self):
-        return self.type_instance.get_directive(self)
+        return self.type_instance.get_directive()
     
     def get_path(self):
         context = {
@@ -102,10 +102,10 @@ class WebAppOption(models.Model):
     @cached_property
     def option_instance(self):
         """ Per request lived option instance """
-        return self.option_class()
+        return self.option_class(self)
     
     def clean(self):
-        self.option_instance.validate(self)
+        self.option_instance.validate()
 
 
 services.register(WebApp)
@@ -117,9 +117,9 @@ services.register(WebApp)
 @receiver(pre_save, sender=WebApp, dispatch_uid='webapps.type.save')
 def type_save(sender, *args, **kwargs):
     instance = kwargs['instance']
-    instance.type_instance.save(instance)
+    instance.type_instance.save()
 
 @receiver(pre_delete, sender=WebApp, dispatch_uid='webapps.type.delete')
 def type_delete(sender, *args, **kwargs):
     instance = kwargs['instance']
-    instance.type_instance.delete(instance)
+    instance.type_instance.delete()

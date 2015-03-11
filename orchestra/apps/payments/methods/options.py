@@ -26,9 +26,9 @@ class PaymentMethod(plugins.Plugin):
         return plugins
     
     @classmethod
-    def clean_data(cls, data):
+    def clean_data(cls):
         """ model clean, uses cls.serializer by default """
-        serializer = cls.serializer(data=data)
+        serializer = cls.serializer(data=self.instance.data)
         if not serializer.is_valid():
             serializer.errors.pop('non_field_errors', None)
             raise ValidationError(serializer.errors)
@@ -43,11 +43,11 @@ class PaymentMethod(plugins.Plugin):
         self.serializer.plugin = self
         return self.serializer
     
-    def get_label(self, data):
-        return data[self.label_field]
+    def get_label(self):
+        return self.instance.data[self.label_field]
     
-    def get_number(self, data):
-        return data[self.number_field]
+    def get_number(self):
+        return self.instance.data[self.number_field]
     
-    def get_bill_message(self, source):
+    def get_bill_message(self):
         return ''

@@ -69,11 +69,12 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
             url = change_url(website)
             name = "%s on %s" % (website.name, content.path)
             websites.append('<a href="%s">%s</a>' % (url, name))
-        add_url = reverse('admin:websites_website_add')
-        # TODO support for preselecting related web app on website
-        add_url += '?account=%s' % webapp.account_id
-        plus = '<strong style="color:green; font-size:12px">+</strong>'
-        websites.append('<a href="%s">%s%s</a>' % (add_url, plus, ugettext("Add website")))
+        if not websites:
+            add_url = reverse('admin:websites_website_add')
+            # TODO support for preselecting related web app on website
+            add_url += '?account=%s' % webapp.account_id
+            plus = '<strong style="color:green; font-size:12px">+</strong>'
+            websites.append('<a href="%s">%s%s</a>' % (add_url, plus, ugettext("Add website")))
         return '<br>'.join(websites)
     display_websites.short_description = _("web sites")
     display_websites.allow_tags = True

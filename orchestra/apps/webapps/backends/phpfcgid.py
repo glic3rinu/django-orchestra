@@ -13,7 +13,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     """ Per-webapp fcgid application """
     verbose_name = _("PHP-Fcgid")
     directive = 'fcgid'
-    default_route_match = "webapp.type.endswith('-fcgid')"
+    default_route_match = "webapp.type_class.php_execution == 'fcgid'"
     
     def save(self, webapp):
         context = self.get_context(webapp)
@@ -37,6 +37,8 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
                     echo -e '%(cmd_options)s' > %(cmd_options_path)s; UPDATED_APACHE=1
                 }""" ) % context
             )
+        else:
+            self.append("rm -f %(cmd_options_path)s" % context)
     
     def delete(self, webapp):
         context = self.get_context(webapp)
@@ -50,14 +52,14 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     def get_fcgid_wrapper(self, webapp, context):
         opt = webapp.type_instance
         # Format PHP init vars
-        init_vars = opt.get_php_init_vars(webapp)
+        init_vars = opt.get_php_init_vars()
         if init_vars:
             init_vars = [ '-d %s="%s"' % (k,v) for k,v in init_vars.iteritems() ]
         init_vars = ', '.join(init_vars)
         
         context.update({
-            'php_binary': opt.php_binary,
-            'php_rc': opt.php_rc,
+            'php_binary': opt.get_php_binary_path(),
+            'php_rc': opt.get_php_rc_path(),
             'php_init_vars': init_vars,
         })
         return textwrap.dedent("""\
@@ -82,7 +84,7 @@ class PHPFcgidBackend(WebAppServiceMixin, ServiceController):
     
     def get_context(self, webapp):
         context = super(PHPFcgidBackend, self).get_context(webapp)
-        wrapper_path = settings.WEBAPPS_FCGID_PATH % context
+        wrapper_path = settings.WEBAPPS_FCGID_WRAPPER_PATH % context
         context.update({
             'wrapper': self.get_fcgid_wrapper(webapp, context),
             'wrapper_path': wrapper_path,

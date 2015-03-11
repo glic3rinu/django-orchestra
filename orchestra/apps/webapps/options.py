@@ -37,12 +37,12 @@ class AppOption(Plugin):
                 groups[opt.group] = [opt]
         return groups
     
-    def validate(self, option):
-        if self.regex and not re.match(self.regex, option.value):
+    def validate(self):
+        if self.regex and not re.match(self.regex, self.instance.value):
             raise ValidationError({
                 'value': ValidationError(_("'%(value)s' does not match %(regex)s."),
                     params={
-                        'value': option.value,
+                        'value': self.instance.value,
                         'regex': self.regex
                     }),
             })

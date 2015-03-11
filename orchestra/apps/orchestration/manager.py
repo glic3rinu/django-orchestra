@@ -1,12 +1,15 @@
 import logging
 import threading
+import traceback
 
 from django import db
+from django.core.mail import mail_admins
 
 from orchestra.utils.python import import_class
 
 from . import settings
 from .helpers import send_report
+from .models import BackendLog
 
 
 logger = logging.getLogger(__name__)
@@ -29,11 +32,16 @@ def close_connection(execute):
     def wrapper(*args, **kwargs):
         try:
             log = execute(*args, **kwargs)
-        except:
-            logger.error('EXCEPTION executing backend %s %s' % (str(args), str(kwargs)))
-            raise
+        except Exception as e:
+            subject = 'EXCEPTION executing backend(s) %s %s' % (str(args), str(kwargs))
+            message = traceback.format_exc()
+            logger.error(subject)
+            logger.error(message)
+            mail_admins(subject, message)
+            # We don't propagate the exception further to avoid transaction rollback
         else:
             # Using the wrapper function as threader messenger for the execute output
+            # Absense of it will indicate a failure at this stage
             wrapper.log = log
         finally:
             db.connection.close()
@@ -78,13 +86,18 @@ def execute(operations, async=False):
     logs = []
     # collect results
     for execution, operations in executions:
-        for operation in operations:
-            logger.info("Executed %s" % str(operation))
-            operation.log = execution.log
-            operation.save()
-        stdout = execution.log.stdout.strip()
-        stdout and logger.debug('STDOUT %s', stdout)
-        stderr = execution.log.stderr.strip()
-        stderr and logger.debug('STDERR %s', stderr)
-        logs.append(execution.log)
+        # There is no log if an exception has been rised at the very end of the execution
+        if hasattr(execution, 'log'):
+            for operation in operations:
+                logger.info("Executed %s" % str(operation))
+                operation.log = execution.log
+                operation.save()
+            stdout = execution.log.stdout.strip()
+            stdout and logger.debug('STDOUT %s', stdout)
+            stderr = execution.log.stderr.strip()
+            stderr and logger.debug('STDERR %s', stderr)
+            logs.append(execution.log)
+        else:
+            mocked_log = BackendLog(state=BackendLog.EXCEPTION)
+            logs.append(mocked_log)
     return logs

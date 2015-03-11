@@ -38,13 +38,13 @@ class SaaS(models.Model):
     @cached_property
     def service_instance(self):
         """ Per request lived service_instance """
-        return self.service_class()
+        return self.service_class(self)
     
     def get_site_name(self):
-        return self.service_instance.get_site_name(self)
+        return self.service_instance.get_site_name()
     
     def clean(self):
-        self.data = self.service_instance.clean_data(self)
+        self.data = self.service_instance.clean_data()
     
     def set_password(self, password):
         self.password = password

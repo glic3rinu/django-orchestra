@@ -9,13 +9,22 @@ class WebAppServiceMixin(object):
     directive = None
     
     def create_webapp_dir(self, context):
-        self.append("[[ ! -e %(app_path)s ]] && CREATED=true" % context)
-        self.append("mkdir -p %(app_path)s" % context)
-        self.append("chown %(user)s:%(group)s %(app_path)s" % context)
+        self.append(textwrap.dedent("""\
+            CREATED=0
+            [[ ! -e %(app_path)s ]] && CREATED=1
+            mkdir -p %(app_path)s
+            chown %(user)s:%(group)s %(app_path)s
+            """) % context
+        )
     
     def set_under_construction(self, context):
         if context['under_construction_path']:
-            self.append("[[ $CREATED ]] && cp -r %(under_construction_path)s %(app_path)s" % context)
+            self.append(textwrap.dedent("""\
+                if [[ $CREATED == 1 ]]; then
+                    cp -r %(under_construction_path)s %(app_path)s
+                    chown -R %(user)s:%(group)s %(app_path)s
+                fi""") % context
+            )
     
     def delete_webapp_dir(self, context):
         self.append("rm -fr %(app_path)s" % context)

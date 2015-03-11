@@ -107,7 +107,14 @@ class MailmanBackend(ServiceController):
             sed -i -e '/^.*\s%(name)s\(%(address_regex)s\)\s*$/d' \\
                    -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s""") % context
         )
-        self.append("rmlist -a %(name)s" % context)
+        self.append(textwrap.dedent("""\
+            # Non-existent list archives produce exit code 1
+            exit_code=0
+            rmlist -a %(name)s || exit_code=$?
+            if [[ $exit_code != 0 && $exit_code != 1 ]]; then
+                exit $exit_code
+            fi""") % context
+        )
     
     def commit(self):
         context = self.get_context_files()

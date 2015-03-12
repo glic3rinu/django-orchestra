@@ -10,6 +10,7 @@ from orchestra.utils.python import import_class
 from . import settings
 from .helpers import send_report
 from .models import BackendLog
+from .signals import pre_action, post_action
 
 
 logger = logging.getLogger(__name__)
@@ -65,8 +66,17 @@ def execute(operations, async=False):
             else:
                 scripts[key][1].append(operation)
             # Get and call backend action method
-            method = getattr(scripts[key][0], operation.action)
+            backend = scripts[key][0]
+            method = getattr(backend, operation.action)
+            kwargs = {
+                'sender': backend.__class__,
+                'backend': backend,
+                'instance': operation.instance,
+                'action': operation.action,
+            }
+            pre_action.send(**kwargs)
             method(operation.instance)
+            post_action.send(**kwargs)
     # Execute scripts on each server
     threads = []
     executions = []

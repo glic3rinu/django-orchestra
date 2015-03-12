@@ -164,11 +164,11 @@ class Apache2Backend(ServiceController):
         for rules in directives.get('sec_rule_remove', []):
             for rule in rules.value.split():
                 config += "SecRuleRemoveById %i\n" % int(rule)
-        for modsecurity in directives.get('sec_rule_off', []):
+        for modsecurity in directives.get('sec_engine', []):
             config += textwrap.dedent("""\
                 <Location %s>
                     SecRuleEngine off
-                </LocationMatch>
+                </Location>
                 """) % modsecurity
         return config
     

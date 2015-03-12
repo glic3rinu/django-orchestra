@@ -27,49 +27,47 @@ WEBAPPS_FCGID_CMD_OPTIONS_PATH = getattr(settings, 'WEBAPPS_FCGID_CMD_OPTIONS_PA
 WEBAPPS_PHP_ERROR_LOG_PATH = getattr(settings, 'WEBAPPS_PHP_ERROR_LOG_PATH',
     '')
 
+
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
-    'orchestra.apps.webapps.types.php.PHPFPMApp',
-    'orchestra.apps.webapps.types.php.PHPFCGIDApp',
+    'orchestra.apps.webapps.types.php.PHPApp',
     'orchestra.apps.webapps.types.misc.StaticApp',
     'orchestra.apps.webapps.types.misc.WebalizerApp',
     'orchestra.apps.webapps.types.saas.WordPressMuApp',
     'orchestra.apps.webapps.types.saas.DokuWikiMuApp',
     'orchestra.apps.webapps.types.saas.DrupalMuApp',
     'orchestra.apps.webapps.types.misc.SymbolicLinkApp',
-    'orchestra.apps.webapps.types.wordpress.WordPressFPMApp',
-    'orchestra.apps.webapps.types.wordpress.WordPressFCGIDApp',
+    'orchestra.apps.webapps.types.wordpress.WordPressApp',
 ))
 
 
-
-WEBAPPS_PHP_FCGID_VERSIONS = getattr(settings, 'WEBAPPS_PHP_FCGID_VERSIONS', (
-    ('5.4', '5.4'),
-    ('5.3', '5.3'),
-    ('5.2', '5.2'),
-    ('4', '4'),
+WEBAPPS_PHP_VERSIONS = getattr(settings, 'WEBAPPS_PHP_VERSIONS', (
+    # Execution modle choose by ending with -fpm or -cgi
+    ('php-5.4-fpm', 'PHP 5.4 FPM'),
+    ('php-5.4-cgi', 'PHP 5.4 FCGID'),
+    ('php-5.3-cgi', 'PHP 5.3 FCGID'),
+    ('php-5.2-cgi', 'PHP 5.2 FCGID'),
+    ('php-4-cgi', 'PHP 4 FCGID'),
 ))
 
 
-WEBAPPS_PHP_FCGID_DEFAULT_VERSION = getattr(settings, 'WEBAPPS_PHP_FCGID_DEFAULT_VERSION',
-    '5.4')
+WEBAPPS_DEFAULT_PHP_VERSION = getattr(settings, 'WEBAPPS_DEFAULT_PHP_VERSION',
+    '5.4-cgi')
 
 
 WEBAPPS_PHP_CGI_BINARY_PATH = getattr(settings, 'WEBAPPS_PHP_CGI_BINARY_PATH',
     # Path of the cgi binary used by fcgid
-    '/usr/bin/php%(php_version)s-cgi')
+    '/usr/bin/php%(php_version_number)s-cgi')
 
-WEBAPPS_PHP_CGI_RC_PATH = getattr(settings, 'WEBAPPS_PHP_CGI_RC_PATH',
+
+WEBAPPS_PHP_CGI_RC_DIR = getattr(settings, 'WEBAPPS_PHP_CGI_RC_DIR',
     # Path to php.ini
-    '/etc/php%(php_version)s/cgi/')
+    '/etc/php%(php_version_number)s/cgi/')
 
 
-WEBAPPS_PHP_FPM_VERSIONS = getattr(settings, 'WEBAPPS_PHP_FPM_VERSIONS', (
-    ('5.4', '5.4'),
-))
+WEBAPPS_PHP_CGI_INI_SCAN_DIR = getattr(settings, 'WEBAPPS_PHP_CGI_INI_SCAN_DIR',
+    # Path to php.ini
+    '/etc/php%(php_version_number)s/cgi/conf.d')
 
-
-WEBAPPS_PHP_FPM_DEFAULT_VERSION = getattr(settings, 'WEBAPPS_PHP_DEFAULT_VERSION',
-    '5.4')
 
 
 WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_PATH',

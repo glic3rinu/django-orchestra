@@ -9,11 +9,10 @@ from orchestra.utils.python import random_ascii
 
 from .. import settings
 
-from .php import (PHPAppType, PHPFCGIDApp, PHPFPMApp, PHPFCGIDAppForm, PHPFCGIDAppSerializer,
-        PHPFPMAppForm, PHPFPMAppSerializer)
+from .php import PHPApp, PHPAppForm, PHPAppSerializer
 
 
-class WordPressAbstractAppForm(PluginDataForm):
+class WordPressAppForm(PHPAppForm):
     db_name = forms.CharField(label=_("Database name"),
             help_text=_("Database used for this webapp."))
     db_user = forms.CharField(label=_("Database user"),)
@@ -21,16 +20,20 @@ class WordPressAbstractAppForm(PluginDataForm):
             help_text=_("Initial database password."))
 
 
-class WordPressAbstractAppSerializer(serializers.Serializer):
+class WordPressAppSerializer(PHPAppSerializer):
     db_name = serializers.CharField(label=_("Database name"), required=False)
     db_user = serializers.CharField(label=_("Database user"), required=False)
     db_pass = serializers.CharField(label=_("Database user password"), required=False)
 
 
-class WordPressAbstractApp(object):
-    icon = 'orchestra/icons/apps/WordPress.png'
+class WordPressApp(PHPApp):
+    name = 'wordpress'
+    verbose_name = "WordPress"
+    serializer = WordPressAppSerializer
+    change_form = WordPressAppForm
     change_readonly_fileds = ('db_name', 'db_user', 'db_pass',)
     help_text = _("Visit http://&lt;domain.lan&gt;/wp-admin/install.php to finish the installation.")
+    icon = 'orchestra/icons/apps/WordPress.png'
     
     def get_db_name(self):
         db_name = 'wp_%s_%s' % (self.instance.name, self.instance.account)
@@ -46,7 +49,7 @@ class WordPressAbstractApp(object):
         return random_ascii(10)
     
     def validate(self):
-        super(WordPressAbstractApp, self).validate()
+        super(WordPressApp, self).validate()
         create = not self.instance.pk
         if create:
             db = Database(name=self.get_db_name(), account=self.instance.account)
@@ -79,7 +82,7 @@ class WordPressAbstractApp(object):
         else:
             # Trigger related backends
             for related in self.get_related():
-                related.save()
+                related.save(updated_fields=[])
         
     def delete(self):
         for related in self.get_related():
@@ -101,23 +104,3 @@ class WordPressAbstractApp(object):
         else:
             related.append(db)
         return related
-
-
-class WordPressFPMApp(WordPressAbstractApp, PHPFPMApp):
-    name = 'wordpress-fpm'
-    php_execution = PHPAppType.FPM
-    verbose_name = "WordPress (FPM)"
-    serializer = type('WordPressFPMSerializer',
-            (WordPressAbstractAppSerializer, PHPFPMAppSerializer), {})
-    change_form = type('WordPressFPMForm',
-            (WordPressAbstractAppForm, PHPFPMAppForm), {})
-
-
-class WordPressFCGIDApp(WordPressAbstractApp, PHPFCGIDApp):
-    name = 'wordpress-fcgid'
-    php_execution = PHPAppType.FCGID
-    verbose_name = "WordPress (FCGID)"
-    serializer = type('WordPressFCGIDSerializer',
-            (WordPressAbstractAppSerializer, PHPFCGIDAppSerializer), {})
-    change_form = type('WordPressFCGIDForm',
-            (WordPressAbstractAppForm, PHPFCGIDAppForm), {})

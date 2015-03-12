@@ -20,7 +20,6 @@ class AppType(plugins.Plugin):
     unique_name = False
     option_groups = (AppOption.FILESYSTEM, AppOption.PROCESS, AppOption.PHP)
     # TODO generic name like 'execution' ?
-    php_execution = None
     
     @classmethod
     @cached

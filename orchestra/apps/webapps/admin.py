@@ -53,6 +53,7 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type')
+    search_fuelds = ('name', 'account__username')
     list_prefetch_related = ('content_set__website',)
     plugin = AppType
     plugin_field = 'type'

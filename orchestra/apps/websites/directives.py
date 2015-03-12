@@ -149,5 +149,5 @@ class SecEngine(SiteDirective):
     name = 'sec_engine'
     verbose_name = _("Modsecurity engine")
     help_text = _("URL location for disabling modsecurity engine.")
-    regex = r'^[^ ]+$'
+    regex = r'^/[^ ]*$'
     group = SiteDirective.SEC

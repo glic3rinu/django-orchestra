@@ -64,7 +64,7 @@ def naturaldatetime(date, include_seconds=False):
     if days == 0:
         if hours == 0:
             if minutes > 0:
-                minutes += float(seconds)/60
+                minutes = float(seconds)/60
                 return ungettext(
                     _('{minutes:.1f} minute{ago}'),
                     _('{minutes:.1f} minutes{ago}'), minutes
@@ -77,7 +77,7 @@ def naturaldatetime(date, include_seconds=False):
                     ).format(seconds=seconds, ago=ago)
                 return _('just now')
         else:
-            hours += float(minutes)/60
+            hours = float(minutes)/60
             return ungettext(
                 _('{hours:.1f} hour{ago}'),
                 _('{hours:.1f} hours{ago}'), hours

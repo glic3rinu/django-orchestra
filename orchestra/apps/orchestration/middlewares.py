@@ -7,9 +7,9 @@ from django.http.response import HttpResponseServerError
 
 from orchestra.utils.python import OrderedSet
 
-from .manager import router
 from .backends import ServiceBackend
 from .helpers import message_user
+from .manager import router
 from .models import BackendLog
 from .models import BackendOperation as Operation
 
@@ -103,7 +103,7 @@ class OperationsMiddleware(object):
                         pass
                 else:
                     update_fields = kwargs.get('update_fields', None)
-                    if update_fields:
+                    if update_fields is not None:
                         # "update_fileds=[]" is a convention for explicitly executing backend
                         # i.e. account.disable()
                         if update_fields != []:

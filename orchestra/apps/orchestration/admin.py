@@ -25,8 +25,7 @@ STATE_COLORS = {
 
 class RouteAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'backend', 'host', 'match', 'display_model', 'display_actions',
-        'is_active'
+        'backend', 'host', 'match', 'display_model', 'display_actions', 'is_active'
     ]
     list_editable = ['host', 'match', 'is_active']
     list_filter = ['host', 'is_active', 'backend']
@@ -65,7 +64,7 @@ class RouteAdmin(admin.ModelAdmin):
         """ Include dynamic help text for existing objects """
         form = super(RouteAdmin, self).get_form(request, obj=obj, **kwargs)
         if obj:
-            form.base_fields['backend'].help_text = self.BACKEND_HELP_TEXT[obj.backend]
+            form.base_fields['backend'].help_text = self.BACKEND_HELP_TEXT.get(obj.backend, '')
         return form
 
 

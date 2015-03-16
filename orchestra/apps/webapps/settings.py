@@ -41,12 +41,12 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
 
 
 WEBAPPS_PHP_VERSIONS = getattr(settings, 'WEBAPPS_PHP_VERSIONS', (
-    # Execution modle choose by ending with -fpm or -cgi
-    ('php-5.4-fpm', 'PHP 5.4 FPM'),
-    ('php-5.4-cgi', 'PHP 5.4 FCGID'),
-    ('php-5.3-cgi', 'PHP 5.3 FCGID'),
-    ('php-5.2-cgi', 'PHP 5.2 FCGID'),
-    ('php-4-cgi', 'PHP 4 FCGID'),
+    # Execution modle choose by ending -fpm or -cgi
+    ('5.4-fpm', 'PHP 5.4 FPM'),
+    ('5.4-cgi', 'PHP 5.4 FCGID'),
+    ('5.3-cgi', 'PHP 5.3 FCGID'),
+    ('5.2-cgi', 'PHP 5.2 FCGID'),
+    ('4-cgi', 'PHP 4 FCGID'),
 ))
 
 

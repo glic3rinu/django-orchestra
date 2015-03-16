@@ -199,11 +199,13 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 * Orchestra global search box on the header, based https://github.com/django/django/blob/master/django/contrib/admin/options.py#L866 and iterating over all registered services and inspectin its admin.search_fields
 
 
-* contain error on plugin missing key (plugin dissabled): NOP, fail hard is better than silently
+* contain error on plugin missing key (plugin dissabled): NOP, fail hard is better than silently, perhaps fail at starttime? apploading
 
 * contact.alternative_phone on a phone.tooltip, email:to
 
 
 * better validate options and directives (url locations, filesystem paths, etc..)
 * filter php deprecated options out based on version
-* Todo get php_version for fcgid wrapper
+* order virtualhost locations /hola / including directive
+
+* make sure that you understand the risks

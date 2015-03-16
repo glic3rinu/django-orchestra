@@ -31,7 +31,9 @@ class Apache2Backend(ServiceController):
         extra_conf += self.get_security(directives)
         extra_conf += self.get_redirects(directives)
         extra_conf += self.get_proxies(directives)
-        context['extra_conf'] = extra_conf
+        # Order extra conf directives based on directives (longer first)
+        extra_conf = sorted(extra_conf, key=lambda a: len(a[0]), reverse=True)
+        context['extra_conf'] = '\n'.join([conf for location, conf in extra_conf])
         return Template(textwrap.dedent("""\
             <VirtualHost {{ ip }}:{{ port }}>
                 ServerName {{ site.domains.all|first }}\
@@ -97,8 +99,8 @@ class Apache2Backend(ServiceController):
         self.append('if [[ $UPDATED == 1 ]]; then service apache2 reload; fi')
     
     def get_content_directives(self, site):
-        directives = ''
-        for content in site.content_set.all().order_by('-path'):
+        directives = []
+        for content in site.content_set.all():
             directive = content.webapp.get_directive()
             method, args = directive[0], directive[1:]
             method = getattr(self, 'get_%s_directives' % method)
@@ -108,7 +110,9 @@ class Apache2Backend(ServiceController):
     def get_static_directives(self, content, app_path):
         context = self.get_content_context(content)
         context['app_path'] = app_path % context
-        return "Alias %(location)s/ %(app_path)s/\n" % context
+        location = "%(location)s/" % context
+        directive = "Alias %(location)s/ %(app_path)s/" % context
+        return [(location, directive)]
     
     def get_fpm_directives(self, content, socket_type, socket, app_path):
         if socket_type == 'unix':
@@ -124,11 +128,12 @@ class Apache2Backend(ServiceController):
             'app_path': app_path,
             'socket': socket,
         })
-        return textwrap.dedent("""\
+        location = "%(location)s/" % context
+        directives = textwrap.dedent("""\
             ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}
-            Alias %(location)s/ %(app_path)s/
-            """.format(target=target) % context
+            Alias %(location)s/ %(app_path)s/""".format(target=target) % context
         )
+        return [(location, directives)]
     
     def get_fcgid_directives(self, content, app_path, wrapper_path):
         context = self.get_content_context(content)
@@ -136,15 +141,16 @@ class Apache2Backend(ServiceController):
             'app_path': app_path,
             'wrapper_path': wrapper_path,
         })
-        return textwrap.dedent("""\
+        location = "%(location)s/" % context
+        directives = textwrap.dedent("""\
             Alias %(location)s/ %(app_path)s/
             ProxyPass %(location)s/ !
             <Directory %(app_path)s/>
                 Options +ExecCGI
                 AddHandler fcgid-script .php
                 FcgidWrapper %(wrapper_path)s
-            </Directory>
-            """) % context
+            </Directory>""") % context
+        return [(location, directives)]
     
     def get_ssl(self, directives):
         config = ''
@@ -157,39 +163,45 @@ class Apache2Backend(ServiceController):
         key = directives.get('ssl_key')
         if key:
             config += "SSLCertificateKeyFile %s\n" % key[0]
-        return config
+        return [('', config)]
         
     def get_security(self, directives):
-        config = ''
+        security = []
         for rules in directives.get('sec_rule_remove', []):
             for rule in rules.value.split():
-                config += "SecRuleRemoveById %i\n" % int(rule)
-        for modsecurity in directives.get('sec_engine', []):
-            config += textwrap.dedent("""\
+                sec_rule = "SecRuleRemoveById %i" % int(rule)
+                security.append(('', sec_rule))
+        for location in directives.get('sec_engine', []):
+            sec_rule = textwrap.dedent("""\
                 <Location %s>
                     SecRuleEngine off
-                </Location>
-                """) % modsecurity
-        return config
+                </Location>""") % location
+            security.append((location, sec_rule))
+        return security
     
     def get_redirects(self, directives):
-        config = ''
+        redirects = []
         for redirect in directives.get('redirect', []):
-            source, target = redirect.split()
+            location, target = redirect.split()
             if re.match(r'^.*[\^\*\$\?\)]+.*$', redirect):
-                config += "RedirectMatch %s %s\n" % (source, target)
+                redirect = "RedirectMatch %s %s" % (location, target)
             else:
-                config += "Redirect %s %s\n" % (source, target)
-        return config
+                redirect = "Redirect %s %s" % (location, target)
+            redirects.append((location, redirect))
+        return redirects
     
     def get_proxies(self, directives):
-        config = ''
+        proxies = []
         for proxy in directives.get('proxy', []):
-            source, target = proxy.split()
-            source = normurlpath(source)
-            config += 'ProxyPass %s %s\n' % (source, target)
-            config += 'ProxyPassReverse %s %s\n' % (source, target)
-        return config
+            location, target = proxy.split()
+            location = normurlpath(source)
+            proxy = textwrap.dedent("""\
+                ProxyPass {location} {target}
+                ProxyPassReverse {location} {target}""".format(
+                    location=location, target=target)
+            )
+            proxies.append((location, proxy))
+        return proxies
         
 #    def get_protections(self, site):
 #        protections = ''

@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 WEBSITES_UNIQUE_NAME_FORMAT = getattr(settings, 'WEBSITES_UNIQUE_NAME_FORMAT',
-    '%(account)s-%(name)s')
+    '%(user)s-%(site_name)s')
 
 
 # TODO 'http', 'https', 'https-only', 'http and https' and rename to PROTOCOL
@@ -72,3 +72,4 @@ WEBSITES_TRAFFIC_IGNORE_HOSTS = getattr(settings, 'WEBSITES_TRAFFIC_IGNORE_HOSTS
 
 #WEBSITES_DEFAULT_SSl_KEY = getattr(settings, 'WEBSITES_DEFAULT_SSl_KEY',
 #    '')
+

@@ -79,16 +79,10 @@ class Account(auth.AbstractBaseUser):
         # Trigger save() on related objects that depend on this account
         for rel in self._meta.get_all_related_objects():
             source = getattr(rel, 'related_model', rel.model)
-            if not source in services:
-                continue
-            try:
-                source._meta.get_field_by_name('is_active')
-            except models.FieldDoesNotExist: 
-                continue
-            else:
+            if source in services and hasattr(source, 'active'):
                 for obj in getattr(self, rel.get_accessor_name()).all():
                     obj.save(update_fields=[])
-    
+        
     def send_email(self, template, context, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)
         email_to = contacts.values_list('email', flat=True)

@@ -245,14 +245,14 @@ class Apache2Backend(ServiceController):
         option = site.get_directives().get('user_group')
         if option:
             return option[0]
-        return site.account.username
+        return site.get_username()
     
     def get_groupname(self, site):
         option = site.get_directives().get('user_group')
         if option and ' ' in option:
             user, group = option.split()
             return group
-        return site.account.username
+        return site.get_groupname()
     
     def get_context(self, site):
         base_apache_conf = settings.WEBSITES_BASE_APACHE_CONF

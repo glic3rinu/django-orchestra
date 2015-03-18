@@ -13,11 +13,11 @@ from orchestra.forms.widgets import DynamicHelpTextSelect
 from . import settings
 from .directives import SiteDirective
 from .forms import WebsiteAdminForm
-from .models import Content, Website, Directive
+from .models import Content, Website, WebsiteDirective
 
 
-class DirectiveInline(admin.TabularInline):
-    model = Directive
+class WebsiteDirectiveInline(admin.TabularInline):
+    model = WebsiteDirective
     extra = 1
     
     DIRECTIVES_HELP_TEXT = {
@@ -37,7 +37,7 @@ class DirectiveInline(admin.TabularInline):
             kwargs['widget'] = DynamicHelpTextSelect(
                 'this.id.replace("name", "value")', self.DIRECTIVES_HELP_TEXT
             )
-        return super(DirectiveInline, self).formfield_for_dbfield(db_field, **kwargs)
+        return super(WebsiteDirectiveInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 class ContentInline(AccountAdminMixin, admin.TabularInline):
@@ -61,7 +61,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'display_domains', 'display_webapps', 'account_link')
     list_filter = ('protocol', 'is_active',)
     change_readonly_fields = ('name',)
-    inlines = [ContentInline, DirectiveInline]
+    inlines = [ContentInline, WebsiteDirectiveInline]
     filter_horizontal = ['domains']
     fieldsets = (
         (None, {

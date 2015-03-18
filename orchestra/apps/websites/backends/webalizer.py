@@ -21,7 +21,9 @@ class WebalizerBackend(ServiceController):
                 echo 'Webstats are coming soon' > %(webalizer_path)s/index.html
             fi
             echo '%(webalizer_conf)s' > %(webalizer_conf_path)s
-            chown %(user)s:www-data %(webalizer_path)s""") % context
+            chown %(user)s:www-data %(webalizer_path)s
+            chmod g+xr %(webalizer_path)s
+            """) % context
         )
     
     def delete(self, content):

@@ -46,12 +46,19 @@ class Website(models.Model):
     
     @property
     def unique_name(self):
-        return settings.WEBSITES_UNIQUE_NAME_FORMAT % {
+        context = self.get_settings_context()
+        return settings.WEBSITES_UNIQUE_NAME_FORMAT % context
+    
+    def get_settings_context(self):
+        """ format settings strings """
+        return {
             'id': self.id,
             'pk': self.pk,
-            'account': self.account.username,
+            'home': self.get_user().get_home(),
+            'user': self.get_username(),
+            'group': self.get_groupname(),
+            'site_name': self.name,
             'protocol': self.protocol,
-            'name': self.name,
         }
     
     def get_protocol(self):
@@ -74,27 +81,27 @@ class Website(models.Model):
         if domain:
             return '%s://%s' % (self.get_protocol(), domain)
     
-    def get_www_log_context(self):
-        return {
-            'home': self.account.main_systemuser.get_home(),
-            'account': self.account.username,
-            'user': self.account.username,
-            'site_name': self.name,
-            'unique_name': self.unique_name
-        }
+    def get_user(self):
+        return self.account.main_systemuser
+    
+    def get_username(self):
+        return self.get_user().username
+    
+    def get_groupname(self):
+        return self.get_username()
     
     def get_www_access_log_path(self):
-        context = self.get_www_log_context()
+        context = self.get_settings_context()
         path = settings.WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH % context
         return os.path.normpath(path.replace('//', '/'))
     
     def get_www_error_log_path(self):
-        context = self.get_www_log_context()
+        context = self.get_settings_context()
         path = settings.WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH % context
         return os.path.normpath(path.replace('//', '/'))
 
 
-class Directive(models.Model):
+class WebsiteDirective(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
             related_name='directives')
     name = models.CharField(_("name"), max_length=128,

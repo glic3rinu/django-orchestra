@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
@@ -20,7 +21,10 @@ class List(models.Model):
             help_text=_("Administration email address"))
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='lists')
-    
+    # TODO also admin
+    # TODO is_active = models.BooleanField(_("active"), default=True,
+#            help_text=_("Designates whether this account should be treated as active. "
+#                        "Unselect this instead of deleting accounts."))
     password = None
     
     class Meta:
@@ -34,6 +38,10 @@ class List(models.Model):
         if self.address_name and self.address_domain:
             return "%s@%s" % (self.address_name, self.address_domain)
         return ''
+    
+    @cached_property
+    def active(self):
+        return self.is_active and self.account.is_active
     
     def get_address_name(self):
         return self.address_name or self.name

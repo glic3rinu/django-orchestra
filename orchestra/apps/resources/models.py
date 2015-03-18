@@ -239,8 +239,11 @@ class ResourceData(models.Model):
                     )
                 )
             elif resource.period == resource.LAST:
+                # Get last monitoring data per object_id
                 try:
-                    datasets.append(dataset.latest())
+                    datasets.append(
+                        dataset.order_by('object_id', '-id').distinct('object_id')
+                    )
                 except MonitorData.DoesNotExist:
                     continue
             else:

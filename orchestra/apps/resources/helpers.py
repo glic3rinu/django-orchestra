@@ -21,16 +21,13 @@ def compute_resource_usage(data):
                 slot = (data.created_at-ini).total_seconds()
                 result += data.value * slot/total
                 ini = data.created_at
-        elif resource.period == resource.MONTHLY_SUM:
+        elif resource.period in (resource.MONTHLY_SUM, resource.LAST):
             # FIXME Aggregation of 0s returns None! django bug?
             # value = dataset.aggregate(models.Sum('value'))['value__sum']
             values = dataset.values_list('value', flat=True)
             if values:
                 has_result = True
                 result += sum(values)
-        elif resource.period == resource.LAST:
-            result += dataset.value
-            has_result = True
         else:
             raise NotImplementedError("%s support not implemented" % data.period)
     return float(result)/resource.get_scale() if has_result else None

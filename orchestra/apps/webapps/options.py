@@ -336,8 +336,8 @@ class PHPUploadMaxFileSize(AppOption):
     group = AppOption.PHP
 
 
-class PHPPostMaxSize(AppOption):
-    name = 'post_max_size'
-    verbose_name = _("zend_extension")
+class PHPZendExtension(AppOption):
+    name = 'zend_extension'
+    verbose_name = _("Zend extension")
     regex = r'^[^ ]+$'
     group = AppOption.PHP

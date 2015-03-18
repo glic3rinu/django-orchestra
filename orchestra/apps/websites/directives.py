@@ -84,13 +84,13 @@ class UserGroup(SiteDirective):
     group = SiteDirective.HTTPD
     
     def validate(self, directive):
-        super(UserGroupDirective, self).validate(directive)
-        options = directive.split()
-        syetmusers = [options[0]]
+        super(UserGroup, self).validate(directive)
+        options = directive.value.split()
+        systemusers = [options[0]]
         if len(options) > 1:
             systemusers.append(options[1])
         # TODO not sure about this dependency maybe make it part of pangea only
-        from orchestra.apps.users.models import SystemUser
+        from orchestra.apps.systemusers.models import SystemUser
         errors = []
         for user in systemusers:
             if not SystemUser.objects.filter(username=user).exists():

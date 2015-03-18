@@ -142,7 +142,7 @@ WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
     'orchestra.apps.webapps.options.PHPSuhosinSimulation',
     'orchestra.apps.webapps.options.PHPSuhosinExecutorIncludeWhitelist',
     'orchestra.apps.webapps.options.PHPUploadMaxFileSize',
-    'orchestra.apps.webapps.options.PHPPostMaxSize',
+    'orchestra.apps.webapps.options.PHPZendExtension',
 ))
 
 

@@ -46,7 +46,7 @@ class MailmanBackend(ServiceController):
             self.append('sed -i "/^%(address_domain)s\s*$/d" %(virtual_alias_domains)s' % context)
     
     def get_virtual_aliases(self, context):
-        aliases = []
+        aliases = ['# %(banner)s' % context]
         for address in self.addresses:
             context['address'] = address
             aliases.append("%(address_name)s%(address)s@%(domain)s\t%(name)s%(address)s" % context)
@@ -65,15 +65,13 @@ class MailmanBackend(ServiceController):
             # Preserve indentation
             self.append(textwrap.dedent("""\
                 if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
-                    echo '# %(banner)s\n%(aliases)s
-                    ' >> %(virtual_alias)s
+                    echo '%(aliases)s' >> %(virtual_alias)s
                     UPDATED_VIRTUAL_ALIAS=1
                 else
                     if [[ ! $(grep '^\s*%(address_name)s@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
                         sed -i -e '/^.*\s%(name)s\(%(address_regex)s\)\s*$/d' \\
                                -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s
-                        echo '# %(banner)s\n%(aliases)s
-                        ' >> %(virtual_alias)s
+                        echo '%(aliases)s' >> %(virtual_alias)s
                         UPDATED_VIRTUAL_ALIAS=1
                     fi
                 fi""") % context
@@ -99,15 +97,19 @@ class MailmanBackend(ServiceController):
                 '%(mailman_root)s/bin/change_pw --listname="%(name)s" --password="%(password)s"' % context
             )
         self.include_virtual_alias_domain(context)
+        if mail_list.active:
+            self.append('chmod 775 %(mailman_root)s/lists/%(name)s' % context)
+        else:
+            self.append('chmod 000 %(mailman_root)s/lists/%(name)s' % context)
     
     def delete(self, mail_list):
         context = self.get_context(mail_list)
         self.exclude_virtual_alias_domain(context)
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             sed -i -e '/^.*\s%(name)s\(%(address_regex)s\)\s*$/d' \\
                    -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s""") % context
         )
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             # Non-existent list archives produce exit code 1
             exit_code=0
             rmlist -a %(name)s || exit_code=$?
@@ -119,9 +121,12 @@ class MailmanBackend(ServiceController):
     def commit(self):
         context = self.get_context_files()
         self.append(textwrap.dedent("""
-            [[ $UPDATED_VIRTUAL_ALIAS == 1 ]] && { postmap %(virtual_alias)s; }
-            [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { /etc/init.d/postfix reload; }
-            """) % context
+            if [[ $UPDATED_VIRTUAL_ALIAS == 1 ]]; then
+                postmap %(virtual_alias)s
+            fi
+            if [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]]; then
+                /etc/init.d/postfix reload
+            fi""") % context
         )
     
     def get_context_files(self):

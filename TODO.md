@@ -206,6 +206,12 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 
 * better validate options and directives (url locations, filesystem paths, etc..)
 * filter php deprecated options out based on version
-* order virtualhost locations /hola / including directive
 
 * make sure that you understand the risks
+
+
+* full support for deactivation of services/accounts
+    * Display admin.is_active (disabled account/order by)
+
+
+* show details data on webapp changelist

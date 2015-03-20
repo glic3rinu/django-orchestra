@@ -179,25 +179,37 @@ admin.site.register(MonitorData, MonitorDataAdmin)
 def resource_inline_factory(resources):
     class ResourceInlineFormSet(generic.BaseGenericInlineFormSet):
         def total_form_count(self, resources=resources):
-            return len(resources)
+            return len(resources) 
+        
+        def get_queryset(self):
+            queryset = super(ResourceInlineFormSet, self).get_queryset()
+            return queryset.order_by('-id').filter(resource__is_active=True)
         
         @cached_property
         def forms(self, resources=resources):
             forms = []
             resources_copy = list(resources)
-            queryset = self.queryset
+            # Remove queryset disabled objects
+            queryset = [data for data in self.queryset if data.resource in resources]
             if self.instance.pk:
                 # Create missing resource data
-                queryset = list(queryset)
                 queryset_resources = [data.resource for data in queryset]
                 for resource in resources:
                     if resource not in queryset_resources:
-                        data = resource.dataset.create(content_object=self.instance)
+                        kwargs = {
+                            'content_object': self.instance,
+                        }
+                        if resource.default_allocation:
+                            kwargs['allocated'] = resource.default_allocation
+                        data = resource.dataset.create(**kwargs)
                         queryset.append(data)
             # Existing dataset
             for i, data in enumerate(queryset):
                 forms.append(self._construct_form(i, resource=data.resource))
-                resources_copy.remove(data.resource)
+                try:
+                    resources_copy.remove(data.resource)
+                except ValueError:
+                    pass
             # Missing dataset
             for i, resource in enumerate(resources_copy, len(queryset)):
                 forms.append(self._construct_form(i, resource=resource))
@@ -246,8 +258,8 @@ def insert_resource_inlines():
         for inline in getattr(modeladmin_class, 'inlines', []):
             if inline.__name__ == 'ResourceInline':
                 modeladmin_class.inlines.remove(inline)
-    
-    for ct, resources in Resource.objects.group_by('content_type').iteritems():
+    resources = Resource.objects.filter(is_active=True)
+    for ct, resources in resources.group_by('content_type').iteritems():
         inline = resource_inline_factory(resources)
         model = ct.model_class()
         insertattr(model, 'inlines', inline)

@@ -54,6 +54,9 @@ class PHPApp(AppType):
     def is_fcgid(self):
         return self.get_php_version().endswith('-cgi')
     
+    def get_detail(self):
+        return self.instance.data.get('php_version', '')
+    
     def get_context(self):
         """ context used to format settings """
         return {

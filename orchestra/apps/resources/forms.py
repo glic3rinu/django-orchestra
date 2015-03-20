@@ -25,7 +25,6 @@ class ResourceForm(forms.ModelForm):
             else:
                 self.fields['allocated'].required = True
                 self.fields['allocated'].initial = self.resource.default_allocation
-    
 #    def has_changed(self):
 #        """ Make sure resourcedata objects are created for all resources """
 #        if not self.instance.pk:

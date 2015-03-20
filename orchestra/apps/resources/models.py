@@ -86,6 +86,10 @@ class Resource(models.Model):
     
     def clean(self):
         self.verbose_name = self.verbose_name.strip()
+        if self.on_demand and self.default_allocation:
+            raise validators.ValidationError({
+                'default_allocation': _("Default allocation can not be set for 'on demand' services")
+            })
         # Validate that model path exists between ct and each monitor.model
         monitor_errors = []
         for monitor in self.monitors:
@@ -171,6 +175,9 @@ class ResourceData(models.Model):
     class Meta:
         unique_together = ('resource', 'content_type', 'object_id')
         verbose_name_plural = _("resource data")
+    
+    def __unicode__(self):
+        return "%s: %s" % (str(self.resource), str(self.content_object))
     
     @classmethod
     def get_or_create(cls, obj, resource):

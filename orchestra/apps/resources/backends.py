@@ -64,7 +64,11 @@ class ServiceMonitor(ServiceBackend):
         ct = ContentType.objects.get_by_natural_key(app_label, model_name.lower())
         for line in log.stdout.splitlines():
             line = line.strip()
-            object_id, value = self.process(line)
+            try:
+                object_id, value = self.process(line)
+            except ValueError:
+                cls_name = self.__class__.__name__
+                raise ValueError("%s expected '<id> <value>' got '%s'" % (cls_name, line))
             MonitorData.objects.create(monitor=name, object_id=object_id,
                     content_type=ct, value=value, created_at=self.current_date)
     

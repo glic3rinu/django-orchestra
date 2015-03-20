@@ -28,6 +28,12 @@ WEBAPPS_PHP_ERROR_LOG_PATH = getattr(settings, 'WEBAPPS_PHP_ERROR_LOG_PATH',
     '')
 
 
+WEBAPPS_MERGE_PHP_WEBAPPS = getattr(settings, 'WEBAPPS_MERGE_PHP_WEBAPPS',
+    # Combine all fcgid-wrappers/fpm-pools into one per account-php_version
+    # to better control num processes per account and save memory
+    False)
+
+
 WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
     'orchestra.apps.webapps.types.php.PHPApp',
     'orchestra.apps.webapps.types.misc.StaticApp',

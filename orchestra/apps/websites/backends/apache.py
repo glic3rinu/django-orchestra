@@ -343,7 +343,7 @@ class Apache2Traffic(ServiceMonitor):
     
     def get_context(self, site):
         return {
-            'log_file': '%s{,.1}' % site.get_www_log_path(),
+            'log_file': '%s{,.1}' % site.get_www_access_log_path(),
             'last_date': self.get_last_date(site.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': site.pk,
         }

@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.apps.orchestration import ServiceController
 from orchestra.apps.systemusers.backends import SystemUserBackend
 from orchestra.apps.resources import ServiceMonitor
-from orchestra.utils.humanize import unit_to_bytes
+#from orchestra.utils.humanize import unit_to_bytes
 
 from . import settings
 from .models import Address
@@ -42,7 +42,8 @@ class MailSystemUserBackend(ServiceController):
             self.set_quota(mailbox, context)
     
     def set_quota(self, mailbox, context):
-        context['quota'] = mailbox.resources.disk.allocated * unit_to_bytes(mailbox.resources.disk.unit)
+        context['quota'] = mailbox.resources.disk.allocated * mailbox.resources.disk.resource.get_scale()
+        #unit_to_bytes(mailbox.resources.disk.unit)
         self.append(textwrap.dedent("""
             mkdir -p %(home)s/Maildir
             chown %(user)s:%(group)s %(home)s/Maildir
@@ -294,3 +295,166 @@ class MaildirDisk(ServiceMonitor):
         }
         context['maildir_path'] = settings.MAILBOXES_MAILDIRSIZE_PATH % context
         return context
+
+
+class PostfixTraffic(ServiceMonitor):
+    """
+    A high-performance log parser
+    Reads the mail.log file only once, for all users
+    """
+    model = 'mailboxes.Mailbox'
+    resource = ServiceMonitor.TRAFFIC
+    verbose_name = _("Postfix traffic usage")
+    script_executable = '/usr/bin/python'
+    
+    def prepare(self):
+        mail_log = '/var/log/mail.log'
+        context = {
+            'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
+            'mail_logs': str((mail_log, mail_log+'.1')),
+        }
+        self.append(textwrap.dedent("""\
+            import re
+            import sys
+            from datetime import datetime
+            from dateutil import tz
+            
+            def to_local_timezone(date, tzlocal=tz.tzlocal()):
+                # Converts orchestra's UTC dates to local timezone
+                date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %Z')
+                date = date.replace(tzinfo=tz.tzutc())
+                date = date.astimezone(tzlocal)
+                return date
+            
+            maillogs = {mail_logs}
+            end_datetime = to_local_timezone('{current_date}')
+            end_date = int(end_datetime.strftime('%Y%m%d%H%M%S'))
+            months = {{
+                "Jan": "01",
+                "Feb": "02",
+                "Mar": "03",
+                "Apr": "04",
+                "May": "05",
+                "Jun": "06",
+                "Jul": "07",
+                "Aug": "08",
+                "Sep": "09",
+                "Oct": "10",
+                "Nov": "11",
+                "Dec": "12",
+            }}
+            
+            def inside_period(month, day, time, ini_date):
+                global months
+                global end_datetime
+                # Mar 19 17:13:22
+                month = months[month]
+                year = end_datetime.year
+                if month == '12' and end_datetime.month == 1:
+                    year = year+1
+                date = str(year) + month + day
+                date += time.replace(':', '')
+                return ini_date < int(date) < end_date
+            
+            users = {{}}
+            delivers = {{}}
+            reverse = {{}}
+            
+            def prepare(object_id, mailbox, ini_date):
+                global users
+                global delivers
+                global reverse
+                ini_date = to_local_timezone(ini_date)
+                ini_date = int(ini_date.strftime('%Y%m%d%H%M%S'))
+                users[mailbox] = (ini_date, object_id)
+                delivers[mailbox] = set()
+                reverse[mailbox] = set()
+            
+            def monitor(users, delivers, reverse, maillogs):
+                targets = {{}}
+                counter = {{}}
+                user_regex = re.compile(r'\(Authenticated sender: ([^ ]+)\)')
+                for maillog in maillogs:
+                    try:
+                        with open(maillog, 'r') as maillog:
+                            for line in maillog.readlines():
+                                # Only search for Authenticated sendings
+                                if '(Authenticated sender: ' in line:
+                                    username = user_regex.search(line).groups()[0]
+                                    try:
+                                        sender = users[username]
+                                    except KeyError:
+                                        continue
+                                    else:
+                                        month, day, time, __, proc, id = line.split()[:6]
+                                        if inside_period(month, day, time, sender[0]):
+                                            # Add new email
+                                            delivers[id[:-1]] = username
+                                # Look for a MailScanner requeue ID
+                                elif ' Requeue: ' in line:
+                                    id, __, req_id = line.split()[6:9]
+                                    id = id.split('.')[0]
+                                    try:
+                                        username = delivers[id]
+                                    except KeyError:
+                                        pass
+                                    else:
+                                        targets[req_id] = (username, None)
+                                        reverse[username].add(req_id)
+                                # Look for the mail size and count the number of recipients of each email
+                                else:
+                                    try:
+                                        month, day, time, __, proc, req_id, __, msize = line.split()[:8]
+                                    except ValueError:
+                                        # not interested in this line
+                                        continue
+                                    if proc.startswith('postfix/'):
+                                        req_id = req_id[:-1]
+                                        if msize.startswith('size='):
+                                            try:
+                                                target = targets[req_id]
+                                            except KeyError:
+                                                pass
+                                            else:
+                                                targets[req_id] = (target[0], int(msize[5:-1]))
+                                        elif proc.startswith('postfix/smtp'):
+                                            try:
+                                                target = targets[req_id]
+                                            except KeyError:
+                                                pass
+                                            else:
+                                                if inside_period(month, day, time, users[target[0]][0]):
+                                                    try:
+                                                        counter[req_id] += 1
+                                                    except KeyError:
+                                                        counter[req_id] = 1
+                    except IOError as e:
+                        sys.stderr.write(e)
+                    
+                for username, opts in users.iteritems():
+                    size = 0
+                    for req_id in reverse[username]:
+                        size += targets[req_id][1] * counter.get(req_id, 0)
+                    print opts[1], size
+            """).format(**context)
+        )
+    
+    def commit(self):
+        self.append('monitor(users, delivers, reverse, maillogs)')
+    
+    def monitor(self, mailbox):
+        context = self.get_context(mailbox)
+        self.append("prepare(%(object_id)s, '%(mailbox)s', '%(last_date)s')" % context)
+    
+    def get_context(self, mailbox):
+        return {
+#            'mainlog': settings.LISTS_MAILMAN_POST_LOG_PATH,
+            'mailbox': mailbox.name,
+            'object_id': mailbox.pk,
+            'last_date': self.get_last_date(mailbox.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
+        }
+
+
+
+
+

@@ -215,3 +215,23 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 
 
 * show details data on webapp changelist
+
+* lock resource monitoring
+
+* Optimize backends like mail backend (log files single read), single "/var/log/vsftpd.log{,.1}" on ftp traffic
+
+
+* -EXecCGI in common CMS upload locations /wp-upload/upload/uploads
+* cgi user / pervent shell access
+* merge php wrapper configuration to optimize process classes
+
+
+* prevent stderr when users exists on backend i.e. mysql user create
+
+* disable anonymized list options (mailman)
+
+* webapps directory protection and disable excecgi
+
+* php-fpm disable execCGI
+
+* SuexecUserGroup needs to be per app othewise wrapper/fpm user can't be correct

@@ -16,7 +16,7 @@ def run_monitor(modeladmin, request, queryset):
         if not async:
             for result in results:
                 if hasattr(result, 'log'):
-                    logs.add(result.log.pk)
+                    logs.add(str(result.log.pk))
         modeladmin.log_change(request, resource, _("Run monitors"))
     if async:
         num = len(queryset)
@@ -28,8 +28,8 @@ def run_monitor(modeladmin, request, queryset):
     else:
         num = len(logs)
         if num == 1:
-            log = logs.pop()
-            link = reverse('admin:orchestration_backendlog_change', args=(log,))
+            log_pk = int(logs.pop())
+            link = reverse('admin:orchestration_backendlog_change', args=(log_pk,))
             msg = _("One related monitor has <a href='%s'>been executed</a>.") % link
         elif num >= 1:
             link = reverse('admin:orchestration_backendlog_changelist')

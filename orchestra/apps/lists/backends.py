@@ -155,22 +155,25 @@ class MailmanBackend(ServiceController):
         return context
 
 
-class MailmanTraffic(ServiceMonitor):
+class MailmanTrafficBash(ServiceMonitor):
     model = 'lists.List'
     resource = ServiceMonitor.TRAFFIC
-    verbose_name = _("Mailman traffic")
+    verbose_name = _("Mailman traffic (Bash)")
     
     def prepare(self):
         super(MailmanTraffic, self).prepare()
-        current_date =  self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
+        context = {
+            'mailman_log': '%s{,.1}' % settings.LISTS_MAILMAN_POST_LOG_PATH,
+            'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
+        }
         self.append(textwrap.dedent("""\
             function monitor () {
                 OBJECT_ID=$1
                 # Dates convertions are done server-side because of timezone discrepancies
                 INI_DATE=$(date "+%%Y%%m%%d%%H%%M%%S" -d "$2")
-                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%s')
+                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
                 LIST_NAME="$3"
-                MAILMAN_LOG="$4"
+                MAILMAN_LOG=%(mailman_log)s
                 
                 SUBSCRIBERS=$(list_members ${LIST_NAME} | wc -l)
                 {
@@ -203,17 +206,115 @@ class MailmanTraffic(ServiceMonitor):
                                 print sum * subs
                             }' || [[ $? == 1 ]] && true
                 } | xargs echo ${OBJECT_ID}
-            }""") % current_date)
+            }""") % context)
     
     def monitor(self, mail_list):
         context = self.get_context(mail_list)
         self.append(
-            'monitor %(object_id)i "%(last_date)s" "%(list_name)s" %(mailman_log)s{,.1}' % context
+            'monitor %(object_id)i "%(last_date)s" "%(list_name)s"' % context
         )
     
     def get_context(self, mail_list):
         return {
-            'mailman_log': settings.LISTS_MAILMAN_POST_LOG_PATH,
+            'list_name': mail_list.name,
+            'object_id': mail_list.pk,
+            'last_date': self.get_last_date(mail_list.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
+        }
+
+
+class MailmanTraffic(ServiceMonitor):
+    model = 'lists.List'
+    resource = ServiceMonitor.TRAFFIC
+    verbose_name = _("Mailman traffic")
+    script_executable = '/usr/bin/python'
+    
+    def prepare(self):
+        postlog = settings.LISTS_MAILMAN_POST_LOG_PATH
+        context = {
+            'postlogs': str((postlog, postlog+'.1')),
+            'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
+        }
+        self.append(textwrap.dedent("""\
+            import re
+            import subprocess
+            import sys
+            from datetime import datetime
+            from dateutil import tz
+
+            def to_local_timezone(date, tzlocal=tz.tzlocal()):
+                date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %Z')
+                date = date.replace(tzinfo=tz.tzutc())
+                date = date.astimezone(tzlocal)
+                return date
+
+            postlogs = {postlogs}
+            # Use local timezone
+            end_date = to_local_timezone('{current_date}')
+            end_date = int(end_date.strftime('%Y%m%d%H%M%S'))
+            lists = {{}}
+            months = {{
+                'Jan': '01',
+                'Feb': '02',
+                'Mar': '03',
+                'Apr': '04',
+                'May': '05',
+                'Jun': '06',
+                'Jul': '07',
+                'Aug': '08',
+                'Sep': '09',
+                'Oct': '10',
+                'Nov': '11',
+                'Dec': '12',
+            }}
+
+            def prepare(object_id, list_name, ini_date):
+                global lists
+                ini_date = to_local_timezone(ini_date)
+                ini_date = int(ini_date.strftime('%Y%m%d%H%M%S'))
+                lists[list_name] = [ini_date, object_id, 0]
+
+            def monitor(lists, end_date, months, postlogs):
+                for postlog in postlogs:
+                    try:
+                        with open(postlog, 'r') as postlog:
+                            for line in postlog.readlines():
+                                month, day, time, year, __, __, __, list_name, __, __, size = line.split()[:11]
+                                try:
+                                    list = lists[list_name]
+                                except KeyError:
+                                    continue
+                                else:
+                                    date = year + months[month] + day + time.replace(':', '')
+                                    if list[0] < int(date) < end_date:
+                                        size = size[5:-1]
+                                        try:
+                                            list[2] += int(size)
+                                        except ValueError:
+                                            # anonymized post
+                                            pass
+                    except IOError as e:
+                        sys.stderr.write(e)
+                
+                for list_name, opts in lists.iteritems():
+                    __, object_id, size = opts
+                    if size:
+                        cmd = ' '.join(('list_members', list_name, '| wc -l'))
+                        ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        subscribers = ps.communicate()[0].strip()
+                        size *= int(subscribers)
+                    print object_id, size
+            """).format(**context)
+        )
+    
+    def monitor(self, user):
+        context = self.get_context(user)
+        self.append("prepare(%(object_id)s, '%(list_name)s', '%(last_date)s')" % context)
+    
+    def commit(self):
+        self.append('monitor(lists, end_date, months, postlogs)')
+    
+    def get_context(self, mail_list):
+        return {
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
             'last_date': self.get_last_date(mail_list.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),

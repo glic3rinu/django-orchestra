@@ -100,6 +100,9 @@ class AppType(plugins.Plugin):
             else:
                 yield (group, [(op.name, op.verbose_name) for op in options])
     
+    def get_detail(self):
+        return ''
+    
     def save(self):
         pass
     

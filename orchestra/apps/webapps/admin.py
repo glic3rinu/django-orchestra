@@ -46,7 +46,7 @@ class WebAppOptionInline(admin.TabularInline):
 
 
 class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('name', 'type', 'display_websites', 'account_link')
+    list_display = ('name', 'type', 'display_detail', 'display_websites', 'account_link')
     list_filter = ('type',)
 #    add_fields = ('account', 'name', 'type')
 #    fields = ('account_link', 'name', 'type')
@@ -79,6 +79,10 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
         return '<br>'.join(websites)
     display_websites.short_description = _("web sites")
     display_websites.allow_tags = True
+    
+    def display_detail(self, webapp):
+        return webapp.type_instance.get_detail()
+    display_detail.short_description = _("detail")
     
 #    def formfield_for_dbfield(self, db_field, **kwargs):
 #        """ Make value input widget bigger """

@@ -9,7 +9,7 @@ from orchestra.plugins.forms import PluginDataForm
 from ..options import AppOption
 
 from . import AppType
-from .php import PHPApp
+from .php import PHPApp, PHPAppForm, PHPAppSerializer
 
 
 class StaticApp(AppType):
@@ -39,12 +39,12 @@ class WebalizerApp(AppType):
         return ('static', webalizer_path)
 
 
-class SymbolicLinkForm(PluginDataForm):
+class SymbolicLinkForm(PHPAppForm):
     path = forms.CharField(label=_("Path"), widget=forms.TextInput(attrs={'size':'100'}),
             help_text=_("Path for the origin of the symbolic link."))
 
 
-class SymbolicLinkSerializer(serializers.Serializer):
+class SymbolicLinkSerializer(PHPAppSerializer):
     path = serializers.CharField(label=_("Path"))
 
 

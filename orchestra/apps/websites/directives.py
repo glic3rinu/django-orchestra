@@ -15,6 +15,7 @@ class SiteDirective(Plugin):
     HTTPD = 'HTTPD'
     SEC = 'ModSecurity'
     SSL = 'SSL'
+    SAAS = 'SaaS'
     
     help_text = ""
     unique = True
@@ -76,31 +77,6 @@ class Proxy(SiteDirective):
     group = SiteDirective.HTTPD
 
 
-class UserGroup(SiteDirective):
-    name = 'user_group'
-    verbose_name = _("SuexecUserGroup")
-    help_text = _("<tt>user [group]</tt>, username and optional groupname.")
-    regex = r'^[\w/_]+(\s[\w/_]+)*$'
-    group = SiteDirective.HTTPD
-    
-    def validate(self, directive):
-        super(UserGroup, self).validate(directive)
-        options = directive.value.split()
-        systemusers = [options[0]]
-        if len(options) > 1:
-            systemusers.append(options[1])
-        # TODO not sure about this dependency maybe make it part of pangea only
-        from orchestra.apps.systemusers.models import SystemUser
-        errors = []
-        for user in systemusers:
-            if not SystemUser.objects.filter(username=user).exists():
-                erros.append("")
-        if errors:
-            raise ValidationError({
-                'value': errors
-            })
-
-
 class ErrorDocument(SiteDirective):
     name = 'error_document'
     verbose_name = _("ErrorDocumentRoot")
@@ -151,3 +127,30 @@ class SecEngine(SiteDirective):
     help_text = _("URL location for disabling modsecurity engine.")
     regex = r'^/[^ ]*$'
     group = SiteDirective.SEC
+
+
+class WordPressSaaS(SiteDirective):
+    name = 'wordpress-saas'
+    verbose_name = "WordPress"
+    help_text = _("URL location for mounting wordpress multisite.")
+#    fpm_listen = settings.WEBAPPS_WORDPRESSMU_LISTEN
+    group = SiteDirective.SAAS
+    regex = r'^/[^ ]*$'
+
+
+class DokuWikiSaaS(SiteDirective):
+    name = 'dokuwiki-saas'
+    verbose_name = "DokuWiki"
+    help_text = _("URL location for mounting wordpress multisite.")
+#    fpm_listen = settings.WEBAPPS_DOKUWIKIMU_LISTEN
+    group = SiteDirective.SAAS
+    regex = r'^/[^ ]*$'
+
+
+class DrupalSaaS(SiteDirective):
+    name = 'drupal-saas'
+    verbose_name = "Drupdal"
+    help_text = _("URL location for mounting wordpress multisite.")
+#    fpm_listen = settings.WEBAPPS_DRUPALMU_LISTEN
+    group = SiteDirective.SAAS
+    regex = r'^/[^ ]*$'

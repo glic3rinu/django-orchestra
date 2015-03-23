@@ -21,8 +21,12 @@ class PluginDataForm(forms.ModelForm):
             if self.instance.pk:
                 for field in self.plugin.get_change_readonly_fileds():
                     value = getattr(self.instance, field, None) or self.instance.data[field]
+                    display = value
+                    foo_display = getattr(self.instance, 'get_%s_display' % field, None)
+                    if foo_display:
+                        display = foo_display()
                     self.fields[field].required = False
-                    self.fields[field].widget = ReadOnlyWidget(value)
+                    self.fields[field].widget = ReadOnlyWidget(value, display)
 #                       self.fields[field].help_text = None
     
     def clean(self):

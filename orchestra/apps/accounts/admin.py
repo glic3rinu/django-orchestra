@@ -205,6 +205,13 @@ class AccountAdminMixin(object):
                 formfield.initial = 1
         return formfield
     
+    def get_formset(self, request, obj=None, **kwargs):
+        """ provides form.account for convinience """
+        formset = super(AccountAdminMixin, self).get_formset(request, obj=obj, **kwargs)
+        formset.form.account = self.account
+        formset.account = self.account
+        return formset
+    
     def get_account_from_preserve_filters(self, request):
         preserved_filters = self.get_preserved_filters(request)
         preserved_filters = dict(parse_qsl(preserved_filters))

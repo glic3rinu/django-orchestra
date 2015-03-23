@@ -66,15 +66,21 @@ class PHPApp(AppType):
             'app_name': self.instance.name,
         }
     
-    def get_php_init_vars(self, per_account=False):
+    def get_php_init_vars(self, merge=False):
         """
         process php options for inclusion on php.ini
         per_account=True merges all (account, webapp.type) options
         """
         init_vars = {}
         options = self.instance.options.all()
-        if per_account:
-            options = self.instance.account.webapps.filter(webapp_type=self.instance.type)
+        if merge:
+            # Get options from the same account and php_version webapps
+            options = []
+            php_version = self.get_php_version()
+            webapps = self.instance.account.webapps.filter(webapp_type=self.instance.type)
+            for webapp in webapps:
+                if webapp.type_instance.get_php_version == php_version:
+                    options += list(webapp.options.all())
         php_options = [option.name for option in type(self).get_php_options()]
         for opt in options:
             if opt.name in php_options:
@@ -97,11 +103,8 @@ class PHPApp(AppType):
     def get_directive(self):
         context = self.get_directive_context()
         if self.is_fpm:
-            socket_type = 'unix'
-            if ':' in self.FPM_LISTEN:
-                socket_type = 'tcp'
             socket = self.FPM_LISTEN % context
-            return ('fpm', socket_type, socket, self.instance.get_path())
+            return ('fpm', socket, self.instance.get_path())
         elif self.is_fcgid:
             wrapper_path = os.path.normpath(self.FCGID_WRAPPER_PATH % context)
             return ('fcgid', self.instance.get_path(), wrapper_path)

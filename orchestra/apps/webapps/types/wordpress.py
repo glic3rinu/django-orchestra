@@ -64,12 +64,11 @@ class WordPressApp(PHPApp):
                     })
     
     def save(self):
-        create = not self.instance.pk
-        if create:
-            db_name = self.get_db_name()
-            db_user = self.get_db_user()
-            db_pass = self.get_db_pass()
-            db = Database.objects.create(name=db_name, account=self.instance.account)
+        db_name = self.get_db_name()
+        db_user = self.get_db_user()
+        db_pass = self.get_db_pass()
+        db, db_created = Database.objects.get_or_create(name=db_name, account=self.instance.account)
+        if db_created:
             user = DatabaseUser(username=db_user, account=self.instance.account)
             user.set_password(db_pass)
             user.save()
@@ -82,7 +81,7 @@ class WordPressApp(PHPApp):
         else:
             # Trigger related backends
             for related in self.get_related():
-                related.save(updated_fields=[])
+                related.save(update_fields=[])
         
     def delete(self):
         for related in self.get_related():

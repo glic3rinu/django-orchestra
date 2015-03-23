@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from .. import settings
 from .options import SoftwareService, SoftwareServiceForm
 
 
@@ -19,10 +20,11 @@ class BSCWDataSerializer(serializers.Serializer):
 
 
 class BSCWService(SoftwareService):
+    name = 'bscw'
     verbose_name = "BSCW"
     form = BSCWForm
     serializer = BSCWDataSerializer
     icon = 'orchestra/icons/apps/BSCW.png'
     # TODO override from settings
-    site_name = 'bascw.orchestra.lan'
+    site_name = settings.SAAS_BSCW_DOMAIN
     change_readonly_fileds = ('email',)

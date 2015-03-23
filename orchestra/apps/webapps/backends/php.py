@@ -13,6 +13,7 @@ from .. import settings
 class PHPBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("PHP FPM/FCGID")
     default_route_match = "webapp.type == 'php'"
+    MERGE = settings.WEBAPPS_MERGE_PHP_WEBAPPS
     
     def save(self, webapp):
         context = self.get_context(webapp)
@@ -89,8 +90,9 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             )
     
     def get_fpm_config(self, webapp, context):
+        merge = settings.WEBAPPS_MERGE_PHP_WEBAPPS
         context.update({
-            'init_vars': webapp.type_instance.get_php_init_vars(),
+            'init_vars': webapp.type_instance.get_php_init_vars(merge=self.MERGE),
             'max_children': webapp.get_options().get('processes', False),
             'request_terminate_timeout': webapp.get_options().get('timeout', False),
         })
@@ -116,7 +118,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     def get_fcgid_wrapper(self, webapp, context):
         opt = webapp.type_instance
         # Format PHP init vars
-        init_vars = opt.get_php_init_vars()
+        init_vars = opt.get_php_init_vars(merge=self.MERGE)
         if init_vars:
             init_vars = [ '-d %s="%s"' % (k,v) for k,v in init_vars.iteritems() ]
         init_vars = ', '.join(init_vars)

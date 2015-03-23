@@ -6,7 +6,11 @@ class Plugin(object):
     # Used on select plugin view
     class_verbose_name = None
     icon = None
+    change_form = None
+    form = None
+    serializer = None
     change_readonly_fileds = ()
+    plugin_field = None
     
     def __init__(self, instance=None):
         # Related model instance of this plugin
@@ -49,7 +53,34 @@ class Plugin(object):
     
     @classmethod
     def get_change_readonly_fileds(cls):
-        return cls.change_readonly_fileds
+        return (cls.plugin_field,) + cls.change_readonly_fileds
+    
+    def clean_data(self):
+        """ model clean, uses cls.serizlier by default """
+        if self.serializer:
+            serializer = self.serializer(data=self.instance.data)
+            if not serializer.is_valid():
+                raise ValidationError(serializer.errors)
+            return serializer.data
+        return {}
+    
+    def get_directive(self):
+        raise NotImplementedError
+    
+    def get_form(self):
+        self.form.plugin = self
+        self.form.plugin_field = self.plugin_field
+        return self.form
+    
+    def get_change_form(self):
+        form = self.change_form or self.form
+        form.plugin = self
+        form.plugin_field = self.plugin_field
+        return form
+    
+    def get_serializer(self):
+        self.serializer.plugin = self
+        return self.serializer
 
 
 class PluginModelAdapter(Plugin):

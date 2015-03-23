@@ -141,6 +141,7 @@ class Content(models.Model):
             return self.path
     
     def clean(self):
+        # TODO do it on the field?
         self.path = normurlpath(self.path)
     
     def get_absolute_url(self):

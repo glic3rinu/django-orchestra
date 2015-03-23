@@ -38,9 +38,6 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
     'orchestra.apps.webapps.types.php.PHPApp',
     'orchestra.apps.webapps.types.misc.StaticApp',
     'orchestra.apps.webapps.types.misc.WebalizerApp',
-    'orchestra.apps.webapps.types.saas.WordPressMuApp',
-    'orchestra.apps.webapps.types.saas.DokuWikiMuApp',
-    'orchestra.apps.webapps.types.saas.DrupalMuApp',
     'orchestra.apps.webapps.types.misc.SymbolicLinkApp',
     'orchestra.apps.webapps.types.wordpress.WordPressApp',
 ))
@@ -150,41 +147,6 @@ WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
     'orchestra.apps.webapps.options.PHPUploadMaxFileSize',
     'orchestra.apps.webapps.options.PHPZendExtension',
 ))
-
-
-WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD = getattr(settings, 'WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD',
-    'secret')
-
-WEBAPPS_WORDPRESSMU_BASE_URL = getattr(settings, 'WEBAPPS_WORDPRESSMU_BASE_URL',
-    'http://blogs.orchestra.lan/')
-
-WEBAPPS_WORDPRESSMU_LISTEN = getattr(settings, 'WEBAPPS_WORDPRESSMU_LISTEN',
-    '/opt/php/5.4/socks/wordpress-mu.sock'
-)
-
-
-WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH',
-    '/home/httpd/htdocs/wikifarm/template.tar.gz')
-
-WEBAPPS_DOKUWIKIMU_FARM_PATH = getattr(settings, 'WEBAPPS_DOKUWIKIMU_FARM_PATH',
-    '/home/httpd/htdocs/wikifarm/farm')
-
-WEBAPPS_DOKUWIKIMU_LISTEN = getattr(settings, 'WEBAPPS_DOKUWIKIMU_LISTEN',
-    '/opt/php/5.4/socks/dokuwiki-mu.sock'
-)
-
-
-WEBAPPS_DRUPALMU_SITES_PATH = getattr(settings, 'WEBAPPS_DRUPALMU_SITES_PATH',
-    '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s')
-
-WEBAPPS_DRUPALMU_LISTEN = getattr(settings, 'WEBAPPS_DRUPALMU_LISTEN',
-    '/opt/php/5.4/socks/drupal-mu.sock'
-)
-
-
-WEBAPPS_MOODLEMU_LISTEN = getattr(settings, 'WEBAPPS_MOODLEMU_LISTEN',
-    '/opt/php/5.4/socks/moodle-mu.sock'
-)
 
 
 WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = getattr(settings, 'WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST',

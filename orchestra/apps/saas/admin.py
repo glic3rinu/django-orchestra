@@ -1,6 +1,8 @@
 from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext, ugettext_lazy as _
 
+from orchestra.admin import ExtendedModelAdmin
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
@@ -8,7 +10,7 @@ from .models import SaaS
 from .services import SoftwareService
 
 
-class SaaSAdmin(SelectPluginAdminMixin, AccountAdminMixin, admin.ModelAdmin):
+class SaaSAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'service', 'display_site_name', 'account_link')
     list_filter = ('service',)
     plugin = SoftwareService

@@ -14,9 +14,10 @@ from .. import settings
 
 
 class SoftwareServiceForm(PluginDataForm):
+    site_name = forms.CharField(widget=widgets.ShowTextWidget, required=False)
     password = forms.CharField(label=_("Password"), required=False,
             widget=widgets.ReadOnlyWidget('<strong>Unknown password</strong>'),
-            help_text=_("Servide passwords are not stored, so there is no way to see this "
+            help_text=_("Passwords are not stored, so there is no way to see this "
                         "service's password, but you can change the password using "
                         "<a href=\"password/\">this form</a>."))
     password1 = forms.CharField(label=_("Password"), validators=[validators.validate_password],
@@ -38,13 +39,16 @@ class SoftwareServiceForm(PluginDataForm):
             self.fields['password'].widget = forms.HiddenInput()
             site_name = self.plugin.site_name
         if site_name:
-            link = '<a href="http://%s">%s</a>' % (site_name, site_name)
-            self.fields['site_name'].widget = widgets.ReadOnlyWidget(site_name, mark_safe(link))
-            self.fields['site_name'].required = False
+            site_name_link = '<a href="http://%s">%s</a>' % (site_name, site_name)
         else:
-            base_name = self.plugin.site_name_base_domain
-            help_text = _("The final URL would be &lt;site_name&gt;.%s") % base_name
-            self.fields['site_name'].help_text = help_text
+            site_name_link = '&lt;name&gt;.%s' % self.plugin.site_name_base_domain
+        self.fields['site_name'].initial = site_name_link
+##            self.fields['site_name'].widget = widgets.ReadOnlyWidget(site_name, mark_safe(link))
+##            self.fields['site_name'].required = False
+#        else:
+#            base_name = self.plugin.site_name_base_domain
+#            help_text = _("The final URL would be &lt;site_name&gt;.%s") % base_name
+#            self.fields['site_name'].help_text = help_text
     
     def clean_password2(self):
         if not self.is_change:
@@ -69,12 +73,13 @@ class SoftwareServiceForm(PluginDataForm):
 
 class SoftwareService(plugins.Plugin):
     form = SoftwareServiceForm
-    serializer = None
     site_name = None
     site_name_base_domain = 'orchestra.lan'
+    has_custom_domain = False
     icon = 'orchestra/icons/apps.png'
-    change_readonly_fileds = ('username',)
+    change_readonly_fileds = ('site_name',)
     class_verbose_name = _("Software as a Service")
+    plugin_field = 'service'
     
     @classmethod
     @cached
@@ -84,27 +89,18 @@ class SoftwareService(plugins.Plugin):
             plugins.append(import_class(cls))
         return plugins
     
-    def clean_data(cls):
-        """ model clean, uses cls.serizlier by default """
-        serializer = cls.serializer(data=self.instance.data)
-        if not serializer.is_valid():
-            raise ValidationError(serializer.errors)
-        return serializer.data
-    
     @classmethod
     def get_change_readonly_fileds(cls):
-        return cls.change_readonly_fileds + ('username',)
+        fields = super(SoftwareService, cls).get_change_readonly_fileds()
+        return fields + ('username',)
     
     def get_site_name(self):
         return self.site_name or '.'.join(
-            (self.instance.site_name, self.site_name_base_domain)
+            (self.instance.username, self.site_name_base_domain)
         )
     
-    def get_form(self):
-        self.form.plugin = self
-        self.form.plugin_field = 'service'
-        return self.form
+    def save(self):
+        pass
     
-    def get_serializer(self):
-        self.serializer.plugin = self
-        return self.serializer
+    def delete(self):
+        pass

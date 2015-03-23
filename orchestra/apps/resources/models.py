@@ -170,6 +170,7 @@ class ResourceData(models.Model):
     updated_at = models.DateTimeField(_("updated"), null=True, editable=False)
     allocated = models.DecimalField(_("allocated"), max_digits=8, decimal_places=2,
             null=True, blank=True)
+    
     content_object = GenericForeignKey()
     
     class Meta:
@@ -326,9 +327,9 @@ def create_resource_relation():
                 field for field in related._meta.virtual_fields if field.rel.to != ResourceData
             ]
     
-    relation = GenericRelation('resources.ResourceData')
     for ct, resources in Resource.objects.group_by('content_type').iteritems():
         model = ct.model_class()
+        relation = GenericRelation('resources.ResourceData')
         model.add_to_class('resource_set', relation)
         model.resources = ResourceHandler()
         Resource._related.add(model)

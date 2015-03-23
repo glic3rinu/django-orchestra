@@ -281,7 +281,7 @@ class MaildirDisk(ServiceMonitor):
         current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {
-                awk 'NR>1 {s+=$1} END {print s}' $1 || echo 0
+                awk 'BEGIN { size = 0 } NR > 1 { size += $1 } END { print size }' $1 || echo 0
             }"""))
     
     def monitor(self, mailbox):

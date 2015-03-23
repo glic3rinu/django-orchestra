@@ -98,32 +98,38 @@ class Apache2Backend(ServiceController):
         """ reload Apache2 if necessary """
         self.append('if [[ $UPDATED == 1 ]]; then service apache2 reload; fi')
     
+    def get_directives(self, directive, context):
+        method, args = directive[0], directive[1:]
+        try:
+            method = getattr(self, 'get_%s_directives' % method)
+        except AttributeError:
+            raise AttributeError("%s does not has suport for '%s' directive." %
+                    (self.__class__.__name__, method))
+        return method(context, *args)
+    
     def get_content_directives(self, site):
         directives = []
         for content in site.content_set.all():
             directive = content.webapp.get_directive()
-            method, args = directive[0], directive[1:]
-            method = getattr(self, 'get_%s_directives' % method)
-            directives += method(content, *args)
+            context = self.get_content_context(content)
+            directives += self.get_directives(directive, context)
         return directives
     
-    def get_static_directives(self, content, app_path):
-        context = self.get_content_context(content)
+    def get_static_directives(self, context, app_path):
         context['app_path'] = app_path % context
         location = "%(location)s/" % context
         directive = "Alias %(location)s/ %(app_path)s/" % context
         return [(location, directive)]
     
-    def get_fpm_directives(self, content, socket_type, socket, app_path):
-        if socket_type == 'unix':
-            target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/'
-            if content.path != '/':
-                target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/$1'
-        elif socket_type == 'tcp':
+    def get_fpm_directives(self, context, socket, app_path):
+        if ':' in socket:
+            # TCP socket
             target = 'fcgi://%(socket)s%(app_path)s/$1'
         else:
-            raise TypeError("%s socket not supported." % socket_type)
-        context = self.get_content_context(content)
+            # UNIX socket
+            target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/'
+            if context['location'] != '/':
+                target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/$1'
         context.update({
             'app_path': app_path,
             'socket': socket,
@@ -135,8 +141,7 @@ class Apache2Backend(ServiceController):
         )
         return [(location, directives)]
     
-    def get_fcgid_directives(self, content, app_path, wrapper_path):
-        context = self.get_content_context(content)
+    def get_fcgid_directives(self, context, app_path, wrapper_path):
         context.update({
             'app_path': app_path,
             'wrapper_path': wrapper_path,
@@ -202,7 +207,17 @@ class Apache2Backend(ServiceController):
             )
             proxies.append((location, proxy))
         return proxies
-        
+    
+    def get_saas(self, directives):
+        saas = []
+        for name, value in directives.iteritems():
+            if name.endswith('-saas'):
+                context = {
+                    'location': normurlpath(value),
+                }
+                directive = settings.WEBSITES_SAAS_DIRECTIVES[name]
+                saas += self.get_directive(context, directive)
+        return saas
 #    def get_protections(self, site):
 #        protections = ''
 #        context = self.get_context(site)

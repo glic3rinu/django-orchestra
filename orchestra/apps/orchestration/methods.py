@@ -10,6 +10,8 @@ import paramiko
 from celery.datastructures import ExceptionInfo
 from django.conf import settings as djsettings
 
+from orchestra.utils.python import CaptureStdout
+
 from . import settings
 
 
@@ -37,7 +39,6 @@ def SSH(backend, log, server, cmds, async=False):
     channel = None
     ssh = None
     try:
-        logger.debug('%s is going to be executed on %s' % (backend, server))
         # Avoid "Argument list too long" on large scripts by genereting a file
         # and scping it to the remote server
         with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT, 0600), 'w') as handle:
@@ -129,15 +130,19 @@ def Python(backend, log, server, cmds, async=False):
     log.save(update_fields=['script'])
     try:
         for cmd in cmds:
-            result = cmd(server)
-            log.stdout += str(result)
+            with CaptureStdout() as stdout:
+                result = cmd(server)
+            for line in stdout:
+                log.stdout += unicode(line, errors='replace') + '\n'
             if async:
                 log.save(update_fields=['stdout'])
     except:
         log.exit_code = 1
         log.state = log.FAILURE
         log.traceback = ExceptionInfo(sys.exc_info()).traceback
+        logger.error('Exception while executing %s on %s' % (backend, server))
     else:
         log.exit_code = 0
         log.state = log.SUCCESS
+        logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
     log.save()

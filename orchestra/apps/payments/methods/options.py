@@ -13,9 +13,8 @@ class PaymentMethod(plugins.Plugin):
     label_field = 'label'
     number_field = 'number'
     process_credit = False
-    form = None
-    serializer = None
     due_delta = relativedelta.relativedelta(months=1)
+    plugin_field = 'method'
     
     @classmethod
     @cached
@@ -24,24 +23,6 @@ class PaymentMethod(plugins.Plugin):
         for cls in settings.PAYMENTS_ENABLED_METHODS:
             plugins.append(import_class(cls))
         return plugins
-    
-    @classmethod
-    def clean_data(cls):
-        """ model clean, uses cls.serializer by default """
-        serializer = cls.serializer(data=self.instance.data)
-        if not serializer.is_valid():
-            serializer.errors.pop('non_field_errors', None)
-            raise ValidationError(serializer.errors)
-        return serializer.data
-    
-    def get_form(self):
-        self.form.plugin = self
-        self.form.plugin_field = 'method'
-        return self.form
-    
-    def get_serializer(self):
-        self.serializer.plugin = self
-        return self.serializer
     
     def get_label(self):
         return self.instance.data[self.label_field]

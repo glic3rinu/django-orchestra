@@ -35,6 +35,7 @@ class ServiceBackend(plugins.Plugin):
     ignore_fields = []
     actions = []
     default_route_match = 'True'
+    block = False # Force the backend manager to block in multiple backend executions and execute them synchronously
     
     __metaclass__ = ServiceMount
     

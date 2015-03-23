@@ -24,7 +24,7 @@ class WebApp(models.Model):
             choices=AppType.get_plugin_choices())
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='webapps')
-    data = JSONField(_("data"), blank=True,
+    data = JSONField(_("data"), blank=True, default={},
             help_text=_("Extra information dependent of each service."))
     
     class Meta:

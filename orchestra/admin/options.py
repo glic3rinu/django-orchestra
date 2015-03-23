@@ -118,10 +118,13 @@ class ChangeAddFieldsMixin(object):
             return super(ChangeAddFieldsMixin, self).get_prepopulated_fields(request, obj)
         return {}
     
+    def get_change_readonly_fields(self, request, obj=None):
+        return self.change_readonly_fields
+    
     def get_readonly_fields(self, request, obj=None):
         fields = super(ChangeAddFieldsMixin, self).get_readonly_fields(request, obj)
         if obj:
-            return fields + self.change_readonly_fields
+            return fields + self.get_change_readonly_fields(request, obj=obj)
         return fields
     
     def get_fieldsets(self, request, obj=None):

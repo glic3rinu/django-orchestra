@@ -48,20 +48,14 @@ class WebAppOptionInline(admin.TabularInline):
 class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_detail', 'display_websites', 'account_link')
     list_filter = ('type',)
-#    add_fields = ('account', 'name', 'type')
-#    fields = ('account_link', 'name', 'type')
     inlines = [WebAppOptionInline]
-    readonly_fields = ('account_link',)
-    change_readonly_fields = ('name', 'type')
-    search_fuelds = ('name', 'account__username')
+    readonly_fields = ('account_link', )
+    change_readonly_fields = ('name', 'type', 'display_websites')
+    search_fields = ('name', 'account__username', 'data', 'website__domains__name')
     list_prefetch_related = ('content_set__website',)
     plugin = AppType
     plugin_field = 'type'
     plugin_title = _("Web application type")
-    
-#    TYPE_HELP_TEXT = {
-#        app.get_name(): str(unicode(app.help_text)) for app in App.get_plugins()
-#    }
     
     def display_websites(self, webapp):
         websites = []

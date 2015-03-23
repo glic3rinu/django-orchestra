@@ -14,11 +14,10 @@ class AppType(plugins.Plugin):
     verbose_name = ""
     help_text= ""
     form = PluginDataForm
-    change_form = None
-    serializer = None
     icon = 'orchestra/icons/apps.png'
     unique_name = False
     option_groups = (AppOption.FILESYSTEM, AppOption.PROCESS, AppOption.PHP)
+    plugin_field = 'type'
     # TODO generic name like 'execution' ?
     
     @classmethod
@@ -28,33 +27,6 @@ class AppType(plugins.Plugin):
         for cls in settings.WEBAPPS_TYPES:
             plugins.append(import_class(cls))
         return plugins
-    
-    def clean_data(self):
-        """ model clean, uses cls.serizlier by default """
-        if self.serializer:
-            serializer = self.serializer(data=self.instance.data)
-            if not serializer.is_valid():
-                raise ValidationError(serializer.errors)
-            return serializer.data
-        return {}
-    
-    def get_directive(self):
-        raise NotImplementedError
-    
-    def get_form(self):
-        self.form.plugin = self
-        self.form.plugin_field = 'type'
-        return self.form
-    
-    def get_change_form(self):
-        form = self.change_form or self.form
-        form.plugin = self
-        form.plugin_field = 'type'
-        return form
-    
-    def get_serializer(self):
-        self.serializer.plugin = self
-        return self.serializer
     
     def validate(self):
         """ Unique name validation """

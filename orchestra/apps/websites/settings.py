@@ -34,13 +34,15 @@ WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL', 'domains.Doma
 WEBSITES_ENABLED_DIRECTIVES = getattr(settings, 'WEBSITES_ENABLED_DIRECTIVES', (
     'orchestra.apps.websites.directives.Redirect',
     'orchestra.apps.websites.directives.Proxy',
-    'orchestra.apps.websites.directives.UserGroup',
     'orchestra.apps.websites.directives.ErrorDocument',
     'orchestra.apps.websites.directives.SSLCA',
     'orchestra.apps.websites.directives.SSLCert',
     'orchestra.apps.websites.directives.SSLKey',
     'orchestra.apps.websites.directives.SecRuleRemove',
     'orchestra.apps.websites.directives.SecEngine',
+    'orchestra.apps.websites.directives.WordPressSaaS',
+    'orchestra.apps.websites.directives.DokuWikiSaaS',
+    'orchestra.apps.websites.directives.DrupalSaaS',
 ))
 
 
@@ -72,4 +74,15 @@ WEBSITES_TRAFFIC_IGNORE_HOSTS = getattr(settings, 'WEBSITES_TRAFFIC_IGNORE_HOSTS
 
 #WEBSITES_DEFAULT_SSl_KEY = getattr(settings, 'WEBSITES_DEFAULT_SSl_KEY',
 #    '')
+
+
+WEBAPPS_SAAS_DIRECTIVES = getattr(settings, 'WEBAPPS_SAAS_DIRECTIVES', {
+    'wordpress-saas': ('fpm', '/home/httpd/wordpress-mu/', '/opt/php/5.4/socks/wordpress-mu.sock'),
+    'drupal-saas': ('fpm', '/home/httpd/drupal-mu/', '/opt/php/5.4/socks/drupal-mu.sock'),
+    'dokuwiki-saas': ('fpm', '/home/httpd/moodle-mu/', '/opt/php/5.4/socks/moodle-mu.sock'),
+#    'moodle-saas': ('fpm', '/home/httpd/moodle-mu/', '/opt/php/5.4/socks/moodle-mu.sock'),
+})
+
+
+
 

@@ -23,7 +23,7 @@ class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
 
 class RelatedWebAppSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Content.webapp.field.rel.to
+#        model = Content.webapp.field.rel.to
         fields = ('url', 'name', 'type')
     
     def from_native(self, data, files=None):
@@ -46,15 +46,15 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     domains = RelatedDomainSerializer(many=True, allow_add_remove=True, required=False)
     contents = ContentSerializer(required=False, many=True, allow_add_remove=True,
             source='content_set')
-    options = OptionField(required=False)
+    directives = OptionField(required=False)
     
     class Meta:
         model = Website
-        fields = ('url', 'name', 'port', 'domains', 'is_active', 'contents', 'options')
+        fields = ('url', 'name', 'protocol', 'domains', 'is_active', 'contents', 'directives')
         postonly_fileds = ('name',)
     
     def full_clean(self, instance):
-        """ Prevent multiples domains on the same port """
+        """ Prevent multiples domains on the same protocol """
         for domain in instance._m2m_data['domains']:
             try:
                 validate_domain_protocol(instance, domain, instance.protocol)

@@ -1,6 +1,7 @@
 import logging
 import threading
 import traceback
+from collections import OrderedDict
 
 from django import db
 from django.core.mail import mail_admins
@@ -51,8 +52,9 @@ def close_connection(execute):
 
 def execute(operations, async=False):
     """ generates and executes the operations on the servers """
-    scripts = {}
+    scripts = OrderedDict()
     cache = {}
+    block = False
     # Generate scripts per server+backend
     for operation in operations:
         logger.debug("Queued %s" % str(operation))
@@ -77,6 +79,8 @@ def execute(operations, async=False):
             pre_action.send(**kwargs)
             method(operation.instance)
             post_action.send(**kwargs)
+            if backend.block:
+                block = True
     # Execute scripts on each server
     threads = []
     executions = []
@@ -88,8 +92,11 @@ def execute(operations, async=False):
         execute = close_connection(execute)
         # DEBUG: substitute all thread related stuff for this function
         #execute(server, async=async)
+        logger.debug('%s is going to be executed on %s' % (backend, server))
         thread = threading.Thread(target=execute, args=(server,), kwargs={'async': async})
         thread.start()
+        if block:
+            thread.join()
         threads.append(thread)
         executions.append((execute, operations))
     [ thread.join() for thread in threads ]

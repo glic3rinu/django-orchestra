@@ -182,15 +182,16 @@ def resource_inline_factory(resources):
             return len(resources) 
         
         def get_queryset(self):
+            """ Filter disabled resources """
             queryset = super(ResourceInlineFormSet, self).get_queryset()
-            return queryset.order_by('-id').filter(resource__is_active=True)
+            return queryset.filter(resource__is_active=True)
         
         @cached_property
         def forms(self, resources=resources):
             forms = []
             resources_copy = list(resources)
             # Remove queryset disabled objects
-            queryset = [data for data in self.queryset if data.resource in resources]
+            queryset = [data for data in self.get_queryset() if data.resource in resources]
             if self.instance.pk:
                 # Create missing resource data
                 queryset_resources = [data.resource for data in queryset]

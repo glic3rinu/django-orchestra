@@ -1,6 +1,8 @@
+import sys
 import collections
 import random
 import string
+from cStringIO import StringIO
 
 
 def import_class(cls):
@@ -76,3 +78,14 @@ class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+class CaptureStdout(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+    
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        sys.stdout = self._stdout

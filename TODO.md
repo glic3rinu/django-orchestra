@@ -147,7 +147,6 @@
 
 * Resource graph for each related object
 
-* Rename apache logs ending on .log in order to logrotate easily
 
 * multitenant webapps modeled on WepApp -> name unique for all accounts
 
@@ -193,9 +192,6 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 * <IfModule security2_module> and other IfModule on backend SecRule
 
 
-* monitor in batches doesnt work!!!
-
-
 * Orchestra global search box on the header, based https://github.com/django/django/blob/master/django/contrib/admin/options.py#L866 and iterating over all registered services and inspectin its admin.search_fields
 
 
@@ -214,17 +210,10 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
     * Display admin.is_active (disabled account/order by)
 
 
-* show details data on webapp changelist
-
 * lock resource monitoring
-
-* Optimize backends like mail backend (log files single read), single "/var/log/vsftpd.log{,.1}" on ftp traffic
-
 
 * -EXecCGI in common CMS upload locations /wp-upload/upload/uploads
 * cgi user / pervent shell access
-* merge php wrapper configuration to optimize process classes
-
 
 * prevent stderr when users exists on backend i.e. mysql user create
 
@@ -235,3 +224,29 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 * php-fpm disable execCGI
 
 * SuexecUserGroup needs to be per app othewise wrapper/fpm user can't be correct
+
+* wprdess-mu saas app that create a Website object????
+
+* tags = GenericRelation(TaggedItem, related_query_name='bookmarks')
+
+* make home for all systemusers (/home/username) and fix monitors
+
+* user provided crons
+
+* ```<?php
+$moodle_host = $SERVER[‘HTTP_HOST’];
+require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupla/php-list multi-tenancy
+
+* make account available on all admin forms
+
+* WPMU blog traffic
+
+* normurlpath '' returns '/'
+
+* rename webapps.type to something more generic
+
+* initial configuration of multisite sas apps with password stored in DATA
+
+* websites links on webpaps ans saas
+
+* /var/lib/fcgid/wrappers/ rm write permissions

@@ -10,8 +10,8 @@ from .. import settings
 
 class WordpressMuBackend(ServiceController):
     verbose_name = _("Wordpress multisite")
-    model = 'saas.SaaS'
-    default_route_match = "saas.service == 'wordpress-mu'"
+    model = 'webapps.WebApp'
+    default_route_match = "webapp.type == 'wordpress-mu'"
     
     @property
     def script(self):
@@ -22,7 +22,7 @@ class WordpressMuBackend(ServiceController):
         login_url = base_url + '/wp-login.php'
         login_data = {
             'log': 'admin',
-            'pwd': settings.WEBSITES_WORDPRESSMU_ADMIN_PASSWORD,
+            'pwd': settings.WEBAPPS_WORDPRESSMU_ADMIN_PASSWORD,
             'redirect_to': '/wp-admin/'
         }
         response = session.post(login_url, data=login_data)
@@ -30,7 +30,7 @@ class WordpressMuBackend(ServiceController):
             raise IOError("Failure login to remote application")
     
     def get_base_url(self):
-        base_url = settings.WEBSITES_WORDPRESSMU_BASE_URL
+        base_url = settings.WEBAPPS_WORDPRESSMU_BASE_URL
         return base_url.rstrip('/')
     
     def validate_response(self, response):

@@ -24,11 +24,6 @@ class WebsiteDirectiveInline(admin.TabularInline):
         op.name: str(unicode(op.help_text)) for op in SiteDirective.get_plugins()
     }
     
-#    class Media:
-#        css = {
-#            'all': ('orchestra/css/hide-inline-id.css',)
-#        }
-    
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'value':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})

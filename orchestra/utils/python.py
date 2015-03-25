@@ -13,7 +13,7 @@ def import_class(cls):
 
 
 def random_ascii(length):
-    return ''.join([random.choice(string.hexdigits) for i in range(0, length)]).lower()
+    return ''.join([random.SystemRandom().choice(string.hexdigits) for i in range(0, length)]).lower()
 
 
 class OrderedSet(collections.MutableSet):

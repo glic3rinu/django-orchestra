@@ -17,23 +17,22 @@ class PHPListForm(SoftwareServiceForm):
     
     def __init__(self, *args, **kwargs):
         super(PHPListForm, self).__init__(*args, **kwargs)
-        self.fields['username'].label = _("Name")
-        base_domain = self.plugin.site_name_base_domain
-        help_text = _("Admin URL http://&lt;name&gt;.{}/admin/").format(base_domain)
-        self.fields['site_name'].help_text = help_text
+        self.fields['name'].label = _("Site name")
+        base_domain = self.plugin.site_base_domain
+        help_text = _("Admin URL http://&lt;site_name&gt;.{}/admin/").format(base_domain)
+        self.fields['site_url'].help_text = help_text
 
 
 class PHPListChangeForm(PHPListForm):
-#    site_name = forms.CharField(widget=widgets.ShowTextWidget, required=False)
     db_name = forms.CharField(label=_("Database name"),
             help_text=_("Database used for this webapp."))
     
     def __init__(self, *args, **kwargs):
         super(PHPListChangeForm, self).__init__(*args, **kwargs)
-        site_name = self.instance.get_site_name()
-        admin_url = "http://%s/admin/" % site_name
+        site_domain = self.instance.get_site_domain()
+        admin_url = "http://%s/admin/" % site_domain
         help_text = _("Admin URL <a href={0}>{0}</a>").format(admin_url)
-        self.fields['site_name'].help_text = help_text
+        self.fields['site_url'].help_text = help_text
 
 
 class PHPListSerializer(serializers.Serializer):
@@ -48,21 +47,25 @@ class PHPListService(SoftwareService):
     change_readonly_fileds = ('db_name',)
     serializer = PHPListSerializer
     icon = 'orchestra/icons/apps/Phplist.png'
-    site_name_base_domain = settings.SAAS_PHPLIST_BASE_DOMAIN
+    site_base_domain = settings.SAAS_PHPLIST_BASE_DOMAIN
     
     def get_db_name(self):
-        db_name = 'phplist_mu_%s' % self.instance.username
+        db_name = 'phplist_mu_%s' % self.instance.name
         # Limit for mysql database names
         return db_name[:65]
     
     def get_db_user(self):
         return settings.SAAS_PHPLIST_DB_NAME
     
+    def get_account(self):
+        return type(self.instance.account).get_main()
+    
     def validate(self):
         super(PHPListService, self).validate()
         create = not self.instance.pk
         if create:
-            db = Database(name=self.get_db_name(), account=self.instance.account)
+            account = self.get_account()
+            db = Database(name=self.get_db_name(), account=account)
             try:
                 db.full_clean()
             except ValidationError as e:
@@ -73,7 +76,8 @@ class PHPListService(SoftwareService):
     def save(self):
         db_name = self.get_db_name()
         db_user = self.get_db_user()
-        db, db_created = Database.objects.get_or_create(name=db_name, account=self.instance.account)
+        account = self.get_account()
+        db, db_created = account.databases.get_or_create(name=db_name)
         user = DatabaseUser.objects.get(username=db_user)
         db.users.add(user)
         self.instance.data = {
@@ -90,9 +94,10 @@ class PHPListService(SoftwareService):
     
     def get_related(self):
         related = []
-        account = self.instance.account
+        account = self.get_account()
+        db_name = self.instance.data.get('db_name')
         try:
-            db = account.databases.get(name=self.instance.data.get('db_name'))
+            db = account.databases.get(name=db_name)
         except Database.DoesNotExist:
             pass
         else:

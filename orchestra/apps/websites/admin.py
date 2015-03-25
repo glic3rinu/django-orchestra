@@ -12,12 +12,13 @@ from orchestra.forms.widgets import DynamicHelpTextSelect
 
 from . import settings
 from .directives import SiteDirective
-from .forms import WebsiteAdminForm
+from .forms import WebsiteAdminForm, WebsiteDirectiveInlineFormSet
 from .models import Content, Website, WebsiteDirective
 
 
 class WebsiteDirectiveInline(admin.TabularInline):
     model = WebsiteDirective
+    formset = WebsiteDirectiveInlineFormSet
     extra = 1
     
     DIRECTIVES_HELP_TEXT = {

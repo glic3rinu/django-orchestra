@@ -17,7 +17,7 @@ class PhpListSaaSBackend(ServiceController):
     
     def initialize_database(self, saas, server):
         base_domain = settings.SAAS_PHPLIST_BASE_DOMAIN
-        admin_link = 'http://%s.%s/admin/' % (saas.get_site_name(), base_domain)
+        admin_link = 'http://%s/admin/' % saas.get_site_domain()
         admin_content = requests.get(admin_link).content
         if admin_content.startswith('Cannot connect to Database'):
             raise RuntimeError("Database is not yet configured")
@@ -28,7 +28,7 @@ class PhpListSaaSBackend(ServiceController):
             install = install.groups()[0]
             install_link = admin_link + install[1:]
             post = {
-                'adminname': saas.username,
+                'adminname': saas.name,
                 'orgname': saas.account.username,
                 'adminemail': saas.account.username,
                 'adminpassword': saas.password,

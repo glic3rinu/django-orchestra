@@ -19,3 +19,26 @@ class WebsiteAdminForm(forms.ModelForm):
                 self.add_error(None, e)
         return self.cleaned_data
 
+
+class WebsiteDirectiveInlineFormSet(forms.models.BaseInlineFormSet):
+    """ Validate uniqueness """
+    def clean(self):
+        values = {}
+        for form in self.forms:
+            name = form.cleaned_data.get('name', None)
+            if name is not None:
+                directive = form.instance.directive_class
+                if directive.unique_name and name in values:
+                    form.add_error(None, ValidationError(
+                        _("Only one %s can be defined.") % directive.get_verbose_name()
+                    ))
+                value = form.cleaned_data.get('value', None)
+                if value is not None:
+                    if directive.unique_value and value in values.get(name, []):
+                        form.add_error('value', ValidationError(
+                            _("This value is already used by other %s.") % unicode(directive.get_verbose_name())
+                        ))
+                try:
+                    values[name].append(value)
+                except KeyError:
+                    values[name] = [value]

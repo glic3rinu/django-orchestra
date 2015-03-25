@@ -33,8 +33,8 @@ class WebalizerApp(AppType):
     icon = 'orchestra/icons/apps/Stats.png'
     option_groups = ()
     
-    def get_directive(self, webapp):
-        webalizer_path = os.path.join(webapp.get_path(), '%(site_name)s')
+    def get_directive(self):
+        webalizer_path = os.path.join(self.instance.get_path(), '%(site_name)s')
         webalizer_path = os.path.normpath(webalizer_path)
         return ('static', webalizer_path)
 

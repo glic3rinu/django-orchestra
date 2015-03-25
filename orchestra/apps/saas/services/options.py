@@ -8,13 +8,13 @@ from orchestra.plugins.forms import PluginDataForm
 from orchestra.core import validators
 from orchestra.forms import widgets
 from orchestra.utils.functional import cached
-from orchestra.utils.python import import_class
+from orchestra.utils.python import import_class, random_ascii
 
 from .. import settings
 
 
 class SoftwareServiceForm(PluginDataForm):
-    site_name = forms.CharField(widget=widgets.ShowTextWidget, required=False)
+    site_url = forms.CharField(label=_("Site URL"), widget=widgets.ShowTextWidget, required=False)
     password = forms.CharField(label=_("Password"), required=False,
             widget=widgets.ReadOnlyWidget('<strong>Unknown password</strong>'),
             help_text=_("Passwords are not stored, so there is no way to see this "
@@ -30,25 +30,21 @@ class SoftwareServiceForm(PluginDataForm):
         super(SoftwareServiceForm, self).__init__(*args, **kwargs)
         self.is_change = bool(self.instance and self.instance.pk)
         if self.is_change:
-            site_name = self.instance.get_site_name()
+            site_domain = self.instance.get_site_domain()
             self.fields['password1'].required = False
             self.fields['password1'].widget = forms.HiddenInput()
             self.fields['password2'].required = False
             self.fields['password2'].widget = forms.HiddenInput()
         else:
             self.fields['password'].widget = forms.HiddenInput()
-            site_name = self.plugin.site_name
-        if site_name:
-            site_name_link = '<a href="http://%s">%s</a>' % (site_name, site_name)
+            self.fields['password1'].help_text = _("Suggestion: %s") % random_ascii(10)
+            site_domain = self.plugin.site_domain
+        if site_domain:
+            site_link = '<a href="http://%s">%s</a>' % (site_domain, site_domain)
         else:
-            site_name_link = '&lt;name&gt;.%s' % self.plugin.site_name_base_domain
-        self.fields['site_name'].initial = site_name_link
-##            self.fields['site_name'].widget = widgets.ReadOnlyWidget(site_name, mark_safe(link))
-##            self.fields['site_name'].required = False
-#        else:
-#            base_name = self.plugin.site_name_base_domain
-#            help_text = _("The final URL would be &lt;site_name&gt;.%s") % base_name
-#            self.fields['site_name'].help_text = help_text
+            site_link = '&lt;site_name&gt;.%s' % self.plugin.site_base_domain
+        self.fields['site_url'].initial = site_link
+        self.fields['name'].label = _("Username")
     
     def clean_password2(self):
         if not self.is_change:
@@ -59,11 +55,6 @@ class SoftwareServiceForm(PluginDataForm):
                 raise forms.ValidationError(msg)
             return password2
     
-    def clean_site_name(self):
-        if self.plugin.site_name:
-            return None
-        return self.cleaned_data['site_name']
-    
     def save(self, commit=True):
         obj = super(SoftwareServiceForm, self).save(commit=commit)
         if not self.is_change:
@@ -73,11 +64,10 @@ class SoftwareServiceForm(PluginDataForm):
 
 class SoftwareService(plugins.Plugin):
     form = SoftwareServiceForm
-    site_name = None
-    site_name_base_domain = 'orchestra.lan'
+    site_domain = None
+    site_base_domain = None
     has_custom_domain = False
     icon = 'orchestra/icons/apps.png'
-    change_readonly_fileds = ('site_name',)
     class_verbose_name = _("Software as a Service")
     plugin_field = 'service'
     
@@ -89,14 +79,13 @@ class SoftwareService(plugins.Plugin):
             plugins.append(import_class(cls))
         return plugins
     
-    @classmethod
     def get_change_readonly_fileds(cls):
         fields = super(SoftwareService, cls).get_change_readonly_fileds()
-        return fields + ('username',)
+        return fields + ('name',)
     
-    def get_site_name(self):
-        return self.site_name or '.'.join(
-            (self.instance.username, self.site_name_base_domain)
+    def get_site_domain(self):
+        return self.site_domain or '.'.join(
+            (self.instance.name, self.site_base_domain)
         )
     
     def save(self):

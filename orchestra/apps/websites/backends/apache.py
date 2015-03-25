@@ -31,6 +31,7 @@ class Apache2Backend(ServiceController):
         extra_conf += self.get_security(directives)
         extra_conf += self.get_redirects(directives)
         extra_conf += self.get_proxies(directives)
+        extra_conf += self.get_saas(directives)
         # Order extra conf directives based on directives (longer first)
         extra_conf = sorted(extra_conf, key=lambda a: len(a[0]), reverse=True)
         context['extra_conf'] = '\n'.join([conf for location, conf in extra_conf])
@@ -46,7 +47,7 @@ class Apache2Backend(ServiceController):
                 SuexecUserGroup {{ user }} {{ group }}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
-                #IncludeOptional /etc/apache2/extra-vhos[t]/{{ site_unique_name }}.con[f]
+                IncludeOptional /etc/apache2/extra-vhos[t]/{{ site_unique_name }}.con[f]
             </VirtualHost>
             """)
         ).render(Context(context))
@@ -80,10 +81,11 @@ class Apache2Backend(ServiceController):
             apache_conf += self.render_redirect_https(context)
         context['apache_conf'] = apache_conf
         self.append(textwrap.dedent("""\
+            apache_conf='%(apache_conf)s'
             {
-                echo -e '%(apache_conf)s' | diff -N -I'^\s*#' %(sites_available)s -
+                echo -e "${apache_conf}" | diff -N -I'^\s*#' %(sites_available)s -
             } || {
-                echo -e '%(apache_conf)s' > %(sites_available)s
+                echo -e "${apache_conf}" > %(sites_available)s
                 UPDATED=1
             }""") % context
         )
@@ -116,7 +118,7 @@ class Apache2Backend(ServiceController):
         return directives
     
     def get_static_directives(self, context, app_path):
-        context['app_path'] = app_path % context
+        context['app_path'] = os.path.normpath(app_path % context)
         location = "%(location)s/" % context
         directive = "Alias %(location)s/ %(app_path)s/" % context
         return [(location, directive)]
@@ -128,10 +130,10 @@ class Apache2Backend(ServiceController):
         else:
             # UNIX socket
             target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/'
-            if context['location'] != '/':
+            if context['location']:
                 target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/$1'
         context.update({
-            'app_path': app_path,
+            'app_path': os.path.normpath(app_path),
             'socket': socket,
         })
         location = "%(location)s/" % context
@@ -143,7 +145,7 @@ class Apache2Backend(ServiceController):
     
     def get_fcgid_directives(self, context, app_path, wrapper_path):
         context.update({
-            'app_path': app_path,
+            'app_path': os.path.normpath(app_path),
             'wrapper_path': wrapper_path,
         })
         location = "%(location)s/" % context
@@ -158,16 +160,20 @@ class Apache2Backend(ServiceController):
         return [(location, directives)]
     
     def get_ssl(self, directives):
-        config = ''
-        ca = directives.get('ssl_ca')
-        if ca:
-            config += "SSLCACertificateFile %s\n" % ca[0]
         cert = directives.get('ssl_cert')
-        if cert:
-            config += "SSLCertificateFile %\n" % cert[0]
         key = directives.get('ssl_key')
-        if key:
-            config += "SSLCertificateKeyFile %s\n" % key[0]
+        ca = directives.get('ssl_ca')
+        if not (cert and key):
+            cert = [settings.WEBSITES_DEFAULT_SSL_CERT]
+            key = [settings.WEBSITES_DEFAULT_SSL_KEY]
+            ca = [settings.WEBSITES_DEFAULT_SSL_CA]
+            if not (cert and key):
+                return []
+        config = 'SSLEngine on\n'
+        config += "SSLCertificateFile %s\n" % cert[0]
+        config += "SSLCertificateKeyFile %s\n" % key[0]
+        if ca:
+           config += "SSLCACertificateFile %s\n" % ca[0]
         return [('', config)]
         
     def get_security(self, directives):
@@ -210,13 +216,14 @@ class Apache2Backend(ServiceController):
     
     def get_saas(self, directives):
         saas = []
-        for name, value in directives.iteritems():
+        for name, values in directives.iteritems():
             if name.endswith('-saas'):
-                context = {
-                    'location': normurlpath(value),
-                }
-                directive = settings.WEBSITES_SAAS_DIRECTIVES[name]
-                saas += self.get_directive(context, directive)
+                for value in values:
+                    context = {
+                        'location': normurlpath(value),
+                    }
+                    directive = settings.WEBSITES_SAAS_DIRECTIVES[name]
+                    saas += self.get_directives(directive, context)
         return saas
 #    def get_protections(self, site):
 #        protections = ''
@@ -280,7 +287,8 @@ class Apache2Backend(ServiceController):
             'site_unique_name': site.unique_name,
             'user': self.get_username(site),
             'group': self.get_groupname(site),
-            'sites_enabled': "%s.conf" % os.path.join(sites_enabled, site.unique_name),
+            # TODO remove '0-'
+            'sites_enabled': "%s.conf" % os.path.join(sites_enabled, '0-'+site.unique_name),
             'sites_available': "%s.conf" % os.path.join(sites_available, site.unique_name),
             'access_log': site.get_www_access_log_path(),
             'error_log': site.get_www_error_log_path(),

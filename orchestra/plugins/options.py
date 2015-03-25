@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+
 from orchestra.utils.functional import cached
 
 
@@ -53,7 +55,7 @@ class Plugin(object):
     
     @classmethod
     def get_change_readonly_fileds(cls):
-        return (cls.plugin_field,) + cls.change_readonly_fileds
+        return cls.change_readonly_fileds
     
     def clean_data(self):
         """ model clean, uses cls.serizlier by default """

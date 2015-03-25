@@ -36,8 +36,6 @@ DOMAINS_SLAVES_PATH = getattr(settings, 'DOMAINS_SLAVES_PATH', '/etc/bind/named.
 DOMAINS_CHECKZONE_BIN_PATH = getattr(settings, 'DOMAINS_CHECKZONE_BIN_PATH',
     '/usr/sbin/named-checkzone -i local -k fail -n fail')
 
-DOMAINS_CHECKZONE_PATH = getattr(settings, 'DOMAINS_CHECKZONE_PATH', '/dev/shm')
-
 
 DOMAINS_DEFAULT_A = getattr(settings, 'DOMAINS_DEFAULT_A', '10.0.3.13')
 

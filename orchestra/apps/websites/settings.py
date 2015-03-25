@@ -76,13 +76,21 @@ WEBSITES_TRAFFIC_IGNORE_HOSTS = getattr(settings, 'WEBSITES_TRAFFIC_IGNORE_HOSTS
 #    '')
 
 
-WEBAPPS_SAAS_DIRECTIVES = getattr(settings, 'WEBAPPS_SAAS_DIRECTIVES', {
-    'wordpress-saas': ('fpm', '/home/httpd/wordpress-mu/', '/opt/php/5.4/socks/wordpress-mu.sock'),
-    'drupal-saas': ('fpm', '/home/httpd/drupal-mu/', '/opt/php/5.4/socks/drupal-mu.sock'),
-    'dokuwiki-saas': ('fpm', '/home/httpd/moodle-mu/', '/opt/php/5.4/socks/moodle-mu.sock'),
-#    'moodle-saas': ('fpm', '/home/httpd/moodle-mu/', '/opt/php/5.4/socks/moodle-mu.sock'),
+WEBSITES_SAAS_DIRECTIVES = getattr(settings, 'WEBSITES_SAAS_DIRECTIVES', {
+    'wordpress-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock', '/home/httpd/wordpress-mu/'),
+    'drupal-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock','/home/httpd/drupal-mu/'),
+    'dokuwiki-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock','/home/httpd/moodle-mu/'),
 })
 
 
+WEBSITES_DEFAULT_SSL_CERT = getattr(settings, 'WEBSITES_DEFAULT_SSL_CERT',
+    ''
+)
 
+WEBSITES_DEFAULT_SSL_KEY = getattr(settings, 'WEBSITES_DEFAULT_SSL_KEY',
+    ''
+)
 
+WEBSITES_DEFAULT_SSL_CA = getattr(settings, 'WEBSITES_DEFAULT_SSL_CA',
+    ''
+)

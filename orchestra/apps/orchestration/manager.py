@@ -22,18 +22,10 @@ def as_task(execute):
     def wrapper(*args, **kwargs):
         """ send report """
         # Tasks run on a separate transaction pool (thread), no need to temper with the transaction
-        log = execute(*args, **kwargs)
-        if log.state != log.SUCCESS:
-            send_report(execute, args, log)
-        return log
-    return wrapper
-
-
-def close_connection(execute):
-    """ Threads have their own connection pool, closing it when finishing """
-    def wrapper(*args, **kwargs):
         try:
             log = execute(*args, **kwargs)
+            if log.state != log.SUCCESS:
+                send_report(execute, args, log)
         except Exception as e:
             subject = 'EXCEPTION executing backend(s) %s %s' % (str(args), str(kwargs))
             message = traceback.format_exc()
@@ -44,6 +36,19 @@ def close_connection(execute):
         else:
             # Using the wrapper function as threader messenger for the execute output
             # Absense of it will indicate a failure at this stage
+            wrapper.log = log
+            return log
+    return wrapper
+
+
+def close_connection(execute):
+    """ Threads have their own connection pool, closing it when finishing """
+    def wrapper(*args, **kwargs):
+        try:
+            log = execute(*args, **kwargs)
+        except:
+            pass
+        else:
             wrapper.log = log
         finally:
             db.connection.close()
@@ -89,15 +94,15 @@ def execute(operations, async=False):
         backend, operations = value
         backend.commit()
         execute = as_task(backend.execute)
-        execute = close_connection(execute)
-        # DEBUG: substitute all thread related stuff for this function
-        #execute(server, async=async)
         logger.debug('%s is going to be executed on %s' % (backend, server))
-        thread = threading.Thread(target=execute, args=(server,), kwargs={'async': async})
-        thread.start()
         if block:
-            thread.join()
-        threads.append(thread)
+            # Execute one bakend at a time, no need for threads
+            execute(server, async=async)
+        else:
+            execute = close_connection(execute)
+            thread = threading.Thread(target=execute, args=(server,), kwargs={'async': async})
+            thread.start()
+            threads.append(thread)
         executions.append((execute, operations))
     [ thread.join() for thread in threads ]
     logs = []
@@ -108,7 +113,9 @@ def execute(operations, async=False):
             for operation in operations:
                 logger.info("Executed %s" % str(operation))
                 operation.log = execution.log
-                operation.save()
+                if operation.object_id:
+                    # Not all backends are call with objects saved on the database
+                    operation.save()
             stdout = execution.log.stdout.strip()
             stdout and logger.debug('STDOUT %s', stdout)
             stderr = execution.log.stderr.strip()

@@ -6,6 +6,7 @@ def compute_resource_usage(data):
     resource = data.resource
     result = 0
     has_result = False
+    today = datetime.date.today()
     for dataset in data.get_monitor_datasets():
         if resource.period == resource.MONTHLY_AVG:
             last = dataset.latest()

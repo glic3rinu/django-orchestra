@@ -177,7 +177,8 @@ class ServiceBackend(plugins.Plugin):
         """
         self.append(
             'set -e\n'
-            'set -o pipefail'
+            'set -o pipefail\n'
+            'exit_code=0;'
         )
     
     def commit(self):
@@ -187,7 +188,7 @@ class ServiceBackend(plugins.Plugin):
         reloading a service is done in a separated method in order to reload 
         the service once in bulk operations
         """
-        self.append('exit 0')
+        self.append('exit $exit_code')
 
 
 class ServiceController(ServiceBackend):

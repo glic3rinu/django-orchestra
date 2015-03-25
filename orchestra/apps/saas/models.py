@@ -14,10 +14,9 @@ from .services import SoftwareService
 class SaaS(models.Model):
     service = models.CharField(_("service"), max_length=32,
             choices=SoftwareService.get_plugin_choices())
-    username = models.CharField(_("name"), max_length=64,
+    name = models.CharField(_("Name"), max_length=64,
             help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.validate_username])
-#    site_name = NullableCharField(_("site name"), max_length=32, null=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='saas')
     data = JSONField(_("data"), default={},
@@ -27,12 +26,11 @@ class SaaS(models.Model):
         verbose_name = "SaaS"
         verbose_name_plural = "SaaS"
         unique_together = (
-            ('username', 'service'),
-#            ('site_name', 'service'),
+            ('name', 'service'),
         )
     
     def __unicode__(self):
-        return "%s@%s" % (self.username, self.service)
+        return "%s@%s" % (self.name, self.service)
     
     @cached_property
     def service_class(self):
@@ -43,11 +41,11 @@ class SaaS(models.Model):
         """ Per request lived service_instance """
         return self.service_class(self)
     
-    def get_site_name(self):
-        return self.service_instance.get_site_name()
-    
     def clean(self):
         self.data = self.service_instance.clean_data()
+    
+    def get_site_domain(self):
+        return self.service_instance.get_site_domain()
     
     def set_password(self, password):
         self.password = password

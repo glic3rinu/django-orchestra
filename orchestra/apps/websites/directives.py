@@ -18,7 +18,8 @@ class SiteDirective(Plugin):
     SAAS = 'SaaS'
     
     help_text = ""
-    unique = True
+    unique_name = False
+    unique_value = False
     
     @classmethod
     @cached
@@ -67,6 +68,7 @@ class Redirect(SiteDirective):
     help_text = _("<tt>&lt;website path&gt; &lt;destination URL&gt;</tt>")
     regex = r'^[^ ]+\s[^ ]+$'
     group = SiteDirective.HTTPD
+    unique_value = True
 
 
 class Proxy(SiteDirective):
@@ -75,6 +77,7 @@ class Proxy(SiteDirective):
     help_text = _("<tt>&lt;website path&gt; &lt;target URL&gt;</tt>")
     regex = r'^[^ ]+\shttp[^ ]+(timeout=[0-9]{1,3}|retry=[0-9]|\s)*$'
     group = SiteDirective.HTTPD
+    unique_value = True
 
 
 class ErrorDocument(SiteDirective):
@@ -87,6 +90,7 @@ class ErrorDocument(SiteDirective):
                   "<tt>&nbsp;403 \"Sorry can't allow you access today\"</tt>")
     regex = r'[45]0[0-9]\s.*'
     group = SiteDirective.HTTPD
+    unique_value = True
 
 
 class SSLCA(SiteDirective):
@@ -95,6 +99,7 @@ class SSLCA(SiteDirective):
     help_text = _("Filesystem path of the CA certificate file.")
     regex = r'^[^ ]+$'
     group = SiteDirective.SSL
+    unique_name = True
 
 
 class SSLCert(SiteDirective):
@@ -103,6 +108,7 @@ class SSLCert(SiteDirective):
     help_text = _("Filesystem path of the certificate file.")
     regex = r'^[^ ]+$'
     group = SiteDirective.SSL
+    unique_name = True
 
 
 class SSLKey(SiteDirective):
@@ -111,6 +117,7 @@ class SSLKey(SiteDirective):
     help_text = _("Filesystem path of the key file.")
     regex = r'^[^ ]+$'
     group = SiteDirective.SSL
+    unique_name = True
 
 
 class SecRuleRemove(SiteDirective):
@@ -123,34 +130,38 @@ class SecRuleRemove(SiteDirective):
 
 class SecEngine(SiteDirective):
     name = 'sec_engine'
-    verbose_name = _("Modsecurity engine")
-    help_text = _("URL location for disabling modsecurity engine.")
+    verbose_name = _("SecRuleEngine Off")
+    help_text = _("URL path with disabled modsecurity engine.")
     regex = r'^/[^ ]*$'
     group = SiteDirective.SEC
+    unique_value = True
 
 
 class WordPressSaaS(SiteDirective):
     name = 'wordpress-saas'
-    verbose_name = "WordPress"
-    help_text = _("URL location for mounting wordpress multisite.")
+    verbose_name = "WordPress SaaS"
+    help_text = _("URL path for mounting wordpress multisite.")
 #    fpm_listen = settings.WEBAPPS_WORDPRESSMU_LISTEN
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
+    unique_value = True
 
 
 class DokuWikiSaaS(SiteDirective):
     name = 'dokuwiki-saas'
-    verbose_name = "DokuWiki"
-    help_text = _("URL location for mounting wordpress multisite.")
+    verbose_name = "DokuWiki SaaS"
+    help_text = _("URL path for mounting wordpress multisite.")
 #    fpm_listen = settings.WEBAPPS_DOKUWIKIMU_LISTEN
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
+    unique_value = True
 
 
 class DrupalSaaS(SiteDirective):
     name = 'drupal-saas'
-    verbose_name = "Drupdal"
-    help_text = _("URL location for mounting wordpress multisite.")
+    verbose_name = "Drupdal SaaS"
+    help_text = _("URL path for mounting wordpress multisite.")
 #    fpm_listen = settings.WEBAPPS_DRUPALMU_LISTEN
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
+    unique_value = True

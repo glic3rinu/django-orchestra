@@ -38,10 +38,11 @@ class MySQLBackend(ServiceController):
         if database.type != database.MYSQL:
             return
         context = self.get_context(database)
-        self.append("mysql -e 'DROP DATABASE `%(database)s`;'" % context)
+        self.append("mysql -e 'DROP DATABASE `%(database)s`;' || exit_code=1" % context)
         self.append("mysql mysql -e 'DELETE FROM db WHERE db = \"%(database)s\";'" % context)
         
     def commit(self):
+        super(MySQLBackend, self).commit()
         self.append("mysql -e 'FLUSH PRIVILEGES;'")
     
     def get_context(self, database):

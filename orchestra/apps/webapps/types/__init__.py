@@ -89,5 +89,6 @@ class AppType(plugins.Plugin):
             'app_id': self.instance.id,
             'app_name': self.instance.name,
             'user': self.instance.account.username,
+            'home': self.instance.account.main_systemuser.get_home(),
         }
 

@@ -11,12 +11,14 @@ from .options import SoftwareService, SoftwareServiceForm
 
 class BSCWForm(SoftwareServiceForm):
     email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size':'40'}))
-    quota = forms.IntegerField(label=_("Quota"), help_text=_("Disk quota in MB."))
+    quota = forms.IntegerField(label=_("Quota"), initial=settings.SAAS_BSCW_DEFAULT_QUOTA,
+            help_text=_("Disk quota in MB."))
 
 
 class BSCWDataSerializer(serializers.Serializer):
     email = serializers.EmailField(label=_("Email"))
-    quota = serializers.IntegerField(label=_("Quota"), help_text=_("Disk quota in MB."))
+    quota = serializers.IntegerField(label=_("Quota"), default=settings.SAAS_BSCW_DEFAULT_QUOTA,
+            help_text=_("Disk quota in MB."))
 
 
 class BSCWService(SoftwareService):
@@ -26,5 +28,5 @@ class BSCWService(SoftwareService):
     serializer = BSCWDataSerializer
     icon = 'orchestra/icons/apps/BSCW.png'
     # TODO override from settings
-    site_name = settings.SAAS_BSCW_DOMAIN
+    site_domain = settings.SAAS_BSCW_DOMAIN
     change_readonly_fileds = ('email',)

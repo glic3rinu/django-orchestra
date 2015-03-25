@@ -47,3 +47,16 @@ SAAS_BSCW_DOMAIN = getattr(settings, 'SAAS_BSCW_DOMAIN',
 )
 
 
+SAAS_BSCW_DEFAULT_QUOTA = getattr(settings, 'SAAS_BSCW_DEFAULT_QUOTA',
+    50
+)
+
+
+SAAS_GITLAB_ROOT_PASSWORD = getattr(settings, 'SAAS_GITLAB_ROOT_PASSWORD',
+    'secret'
+)
+
+SAAS_GITLAB_DOMAIN = getattr(settings, 'SAAS_GITLAB_DOMAIN',
+    'gitlab.orchestra.lan'
+)
+

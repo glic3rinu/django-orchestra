@@ -28,10 +28,11 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         self.create_webapp_dir(context)
         self.set_under_construction(context)
         self.append(textwrap.dedent("""\
+            fpm_config='%(fpm_config)s'
             {
-                echo -e '%(fpm_config)s' | diff -N -I'^\s*;;' %(fpm_path)s -
+                echo -e "${fpm_config}" | diff -N -I'^\s*;;' %(fpm_path)s -
             } || {
-                echo -e '%(fpm_config)s' > %(fpm_path)s
+                echo -e "${fpm_config}" > %(fpm_path)s
                 UPDATEDFPM=1
             }""") % context
         )
@@ -41,20 +42,23 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         self.set_under_construction(context)
         self.append("mkdir -p %(wrapper_dir)s" % context)
         self.append(textwrap.dedent("""\
+            wrapper='%(wrapper)s'
             {
-                echo -e '%(wrapper)s' | diff -N -I'^\s*#' %(wrapper_path)s -
+                echo -e "${wrapper}" | diff -N -I'^\s*#' %(wrapper_path)s -
             } || {
-                echo -e '%(wrapper)s' > %(wrapper_path)s; UPDATED_APACHE=1
+                echo -e "${wrapper}" > %(wrapper_path)s; UPDATED_APACHE=1
             }""") % context
         )
-        self.append("chmod +x %(wrapper_path)s" % context)
+        self.append("chmod 550 %(wrapper_dir)s" % context)
+        self.append("chmod 550 %(wrapper_path)s" % context)
         self.append("chown -R %(user)s:%(group)s %(wrapper_dir)s" % context)
         if context['cmd_options']:
             self.append(textwrap.dedent("""
+                cmd_options='%(cmd_options)s'
                 {
-                    echo -e '%(cmd_options)s' | diff -N -I'^\s*#' %(cmd_options_path)s -
+                    echo -e "${cmd_options}" | diff -N -I'^\s*#' %(cmd_options_path)s -
                 } || {
-                    echo -e '%(cmd_options)s' > %(cmd_options_path)s; UPDATED_APACHE=1
+                    echo -e "${cmd_options}" > %(cmd_options_path)s; UPDATED_APACHE=1
                 }""" ) % context
             )
         else:

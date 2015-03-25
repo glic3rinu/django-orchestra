@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth import forms as auth_forms
 from django.utils.translation import ugettext, ugettext_lazy as _
 
+from orchestra.utils.python import random_ascii
+
 from ..core.validators import validate_password
 
 
@@ -19,6 +21,10 @@ class UserCreationForm(forms.ModelForm):
     password2 = forms.CharField(label=_("Password confirmation"),
         widget=forms.PasswordInput,
         help_text=_("Enter the same password as above, for verification."))
+    
+    def __init__(self, *args, **kwargs):
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+        self.fields['password1'].help_text = _("Suggestion: %s") % random_ascii(10)
     
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')

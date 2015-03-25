@@ -108,11 +108,10 @@ def validate_soa_record(value):
 def validate_zone(zone):
     """ Ultimate zone file validation using named-checkzone """
     zone_name = zone.split()[0][:-1]
-    path = os.path.join(settings.DOMAINS_CHECKZONE_PATH, zone_name)
-    with open(path, 'wb') as f:
-        f.write(zone)
     checkzone = settings.DOMAINS_CHECKZONE_BIN_PATH
-    check = run(' '.join([checkzone, zone_name, path]), error_codes=[0,1], display=False)
+    cmd = ' '.join(["echo -e '%s'" % zone, '|', checkzone, zone_name, '/dev/stdin'])
+    print cmd
+    check = run(cmd, error_codes=[0, 1], display=False)
     if check.return_code == 1:
         errors = re.compile(r'zone.*: (.*)').findall(check.stdout)[:-1]
         raise ValidationError(', '.join(errors))

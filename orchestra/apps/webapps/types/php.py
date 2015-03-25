@@ -57,15 +57,6 @@ class PHPApp(AppType):
     def get_detail(self):
         return self.instance.data.get('php_version', '')
     
-    def get_context(self):
-        """ context used to format settings """
-        return {
-            'home': self.instance.account.main_systemuser.get_home(),
-            'account': self.instance.account.username,
-            'user': self.instance.account.username,
-            'app_name': self.instance.name,
-        }
-    
     def get_php_init_vars(self, merge=False):
         """
         process php options for inclusion on php.ini
@@ -77,17 +68,17 @@ class PHPApp(AppType):
             # Get options from the same account and php_version webapps
             options = []
             php_version = self.get_php_version()
-            webapps = self.instance.account.webapps.filter(webapp_type=self.instance.type)
+            webapps = self.instance.account.webapps.filter(type=self.instance.type)
             for webapp in webapps:
                 if webapp.type_instance.get_php_version == php_version:
                     options += list(webapp.options.all())
         php_options = [option.name for option in type(self).get_php_options()]
+        enabled_functions = set()
         for opt in options:
             if opt.name in php_options:
                 init_vars[opt.name] = opt.value
-        enabled_functions = []
-        for value in options.filter(name='enabled_functions').values_list('value', flat=True):
-            enabled_functions += enabled_functions.get().value.split(',')
+            elif opt.name == 'enabled_functions':
+                enabled_functions.union(set(opt.value.split(',')))
         if enabled_functions:
             disabled_functions = []
             for function in self.PHP_DISABLED_FUNCTIONS:
@@ -95,10 +86,17 @@ class PHPApp(AppType):
                     disabled_functions.append(function)
             init_vars['dissabled_functions'] = ','.join(disabled_functions)
         if self.PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:
-            context = self.get_context()
+            context = self.get_directive_context()
             error_log_path = os.path.normpath(self.PHP_ERROR_LOG_PATH % context)
             init_vars['error_log'] = error_log_path
         return init_vars
+    
+    def get_directive_context(self):
+        context = super(PHPApp, self).get_directive_context()
+        context.update({
+            'php_version': self.get_php_version(),
+        })
+        return context
     
     def get_directive(self):
         context = self.get_directive_context()

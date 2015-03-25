@@ -38,22 +38,12 @@ class AppType(plugins.Plugin):
     
     @classmethod
     @cached
-    def get_php_options(cls):
-        # TODO validate php options once a php version has been selected (deprecated directives)
-        php_version = getattr(cls, 'php_version', 1)
-        php_options = AppOption.get_option_groups()[AppOption.PHP]
-        return [op for op in php_options if getattr(cls, 'deprecated', 99) > php_version]
-    
-    @classmethod
-    @cached
     def get_options(cls):
         """ Get enabled options based on cls.option_groups """
         groups = AppOption.get_option_groups()
         options = []
         for group in cls.option_groups:
             group_options = groups[group]
-            if group == AppOption.PHP:
-                group_options = cls.get_php_options()
             if group is None:
                 options.insert(0, (group, group_options))
             else:

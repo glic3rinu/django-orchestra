@@ -19,6 +19,8 @@ class SaaS(models.Model):
             validators=[validators.validate_username])
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='saas')
+    is_active = models.BooleanField(_("active"), default=True,
+            help_text=_("Designates whether this service should be treated as active. "))
     data = JSONField(_("data"), default={},
             help_text=_("Extra information dependent of each service."))
     
@@ -40,6 +42,10 @@ class SaaS(models.Model):
     def service_instance(self):
         """ Per request lived service_instance """
         return self.service_class(self)
+    
+    @cached_property
+    def active(self):
+        return self.is_active and self.account.is_active
     
     def clean(self):
         self.data = self.service_instance.clean_data()

@@ -22,9 +22,10 @@ class GitLabSaaSBackend(ServiceController):
         user_id = saas.data['user_id']
         return self.get_base_url() + '/users/%i' % user_id
     
-    def validate_response(self, response, status_codes):
+    def validate_response(self, response, *status_codes):
         if response.status_code not in status_codes:
             raise RuntimeError("[%i] %s" % (response.status_code, response.content))
+        return json.loads(response.content)
     
     def authenticate(self):
         login_url = self.get_base_url() + '/session'
@@ -33,8 +34,8 @@ class GitLabSaaSBackend(ServiceController):
             'password': settings.SAAS_GITLAB_ROOT_PASSWORD,
         }
         response = requests.post(login_url, data=data)
-        self.validate_response(response, [201])
-        token = json.loads(response.content)['private_token']
+        session = self.validate_response(response, 201)
+        token = session['private_token']
         self.headers = {
             'PRIVATE-TOKEN': token,
         }
@@ -49,9 +50,7 @@ class GitLabSaaSBackend(ServiceController):
             'name': saas.account.get_full_name(),
         }
         response = requests.post(user_url, data=data, headers=self.headers)
-        self.validate_response(response, [201])
-        print response.content
-        user = json.loads(response.content)
+        user = self.validate_response(response, 201)
         saas.data['user_id'] = user['id']
         # Using queryset update to avoid triggering backends with the post_save signal
         type(saas).objects.filter(pk=saas.pk).update(data=saas.data)
@@ -60,19 +59,32 @@ class GitLabSaaSBackend(ServiceController):
     def change_password(self, saas, server):
         self.authenticate()
         user_url = self.get_user_url(saas)
-        data = {
-            'password': saas.password,
-        }
-        response = requests.patch(user_url, data=data, headers=self.headers)
-        self.validate_response(response, [200])
-        print json.dumps(json.loads(response.content), indent=4)
+        response = requests.get(user_url, headers=self.headers)
+        user = self.validate_response(response, 200)
+        user = json.loads(response.content)
+        user['password'] = saas.password
+        response = requests.put(user_url, data=user, headers=self.headers)
+        user = self.validate_response(response, 200)
+        print json.dumps(user, indent=4)
+    
+    def set_state(self, saas, server):
+        # TODO http://feedback.gitlab.com/forums/176466-general/suggestions/4098632-add-administrative-api-call-to-block-users
+        return
+        self.authenticate()
+        user_url = self.get_user_url(saas)
+        response = requests.get(user_url, headers=self.headers)
+        user = self.validate_response(response, 200)
+        user['state'] = 'active' if saas.active else 'blocked',
+        response = requests.patch(user_url, data=user, headers=self.headers)
+        user = self.validate_response(response, 200)
+        print json.dumps(user, indent=4)
     
     def delete_user(self, saas, server):
         self.authenticate()
         user_url = self.get_user_url(saas)
         response = requests.delete(user_url, headers=self.headers)
-        self.validate_response(response, [200, 404])
-        print json.dumps(json.loads(response.content), indent=4)
+        user = self.validate_response(response, 200, 404)
+        print json.dumps(user, indent=4)
     
     def _validate_creation(self, saas, server):
         """ checks if a saas object is valid for creation on the server side """
@@ -96,6 +108,7 @@ class GitLabSaaSBackend(ServiceController):
                 self.append(self.change_password, saas)
             else:
                 self.append(self.create_user, saas)
+        self.append(self.set_state, saas)
     
     def delete(self, saas):
         self.append(self.delete_user, saas)

@@ -48,6 +48,20 @@ class AppOption(Plugin):
             })
 
 
+class PHPAppOption(AppOption):
+    deprecated = None
+    group = AppOption.PHP
+    
+    def validate(self):
+        super(PHPAppOption, self).validate()
+        if self.deprecated:
+            php_version = self.instance.webapp.type_instance.get_php_version()
+            if php_version and php_version > self.deprecated:
+                raise ValidationError(
+                    _("This option is deprecated since PHP version %s.") % str(self.deprecated)
+                )
+
+
 class PublicRoot(AppOption):
     name = 'public-root'
     verbose_name = _("Public root")
@@ -77,193 +91,171 @@ class Processes(AppOption):
     group = AppOption.PROCESS
 
 
-class PHPEnabledFunctions(AppOption):
+class PHPEnabledFunctions(PHPAppOption):
     name = 'enabled_functions'
     verbose_name = _("Enabled functions")
     help_text = ' '.join(settings.WEBAPPS_PHP_DISABLED_FUNCTIONS)
     regex = r'^[\w\.,-]+$'
-    group = AppOption.PHP
 
 
-class PHPAllowURLInclude(AppOption):
+class PHPAllowURLInclude(PHPAppOption):
     name = 'allow_url_include'
     verbose_name = _("Allow URL include")
     help_text = _("Allows the use of URL-aware fopen wrappers with include, include_once, require, "
                 "require_once (On or Off).")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPAllowURLFopen(AppOption):
+class PHPAllowURLFopen(PHPAppOption):
     name = 'allow_url_fopen'
     verbose_name = _("Allow URL fopen")
     help_text = _("Enables the URL-aware fopen wrappers that enable accessing URL object like files (On or Off).")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPAutoAppendFile(AppOption):
+class PHPAutoAppendFile(PHPAppOption):
     name = 'auto_append_file'
     verbose_name = _("Auto append file")
     help_text = _("Specifies the name of a file that is automatically parsed after the main file.")
     regex = r'^[\w\.,-/]+$'
-    group = AppOption.PHP
 
 
-class PHPAutoPrependFile(AppOption):
+class PHPAutoPrependFile(PHPAppOption):
     name = 'auto_prepend_file'
     verbose_name = _("Auto prepend file")
     help_text = _("Specifies the name of a file that is automatically parsed before the main file.")
     regex = r'^[\w\.,-/]+$'
-    group = AppOption.PHP
 
 
-class PHPDateTimeZone(AppOption):
+class PHPDateTimeZone(PHPAppOption):
     name = 'date.timezone'
     verbose_name = _("date.timezone")
     help_text = _("Sets the default timezone used by all date/time functions (Timezone string 'Europe/London').")
     regex = r'^\w+/\w+$'
-    group = AppOption.PHP
 
 
-class PHPDefaultSocketTimeout(AppOption):
+class PHPDefaultSocketTimeout(PHPAppOption):
     name = 'default_socket_timeout'
     verbose_name = _("Default socket timeout")
     help_text = _("Number between 0 and 999.")
     regex = r'^[0-9]{1,3}$'
-    group = AppOption.PHP
 
 
-class PHPDisplayErrors(AppOption):
+class PHPDisplayErrors(PHPAppOption):
     name = 'display_errors'
     verbose_name = _("Display errors")
     help_text = _("Determines whether errors should be printed to the screen as part of the output or "
                 "if they should be hidden from the user (On or Off).")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPExtension(AppOption):
+class PHPExtension(PHPAppOption):
     name = 'extension'
     verbose_name = _("Extension")
     regex = r'^[^ ]+$'
-    group = AppOption.PHP
 
 
-class PHPMagicQuotesGPC(AppOption):
+class PHPMagicQuotesGPC(PHPAppOption):
     name = 'magic_quotes_gpc'
     verbose_name = _("Magic quotes GPC")
     help_text = _("Sets the magic_quotes state for GPC (Get/Post/Cookie) operations (On or Off) "
                 "<b>DEPRECATED as of PHP 5.3.0</b>.")
     regex = r'^(On|Off|on|off)$'
-    deprecated=5.3
-    group = AppOption.PHP
+    deprecated = 5.3
 
 
-class PHPMagicQuotesRuntime(AppOption):
+class PHPMagicQuotesRuntime(PHPAppOption):
     name = 'magic_quotes_runtime'
     verbose_name = _("Magic quotes runtime")
     help_text = _("Functions that return data from any sort of external source will have quotes escaped "
                 "with a backslash (On or Off) <b>DEPRECATED as of PHP 5.3.0</b>.")
     regex = r'^(On|Off|on|off)$'
-    deprecated=5.3
-    group = AppOption.PHP
+    deprecated = 5.3
 
 
-class PHPMaginQuotesSybase(AppOption):
+class PHPMaginQuotesSybase(PHPAppOption):
     name = 'magic_quotes_sybase'
     verbose_name = _("Magic quotes sybase")
     help_text = _("Single-quote is escaped with a single-quote instead of a backslash (On or Off).")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPMaxExecutonTime(AppOption):
+class PHPMaxExecutonTime(PHPAppOption):
     name = 'max_execution_time'
     verbose_name = _("Max execution time")
     help_text = _("Maximum time in seconds a script is allowed to run before it is terminated by "
                 "the parser (Integer between 0 and 999).")
     regex = r'^[0-9]{1,3}$'
-    group = AppOption.PHP
 
 
-class PHPMaxInputTime(AppOption):
+class PHPMaxInputTime(PHPAppOption):
     name = 'max_input_time'
     verbose_name = _("Max input time")
     help_text = _("Maximum time in seconds a script is allowed to parse input data, like POST and GET "
                 "(Integer between 0 and 999).")
     regex = r'^[0-9]{1,3}$'
-    group = AppOption.PHP
 
 
-class PHPMaxInputVars(AppOption):
+class PHPMaxInputVars(PHPAppOption):
     name = 'max_input_vars'
     verbose_name = _("Max input vars")
     help_text = _("How many input variables may be accepted (limit is applied to $_GET, $_POST "
                 "and $_COOKIE superglobal separately) (Integer between 0 and 9999).")
     regex = r'^[0-9]{1,4}$'
-    group = AppOption.PHP
 
 
-class PHPMemoryLimit(AppOption):
+class PHPMemoryLimit(PHPAppOption):
     name = 'memory_limit'
     verbose_name = _("Memory limit")
     help_text = _("This sets the maximum amount of memory in bytes that a script is allowed to allocate "
                 "(Value between 0M and 999M).")
     regex = r'^[0-9]{1,3}M$'
-    group = AppOption.PHP
 
 
-class PHPMySQLConnectTimeout(AppOption):
+class PHPMySQLConnectTimeout(PHPAppOption):
     name = 'mysql.connect_timeout'
     verbose_name = _("Mysql connect timeout")
     help_text = _("Number between 0 and 999.")
     regex = r'^([0-9]){1,3}$'
-    group = AppOption.PHP
 
 
-class PHPOutputBuffering(AppOption):
+class PHPOutputBuffering(PHPAppOption):
     name = 'output_buffering'
     verbose_name = _("Output buffering")
     help_text = _("Turn on output buffering (On or Off).")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPRegisterGlobals(AppOption):
+class PHPRegisterGlobals(PHPAppOption):
     name = 'register_globals'
     verbose_name = _("Register globals")
     help_text = _("Whether or not to register the EGPCS (Environment, GET, POST, Cookie, Server) "
                 "variables as global variables (On or Off).")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPPostMaxSize(AppOption):
+class PHPPostMaxSize(PHPAppOption):
     name = 'post_max_size'
     verbose_name = _("Post max size")
     help_text = _("Sets max size of post data allowed (Value between 0M and 999M).")
     regex = r'^[0-9]{1,3}M$'
-    group = AppOption.PHP
 
 
-class PHPSendmailPath(AppOption):
+class PHPSendmailPath(PHPAppOption):
     name = 'sendmail_path'
     verbose_name = _("sendmail_path")
     help_text = _("Where the sendmail program can be found.")
     regex = r'^[^ ]+$'
-    group = AppOption.PHP
 
 
-class PHPSessionBugCompatWarn(AppOption):
+class PHPSessionBugCompatWarn(PHPAppOption):
     name = 'session.bug_compat_warn'
     verbose_name = _("session.bug_compat_warn")
     help_text = _("Enables an PHP bug on session initialization for legacy behaviour (On or Off).")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPSessionAutoStart(AppOption):
+class PHPSessionAutoStart(PHPAppOption):
     name = 'session.auto_start'
     verbose_name = _("session.auto_start")
     help_text = _("Specifies whether the session module starts a session automatically on request "
@@ -272,72 +264,63 @@ class PHPSessionAutoStart(AppOption):
     group = AppOption.PHP
 
 
-class PHPSafeMode(AppOption):
+class PHPSafeMode(PHPAppOption):
     name = 'safe_mode'
     verbose_name = _("Safe mode")
     help_text = _("Whether to enable PHP's safe mode (On or Off) <b>DEPRECATED as of PHP 5.3.0</b>")
     regex = r'^(On|Off|on|off)$'
     deprecated=5.3
-    group = AppOption.PHP
 
 
-class PHPSuhosinPostMaxVars(AppOption):
+class PHPSuhosinPostMaxVars(PHPAppOption):
     name = 'suhosin.post.max_vars'
     verbose_name = _("Suhosin POST max vars")
     help_text = _("Number between 0 and 9999.")
     regex = r'^[0-9]{1,4}$'
-    group = AppOption.PHP
 
 
-class PHPSuhosinGetMaxVars(AppOption):
+class PHPSuhosinGetMaxVars(PHPAppOption):
     name = 'suhosin.get.max_vars'
     verbose_name = _("Suhosin GET max vars")
     help_text = _("Number between 0 and 9999.")
     regex = r'^[0-9]{1,4}$'
-    group = AppOption.PHP
 
 
-class PHPSuhosinRequestMaxVars(AppOption):
+class PHPSuhosinRequestMaxVars(PHPAppOption):
     name = 'suhosin.request.max_vars'
     verbose_name = _("Suhosin request max vars")
     help_text = _("Number between 0 and 9999.")
     regex = r'^[0-9]{1,4}$'
-    group = AppOption.PHP
 
 
-class PHPSuhosinSessionEncrypt(AppOption):
+class PHPSuhosinSessionEncrypt(PHPAppOption):
     name = 'suhosin.session.encrypt'
     verbose_name = _("suhosin.session.encrypt")
     help_text = _("On or Off")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPSuhosinSimulation(AppOption):
+class PHPSuhosinSimulation(PHPAppOption):
     name = 'suhosin.simulation'
     verbose_name = _("Suhosin simulation")
     help_text = _("On or Off")
     regex = r'^(On|Off|on|off)$'
-    group = AppOption.PHP
 
 
-class PHPSuhosinExecutorIncludeWhitelist(AppOption):
+class PHPSuhosinExecutorIncludeWhitelist(PHPAppOption):
     name = 'suhosin.executor.include.whitelist'
     verbose_name = _("suhosin.executor.include.whitelist")
     regex = r'.*$'
-    group = AppOption.PHP
 
 
-class PHPUploadMaxFileSize(AppOption):
+class PHPUploadMaxFileSize(PHPAppOption):
     name = 'upload_max_filesize'
     verbose_name = _("upload_max_filesize")
     help_text = _("Value between 0M and 999M.")
     regex = r'^[0-9]{1,3}M$'
-    group = AppOption.PHP
 
 
-class PHPZendExtension(AppOption):
+class PHPZendExtension(PHPAppOption):
     name = 'zend_extension'
     verbose_name = _("Zend extension")
     regex = r'^[^ ]+$'
-    group = AppOption.PHP

@@ -10,7 +10,6 @@ from orchestra.utils.python import import_class
 from . import settings
 
 
-# TODO multiple and unique validation support in the formset
 class SiteDirective(Plugin):
     HTTPD = 'HTTPD'
     SEC = 'ModSecurity'
@@ -141,7 +140,6 @@ class WordPressSaaS(SiteDirective):
     name = 'wordpress-saas'
     verbose_name = "WordPress SaaS"
     help_text = _("URL path for mounting wordpress multisite.")
-#    fpm_listen = settings.WEBAPPS_WORDPRESSMU_LISTEN
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
@@ -151,7 +149,6 @@ class DokuWikiSaaS(SiteDirective):
     name = 'dokuwiki-saas'
     verbose_name = "DokuWiki SaaS"
     help_text = _("URL path for mounting wordpress multisite.")
-#    fpm_listen = settings.WEBAPPS_DOKUWIKIMU_LISTEN
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
@@ -161,7 +158,6 @@ class DrupalSaaS(SiteDirective):
     name = 'drupal-saas'
     verbose_name = "Drupdal SaaS"
     help_text = _("URL path for mounting wordpress multisite.")
-#    fpm_listen = settings.WEBAPPS_DRUPALMU_LISTEN
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True

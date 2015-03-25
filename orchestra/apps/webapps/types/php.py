@@ -7,8 +7,10 @@ from rest_framework import serializers
 
 from orchestra.forms import widgets
 from orchestra.plugins.forms import PluginDataForm
+from orchestra.utils.functional import cached
 
 from .. import settings
+from ..options import AppOption
 
 from . import AppType
 
@@ -57,6 +59,12 @@ class PHPApp(AppType):
     def get_detail(self):
         return self.instance.data.get('php_version', '')
     
+    @cached
+    def get_php_options(self):
+        php_version = self.get_php_version()
+        php_options = AppOption.get_option_groups()[AppOption.PHP]
+        return [op for op in php_options if getattr(self, 'deprecated', 999) > php_version]
+    
     def get_php_init_vars(self, merge=False):
         """
         process php options for inclusion on php.ini
@@ -72,7 +80,7 @@ class PHPApp(AppType):
             for webapp in webapps:
                 if webapp.type_instance.get_php_version == php_version:
                     options += list(webapp.options.all())
-        php_options = [option.name for option in type(self).get_php_options()]
+        php_options = [option.name for option in self.get_php_options()]
         enabled_functions = set()
         for opt in options:
             if opt.name in php_options:

@@ -67,11 +67,13 @@ view_help.verbose_name = _("Help")
 def clone(modeladmin, request, queryset):
     service = queryset.get()
     fields = modeladmin.get_fields(request)
-    fk_fields = ('content_type',)
     query = []
     for field in fields:
-        if field in fk_fields:
+        model_field = type(service)._meta.get_field_by_name(field)[0]
+        if model_field.rel:
             value = getattr(service, field + '_id')
+        elif 'Boolean' in model_field.__class__.__name__:
+            value = 'True' if getattr(service, field) else ''
         else:
             value = getattr(service, field)
         query.append('%s=%s' % (field, value))

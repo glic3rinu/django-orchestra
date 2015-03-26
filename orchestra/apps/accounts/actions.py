@@ -31,7 +31,7 @@ disable.verbose_name = _("Disable")
 def list_contacts(modeladmin, request, queryset):
     ids = queryset.values_list('id', flat=True)
     if not ids:
-        message.warning(request, "Select at least one account.")
+        messages.warning(request, "Select at least one account.")
         return
     url = reverse('admin:contacts_contact_changelist')
     url += '?account__in=%s' % ','.join(map(str, ids))

@@ -110,7 +110,6 @@ def validate_zone(zone):
     zone_name = zone.split()[0][:-1]
     checkzone = settings.DOMAINS_CHECKZONE_BIN_PATH
     cmd = ' '.join(["echo -e '%s'" % zone, '|', checkzone, zone_name, '/dev/stdin'])
-    print cmd
     check = run(cmd, error_codes=[0, 1], display=False)
     if check.return_code == 1:
         errors = re.compile(r'zone.*: (.*)').findall(check.stdout)[:-1]

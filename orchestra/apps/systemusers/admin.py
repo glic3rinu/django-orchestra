@@ -12,10 +12,11 @@ from django.utils.safestring import mark_safe
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import wrap_admin_view
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
+from orchestra.apps.accounts.filters import IsActiveListFilter
 from orchestra.forms import UserCreationForm, UserChangeForm
 
 from . import settings
-from .actions import grant_permission
+from .actions import grant_permission, delete_selected
 from .filters import IsMainListFilter
 from .forms import SystemUserCreationForm, SystemUserChangeForm
 from .models import SystemUser
@@ -25,7 +26,7 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     list_display = (
         'username', 'account_link', 'shell', 'display_home', 'display_active', 'display_main'
     )
-    list_filter = ('is_active', 'shell', IsMainListFilter)
+    list_filter = (IsActiveListFilter, 'shell', IsMainListFilter)
     fieldsets = (
         (None, {
             'fields': ('username', 'password', 'account_link', 'is_active')
@@ -50,14 +51,8 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     add_form = SystemUserCreationForm
     form = SystemUserChangeForm
     ordering = ('-id',)
-    actions = (grant_permission,)
+    actions = (delete_selected, grant_permission,)
     change_view_actions = actions
-    
-    def display_active(self, user):
-        return user.active
-    display_active.short_description = _("Active")
-    display_active.admin_order_field = 'is_active'
-    display_active.boolean = True
     
     def display_main(self, user):
         return user.is_main
@@ -70,7 +65,7 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     display_home.admin_order_field = 'home'
     
     def get_form(self, request, obj=None, **kwargs):
-        form = super(SystemUserAdmin, self).get_form(request, obj=obj, **kwargs)
+        form = super(SystemUserAdmin, self).get_form(request, obj, **kwargs)
         form.account = self.account
         if obj:
             # Has to be done here and not in the form because of strange phenomenon
@@ -83,7 +78,7 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     def has_delete_permission(self, request, obj=None):
         if obj and obj.is_main:
             return False
-        return super(SystemUserAdmin, self).has_delete_permission(request, obj=obj)
+        return super(SystemUserAdmin, self).has_delete_permission(request, obj)
 
 
 admin.site.register(SystemUser, SystemUserAdmin)

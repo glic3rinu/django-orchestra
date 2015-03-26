@@ -95,7 +95,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
                 form_url=form_url, extra_context=context)
     
     def get_fieldsets(self, request, obj=None):
-        fieldsets = super(AccountAdmin, self).get_fieldsets(request, obj=obj)
+        fieldsets = super(AccountAdmin, self).get_fieldsets(request, obj)
         if not obj:
             fields = AccountCreationForm.create_related_fields
             if fields:
@@ -153,6 +153,17 @@ class AccountAdminMixin(object):
     account = None
     list_select_related = ('account',)
     
+    def display_active(self, instance):
+        if not instance.is_active:
+            return '<img src="/static/admin/img/icon-no.gif" alt="False">'
+        elif not instance.account.is_active:
+            msg = _("Account disabled")
+            return '<img src="/static/admin/img/icon-unknown.gif" alt="False" title="%s">' % msg
+        return '<img src="/static/admin/img/icon-yes.gif" alt="True">'
+    display_active.short_description = _("active")
+    display_active.allow_tags = True
+    display_active.admin_order_field = 'is_active'
+    
     def account_link(self, instance):
         account = instance.account if instance.pk else self.account
         url = change_url(account)
@@ -160,6 +171,23 @@ class AccountAdminMixin(object):
     account_link.short_description = _("account")
     account_link.allow_tags = True
     account_link.admin_order_field = 'account__username'
+    
+    def render_change_form(self, request, context, *args, **kwargs):
+        """ Warns user when object's account is disabled """
+        try:
+            field = context['adminform'].form.fields['is_active']
+        except KeyError:
+            pass
+        else:
+            help_text = (
+                "Designates whether this account should be treated as active. "
+                "Unselect this instead of deleting accounts."
+            )
+            obj = kwargs.get('obj')
+            if obj and not obj.account.is_active:
+                help_text += "<br><b style='color:red;'>This user's account is dissabled</b>"
+            field.help_text = _(help_text)
+        return super(AccountAdminMixin, self).render_change_form(request, context, *args, **kwargs)
     
     def get_fields(self, request, obj=None):
         """ remove account or account_link depending on the case """
@@ -181,7 +209,7 @@ class AccountAdminMixin(object):
         """ provide account for filter_by_account_fields """
         if obj:
             self.account = obj.account
-        return super(AccountAdminMixin, self).get_readonly_fields(request, obj=obj)
+        return super(AccountAdminMixin, self).get_readonly_fields(request, obj)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Filter by account """
@@ -207,7 +235,7 @@ class AccountAdminMixin(object):
     
     def get_formset(self, request, obj=None, **kwargs):
         """ provides form.account for convinience """
-        formset = super(AccountAdminMixin, self).get_formset(request, obj=obj, **kwargs)
+        formset = super(AccountAdminMixin, self).get_formset(request, obj, **kwargs)
         formset.form.account = self.account
         formset.account = self.account
         return formset
@@ -263,7 +291,7 @@ class AccountAdminMixin(object):
 class SelectAccountAdminMixin(AccountAdminMixin):
     """ Provides support for accounts on ModelAdmin """
     def get_inline_instances(self, request, obj=None):
-        inlines = super(AccountAdminMixin, self).get_inline_instances(request, obj=obj)
+        inlines = super(AccountAdminMixin, self).get_inline_instances(request, obj)
         if self.account:
             account = self.account
         else:

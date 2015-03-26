@@ -53,7 +53,7 @@ class Service(models.Model):
                 "Related instance can be instantiated with <tt>instance</tt> keyword or "
                 "<tt>content_type.model_name</tt>.</br>"
                 "<tt>&nbsp;databaseuser.type == 'MYSQL'</tt><br>"
-                "<tt>&nbsp;miscellaneous.active and miscellaneous.identifier.endswith(('.org', '.net', '.com'))'</tt><br>"
+                "<tt>&nbsp;miscellaneous.active and miscellaneous.identifier.endswith(('.org', '.net', '.com'))</tt><br>"
                 "<tt>&nbsp;contractedplan.plan.name == 'association_fee''</tt><br>"
                 "<tt>&nbsp;instance.active</tt>"))
     handler_type = models.CharField(_("handler"), max_length=256, blank=True,
@@ -94,7 +94,7 @@ class Service(models.Model):
             help_text=_("Period in which orders will be ignored if cancelled. "
                         "Useful for designating <i>trial periods</i>"),
             choices=(
-                (NEVER, _("No ignore")),
+                (NEVER, _("Never")),
                 (ONE_DAY, _("One day")),
                 (TWO_DAYS, _("Two days")),
                 (TEN_DAYS, _("Ten days")),
@@ -112,7 +112,7 @@ class Service(models.Model):
                 "<tt>&nbsp;miscellaneous.amount</tt><br>"
                 "<tt>&nbsp;max((account.resources.traffic.used or 0) -"
                 " getattr(account.miscellaneous.filter(is_active=True,"
-                " service__name='traffic prepay').last(), 'amount', 0), 0)</tt>"))
+                " service__name='traffic-prepay').last(), 'amount', 0), 0)</tt>"))
     nominal_price = models.DecimalField(_("nominal price"), max_digits=12,
             decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"), choices=settings.SERVICES_SERVICE_TAXES,
@@ -174,11 +174,12 @@ class Service(models.Model):
     
     def clean(self):
         self.description = self.description.strip()
-        validators.all_valid({
-            'content_type': (self.handler.validate_content_type, self),
-            'match': (self.handlers.validate_match, self),
-            'metric': (self.handlers.validate_metric, self),
-        })
+        if hasattr(self, 'content_type'):
+            validators.all_valid({
+                'content_type': (self.handler.validate_content_type, self),
+                'match': (self.handler.validate_match, self),
+                'metric': (self.handler.validate_metric, self),
+            })
         
     def get_pricing_period(self):
         if self.pricing_period == self.BILLING_PERIOD:

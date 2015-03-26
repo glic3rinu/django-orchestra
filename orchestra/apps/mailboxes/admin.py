@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin, AccountAdminMixin
+from orchestra.apps.accounts.filters import IsActiveListFilter
 
 from . import settings
 from .actions import SendMailboxEmail
@@ -30,9 +31,9 @@ class AutoresponseInline(admin.StackedInline):
 
 class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'name', 'account_link', 'filtering', 'display_addresses'
+        'name', 'account_link', 'filtering', 'display_addresses', 'display_active',
     )
-    list_filter = (HasAddressListFilter, 'filtering')
+    list_filter = (IsActiveListFilter, HasAddressListFilter, 'filtering')
     search_fields = ('account__username', 'account__short_name', 'account__full_name', 'name')
     add_fieldsets = (
         (None, {
@@ -81,7 +82,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         return super(MailboxAdmin, self).get_actions(request)
     
     def get_fieldsets(self, request, obj=None):
-        fieldsets = super(MailboxAdmin, self).get_fieldsets(request, obj=obj)
+        fieldsets = super(MailboxAdmin, self).get_fieldsets(request, obj)
         if obj and obj.filtering == obj.CUSTOM:
             # not collapsed filtering when exists
             fieldsets = copy.deepcopy(fieldsets)
@@ -147,7 +148,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     
     def get_fields(self, request, obj=None):
         """ Remove mailboxes field when creating address from a popup i.e. from mailbox add form """
-        fields = super(AddressAdmin, self).get_fields(request, obj=obj)
+        fields = super(AddressAdmin, self).get_fields(request, obj)
         if '_to_field' in parse_qs(request.META['QUERY_STRING']):
             # Add address popup
             fields = list(fields)

@@ -6,6 +6,8 @@ from django.db.models.loading import get_model
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.apps.orchestration.middlewares import OperationsMiddleware
+from orchestra.apps.orchestration.models import BackendOperation as Operation
 from orchestra.core import services, accounts
 from orchestra.utils import send_email_template
 
@@ -63,11 +65,15 @@ class Account(auth.AbstractBaseUser):
     
     def save(self, active_systemuser=False, *args, **kwargs):
         created = not self.pk
+        if not created:
+            was_active = Account.objects.filter(pk=self.pk).values_list('is_active', flat=True)[0]
         super(Account, self).save(*args, **kwargs)
         if created:
             self.main_systemuser = self.systemusers.create(account=self, username=self.username,
                     password=self.password, is_active=active_systemuser)
             self.save(update_fields=['main_systemuser'])
+        elif was_active != self.is_active:
+            self.notify_related()
     
     def clean(self):
         self.short_name = self.short_name.strip()
@@ -76,12 +82,15 @@ class Account(auth.AbstractBaseUser):
     def disable(self):
         self.is_active = False
         self.save(update_fields=['is_active'])
+        self.notify_related()
+    
+    def notify_related(self):
         # Trigger save() on related objects that depend on this account
         for rel in self._meta.get_all_related_objects():
             source = getattr(rel, 'related_model', rel.model)
             if source in services and hasattr(source, 'active'):
                 for obj in getattr(self, rel.get_accessor_name()).all():
-                    obj.save(update_fields=[])
+                    OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=[])
         
     def send_email(self, template, context, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)

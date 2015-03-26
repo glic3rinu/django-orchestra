@@ -34,7 +34,7 @@ class PaymentSource(models.Model):
         return PaymentMethod.get_plugin(self.method)
     
     @cached_property
-    def service_instance(self):
+    def method_instance(self):
         """ Per request lived method_instance """
         return self.method_class(self)
     

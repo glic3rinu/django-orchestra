@@ -19,11 +19,11 @@ class SelectPluginAdminMixin(object):
         else:
             plugin = self.plugin.get_plugin(self.plugin_value)()
             self.form = plugin.get_form()
-        return super(SelectPluginAdminMixin, self).get_form(request, obj=obj, **kwargs)
+        return super(SelectPluginAdminMixin, self).get_form(request, obj, **kwargs)
     
     def get_fields(self, request, obj=None):
         """ Try to maintain original field ordering """
-        fields = super(SelectPluginAdminMixin, self).get_fields(request, obj=obj)
+        fields = super(SelectPluginAdminMixin, self).get_fields(request, obj)
         head_fields = list(self.get_readonly_fields(request, obj))
         head, tail = [], []
         for field in fields:

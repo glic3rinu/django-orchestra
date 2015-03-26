@@ -128,7 +128,7 @@ class Order(models.Model):
         get_latest_by = 'id'
     
     def __unicode__(self):
-        return str(self.service)
+        return unicode(self.service)
     
     @classmethod
     def update_orders(cls, instance, service=None, commit=True):
@@ -178,8 +178,9 @@ class Order(models.Model):
                 MetricStorage.store(self, metric)
             metric = ', metric:{}'.format(metric)
         description = handler.get_order_description(instance)
-        logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
-                    id=self.id, description=description, metric=metric))
+        logger.info(u"UPDATED order id:{id}, description:{description}{metric}".format(
+                id=self.id, description=description, metric=metric).encode('ascii', 'ignore')
+        )
         if self.description != description:
             self.description = description
             self.save(update_fields=['description'])

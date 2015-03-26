@@ -62,7 +62,7 @@ class RouteAdmin(admin.ModelAdmin):
     
     def get_form(self, request, obj=None, **kwargs):
         """ Include dynamic help text for existing objects """
-        form = super(RouteAdmin, self).get_form(request, obj=obj, **kwargs)
+        form = super(RouteAdmin, self).get_form(request, obj, **kwargs)
         if obj:
             form.base_fields['backend'].help_text = self.BACKEND_HELP_TEXT.get(obj.backend, '')
         return form

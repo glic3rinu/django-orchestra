@@ -88,7 +88,7 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
         return fields
     
     def get_form(self, request, obj=None, **kwargs):
-        form = super(SelectPluginAdminMixin, self).get_form(request, obj=obj, **kwargs)
+        form = super(SelectPluginAdminMixin, self).get_form(request, obj, **kwargs)
         service = self.get_service(obj)
         def clean_identifier(self, service=service):
             identifier = self.cleaned_data['identifier']

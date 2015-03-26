@@ -18,6 +18,7 @@ class SystemUserBackend(ServiceController):
         context = self.get_context(user)
         groups = ','.join(self.get_groups(user))
         context['groups_arg'] = '--groups %s' % groups if groups else ''
+        # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
             if [[ $( id %(user)s ) ]]; then
                usermod  %(user)s --password '%(password)s' --shell %(shell)s %(groups_arg)s

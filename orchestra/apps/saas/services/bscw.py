@@ -27,6 +27,5 @@ class BSCWService(SoftwareService):
     form = BSCWForm
     serializer = BSCWDataSerializer
     icon = 'orchestra/icons/apps/BSCW.png'
-    # TODO override from settings
     site_domain = settings.SAAS_BSCW_DOMAIN
     change_readonly_fileds = ('email',)

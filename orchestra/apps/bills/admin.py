@@ -145,19 +145,19 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_payment_state.short_description = _("Payment")
     
     def get_readonly_fields(self, request, obj=None):
-        fields = super(BillAdmin, self).get_readonly_fields(request, obj=obj)
+        fields = super(BillAdmin, self).get_readonly_fields(request, obj)
         if obj and not obj.is_open:
             fields += self.add_fields
         return fields
     
     def get_fieldsets(self, request, obj=None):
-        fieldsets = super(BillAdmin, self).get_fieldsets(request, obj=obj)
+        fieldsets = super(BillAdmin, self).get_fieldsets(request, obj)
         if obj and obj.is_open:
             fieldsets = (fieldsets[0],)
         return fieldsets
     
     def get_change_view_actions(self, obj=None):
-        actions = super(BillAdmin, self).get_change_view_actions(obj=obj)
+        actions = super(BillAdmin, self).get_change_view_actions(obj)
         exclude = []
         if obj:
             if not obj.is_open:
@@ -165,7 +165,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return [action for action in actions if action.__name__ not in exclude]
     
     def get_inline_instances(self, request, obj=None):
-        inlines = super(BillAdmin, self).get_inline_instances(request, obj=obj)
+        inlines = super(BillAdmin, self).get_inline_instances(request, obj)
         if obj and not obj.is_open:
             return [inline for inline in inlines if not type(inline) == BillLineInline]
         return [inline for inline in inlines if not type(inline) == ClosedBillLineInline]

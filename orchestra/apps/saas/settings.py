@@ -9,6 +9,7 @@ SAAS_ENABLED_SERVICES = getattr(settings, 'SAAS_ENABLED_SERVICES', (
     'orchestra.apps.saas.services.wordpress.WordPressService',
     'orchestra.apps.saas.services.dokuwiki.DokuWikiService',
     'orchestra.apps.saas.services.drupal.DrupalService',
+    'orchestra.apps.saas.services.seafile.SeaFileService',
 ))
 
 
@@ -42,14 +43,22 @@ SAAS_PHPLIST_BASE_DOMAIN = getattr(settings, 'SAAS_PHPLIST_BASE_DOMAIN',
 )
 
 
+SAAS_SEAFILE_DOMAIN = getattr(settings, 'SAAS_SEAFILE_DOMAIN',
+    'seafile.orchestra.lan'
+)
+
+SAAS_SEAFILE_DEFAULT_QUOTA = getattr(settings, 'SAAS_SEAFILE_DEFAULT_QUOTA',
+    50
+)
+
 SAAS_BSCW_DOMAIN = getattr(settings, 'SAAS_BSCW_DOMAIN',
     'bscw.orchestra.lan'
 )
 
-
 SAAS_BSCW_DEFAULT_QUOTA = getattr(settings, 'SAAS_BSCW_DEFAULT_QUOTA',
     50
 )
+
 
 
 SAAS_GITLAB_ROOT_PASSWORD = getattr(settings, 'SAAS_GITLAB_ROOT_PASSWORD',

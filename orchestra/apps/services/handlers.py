@@ -4,6 +4,7 @@ import decimal
 
 from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -44,7 +45,7 @@ class ServiceHandler(plugins.Plugin):
     
     def validate_match(self, service):
         if not service.match:
-            raise ValidationError(_("Match should be provided."))
+            service.match = 'True'
         try:
             obj = service.content_type.model_class().objects.all()[0]
         except IndexError:
@@ -125,7 +126,7 @@ class ServiceHandler(plugins.Plugin):
             instance._meta.model_name: instance,
         }
         if not self.order_description:
-            return '%s: %s' % (self.description, instance)
+            return u'%s: %s' % (self.description, instance)
         return eval(self.order_description, safe_locals)
     
     def get_billing_point(self, order, bp=None, **options):

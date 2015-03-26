@@ -93,3 +93,6 @@ class SoftwareService(plugins.Plugin):
     
     def delete(self):
         pass
+    
+    def get_related(self):
+        return []

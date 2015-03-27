@@ -37,7 +37,8 @@ class WebAppServiceMixin(object):
             'type': webapp.type,
             'app_path': webapp.get_path().rstrip('/'),
             'banner': self.get_banner(),
-            'under_construction_path': settings.settings.WEBAPPS_UNDER_CONSTRUCTION_PATH
+            'under_construction_path': settings.settings.WEBAPPS_UNDER_CONSTRUCTION_PATH,
+            'is_mounted': webapp.content_set.exists(),
         }
 
 

@@ -30,9 +30,8 @@ class WebsiteDirectiveInline(admin.TabularInline):
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         if db_field.name == 'name':
             # Help text based on select widget
-            kwargs['widget'] = DynamicHelpTextSelect(
-                'this.id.replace("name", "value")', self.DIRECTIVES_HELP_TEXT
-            )
+            target = 'this.id.replace("name", "value")'
+            kwargs['widget'] = DynamicHelpTextSelect(target, self.DIRECTIVES_HELP_TEXT)
         return super(WebsiteDirectiveInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
@@ -85,7 +84,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         for content in website.content_set.all():
             webapp = content.webapp
             url = change_url(webapp)
-            name = "%s on %s" % (webapp.get_type_display(), content.path)
+            name = "%s on %s" % (webapp.get_type_display(), content.path or '/')
             webapps.append('<a href="%s">%s</a>' % (url, name))
         return '<br>'.join(webapps)
     display_webapps.allow_tags = True

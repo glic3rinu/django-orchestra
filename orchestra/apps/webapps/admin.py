@@ -39,9 +39,8 @@ class WebAppOptionInline(admin.TabularInline):
                 plugin = AppType.get_plugin(request.GET['type'])
             kwargs['choices'] = plugin.get_options_choices()
             # Help text based on select widget
-            kwargs['widget'] = DynamicHelpTextSelect(
-                'this.id.replace("name", "value")', self.OPTIONS_HELP_TEXT
-            )
+            target = 'this.id.replace("name", "value")'
+            kwargs['widget'] = DynamicHelpTextSelect(target, self.OPTIONS_HELP_TEXT)
         return super(WebAppOptionInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
@@ -66,7 +65,6 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
             websites.append('<a href="%s">%s</a>' % (url, name))
         if not websites:
             add_url = reverse('admin:websites_website_add')
-            # TODO support for preselecting related web app on website
             add_url += '?account=%s' % webapp.account_id
             plus = '<strong style="color:green; font-size:12px">+</strong>'
             websites.append('<a href="%s">%s%s</a>' % (add_url, plus, ugettext("Add website")))

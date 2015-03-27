@@ -63,6 +63,10 @@ class Miscellaneous(models.Model):
     def get_description(self):
         return ' '.join((str(self.amount), self.service.description or self.service.verbose_name))
     
+    @cached_property
+    def service_class(self):
+        return self.service
+    
     def clean(self):
         if self.identifier:
             self.identifier = self.identifier.strip()

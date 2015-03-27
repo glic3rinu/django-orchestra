@@ -23,7 +23,7 @@ class PhpListSaaSBackend(ServiceController):
             raise RuntimeError("Database is not yet configured")
         install = re.search(r'([^"]+firstinstall[^"]+)', admin_content)
         if install:
-            if not saas.password:
+            if not hasattr(saas, 'password'):
                 raise RuntimeError("Password is missing")
             install = install.groups()[0]
             install_link = admin_link + install[1:]
@@ -38,7 +38,7 @@ class PhpListSaaSBackend(ServiceController):
             print response.content
             if response.status_code != 200:
                 raise RuntimeError("Bad status code %i" % response.status_code)
-        elif saas.password:
+        elif hasattr(saas, 'password'):
             raise NotImplementedError
     
     def save(self, saas):

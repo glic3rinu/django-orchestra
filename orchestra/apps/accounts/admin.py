@@ -172,10 +172,11 @@ class AccountAdminMixin(object):
     account_link.allow_tags = True
     account_link.admin_order_field = 'account__username'
     
-    def render_change_form(self, request, context, *args, **kwargs):
+    def get_form(self, request, obj=None, **kwargs):
         """ Warns user when object's account is disabled """
+        form = super(AccountAdminMixin, self).get_form(request, obj, **kwargs)
         try:
-            field = context['adminform'].form.fields['is_active']
+            field = form.base_fields['is_active']
         except KeyError:
             pass
         else:
@@ -183,11 +184,10 @@ class AccountAdminMixin(object):
                 "Designates whether this account should be treated as active. "
                 "Unselect this instead of deleting accounts."
             )
-            obj = kwargs.get('obj')
             if obj and not obj.account.is_active:
                 help_text += "<br><b style='color:red;'>This user's account is dissabled</b>"
             field.help_text = _(help_text)
-        return super(AccountAdminMixin, self).render_change_form(request, context, *args, **kwargs)
+        return form
     
     def get_fields(self, request, obj=None):
         """ remove account or account_link depending on the case """

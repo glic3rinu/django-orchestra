@@ -208,7 +208,10 @@ class Exim4Traffic(ServiceMonitor):
                         with open(mainlog, 'r') as mainlog:
                             for line in mainlog.readlines():
                                 if ' <= ' in line and 'P=local' in line:
-                                    username = user_regex.search(line).groups()[0]
+                                    username = user_regex.search(line)
+                                    if not username:
+                                        continue
+                                    username = username.groups()[0]
                                     try:
                                         sender = users[username]
                                     except KeyError:

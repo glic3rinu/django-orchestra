@@ -29,8 +29,8 @@ class BillSelectedOptionsForm(AdminFormMixin, forms.Form):
 
 def selected_related_choices(queryset):
     for order in queryset:
-        verbose = '<a href="{order_url}">{description}</a> '
-        verbose += '<a class="account" href="{account_url}">{account}</a>'
+        verbose = u'<a href="{order_url}">{description}</a> '
+        verbose += u'<a class="account" href="{account_url}">{account}</a>'
         verbose = verbose.format(
             order_url=change_url(order), description=order.description,
             account_url=change_url(order.account), account=str(order.account)

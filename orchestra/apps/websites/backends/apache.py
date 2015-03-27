@@ -32,6 +32,9 @@ class Apache2Backend(ServiceController):
         extra_conf += self.get_redirects(directives)
         extra_conf += self.get_proxies(directives)
         extra_conf += self.get_saas(directives)
+        settings_context = site.get_settings_context()
+        for location, directive in settings.WEBSITES_VHOST_EXTRA_DIRECTIVES:
+            extra_conf.append((location, directive % settings_context))
         # Order extra conf directives based on directives (longer first)
         extra_conf = sorted(extra_conf, key=lambda a: len(a[0]), reverse=True)
         context['extra_conf'] = '\n'.join([conf for location, conf in extra_conf])

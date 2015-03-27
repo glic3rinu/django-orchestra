@@ -111,7 +111,7 @@ class ChangeAddFieldsMixin(object):
     add_form = None
     add_prepopulated_fields = {}
     change_readonly_fields = ()
-    add_inlines = ()
+    add_inlines = None
     
     def get_prepopulated_fields(self, request, obj=None):
         if not obj:
@@ -140,7 +140,7 @@ class ChangeAddFieldsMixin(object):
         if obj:
             self.inlines = type(self).inlines
         else:
-            self.inlines = self.add_inlines or self.inlines
+            self.inlines = self.inlines if self.add_inlines is None else self.add_inlines
         inlines = super(ChangeAddFieldsMixin, self).get_inline_instances(request, obj)
         for inline in inlines:
             inline.parent_object = obj

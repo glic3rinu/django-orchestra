@@ -13,11 +13,10 @@ class PluginDataForm(forms.ModelForm):
             display = '%s <a href=".">change</a>' % unicode(self.plugin.verbose_name)
             self.fields[self.plugin_field].widget = ReadOnlyWidget(value, display)
             self.fields[self.plugin_field].help_text = getattr(self.plugin, 'help_text', '')
-        instance = kwargs.get('instance')
-        if instance:
+        if self.instance:
             for field in self.declared_fields:
                 initial = self.fields[field].initial
-                self.fields[field].initial = instance.data.get(field, initial)
+                self.fields[field].initial = self.instance.data.get(field, initial)
             if self.instance.pk:
                 for field in self.plugin.get_change_readonly_fileds():
                     value = getattr(self.instance, field, None) or self.instance.data[field]
@@ -27,14 +26,12 @@ class PluginDataForm(forms.ModelForm):
                         display = foo_display()
                     self.fields[field].required = False
                     self.fields[field].widget = ReadOnlyWidget(value, display)
-#                       self.fields[field].help_text = None
     
     def clean(self):
-        # TODO clean all filed within data???
         data = {}
-        for field in self.declared_fields:
+        for field, value in self.instance.data.iteritems():
             try:
                 data[field] = self.cleaned_data[field]
             except KeyError:
-                data[field] = self.data[field]
+                data[field] = value
         self.cleaned_data['data'] = data

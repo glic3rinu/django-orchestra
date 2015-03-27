@@ -53,7 +53,7 @@ class Service(models.Model):
                 "Related instance can be instantiated with <tt>instance</tt> keyword or "
                 "<tt>content_type.model_name</tt>.</br>"
                 "<tt>&nbsp;databaseuser.type == 'MYSQL'</tt><br>"
-                "<tt>&nbsp;miscellaneous.active and miscellaneous.identifier.endswith(('.org', '.net', '.com'))</tt><br>"
+                "<tt>&nbsp;miscellaneous.active and str(miscellaneous.identifier).endswith(('.org', '.net', '.com'))</tt><br>"
                 "<tt>&nbsp;contractedplan.plan.name == 'association_fee''</tt><br>"
                 "<tt>&nbsp;instance.active</tt>"))
     handler_type = models.CharField(_("handler"), max_length=256, blank=True,
@@ -117,9 +117,10 @@ class Service(models.Model):
             decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"), choices=settings.SERVICES_SERVICE_TAXES,
             default=settings.SERVICES_SERVICE_DEFAULT_TAX)
-    pricing_period = models.CharField(_("pricing period"), max_length=16,
+    pricing_period = models.CharField(_("pricing period"), max_length=16, blank=True,
             help_text=_("Time period that is used for computing the rate metric."),
             choices=(
+                (NEVER, _("Current value")),
                 (BILLING_PERIOD, _("Same as billing period")),
                 (MONTHLY, _("Monthly data")),
                 (ANUAL, _("Anual data")),

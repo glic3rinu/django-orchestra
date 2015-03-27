@@ -93,12 +93,12 @@ class Website(models.Model):
     def get_www_access_log_path(self):
         context = self.get_settings_context()
         path = settings.WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH % context
-        return os.path.normpath(path.replace('//', '/'))
+        return os.path.normpath(path)
     
     def get_www_error_log_path(self):
         context = self.get_settings_context()
         path = settings.WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH % context
-        return os.path.normpath(path.replace('//', '/'))
+        return os.path.normpath(path)
 
 
 class WebsiteDirective(models.Model):

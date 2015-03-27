@@ -1,4 +1,5 @@
 from django import forms
+from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
@@ -24,7 +25,7 @@ class PHPListForm(SoftwareServiceForm):
 
 
 class PHPListChangeForm(PHPListForm):
-    db_name = forms.CharField(label=_("Database name"),
+    database = forms.CharField(label=_("Database"), required=False,
             help_text=_("Database used for this webapp."))
     
     def __init__(self, *args, **kwargs):
@@ -33,10 +34,11 @@ class PHPListChangeForm(PHPListForm):
         admin_url = "http://%s/admin/" % site_domain
         help_text = _("Admin URL <a href={0}>{0}</a>").format(admin_url)
         self.fields['site_url'].help_text = help_text
-
-
-class PHPListSerializer(serializers.Serializer):
-    db_name = serializers.CharField(label=_("Database name"), required=False)
+        # DB link
+        db = self.instance.database
+        db_url = reverse('admin:databases_database_change', args=(db.pk,))
+        db_link = mark_safe('<a href="%s">%s</a>' % (db_url, db.name))
+        self.fields['database'].widget = widgets.ReadOnlyWidget(db.name, db_link)
 
 
 class PHPListService(SoftwareService):
@@ -44,8 +46,6 @@ class PHPListService(SoftwareService):
     verbose_name = "phpList"
     form = PHPListForm
     change_form = PHPListChangeForm
-    change_readonly_fileds = ('db_name',)
-    serializer = PHPListSerializer
     icon = 'orchestra/icons/apps/Phplist.png'
     site_base_domain = settings.SAAS_PHPLIST_BASE_DOMAIN
     
@@ -77,29 +77,7 @@ class PHPListService(SoftwareService):
         db_name = self.get_db_name()
         db_user = self.get_db_user()
         account = self.get_account()
-        db, db_created = account.databases.get_or_create(name=db_name)
+        db, db_created = account.databases.get_or_create(name=db_name, type=Database.MYSQL)
         user = DatabaseUser.objects.get(username=db_user)
         db.users.add(user)
-        self.instance.data = {
-            'db_name': db_name,
-        }
-        if not db_created:
-            # Trigger related backends
-            for related in self.get_related():
-                related.save(update_fields=[])
-        
-    def delete(self):
-        for related in self.get_related():
-            related.delete()
-    
-    def get_related(self):
-        related = []
-        account = self.get_account()
-        db_name = self.instance.data.get('db_name')
-        try:
-            db = account.databases.get(name=db_name)
-        except Database.DoesNotExist:
-            pass
-        else:
-            related.append(db)
-        return related
+        self.instance.database_id = db.pk

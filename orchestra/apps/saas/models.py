@@ -8,6 +8,7 @@ from jsonfield import JSONField
 from orchestra.core import services, validators
 from orchestra.models.fields import NullableCharField
 
+from .fields import VirtualDatabaseRelation
 from .services import SoftwareService
 
 
@@ -23,6 +24,10 @@ class SaaS(models.Model):
             help_text=_("Designates whether this service should be treated as active. "))
     data = JSONField(_("data"), default={},
             help_text=_("Extra information dependent of each service."))
+    database = models.ForeignKey('databases.Database', null=True, blank=True)
+    
+    # Some SaaS sites may need a database, with this virtual field we tell the ORM to delete them
+    databases = VirtualDatabaseRelation('databases.Database')
     
     class Meta:
         verbose_name = "SaaS"

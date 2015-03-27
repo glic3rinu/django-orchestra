@@ -94,3 +94,8 @@ WEBSITES_DEFAULT_SSL_KEY = getattr(settings, 'WEBSITES_DEFAULT_SSL_KEY',
 WEBSITES_DEFAULT_SSL_CA = getattr(settings, 'WEBSITES_DEFAULT_SSL_CA',
     ''
 )
+
+WEBSITES_VHOST_EXTRA_DIRECTIVES = getattr(settings, 'WEBSITES_VHOST_EXTRA_DIRECTIVES', (
+    # (<location>, <directive>),
+    # ('/cgi-bin/', 'ScriptAlias /cgi-bin/ %(home)s/cgi-bin/'),
+))

@@ -71,9 +71,6 @@ class AppType(plugins.Plugin):
     def delete(self):
         pass
     
-    def get_related_objects(self):
-        pass
-    
     def get_directive_context(self):
         return {
             'app_id': self.instance.id,

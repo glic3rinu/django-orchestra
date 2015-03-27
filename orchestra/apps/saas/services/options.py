@@ -26,6 +26,9 @@ class SoftwareServiceForm(PluginDataForm):
             widget=forms.PasswordInput,
             help_text=_("Enter the same password as above, for verification."))
     
+    class Meta:
+        exclude = ('database',)
+    
     def __init__(self, *args, **kwargs):
         super(SoftwareServiceForm, self).__init__(*args, **kwargs)
         self.is_change = bool(self.instance and self.instance.pk)

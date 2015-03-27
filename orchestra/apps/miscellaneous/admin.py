@@ -72,7 +72,7 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
     
     def get_service(self, obj):
         if obj is None:
-            return self.plugin.get_plugin(self.plugin_value)().instance
+            return self.plugin.get_plugin(self.plugin_value).related_instance
         else:
             return obj.service
     
@@ -105,7 +105,15 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
         if db_field.name == 'description':
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 4})
         return super(MiscellaneousAdmin, self).formfield_for_dbfield(db_field, **kwargs)
-
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            plugin = self.plugin
+            kwargs = {
+                plugin.name_field: self.plugin_value
+            }
+            setattr(obj, self.plugin_field, plugin.model.objects.get(**kwargs))
+        obj.save()
 
 admin.site.register(MiscService, MiscServiceAdmin)
 admin.site.register(Miscellaneous, MiscellaneousAdmin)

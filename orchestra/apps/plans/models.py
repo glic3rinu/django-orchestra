@@ -2,6 +2,7 @@ import decimal
 
 from django.core.validators import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services, accounts
@@ -22,7 +23,7 @@ class Plan(models.Model):
         help_text=_("Designates whether this plan allow for multiple contractions."))
     
     def __unicode__(self):
-        return self.name
+        return self.get_verbose_name()
     
     def clean(self):
         self.verbose_name = self.verbose_name.strip()
@@ -43,7 +44,7 @@ class ContractedPlan(models.Model):
         return str(self.plan)
     
     def clean(self):
-        if not self.pk and not self.plan.allow_multiples:
+        if not self.pk and not self.plan.allow_multiple:
             if ContractedPlan.objects.filter(plan=self.plan, account=self.account).exists():
                 raise ValidationError("A contracted plan for this account already exists.")
 

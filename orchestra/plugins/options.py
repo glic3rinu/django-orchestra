@@ -93,17 +93,24 @@ class PluginModelAdapter(Plugin):
     @classmethod
     def get_plugins(cls):
         plugins = []
-        for instance in cls.model.objects.filter(is_active=True):
+        for related_instance in cls.model.objects.filter(is_active=True):
             attributes = {
-                'instance': instance,
-                'verbose_name': instance.verbose_name
+                'related_instance': related_instance,
+                'verbose_name': related_instance.verbose_name
             }
             plugins.append(type('PluginAdapter', (cls,), attributes))
         return plugins
     
     @classmethod
+    def get_plugin(cls, name):
+        # don't cache, since models can change
+        for plugin in cls.get_plugins():
+            if name == plugin.get_name():
+                return plugin
+    
+    @classmethod
     def get_name(cls):
-        return getattr(cls.instance, cls.name_field)
+        return getattr(cls.related_instance, cls.name_field)
 
 
 class PluginMount(type):

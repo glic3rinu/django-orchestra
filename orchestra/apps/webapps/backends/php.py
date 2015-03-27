@@ -12,7 +12,7 @@ from .. import settings
 
 class PHPBackend(WebAppServiceMixin, ServiceController):
     verbose_name = _("PHP FPM/FCGID")
-    default_route_match = "webapp.type == 'php'"
+    default_route_match = "webapp.type.endswith('php')"
     MERGE = settings.WEBAPPS_MERGE_PHP_WEBAPPS
     
     def save(self, webapp):
@@ -34,7 +34,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             } || {
                 echo -e "${fpm_config}" > %(fpm_path)s
                 UPDATEDFPM=1
-            }""") % context
+            }
+            """) % context
         )
     
     def save_fcgid(self, webapp, context):
@@ -46,8 +47,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             {
                 echo -e "${wrapper}" | diff -N -I'^\s*#' %(wrapper_path)s -
             } || {
-                echo -e "${wrapper}" > %(wrapper_path)s; UPDATED_APACHE=1
-            }""") % context
+                echo -e "${wrapper}" > %(wrapper_path)s
+                [[ ${UPDATED_APACHE} -eq 0 ]] && UPDATED_APACHE=%(is_mounted)i
+            }
+            """) % context
         )
         self.append("chmod 550 %(wrapper_dir)s" % context)
         self.append("chmod 550 %(wrapper_path)s" % context)
@@ -58,8 +61,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 {
                     echo -e "${cmd_options}" | diff -N -I'^\s*#' %(cmd_options_path)s -
                 } || {
-                    echo -e "${cmd_options}" > %(cmd_options_path)s; UPDATED_APACHE=1
-                }""" ) % context
+                    echo -e "${cmd_options}" > %(cmd_options_path)s
+                    [[ ${UPDATED_APACHE} -eq 0 ]] && UPDATED_APACHE=%(is_mounted)i
+                }
+                """ ) % context
             )
         else:
             self.append("rm -f %(cmd_options_path)s" % context)
@@ -85,12 +90,14 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 if [[ $UPDATEDFPM == 1 ]]; then
                     service php5-fpm reload
                     service php5-fpm start
-                fi""")
+                fi
+                """)
             )
             self.append(textwrap.dedent("""\
                 if [[ $UPDATED_APACHE == 1 ]]; then
                     service apache2 reload
-                fi""")
+                fi
+                """)
             )
     
     def get_fpm_config(self, webapp, context):
@@ -149,7 +156,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             if value:
                 cmd_options.append("%s %s" % (directive, value))
         if cmd_options:
-            head = '# %(banner)s\nFcgidCmdOptions %(wrapper_path)s' % context
+            head = (
+                '# %(banner)s\n'
+                'FcgidCmdOptions %(wrapper_path)s'
+            ) % context
             cmd_options.insert(0, head)
             return ' \\\n    '.join(cmd_options)
     

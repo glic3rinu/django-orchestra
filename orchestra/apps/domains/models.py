@@ -27,15 +27,18 @@ class Domain(models.Model):
         return self.name
     
     @classmethod
-    def get_top_domain(cls, name):
+    def get_parent_domain(cls, name, top=False):
+        """ get the next domain on the chain """
         split = name.split('.')
-        top = None
+        parent = None
         for i in range(1, len(split)-1):
             name = '.'.join(split[i:])
             domain = Domain.objects.filter(name=name)
             if domain:
-                top = domain.get()
-        return top
+                parent = domain.get()
+                if not top:
+                    return parent
+        return parent
     
     @property
     def origin(self):
@@ -57,7 +60,7 @@ class Domain(models.Model):
         """ create top relation """
         update = False
         if not self.pk:
-            top = self.get_top()
+            top = self.get_parent(top=True)
             if top:
                 self.top = top
                 self.account_id = self.account_id or top.account_id
@@ -90,8 +93,8 @@ class Domain(models.Model):
         """ proxy method, needed for input validation, see helpers.domain_for_validation """
         return self.origin.subdomain_set.all().prefetch_related('records')
     
-    def get_top(self):
-        return type(self).get_top_domain(self.name)
+    def get_parent(self, top=False):
+        return type(self).get_parent_domain(self.name, top=top)
     
     def render_zone(self):
         origin = self.origin

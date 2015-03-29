@@ -10,6 +10,7 @@ from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import caches, validators
+from orchestra.core.translations import ModelTranslation
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
 
@@ -240,3 +241,6 @@ class Service(models.Model):
         for instance in related_model.objects.all().select_related('account'):
             updates += order_model.update_orders(instance, service=self, commit=commit)
         return updates
+
+
+ModelTranslation.register(Service, ('description',))

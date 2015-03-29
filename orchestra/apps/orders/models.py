@@ -41,7 +41,7 @@ class OrderQuerySet(models.QuerySet):
                     order.old_billed_until = order.billed_until
                 lines = service.handler.generate_bill_lines(orders, account, **options)
                 bill_lines.extend(lines)
-            # TODO make this consistent always returning the same fucking objects
+            # TODO make this consistent always returning the same fucking types
             if commit:
                 bills += bill_backend.create_bills(account, bill_lines, **options)
             else:
@@ -257,7 +257,8 @@ class MetricStorage(models.Model):
         except cls.DoesNotExist:
             cls.objects.create(order=order, value=value, updated_on=now)
         else:
-            if metric.value != value:
+            threshold = decimal.Decimal(settings.ORDERS_METRIC_THRESHOLD)
+            if metric.value*(1+threshold) > value or metric.value*threshold < value:
                 cls.objects.create(order=order, value=value, updated_on=now)
             else:
                 metric.updated_on = now
@@ -276,7 +277,7 @@ def cancel_orders(sender, **kwargs):
             for order in Order.objects.by_object(instance).active():
                 order.cancel()
         elif not hasattr(instance, 'account'):
-            related = helpers.get_related_objects(instance)
+            related = helpers.get_related_object(instance)
             if related and related != instance:
                 Order.update_orders(related)
 
@@ -287,6 +288,6 @@ def update_orders(sender, **kwargs):
         if type(instance) in services:
             Order.update_orders(instance)
         elif not hasattr(instance, 'account'):
-            related = helpers.get_related_objects(instance)
+            related = helpers.get_related_object(instance)
             if related and related != instance:
                 Order.update_orders(related)

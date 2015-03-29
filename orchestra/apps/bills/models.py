@@ -274,8 +274,11 @@ class BillLine(models.Model):
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.PositiveIntegerField(_("tax"))
     # Undo
+#    initial = models.DateTimeField(null=True)
+#    end = models.DateTimeField(null=True)
+    
     order = models.ForeignKey(settings.BILLS_ORDER_MODEL, null=True, blank=True,
-            help_text=_("Informative link back to the order"))
+            help_text=_("Informative link back to the order"), on_delete=models.SET_NULL)
     order_billed_on = models.DateField(_("order billed"), null=True, blank=True)
     order_billed_until = models.DateField(_("order billed until"), null=True, blank=True)
     created_on = models.DateField(_("created"), auto_now_add=True)

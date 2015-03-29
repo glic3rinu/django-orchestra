@@ -4,7 +4,7 @@ from orchestra.apps.accounts.models import Account
 from orchestra.core import services
 
 
-def get_related_objects(origin, max_depth=2):
+def get_related_object(origin, max_depth=2):
     """
     Introspects origin object and return the first related service object
     

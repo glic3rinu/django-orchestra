@@ -83,7 +83,8 @@
 
 * print open invoices as proforma?
 
-* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest
+* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture¶
+
 
 
 * ForeignKey.swappable
@@ -222,13 +223,55 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * autoexpand mailbox.filter according to filtering options
 
 * allow empty metric pack for default rates? changes on rating algo
-* rates plan verbose name!"!
-* IMPORTANT make sure no order is created for mailboxes that include disk? or just don't produce lines with cost == 0
-* IMPORTANT maildis updae and metric storage ?? threshold ? or what?
+* IMPORTANT make sure no order is created for mailboxes that include disk? or just don't produce lines with cost == 0 or quantity 0 ?
 
 * Improve performance of admin change lists with debug toolbar and prefech_related
 *  and miscellaneous.service.name == 'domini-registre' 
 * DOMINI REGISTRE MIGRATION SCRIPTS
 
-* detect subdomains accounts correctly with subdomains: i.e. www.marcay.pangea.org
-* lines too long on invoice, double lines or cut
+* lines too long on invoice, double lines or cut, and make margin wider
+* PHP_TIMEOUT env variable in sync with fcgid idle timeout
+
+* payment methods icons
+* use server.name | server.address on python backends, like gitlab instead of settings?
+* saas change password feature (the only way of re.running a backend)
+
+* TODO raise404, here and everywhere
+* display subline links on billlines
+* update service orders on a celery task?
+
+* billline quantity eval('10x100') instead of miningless description '(10*100)' 
+
+* order metric increases inside billed until period
+* do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
+
+* move normurlpath to orchestra.utils from websites.utils
+
+* one time service metric change should update last value, only record for recurring invoicing.
+
+* write down insights
+
+* pluggable rate algorithms, with help_text, and change some services to match price
+
+* translation app, with generates the trans files from models
+* use english on services defs and so on, an translate them on render time
+* (miscellaneous.service.ident or '').startswith()
+
+
+
+Translation
+-----------
+
+python manage.py  makemessages -l ca --domain database
+
+mkdir locale
+django-admin.py makemessages -l ca
+django-admin.py compilemessages -l ca
+
+https://docs.djangoproject.com/en/1.7/topics/i18n/translation/#joining-strings-string-concat
+
+from django.utils.translation import ugettext
+from django.utils import translation
+translation.activate('ca')
+ugettext("Fuck you")
+

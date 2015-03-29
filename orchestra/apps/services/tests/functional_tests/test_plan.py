@@ -1,6 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
 
-from ...models import Service, Plan, ContractedPlan
+from orchestra.apps.plans.models import Plan, ContractedPlan
+
+from ...models import Service
 
 from . import BaseBillingTest
 
@@ -16,7 +18,7 @@ class PlanBillingTest(BaseBillingTest):
             is_fee=True,
             metric='',
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm='STEP_PRICE',
             on_cancel=Service.DISCOUNT,
             payment_style=Service.PREPAY,
             tax=0,

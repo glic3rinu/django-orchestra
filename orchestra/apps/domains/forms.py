@@ -30,34 +30,33 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
         return target
     
     def clean(self):
-        """ inherit related top domain account, when exists """
+        """ inherit related parent domain account, when exists """
         cleaned_data = super(BatchDomainCreationAdminForm, self).clean()
         if not cleaned_data['account']:
             account = None
             for name in [cleaned_data['name']] + self.extra_names:
                 domain = Domain(name=name)
-                top = domain.get_top()
-                if not top:
+                parent = domain.get_parent()
+                if not parent:
                     # Fake an account to make django validation happy
                     account_model = self.fields['account']._queryset.model
                     cleaned_data['account'] = account_model()
                     raise ValidationError({
                         'account': _("An account should be provided for top domain names."),
                     })
-                elif account and top.account != account:
+                elif account and parent.account != account:
                     # Fake an account to make django validation happy
                     account_model = self.fields['account']._queryset.model
                     cleaned_data['account'] = account_model()
                     raise ValidationError({
                         'account': _("Provided domain names belong to different accounts."),
                     })
-                account = top.account
+                account = parent.account
                 cleaned_data['account'] = account
         return cleaned_data
 
 
 class RecordInlineFormSet(forms.models.BaseInlineFormSet):
-    # TODO 
     def clean(self):
         """ Checks if everything is consistent """
         if any(self.errors):

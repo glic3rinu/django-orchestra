@@ -25,7 +25,7 @@ class FTPBillingTest(BaseBillingTest):
             is_fee=False,
             metric='',
             pricing_period=Service.NEVER,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm='STEP_PRICE',
             on_cancel=Service.COMPENSATE,
             payment_style=Service.PREPAY,
             tax=0,

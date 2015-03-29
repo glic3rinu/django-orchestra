@@ -131,9 +131,10 @@ function install_requirements () {
          libxslt1-dev \
          wkhtmltopdf \
          xvfb \
-         ca-certificates"
+         ca-certificates \
+         gettext"
     
-    PIP="django==1.7.1 \
+    PIP="django==1.7.7 \
          django-celery-email==1.0.4 \
          django-fluent-dashboard==0.3.5 \
          https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
@@ -158,7 +159,8 @@ function install_requirements () {
          requests \
          phonenumbers \
          django-countries \
-         django-localflavor"
+         django-localflavor \
+         pip==6.0.8"
     
     if $testing; then
         APT="${APT} \

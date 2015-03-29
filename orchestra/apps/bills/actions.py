@@ -111,3 +111,68 @@ def send_bills(modeladmin, request, queryset):
         modeladmin.log_change(request, bill, 'Sent')
 send_bills.verbose_name = lambda bill: _("Resend" if getattr(bill, 'is_sent', False) else "Send")
 send_bills.url_name = 'send'
+
+
+def undo_billing(modeladmin, request, queryset):
+    group = {}
+    for line in queryset.select_related('order'):
+        if line.order_id:
+            try:
+                group[line.order].append(line)
+            except KeyError:
+                group[line.order] = [line]
+    # TODO force incomplete info
+    for order, lines in group.iteritems():
+        # Find path from ini to end
+        for attr in ['order_id', 'order_billed_on', 'order_billed_until']:
+            if not getattr(self, attr):
+                raise ValidationError(_("Not enough information stored for undoing"))
+        sorted(lines, key=lambda l: l.created_on)
+        if 'a' != order.billed_on:
+            raise ValidationError(_("Dates don't match"))
+        prev = order.billed_on
+        for ix in xrange(0, len(lines)):
+            if lines[ix].order_b: # TODO we need to look at the periods here
+                pass
+        order.billed_until = self.order_billed_until
+        order.billed_on = self.order_billed_on
+
+# TODO son't check for account equality
+def move_lines(modeladmin, request, queryset):
+    # Validate
+    account = None
+    for line in queryset.select_related('bill'):
+        bill = line.bill
+        if bill.state != bill.OPEN:
+            messages.error(request, _("Can not move lines which are not in open state."))
+            return 
+        elif not account:
+            account = bill.account
+        elif bill.account != account:
+            messages.error(request, _("Can not move lines from different accounts"))
+            return
+    target = request.GET.get('target')
+    if not target:
+        # select target
+        return render(request, 'admin/orchestra/generic_confirmation.html', context)
+    target = Bill.objects.get(pk=int(pk))
+    if target.account != account:
+        messages.error(request, _("Target account different than lines account."))
+        return
+    if request.POST.get('post') == 'generic_confirmation':
+        for line in queryset:
+            line.bill = target
+            line.save(update_fields=['bill'])
+        # TODO bill history update
+        messages.success(request, _("Lines moved"))
+    # Final confirmation
+    return render(request, 'admin/orchestra/generic_confirmation.html', context)
+
+
+def copy_lines(modeladmin, request, queryset):
+    # same as move, but changing action behaviour
+    pass
+
+
+def delete_lines(modeladmin, request, queryset):
+    pass

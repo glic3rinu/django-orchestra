@@ -17,7 +17,7 @@ def domain_for_validation(instance, records):
     
     if not domain.pk:
         # top domain lookup for new domains
-        domain.top = domain.get_top()
+        domain.top = domain.get_parent(top=True)
     if domain.top:
         # is a subdomain
         subdomains = [sub for sub in domain.top.subdomains.all() if sub.pk != domain.pk]

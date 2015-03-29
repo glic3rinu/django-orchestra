@@ -1,0 +1,346 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-03-29 10:17+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: actions.py:35
+msgid "Download"
+msgstr "Blod"
+
+#: actions.py:45
+msgid "View"
+msgstr ""
+
+#: actions.py:53
+msgid "Selected bills should be in open state"
+msgstr ""
+
+#: actions.py:71
+msgid "Selected bills have been closed"
+msgstr ""
+
+#: actions.py:80
+#, python-format
+msgid "<a href=\"%s\">One related transaction</a> has been created"
+msgstr ""
+
+#: actions.py:81
+#, python-format
+msgid "<a href=\"%s\">%i related transactions</a> have been created"
+msgstr ""
+
+#: actions.py:87
+msgid "Are you sure about closing the following bills?"
+msgstr ""
+
+#: actions.py:88
+msgid ""
+"Once a bill is closed it can not be further modified.</p><p>Please select a "
+"payment source for the selected bills"
+msgstr ""
+
+#: actions.py:101
+msgid "Close"
+msgstr ""
+
+#: actions.py:112
+msgid "Resend"
+msgstr ""
+
+#: actions.py:129 models.py:308
+msgid "Not enough information stored for undoing"
+msgstr ""
+
+#: actions.py:132 models.py:310
+msgid "Dates don't match"
+msgstr ""
+
+#: actions.py:147
+msgid "Can not move lines which are not in open state."
+msgstr ""
+
+#: actions.py:152
+msgid "Can not move lines from different accounts"
+msgstr ""
+
+#: actions.py:160
+msgid "Target account different than lines account."
+msgstr ""
+
+#: actions.py:167
+msgid "Lines moved"
+msgstr ""
+
+#: admin.py:41 forms.py:12
+msgid "Total"
+msgstr ""
+
+#: admin.py:69
+msgid "Description"
+msgstr ""
+
+#: admin.py:77
+msgid "Subtotal"
+msgstr ""
+
+#: admin.py:104
+msgid "Manage bill lines of multiple bills."
+msgstr ""
+
+#: admin.py:109
+#, python-format
+msgid "Manage %s bill lines."
+msgstr ""
+
+#: admin.py:129
+msgid "Raw"
+msgstr ""
+
+#: admin.py:147
+msgid "lines"
+msgstr ""
+
+#: admin.py:152
+msgid "total"
+msgstr ""
+
+#: admin.py:160 models.py:85 models.py:339
+msgid "type"
+msgstr ""
+
+#: admin.py:177
+msgid "Payment"
+msgstr ""
+
+#: filters.py:17
+msgid "All"
+msgstr ""
+
+#: filters.py:18 models.py:75
+msgid "Invoice"
+msgstr ""
+
+#: filters.py:19 models.py:76
+msgid "Amendment invoice"
+msgstr ""
+
+#: filters.py:20 models.py:77
+msgid "Fee"
+msgstr ""
+
+#: filters.py:21
+msgid "Amendment fee"
+msgstr ""
+
+#: filters.py:22
+msgid "Pro-forma"
+msgstr ""
+
+#: filters.py:42
+msgid "has bill contact"
+msgstr ""
+
+#: filters.py:47
+msgid "Yes"
+msgstr ""
+
+#: filters.py:48
+msgid "No"
+msgstr ""
+
+#: forms.py:9
+msgid "Number"
+msgstr ""
+
+#: forms.py:11
+msgid "Account"
+msgstr ""
+
+#: forms.py:13
+msgid "Type"
+msgstr ""
+
+#: forms.py:15
+msgid "Source"
+msgstr ""
+
+#: helpers.py:10
+msgid ""
+"{relation} account \"{account}\" does not have a declared invoice contact. "
+"You should <a href=\"{url}#invoicecontact-group\">provide one</a>"
+msgstr ""
+
+#: helpers.py:17
+msgid "Related"
+msgstr ""
+
+#: helpers.py:24
+msgid "Main"
+msgstr ""
+
+#: models.py:20 models.py:83
+msgid "account"
+msgstr ""
+
+#: models.py:22
+msgid "name"
+msgstr ""
+
+#: models.py:23
+msgid "Account full name will be used when left blank."
+msgstr ""
+
+#: models.py:24
+msgid "address"
+msgstr ""
+
+#: models.py:25
+msgid "city"
+msgstr ""
+
+#: models.py:27
+msgid "zip code"
+msgstr ""
+
+#: models.py:28
+msgid "Enter a valid zipcode."
+msgstr ""
+
+#: models.py:29
+msgid "country"
+msgstr ""
+
+#: models.py:32
+msgid "VAT number"
+msgstr ""
+
+#: models.py:64
+msgid "Paid"
+msgstr ""
+
+#: models.py:65
+msgid "Pending"
+msgstr ""
+
+#: models.py:66
+msgid "Bad debt"
+msgstr ""
+
+#: models.py:78
+msgid "Amendment Fee"
+msgstr ""
+
+#: models.py:79
+msgid "Pro forma"
+msgstr ""
+
+#: models.py:82
+msgid "number"
+msgstr ""
+
+#: models.py:86
+msgid "created on"
+msgstr ""
+
+#: models.py:87
+msgid "closed on"
+msgstr ""
+
+#: models.py:88
+msgid "open"
+msgstr ""
+
+#: models.py:89
+msgid "sent"
+msgstr ""
+
+#: models.py:90
+msgid "due on"
+msgstr ""
+
+#: models.py:91
+msgid "updated on"
+msgstr ""
+
+#: models.py:93
+msgid "comments"
+msgstr ""
+
+#: models.py:94
+msgid "HTML"
+msgstr ""
+
+#: models.py:270
+msgid "bill"
+msgstr ""
+
+#: models.py:271 models.py:336
+msgid "description"
+msgstr ""
+
+#: models.py:272
+msgid "rate"
+msgstr ""
+
+#: models.py:273
+msgid "quantity"
+msgstr ""
+
+#: models.py:274
+msgid "subtotal"
+msgstr ""
+
+#: models.py:275
+msgid "tax"
+msgstr ""
+
+#: models.py:281
+msgid "Informative link back to the order"
+msgstr ""
+
+#: models.py:282
+msgid "order billed"
+msgstr ""
+
+#: models.py:283
+msgid "order billed until"
+msgstr ""
+
+#: models.py:284
+msgid "created"
+msgstr ""
+
+#: models.py:286
+msgid "amended line"
+msgstr ""
+
+#: models.py:329
+msgid "Volume"
+msgstr ""
+
+#: models.py:330
+msgid "Compensation"
+msgstr ""
+
+#: models.py:331
+msgid "Other"
+msgstr ""
+
+#: models.py:335
+msgid "bill line"
+msgstr ""

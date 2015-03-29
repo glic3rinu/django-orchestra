@@ -11,7 +11,6 @@ from orchestra.utils.functional import cached
 
 from . import settings
 from .directives import SiteDirective
-from .utils import normurlpath
 
 
 class Website(models.Model):
@@ -141,8 +140,8 @@ class Content(models.Model):
             return self.path
     
     def clean(self):
-        # TODO do it on the field?
-        self.path = normurlpath(self.path)
+        if not self.path:
+            self.path = '/'
     
     def get_absolute_url(self):
         domain = self.website.domains.first()

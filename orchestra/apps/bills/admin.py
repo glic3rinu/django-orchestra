@@ -1,4 +1,5 @@
 from django import forms
+from django.conf.urls import patterns, url
 from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
@@ -12,8 +13,7 @@ from orchestra.admin.utils import admin_date, insertattr
 from orchestra.apps.accounts.admin import AccountAdminMixin, AccountAdmin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
-from . import settings
-from .actions import download_bills, view_bill, close_bills, send_bills, validate_contact
+from . import settings, actions
 from .filters import BillTypeListFilter, HasBillContactListFilter
 from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillContact
 
@@ -84,6 +84,36 @@ class ClosedBillLineInline(BillLineInline):
         return False
 
 
+class BillLineManagerAdmin(admin.ModelAdmin):
+    list_display = ('description', 'rate', 'quantity', 'tax', 'subtotal')
+    actions = (actions.undo_billing, actions.move_lines, actions.copy_lines,)
+    
+    def get_queryset(self, request):
+        qset = super(BillLineManagerAdmin, self).get_queryset(request)
+        return qset.filter(bill_id__in=self.bill_ids)
+    
+    def changelist_view(self, request, extra_context=None):
+        GET = request.GET.copy()
+        bill_ids = GET.pop('bill_ids', ['0'])[0]
+        request.GET = GET
+        bill_ids = [int(id) for id in bill_ids.split(',')]
+        self.bill_ids = bill_ids
+        if not bill_ids:
+            return
+        elif len(bill_ids) > 1:
+            title = _("Manage bill lines of multiple bills.")
+        else:
+            bill_url = reverse('admin:bills_bill_change', args=(bill_ids[0],))
+            bill = Bill.objects.get(pk=bill_ids[0])
+            bill_link = '<a href="%s">%s</a>' % (bill_url, bill.ident)
+            title = mark_safe(_("Manage %s bill lines.") % bill_link)
+        context = {
+            'title': title,
+        }
+        context.update(extra_context or {})
+        return super(BillLineManagerAdmin, self).changelist_view(request, context)
+
+
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'number', 'type_link', 'account_link', 'created_on_display',
@@ -101,8 +131,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('html',),
         }),
     )
-    actions = [download_bills, close_bills, send_bills]
-    change_view_actions = [view_bill, download_bills, send_bills, close_bills]
+    change_view_actions = [
+        actions.view_bill, actions.download_bills, actions.send_bills, actions.close_bills
+    ]
+    actions = [actions.download_bills, actions.close_bills, actions.send_bills]
     change_readonly_fields = ('account_link', 'type', 'is_open')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
     inlines = [BillLineInline, ClosedBillLineInline]
@@ -143,6 +175,17 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 url=url, color=color, name=state)
     display_payment_state.allow_tags = True
     display_payment_state.short_description = _("Payment")
+    
+    def get_urls(self):
+        """ Hook bill lines management URLs on bill admin """
+        urls = super(BillAdmin, self).get_urls()
+        admin_site = self.admin_site
+        extra_urls = patterns("",
+            url("^manage-lines/$",
+                admin_site.admin_view(BillLineManagerAdmin(BillLine, admin_site).changelist_view),
+                name='bills_bill_manage_lines'),
+        )
+        return extra_urls + urls
     
     def get_readonly_fields(self, request, obj=None):
         fields = super(BillAdmin, self).get_readonly_fields(request, obj)
@@ -187,7 +230,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def change_view(self, request, object_id, **kwargs):
         # TODO raise404, here and everywhere
         bill = self.get_object(request, unquote(object_id))
-        validate_contact(request, bill, error=False)
+        actions.validate_contact(request, bill, error=False)
         return super(BillAdmin, self).change_view(request, object_id, **kwargs)
 
 

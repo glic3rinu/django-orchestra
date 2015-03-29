@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.contacts import settings as contacts_settings
 from orchestra.apps.contacts.models import Contact
+from orchestra.core.translations import ModelTranslation
 from orchestra.models.fields import MultiSelectField
 from orchestra.utils import send_email_template
 
@@ -12,6 +13,7 @@ from . import settings
 
 class Queue(models.Model):
     name = models.CharField(_("name"), max_length=128, unique=True)
+    verbose_name = models.CharField(_("verbose_name"), max_length=128, blank=True)
     default = models.BooleanField(_("default"), default=False)
     notify = MultiSelectField(_("notify"), max_length=256, blank=True,
             choices=Contact.EMAIL_USAGES,
@@ -19,7 +21,7 @@ class Queue(models.Model):
             help_text=_("Contacts to notify by email"))
     
     def __unicode__(self):
-        return self.name
+        return self.verbose_name or self.name
     
     def save(self, *args, **kwargs):
         """ mark as default queue if needed """
@@ -190,3 +192,6 @@ class TicketTracker(models.Model):
         unique_together = (
             ('ticket', 'user'),
         )
+
+
+ModelTranslation.register(Queue, ('verbose_name',))

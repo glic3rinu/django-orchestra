@@ -15,7 +15,7 @@ class PhpListSaaSBackend(ServiceController):
     default_route_match = "saas.service == 'phplist'"
     block = True
     
-    def initialize_database(self, saas, server):
+    def _save(self, saas, server):
         base_domain = settings.SAAS_PHPLIST_BASE_DOMAIN
         admin_link = 'http://%s/admin/' % saas.get_site_domain()
         admin_content = requests.get(admin_link).content
@@ -25,21 +25,21 @@ class PhpListSaaSBackend(ServiceController):
         if install:
             if not hasattr(saas, 'password'):
                 raise RuntimeError("Password is missing")
-            install = install.groups()[0]
-            install_link = admin_link + install[1:]
+            install_path = install.groups()[0]
+            install_link = admin_link + install_path[1:]
             post = {
                 'adminname': saas.name,
                 'orgname': saas.account.username,
                 'adminemail': saas.account.username,
                 'adminpassword': saas.password,
             }
-            print json.dumps(post, indent=4)
             response = requests.post(install_link, data=post)
             print response.content
             if response.status_code != 200:
                 raise RuntimeError("Bad status code %i" % response.status_code)
-        elif hasattr(saas, 'password'):
-            raise NotImplementedError
+        else:
+            raise NotImplementedError("Change password not implemented")
     
     def save(self, saas):
-        self.append(self.initialize_database, saas)
+        if hasattr(saas, 'password'):
+            self.append(self._save, saas)

@@ -4,10 +4,11 @@ from django.utils import timezone
 from freezegun import freeze_time
 
 from orchestra.apps.mailboxes.models import Mailbox
+from orchestra.apps.plans.models import Plan
 from orchestra.apps.resources.models import Resource, ResourceData
 from orchestra.utils.tests import random_ascii
 
-from ...models import Service, Plan
+from ...models import Service
 
 from . import BaseBillingTest
 
@@ -23,7 +24,7 @@ class MailboxBillingTest(BaseBillingTest):
             is_fee=False,
             metric='',
             pricing_period=Service.NEVER,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm='STEP_PRICE',
             on_cancel=Service.COMPENSATE,
             payment_style=Service.PREPAY,
             tax=0,
@@ -44,7 +45,7 @@ class MailboxBillingTest(BaseBillingTest):
             is_fee=False,
             metric='max((mailbox.resources.disk.allocated or 0) -1, 0)',
             pricing_period=Service.NEVER,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm='STEP_PRICE',
             on_cancel=Service.DISCOUNT,
             payment_style=Service.PREPAY,
             tax=0,

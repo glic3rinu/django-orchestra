@@ -1,9 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
 
 from orchestra.apps.miscellaneous.models import MiscService, Miscellaneous
+from orchestra.apps.plans.models import Plan
 from orchestra.utils.tests import random_ascii
 
-from ...models import Service, Plan
+from ...models import Service
 
 from . import BaseBillingTest
 
@@ -19,7 +20,7 @@ class DomainBillingTest(BaseBillingTest):
             is_fee=False,
             metric='',
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm='STEP_PRICE',
             on_cancel=Service.NOTHING,
             payment_style=Service.PREPAY,
             tax=0,

@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services, accounts
+from orchestra.core.translations import ModelTranslation
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
 
@@ -89,3 +90,5 @@ class Rate(models.Model):
 
 accounts.register(ContractedPlan)
 services.register(ContractedPlan, menu=False)
+
+ModelTranslation.register(Plan, ('verbose_name',))

@@ -186,11 +186,9 @@ class Route(models.Model):
     def __unicode__(self):
         return "%s@%s" % (self.backend, self.host)
     
-#    def clean(self):
-#        backend, method = self.get_backend_class(), self.get_method_class()
-#        if not backend.type in method.types:
-#            msg = _("%s backend is not compatible with %s method")
-#            raise ValidationError(msg % (self.backend, self.method)
+    @property
+    def backend_class(self):
+        return ServiceBackend.get_backend(self.backend)
     
     @classmethod
     def get_servers(cls, operation, **kwargs):
@@ -215,6 +213,22 @@ class Route(models.Model):
                 servers.append(route.host)
         return servers
     
+    def clean(self):
+        if not self.match:
+            self.match = 'True'
+        if self.backend:
+            backend_model = self.backend_class.model
+            try:
+                obj = backend_model.objects.all()[0]
+            except IndexError:
+                return
+            try:
+                bool(self.matches(obj))
+            except Exception, exception:
+                name = type(exception).__name__
+                message = exception.message
+                raise ValidationError(': '.join((name, message)))
+    
     def matches(self, instance):
         safe_locals = {
             'instance': instance,
@@ -222,15 +236,6 @@ class Route(models.Model):
             instance._meta.model_name: instance,
         }
         return eval(self.match, safe_locals)
-    
-    def backend_class(self):
-        return ServiceBackend.get_backend(self.backend)
-    
-#    def method_class(self):
-#        for method in MethodBackend.get_backends():
-#            if method.get_name() == self.method:
-#                return method
-#        raise ValueError('This method is not registered')
     
     def enable(self):
         self.is_active = True

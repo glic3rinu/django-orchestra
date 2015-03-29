@@ -55,6 +55,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
+# Path used for database translations files
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
+
 # EMAIL_HOST = 'smtp.yourhost.eu'
 # EMAIL_PORT = ''
 # EMAIL_HOST_USER = ''

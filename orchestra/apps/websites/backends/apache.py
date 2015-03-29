@@ -97,7 +97,7 @@ class Apache2Backend(ServiceController):
     def delete(self, site):
         context = self.get_context(site)
         self.append("a2dissite %(site_unique_name)s.conf && UPDATED=1" % context)
-        self.append("rm -fr %(sites_available)s" % context)
+        self.append("rm -f %(sites_available)s" % context)
     
     def commit(self):
         """ reload Apache2 if necessary """

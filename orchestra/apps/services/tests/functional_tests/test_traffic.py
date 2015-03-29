@@ -5,9 +5,10 @@ from freezegun import freeze_time
 
 from orchestra.apps.accounts.models import Account
 from orchestra.apps.miscellaneous.models import MiscService, Miscellaneous
+from orchestra.apps.plans.models import Plan
 from orchestra.apps.resources.models import Resource, ResourceData, MonitorData
 
-from ...models import Service, Plan
+from ...models import Service
 
 from . import BaseBillingTest
 
@@ -25,7 +26,7 @@ class BaseTrafficBillingTest(BaseBillingTest):
             is_fee=False,
             metric=self.TRAFFIC_METRIC,
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm='STEP_PRICE',
             on_cancel=Service.NOTHING,
             payment_style=Service.POSTPAY,
             tax=0,
@@ -107,7 +108,7 @@ class TrafficPrepayBillingTest(BaseTrafficBillingTest):
             is_fee=False,
             metric="miscellaneous.amount",
             pricing_period=Service.NEVER,
-            rate_algorithm=Service.STEP_PRICE,
+            rate_algorithm='STEP_PRICE',
             on_cancel=Service.NOTHING,
             payment_style=Service.PREPAY,
             tax=0,

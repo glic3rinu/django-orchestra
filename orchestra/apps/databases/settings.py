@@ -7,7 +7,11 @@ DATABASES_TYPE_CHOICES = getattr(settings, 'DATABASES_TYPE_CHOICES', (
 ))
 
 
-DATABASES_DEFAULT_TYPE = getattr(settings, 'DATABASES_DEFAULT_TYPE', 'mysql')
+DATABASES_DEFAULT_TYPE = getattr(settings, 'DATABASES_DEFAULT_TYPE',
+    'mysql'
+)
 
 
-DATABASES_DEFAULT_HOST = getattr(settings, 'DATABASES_DEFAULT_HOST', 'localhost')
+DATABASES_DEFAULT_HOST = getattr(settings, 'DATABASES_DEFAULT_HOST',
+    'localhost'
+)

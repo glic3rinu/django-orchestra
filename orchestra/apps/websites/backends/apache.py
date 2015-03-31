@@ -210,8 +210,8 @@ class Apache2Backend(ServiceController):
             location, target = proxy.split()
             location = normurlpath(source)
             proxy = textwrap.dedent("""\
-                ProxyPass {location} {target}
-                ProxyPassReverse {location} {target}""".format(
+                ProxyPass {location}/ {target}
+                ProxyPassReverse {location}/ {target}""".format(
                     location=location, target=target)
             )
             proxies.append((location, proxy))

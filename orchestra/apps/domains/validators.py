@@ -13,7 +13,7 @@ from . import settings
 
 def validate_allowed_domain(value):
     context = {
-        'site_root': paths.get_site_root()
+        'site_dir': paths.get_site_dir()
     }
     fname = settings.DOMAINS_FORBIDDEN
     if fname:
@@ -108,12 +108,15 @@ def validate_soa_record(value):
 def validate_zone(zone):
     """ Ultimate zone file validation using named-checkzone """
     zone_name = zone.split()[0][:-1]
-    path = os.path.join(settings.DOMAINS_CHECKZONE_PATH, zone_name)
-    with open(path, 'wb') as f:
-        f.write(zone)
-    # Don't use /dev/stdin becuase the 'argument list is too long' error
+    zone_path = os.path.join(settings.DOMAINS_ZONE_VALIDATION_TMP_DIR, zone_name)
     checkzone = settings.DOMAINS_CHECKZONE_BIN_PATH
-    check = run(' '.join([checkzone, zone_name, path]), error_codes=[0,1], display=False)
+    try:
+        with open(zone_path, 'wb') as f:
+            f.write(zone_path)
+        # Don't use /dev/stdin becuase the 'argument list is too long' error
+        check = run(' '.join([checkzone, zone_name, zone_path]), error_codes=[0,1], display=False)
+    finally:
+        os.unlink(zone_path)
     if check.return_code == 1:
         errors = re.compile(r'zone.*: (.*)').findall(check.stdout)[:-1]
         raise ValidationError(', '.join(errors))

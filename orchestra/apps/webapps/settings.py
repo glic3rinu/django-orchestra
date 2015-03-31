@@ -1,9 +1,12 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.settings import BASE_DOMAIN
+
 
 WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT',
-    '%(home)s/webapps/%(app_name)s/')
+    '%(home)s/webapps/%(app_name)s/'
+)
 
 
 WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
@@ -17,16 +20,19 @@ WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
 
 WEBAPPS_FCGID_WRAPPER_PATH = getattr(settings, 'WEBAPPS_FCGID_WRAPPER_PATH',
     # Inside SuExec Document root
-    '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper')
+    '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper'
+)
 
 
 WEBAPPS_FCGID_CMD_OPTIONS_PATH = getattr(settings, 'WEBAPPS_FCGID_CMD_OPTIONS_PATH',
     # Loaded by Apache
-    '/etc/apache2/fcgid-conf/%(user)s-%(app_name)s.conf')
+    '/etc/apache2/fcgid-conf/%(user)s-%(app_name)s.conf'
+)
 
 
 WEBAPPS_PHP_ERROR_LOG_PATH = getattr(settings, 'WEBAPPS_PHP_ERROR_LOG_PATH',
-    '')
+    ''
+)
 
 
 WEBAPPS_MERGE_PHP_WEBAPPS = getattr(settings, 'WEBAPPS_MERGE_PHP_WEBAPPS',
@@ -55,29 +61,35 @@ WEBAPPS_PHP_VERSIONS = getattr(settings, 'WEBAPPS_PHP_VERSIONS', (
 
 
 WEBAPPS_DEFAULT_PHP_VERSION = getattr(settings, 'WEBAPPS_DEFAULT_PHP_VERSION',
-    '5.4-cgi')
+    '5.4-cgi'
+)
 
 
 WEBAPPS_PHP_CGI_BINARY_PATH = getattr(settings, 'WEBAPPS_PHP_CGI_BINARY_PATH',
     # Path of the cgi binary used by fcgid
-    '/usr/bin/php%(php_version_number)s-cgi')
+    '/usr/bin/php%(php_version_number)s-cgi'
+)
 
 
 WEBAPPS_PHP_CGI_RC_DIR = getattr(settings, 'WEBAPPS_PHP_CGI_RC_DIR',
     # Path to php.ini
-    '/etc/php%(php_version_number)s/cgi/')
+    '/etc/php%(php_version_number)s/cgi/'
+)
 
 
 WEBAPPS_PHP_CGI_INI_SCAN_DIR = getattr(settings, 'WEBAPPS_PHP_CGI_INI_SCAN_DIR',
     # Path to php.ini
-    '/etc/php%(php_version_number)s/cgi/conf.d')
+    '/etc/php%(php_version_number)s/cgi/conf.d'
+)
 
 
 
 WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_PATH',
     # Server-side path where a under construction stock page is
     # '/var/www/undercontruction/index.html',
-    '')
+    ''
+)
+
 
 #WEBAPPS_TYPES_OVERRIDE = getattr(settings, 'WEBAPPS_TYPES_OVERRIDE', {})
 #for webapp_type, value in WEBAPPS_TYPES_OVERRIDE.iteritems():
@@ -151,4 +163,5 @@ WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
 
 
 WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = getattr(settings, 'WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST',
-    'mysql.orchestra.lan')
+    'mysql.{}'.format(BASE_DOMAIN)
+)

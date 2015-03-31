@@ -95,9 +95,9 @@ class GitLabSaaSBackend(ServiceController):
         users = json.loads(requests.get(users_url, headers=self.headers).content)
         for user in users:
             if user['username'] == username:
-                print 'user-exists'
+                print 'ValidationError: user-exists'
             if user['email'] == email:
-                print 'email-exists'
+                print 'ValidationError: email-exists'
     
     def validate_creation(self, saas):
         self.append(self._validate_creation, saas)

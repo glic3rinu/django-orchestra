@@ -27,7 +27,7 @@ class Plugin(object):
         return cls.plugins
     
     @classmethod
-    def get_plugin(cls, name):
+    def get(cls, name):
         if not hasattr(cls, '_registry'):
             cls._registry = {
                 plugin.get_name(): plugin for plugin in cls.get_plugins()
@@ -44,7 +44,7 @@ class Plugin(object):
             return cls.get_name()
     
     @classmethod
-    def get_plugin_choices(cls):
+    def get_choices(cls):
         choices = []
         for plugin in cls.get_plugins():
             verbose = plugin.get_verbose_name()
@@ -102,7 +102,7 @@ class PluginModelAdapter(Plugin):
         return plugins
     
     @classmethod
-    def get_plugin(cls, name):
+    def get(cls, name):
         # don't cache, since models can change
         for plugin in cls.get_plugins():
             if name == plugin.get_name():

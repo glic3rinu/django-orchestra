@@ -84,8 +84,15 @@ class Rate(models.Model):
         return "{}-{}".format(str(self.price), self.quantity)
     
     @classmethod
-    def get_methods(self):
-        return self.RATE_METHODS
+    def get_methods(cls):
+        return cls.RATE_METHODS
+    
+    @classmethod
+    def get_choices(cls):
+        choices = []
+        for name, method in cls.RATE_METHODS.iteritems():
+            choices.append((name, method.verbose_name))
+        return choices
 
 
 accounts.register(ContractedPlan)

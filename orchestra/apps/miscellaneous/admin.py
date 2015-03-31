@@ -72,7 +72,7 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
     
     def get_service(self, obj):
         if obj is None:
-            return self.plugin.get_plugin(self.plugin_value).related_instance
+            return self.plugin.get(self.plugin_value).related_instance
         else:
             return obj.service
     

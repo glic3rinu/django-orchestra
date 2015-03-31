@@ -3,7 +3,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.validators import ValidationError, RegexValidator
 from django.db import models
 from django.template import loader, Context
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -191,7 +191,7 @@ class Bill(models.Model):
         self.is_sent = True
         self.save(update_fields=['is_sent'])
     
-    def render(self, payment=False):
+    def render(self, payment=False, language=None):
         if payment is False:
             payment = self.account.paymentsources.get_default()
         context = Context({
@@ -213,7 +213,8 @@ class Bill(models.Model):
         template_name = 'BILLS_%s_TEMPLATE' % self.get_type()
         template = getattr(settings, template_name, settings.BILLS_DEFAULT_TEMPLATE)
         bill_template = loader.get_template(template)
-        html = bill_template.render(context)
+        with translation.override(language or self.account.language):
+            html = bill_template.render(context)
         html = html.replace('-pageskip-', '<pdf:nextpage />')
         return html
     

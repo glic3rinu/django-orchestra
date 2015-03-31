@@ -1,0 +1,52 @@
+{% extends "orchestra/admin/change_form.html" %}
+{% load i18n admin_urls admin_static admin_modify %}
+
+
+{% block object-tools %}
+{% if add %}
+<ul class="object-tools">
+<li><select name="forma" onchange="location = this.options[this.selectedIndex].value;" style="margin: -3px 0 0 0;">
+     <option selected disabled>{% trans "Templates" %}</option>
+     <option value="./?description=Mailbox&
+                        content_type=10&
+                        match=mailbox.active&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=ANUAL&
+                        billing_point=ON_FIXED_DATE&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=TEN_DAYS&
+                        metric=&
+                        nominal_price=28.10&
+                        tax=21&
+                        pricing_period=BILLING_PERIOD&
+                        rate_algorithm=MATCH_PRICE&
+                        on_cancel=COMPENSATE&
+                        payment_style=PREPAY">Mailbox</option>
+    <option value="./?description=Database&
+                        content_type=19&
+                        match=database.account.is_active&handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=ANUAL&
+                        billing_point=ON_FIXED_DATE&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=TEN_DAYS&
+                        metric=&
+                        nominal_price=24.79&
+                        tax=21&
+                        pricing_period=BILLING_PERIOD&
+                        rate_algorithm=STEP_PRICE&
+                        on_cancel=COMPENSATE&
+                        payment_style=PREPAY">Database</option>
+</select></li>
+    <li>
+        <a href="./help" class="historylink">{% trans "Help" %}</a>
+    </li>
+</ul>
+{% endif %}
+{{ block.super }}
+{% endblock %}

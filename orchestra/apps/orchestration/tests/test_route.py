@@ -24,7 +24,7 @@ class RouterTests(BaseTestCase):
             def save(self, instance):
                 pass
         
-        choices = backends.ServiceBackend.get_plugin_choices()
+        choices = backends.ServiceBackend.get_choices()
         Route._meta.get_field_by_name('backend')[0]._choices = choices
         backend = TestBackend.get_name()
         

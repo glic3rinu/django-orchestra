@@ -3,7 +3,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from orchestra.utils.paths import get_project_root
+from orchestra.utils.paths import get_project_dir
 from orchestra.utils.system import run, check_root
 
 
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         
         run('su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD \'%(db_password)s\';\\""' % context, error_codes=[0,1])
         run('su postgres -c "psql -c \\"CREATE DATABASE %(db_name)s OWNER %(db_user)s;\\""' % context, error_codes=[0,1])
-        context.update({'settings': os.path.join(get_project_root(), 'settings.py')})
+        context.update({'settings': os.path.join(get_project_dir(), 'settings.py')})
         
         if run("grep 'DATABASES' %(settings)s" % context, error_codes=[0,1]).return_code == 0:
             # Update existing settings_file

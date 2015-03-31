@@ -119,7 +119,7 @@ class ServiceBackend(plugins.Plugin):
     
     @classmethod
     def get_backend(cls, name):
-        return cls.get_plugin(name)
+        return cls.get(name)
     
     @classmethod
     def model_class(cls):

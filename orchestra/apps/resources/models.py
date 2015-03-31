@@ -11,11 +11,12 @@ from djcelery.models import PeriodicTask, CrontabSchedule
 from orchestra.core import validators
 from orchestra.models import queryset, fields
 from orchestra.models.utils import get_model_field_path
-from orchestra.utils.paths import get_project_root
+from orchestra.utils.paths import get_project_dir
 from orchestra.utils.system import run
 
-from . import helpers, tasks
+from . import tasks
 from .backends import ServiceMonitor
+from .methods import DataMethod
 from .validators import validate_scale
 
 
@@ -34,8 +35,8 @@ class Resource(models.Model):
     MONTHLY_AVG = 'MONTHLY_AVG'
     PERIODS = (
         (LAST, _("Last")),
-        (MONTHLY_SUM, _("Monthly Sum")),
-        (MONTHLY_AVG, _("Monthly Average")),
+        (MONTHLY_SUM, _("Monthly sum")),
+        (MONTHLY_AVG, _("Monthly avg")),
     )
     _related = set() # keeps track of related models for resource cleanup
     
@@ -46,9 +47,10 @@ class Resource(models.Model):
     verbose_name = models.CharField(_("verbose name"), max_length=256)
     content_type = models.ForeignKey(ContentType,
             help_text=_("Model where this resource will be hooked."))
-    period = models.CharField(_("period"), max_length=16, choices=PERIODS,
-            default=LAST,
-            help_text=_("Operation used for aggregating this resource monitored data."))
+    # TODO rename to aggregation
+    period = models.CharField(_("aggregation"), max_length=16,
+            choices=DataMethod.get_choices(), default=DataMethod.get_choices()[0][0],
+            help_text=_("Method used for aggregating this resource monitored data."))
     on_demand = models.BooleanField(_("on demand"), default=False,
             help_text=_("If enabled the resource will not be pre-allocated, "
                         "but allocated under the application demand"))
@@ -69,7 +71,7 @@ class Resource(models.Model):
             help_text=_("Crontab for periodic execution. "
                         "Leave it empty to disable periodic monitoring"))
     monitors = fields.MultiSelectField(_("monitors"), max_length=256, blank=True,
-            choices=ServiceMonitor.get_plugin_choices(),
+            choices=ServiceMonitor.get_choices(),
             help_text=_("Monitor backends used for monitoring this resource."))
     is_active = models.BooleanField(_("active"), default=True)
     
@@ -83,6 +85,15 @@ class Resource(models.Model):
     
     def __unicode__(self):
         return "{}-{}".format(str(self.content_type), self.name)
+    
+    @cached_property
+    def method_class(self):
+        return DataMethod.get(self.period)
+    
+    @cached_property
+    def method_instance(self):
+        """ Per request lived type_instance """
+        return self.method_class(self)
     
     def clean(self):
         self.verbose_name = self.verbose_name.strip()
@@ -114,7 +125,7 @@ class Resource(models.Model):
         self.sync_periodic_task()
         # This only work on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
-        run('sleep 2 && touch %s/wsgi.py' % get_project_root(), async=True)
+        run('sleep 2 && touch %s/wsgi.py' % get_project_dir(), async=True)
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
@@ -201,7 +212,16 @@ class ResourceData(models.Model):
         return self.resource.unit
     
     def get_used(self):
-        return helpers.compute_resource_usage(self)
+        resource = data.resource
+        total = 0
+        has_result = False
+        today = datetime.date.today()
+        for dataset in data.get_monitor_datasets():
+            usage = data.method_instance.compute_usage(dataset)
+            if usage is not None:
+                has_result = True
+                total += usage
+        return float(total)/resource.get_scale() if has_result else None
     
     def update(self, current=None):
         if current is None:
@@ -218,10 +238,9 @@ class ResourceData(models.Model):
     
     def get_monitor_datasets(self):
         resource = self.resource
-        today = timezone.now()
         datasets = []
         for monitor in resource.monitors:
-            path = self.resource.get_model_path(monitor)
+            path = resource.get_model_path(monitor)
             if path == []:
                 dataset = MonitorData.objects.filter(
                     monitor=monitor,
@@ -239,30 +258,16 @@ class ResourceData(models.Model):
                     content_type=ct,
                     object_id__in=pks
                 )
-            if resource.period in (resource.MONTHLY_AVG, resource.MONTHLY_SUM):
-                datasets.append(
-                    dataset.filter(
-                        created_at__year=today.year,
-                        created_at__month=today.month
-                    )
-                )
-            elif resource.period == resource.LAST:
-                # Get last monitoring data per object_id
-                try:
-                    datasets.append(
-                        dataset.order_by('object_id', '-id').distinct('object_id')
-                    )
-                except MonitorData.DoesNotExist:
-                    continue
-            else:
-                raise NotImplementedError("%s support not implemented" % self.period)
+            datasets.append(
+                resource.method_instance.filter(dataset)
+            )
         return datasets
 
 
 class MonitorData(models.Model):
     """ Stores monitored data """
     monitor = models.CharField(_("monitor"), max_length=256,
-            choices=ServiceMonitor.get_plugin_choices())
+            choices=ServiceMonitor.get_choices())
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
     object_id = models.PositiveIntegerField(_("object id"))
     created_at = models.DateTimeField(_("created"), default=timezone.now)

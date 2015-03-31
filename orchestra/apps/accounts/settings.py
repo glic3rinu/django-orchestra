@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.settings import BASE_DOMAIN
+
 
 ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
     ('INDIVIDUAL', _("Individual")),
@@ -11,7 +13,10 @@ ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
     ('STAFF', _("Staff")),
 ))
 
-ACCOUNTS_DEFAULT_TYPE = getattr(settings, 'ACCOUNTS_DEFAULT_TYPE', 'INDIVIDUAL')
+
+ACCOUNTS_DEFAULT_TYPE = getattr(settings, 'ACCOUNTS_DEFAULT_TYPE',
+    'INDIVIDUAL'
+)
 
 
 ACCOUNTS_LANGUAGES = getattr(settings, 'ACCOUNTS_LANGUAGES', (
@@ -20,13 +25,18 @@ ACCOUNTS_LANGUAGES = getattr(settings, 'ACCOUNTS_LANGUAGES', (
 
 
 ACCOUNTS_SYSTEMUSER_MODEL = getattr(settings, 'ACCOUNTS_SYSTEMUSER_MODEL',
-    'systemusers.SystemUser')
+    'systemusers.SystemUser'
+)
 
 
-ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE', 'EN')
+ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE',
+    'EN'
+)
 
 
-ACCOUNTS_MAIN_PK = getattr(settings, 'ACCOUNTS_MAIN_PK', 1)
+ACCOUNTS_MAIN_PK = getattr(settings, 'ACCOUNTS_MAIN_PK',
+    1
+)
 
 
 ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
@@ -42,12 +52,13 @@ ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
     ('domains.Domain',
         'name',
         {
-            'name': '"%s.orchestra.lan" % account.username.replace("_", "-")',
+            'name': '"%s.{}" % account.username.replace("_", "-")'.format(BASE_DOMAIN),
         },
-        _("Designates whether to creates a related subdomain &lt;username&gt;.orchestra.lan or not."),
+        _("Designates whether to creates a related subdomain &lt;username&gt;.{} or not.".format(BASE_DOMAIN)),
     ),
 ))
 
 
 ACCOUNTS_SERVICE_REPORT_TEMPLATE = getattr(settings, 'ACCOUNTS_SERVICE_REPORT_TEMPLATE',
-    'admin/accounts/account/service_report.html')
+    'admin/accounts/account/service_report.html'
+)

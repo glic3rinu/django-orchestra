@@ -20,7 +20,7 @@
 
 * backend logs with hal logo
 
-* LAST version of this shit http://wkhtmltopdf.org/downloads.html
+* LAST version of this shit http://wkhtmltopdf.org/downloads.h otml
 
 * translations
     from django.utils import translation
@@ -137,17 +137,15 @@
 
 * Resource graph for each related object
 
-* Service.account change and orders consistency
-
 * SaaS model splitted into SaaSUser and SaaSSite? inherit from SaaS
 
 * prevent @pangea.org email addresses on contacts, enforce at least one email without @pangea.org
 
 * forms autocomplete="off", doesn't work in chrome
 
-
 ln -s /proc/self/fd /dev/fd
 
+* escape passwords and not allow ' on them !
 
 
 POST INSTALL
@@ -160,14 +158,11 @@ ssh-copy-id root@<server-address>
 Php binaries should have this format: /usr/bin/php5.2-cgi
 
 
-
 * logs on panel/logs/ ? mkdir ~webapps, backend post save signal? 
 * transaction fault tolerant on backend.execute()
 * <IfModule security2_module> and other IfModule on backend SecRule
 
-
 * Orchestra global search box on the page head, based https://github.com/django/django/blob/master/django/contrib/admin/options.py#L866 and iterating over all registered services and inspectin its admin.search_fields
-
 
 * contain error on plugin missing key (plugin dissabled): NOP, fail hard is better than silently, perhaps fail at starttime? apploading machinary
 
@@ -223,7 +218,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * autoexpand mailbox.filter according to filtering options
 
 * allow empty metric pack for default rates? changes on rating algo
-* IMPORTANT make sure no order is created for mailboxes that include disk? or just don't produce lines with cost == 0 or quantity 0 ?
+* IMPORTANT make sure no order is created for mailboxes that include disk? or just don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
 
 * Improve performance of admin change lists with debug toolbar and prefech_related
 *  and miscellaneous.service.name == 'domini-registre' 
@@ -231,38 +226,43 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * lines too long on invoice, double lines or cut, and make margin wider
 * PHP_TIMEOUT env variable in sync with fcgid idle timeout
+    http://foaa.de/old-blog/2010/11/php-apache-and-fastcgi-a-comprehensive-overview/trackback/index.html#pni-top0
 
 * payment methods icons
 * use server.name | server.address on python backends, like gitlab instead of settings?
 * saas change password feature (the only way of re.running a backend)
 
 * TODO raise404, here and everywhere
-* display subline links on billlines
-* update service orders on a celery task?
+* display subline links on billlines, to show that they exists.
+* update service orders on a celery task? because it take alot
 
+* 
 * billline quantity eval('10x100') instead of miningless description '(10*100)' 
 
-* order metric increases inside billed until period
-* do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
+* IMPORTANT do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
+    * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
+    * add ini, end dates on bill lines and breakup quanity into size(defaut:1) and metric
+    * threshold for significative metric accountancy on services.handler
 
 * move normurlpath to orchestra.utils from websites.utils
 
-* one time service metric change should update last value, only record for recurring invoicing.
-
 * write down insights
 
-* pluggable rate algorithms, with help_text, and change some services to match price
-
-* translation app, with generates the trans files from models
 * use english on services defs and so on, an translate them on render time
-* (miscellaneous.service.ident or '').startswith()
 
+* websites directives get_location() and use it on last change view validation stage to compare with contents.location and also on the backend ?
+
+* modeladmin Default filter + search isn't working, prepend filter when searching
+
+*  IMPORTANT do all modles.py TODOs and create migrations for finished apps
+
+* create service templates based on urlqwargs with the most basic services.
+
+* Base price: domini propi (all domains) + extra for other domains
 
 
 Translation
 -----------
-
-python manage.py  makemessages -l ca --domain database
 
 mkdir locale
 django-admin.py makemessages -l ca
@@ -273,5 +273,20 @@ https://docs.djangoproject.com/en/1.7/topics/i18n/translation/#joining-strings-s
 from django.utils.translation import ugettext
 from django.utils import translation
 translation.activate('ca')
-ugettext("Fuck you")
+ugettext("Description")
 
+
+Object = disk*15
+bscw quota
+root@web:/home/pangea/bscw/bin ./bsadmin quota report
+                                 Disk                         Objects
+User                     usage   soft   hard time       usage   soft   hard time
+xxx2          --           0    20M    22M                9    200    300     
+xxxxxxxxxxxxx --           0    20M    22M                8    200    300     
+xxxxx         --           0    20M    22M                7    200    300     
+xxxxx         --           0    20M    22M                7    200    300     
+
+
+* saas validate_creation generic approach, for all backends. standard output
+
+* html code x: &times;

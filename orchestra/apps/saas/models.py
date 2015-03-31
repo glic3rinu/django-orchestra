@@ -14,7 +14,7 @@ from .services import SoftwareService
 
 class SaaS(models.Model):
     service = models.CharField(_("service"), max_length=32,
-            choices=SoftwareService.get_plugin_choices())
+            choices=SoftwareService.get_choices())
     name = models.CharField(_("Name"), max_length=64,
             help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
             validators=[validators.validate_username])
@@ -41,7 +41,7 @@ class SaaS(models.Model):
     
     @cached_property
     def service_class(self):
-        return SoftwareService.get_plugin(self.service)
+        return SoftwareService.get(self.service)
     
     @cached_property
     def service_instance(self):

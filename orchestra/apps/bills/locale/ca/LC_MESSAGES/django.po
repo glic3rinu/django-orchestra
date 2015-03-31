@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-29 10:17+0000\n"
+"POT-Creation-Date: 2015-03-29 20:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,11 +20,11 @@ msgstr ""
 
 #: actions.py:35
 msgid "Download"
-msgstr "Blod"
+msgstr "Descarrega"
 
 #: actions.py:45
 msgid "View"
-msgstr ""
+msgstr "Vista"
 
 #: actions.py:53
 msgid "Selected bills should be in open state"
@@ -62,11 +62,11 @@ msgstr ""
 msgid "Resend"
 msgstr ""
 
-#: actions.py:129 models.py:308
+#: actions.py:129 models.py:309
 msgid "Not enough information stored for undoing"
 msgstr ""
 
-#: actions.py:132 models.py:310
+#: actions.py:132 models.py:311
 msgid "Dates don't match"
 msgstr ""
 
@@ -92,7 +92,7 @@ msgstr ""
 
 #: admin.py:69
 msgid "Description"
-msgstr ""
+msgstr "Descripció"
 
 #: admin.py:77
 msgid "Subtotal"
@@ -115,37 +115,37 @@ msgstr ""
 msgid "lines"
 msgstr ""
 
-#: admin.py:152
+#: admin.py:152 templates/bills/microspective.html:107
 msgid "total"
 msgstr ""
 
-#: admin.py:160 models.py:85 models.py:339
+#: admin.py:160 models.py:85 models.py:340
 msgid "type"
-msgstr ""
+msgstr "tipus"
 
 #: admin.py:177
 msgid "Payment"
-msgstr ""
+msgstr "Pagament"
 
 #: filters.py:17
 msgid "All"
-msgstr ""
+msgstr "Tot"
 
 #: filters.py:18 models.py:75
 msgid "Invoice"
-msgstr ""
+msgstr "Factura"
 
 #: filters.py:19 models.py:76
 msgid "Amendment invoice"
-msgstr ""
+msgstr "Factura rectificativa"
 
 #: filters.py:20 models.py:77
 msgid "Fee"
-msgstr ""
+msgstr "Quota de soci"
 
 #: filters.py:21
 msgid "Amendment fee"
-msgstr ""
+msgstr "Rectificació de quota de soci"
 
 #: filters.py:22
 msgid "Pro-forma"
@@ -157,11 +157,11 @@ msgstr ""
 
 #: filters.py:47
 msgid "Yes"
-msgstr ""
+msgstr "Si"
 
 #: filters.py:48
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: forms.py:9
 msgid "Number"
@@ -227,7 +227,7 @@ msgstr ""
 
 #: models.py:32
 msgid "VAT number"
-msgstr ""
+msgstr "NIF"
 
 #: models.py:64
 msgid "Paid"
@@ -285,62 +285,113 @@ msgstr ""
 msgid "HTML"
 msgstr ""
 
-#: models.py:270
+#: models.py:271
 msgid "bill"
 msgstr ""
 
-#: models.py:271 models.py:336
+#: models.py:272 models.py:337 templates/bills/microspective.html:73
 msgid "description"
-msgstr ""
-
-#: models.py:272
-msgid "rate"
-msgstr ""
+msgstr "descripció"
 
 #: models.py:273
-msgid "quantity"
-msgstr ""
+msgid "rate"
+msgstr "tarifa"
 
 #: models.py:274
+msgid "quantity"
+msgstr "quantitat"
+
+#: models.py:275 templates/bills/microspective.html:76
 msgid "subtotal"
 msgstr ""
 
-#: models.py:275
+#: models.py:276
 msgid "tax"
-msgstr ""
+msgstr "impostos"
 
-#: models.py:281
+#: models.py:282
 msgid "Informative link back to the order"
 msgstr ""
 
-#: models.py:282
+#: models.py:283
 msgid "order billed"
 msgstr ""
 
-#: models.py:283
+#: models.py:284
 msgid "order billed until"
 msgstr ""
 
-#: models.py:284
+#: models.py:285
 msgid "created"
 msgstr ""
 
-#: models.py:286
+#: models.py:287
 msgid "amended line"
 msgstr ""
 
-#: models.py:329
+#: models.py:330
 msgid "Volume"
 msgstr ""
 
-#: models.py:330
+#: models.py:331
 msgid "Compensation"
 msgstr ""
 
-#: models.py:331
+#: models.py:332
 msgid "Other"
 msgstr ""
 
-#: models.py:335
+#: models.py:336
 msgid "bill line"
+msgstr ""
+
+#: templates/bills/microspective.html:74
+msgid "hrs/qty"
+msgstr "hrs/quant"
+
+#: templates/bills/microspective.html:75
+msgid "rate/price"
+msgstr "tarifa/preu"
+
+#: templates/bills/microspective.html:100
+#: templates/bills/microspective.html:103
+msgid "VAT"
+msgstr "IVA"
+
+#: templates/bills/microspective.html:103
+msgid "taxes"
+msgstr ""
+
+#: templates/bills/microspective.html:119
+msgid "COMMENTS"
+msgstr "COMENTARIS"
+
+#: templates/bills/microspective.html:125
+msgid "PAYMENT"
+msgstr "PAGAMENT"
+
+#: templates/bills/microspective.html:129
+#, python-format
+msgid ""
+"\n"
+"                    You can pay our %(type)s by bank transfer. <br>\n"
+"                    Please make sure to state your name and the "
+"%(bill.get_type_display.lower)s number.\n"
+"                    Our bank account number is <br>\n"
+"                    "
+msgstr ""
+
+#: templates/bills/microspective.html:138
+msgid "QUESTIONS"
+msgstr "PREGUNTES"
+
+#: templates/bills/microspective.html:139
+#, python-format
+msgid ""
+"\n"
+"            If you have any question about your %(type)s, please\n"
+"            feel free to contact us at your convinience. We will reply as "
+"soon as we get\n"
+"            your message.\n"
+"            "
 msgstr ""

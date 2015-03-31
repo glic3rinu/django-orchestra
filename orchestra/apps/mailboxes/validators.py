@@ -55,7 +55,7 @@ def validate_sieve(value):
     with open(path, 'wb') as f:
         f.write(value)
     context = {
-        'orchestra_root': paths.get_orchestra_root()
+        'orchestra_root': paths.get_orchestra_dir()
     }
     sievetest = settings.MAILBOXES_SIEVETEST_BIN_PATH % context
     try:

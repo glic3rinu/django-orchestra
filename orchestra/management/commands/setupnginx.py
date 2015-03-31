@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.six.moves import input
 
-from orchestra.utils.paths import get_project_root, get_site_root, get_project_name
+from orchestra.utils.paths import get_project_dir, get_site_dir, get_project_name
 from orchestra.utils.system import run, check_root, get_default_celeryd_username
 
 
@@ -34,8 +34,8 @@ class Command(BaseCommand):
         
         context = {
             'project_name': get_project_name(),
-            'project_root': get_project_root(),
-            'site_root': get_site_root(),
+            'project_dir': get_project_dir(),
+            'site_dir': get_site_dir(),
             'static_root': settings.STATIC_ROOT,
             'user': options.get('user'),
             'group': options.get('group') or options.get('user'),
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         uwsgi_conf = (
             '[uwsgi]\n'
             'plugins      = python\n'
-            'chdir        = %(site_root)s\n'
+            'chdir        = %(site_dir)s\n'
             'module       = %(project_name)s.wsgi\n'
             'master       = true\n'
             'processes    = %(processes)d\n'

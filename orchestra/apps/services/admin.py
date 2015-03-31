@@ -37,6 +37,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     )
     actions = [update_orders, clone]
     change_view_actions = actions + [view_help]
+    change_form_template = 'admin/services/service/change_form.html'
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Improve performance of account field and filter by account """

@@ -4,7 +4,7 @@ from os import path
 
 from django.core.management.base import BaseCommand
 
-from orchestra.utils.paths import get_site_root, get_orchestra_root
+from orchestra.utils.paths import get_site_dir, get_orchestra_dir
 from orchestra.utils.system import run, check_root
 
 
@@ -28,9 +28,9 @@ class Command(BaseCommand):
     @check_root
     def handle(self, *args, **options):
         context = {
-            'site_root': get_site_root(),
+            'site_dir': get_site_dir(),
             'username': options.get('username'),
-            'bin_path': path.join(get_orchestra_root(), 'bin'),
+            'bin_path': path.join(get_orchestra_dir(), 'bin'),
             'processes': options.get('processes'),
         }
         
@@ -39,7 +39,7 @@ class Command(BaseCommand):
             CELERYD_NODES="w1"
             
             # Where to chdir at start.
-            CELERYD_CHDIR="%(site_root)s"
+            CELERYD_CHDIR="%(site_dir)s"
             
             # How to call "manage.py celeryd_multi"
             CELERYD_MULTI="$CELERYD_CHDIR/manage.py celeryd_multi"

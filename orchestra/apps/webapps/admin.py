@@ -36,7 +36,7 @@ class WebAppOptionInline(admin.TabularInline):
                 plugin = self.parent_object.type_class
             else:
                 request = kwargs['request']
-                plugin = AppType.get_plugin(request.GET['type'])
+                plugin = AppType.get(request.GET['type'])
             kwargs['choices'] = plugin.get_options_choices()
             # Help text based on select widget
             target = 'this.id.replace("name", "value")'

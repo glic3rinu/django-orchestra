@@ -3,7 +3,8 @@ from django.utils.translation import ugettext_lazy as _
 
 
 WEBSITES_UNIQUE_NAME_FORMAT = getattr(settings, 'WEBSITES_UNIQUE_NAME_FORMAT',
-    '%(user)s-%(site_name)s')
+    '%(user)s-%(site_name)s'
+)
 
 
 # TODO 'http', 'https', 'https-only', 'http and https' and rename to PROTOCOL
@@ -20,15 +21,19 @@ WEBSITES_PROTOCOL_CHOICES = getattr(settings, 'WEBSITES_PROTOCOL_CHOICES', (
     ('https-only', _("HTTPS only")),
 ))
 
-WEBSITES_DEFAULT_PROTOCOL = getattr(settings, 'WEBSITES_DEFAULT_PROTOCOL', 'http')
-
-#WEBSITES_DEFAULT_PORT = getattr(settings, 'WEBSITES_DEFAULT_PORT', 80)
-
-
-WEBSITES_DEFAULT_IP = getattr(settings, 'WEBSITES_DEFAULT_IP', '*')
+WEBSITES_DEFAULT_PROTOCOL = getattr(settings, 'WEBSITES_DEFAULT_PROTOCOL',
+    'http'
+)
 
 
-WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL', 'domains.Domain')
+WEBSITES_DEFAULT_IP = getattr(settings, 'WEBSITES_DEFAULT_IP',
+    '*'
+)
+
+
+WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL',
+    'domains.Domain'
+)
 
 
 WEBSITES_ENABLED_DIRECTIVES = getattr(settings, 'WEBSITES_ENABLED_DIRECTIVES', (
@@ -47,23 +52,28 @@ WEBSITES_ENABLED_DIRECTIVES = getattr(settings, 'WEBSITES_ENABLED_DIRECTIVES', (
 
 
 WEBSITES_BASE_APACHE_CONF = getattr(settings, 'WEBSITES_BASE_APACHE_CONF',
-    '/etc/apache2/')
+    '/etc/apache2/'
+)
 
 
 WEBSITES_WEBALIZER_PATH = getattr(settings, 'WEBSITES_WEBALIZER_PATH',
-    '/home/httpd/webalizer/')
+    '/home/httpd/webalizer/'
+)
 
 
 WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH',
-    '/var/log/apache2/virtual/%(unique_name)s.log')
+    '/var/log/apache2/virtual/%(unique_name)s.log'
+)
 
 
 WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH = getattr(settings, 'WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH',
-    '')
+    ''
+)
 
 
 WEBSITES_TRAFFIC_IGNORE_HOSTS = getattr(settings, 'WEBSITES_TRAFFIC_IGNORE_HOSTS',
-    ('127.0.0.1',))
+    ('127.0.0.1',)
+)
 
 
 #WEBSITES_DEFAULT_SSl_CA = getattr(settings, 'WEBSITES_DEFAULT_SSl_CA',

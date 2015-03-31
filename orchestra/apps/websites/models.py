@@ -104,7 +104,7 @@ class WebsiteDirective(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
             related_name='directives')
     name = models.CharField(_("name"), max_length=128,
-            choices=SiteDirective.get_plugin_choices())
+            choices=SiteDirective.get_choices())
     value = models.CharField(_("value"), max_length=256)
     
     def __unicode__(self):
@@ -112,7 +112,7 @@ class WebsiteDirective(models.Model):
     
     @cached_property
     def directive_class(self):
-        return SiteDirective.get_plugin(self.name)
+        return SiteDirective.get(self.name)
     
     @cached_property
     def directive_instance(self):

@@ -17,7 +17,7 @@ class SelectPluginAdminMixin(object):
             plugin = getattr(obj, '%s_instance' % self.plugin_field)
             self.form = getattr(plugin, 'get_change_form', plugin.get_form)()
         else:
-            plugin = self.plugin.get_plugin(self.plugin_value)()
+            plugin = self.plugin.get(self.plugin_value)()
             self.form = plugin.get_form()
         return super(SelectPluginAdminMixin, self).get_form(request, obj, **kwargs)
     
@@ -67,7 +67,7 @@ class SelectPluginAdminMixin(object):
                 self.plugin_value = plugin_value
                 if not plugin_value:
                     self.plugin_value = self.plugin.get_plugins()[0].get_name()
-                plugin = self.plugin.get_plugin(self.plugin_value)
+                plugin = self.plugin.get(self.plugin_value)
                 context = {
                     'title': _("Add new %s") % plugin.verbose_name,
                 }

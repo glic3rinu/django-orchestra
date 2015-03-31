@@ -12,7 +12,7 @@ class PaymentSourceSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
         fields = ('url', 'method', 'data', 'is_active')
     
     def validate_data(self, attrs, source):
-        plugin = PaymentMethod.get_plugin(attrs['method'])
+        plugin = PaymentMethod.get(attrs['method'])
         serializer_class = plugin().get_serializer()
         serializer = serializer_class(data=attrs[source])
         if not serializer.is_valid():
@@ -23,7 +23,7 @@ class PaymentSourceSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
         if not obj:
             return {}
         if obj.method:
-            plugin = PaymentMethod.get_plugin(obj.method)
+            plugin = PaymentMethod.get(obj.method)
             serializer_class = plugin().get_serializer()
             return serializer_class().to_native(obj.data)
         return obj.data

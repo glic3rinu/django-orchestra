@@ -237,6 +237,7 @@ class Order(models.Model):
 
 
 class MetricStorage(models.Model):
+    """ Stores metric state for future billing """
     order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     created_on = models.DateField(_("created"), auto_now_add=True)
@@ -253,16 +254,16 @@ class MetricStorage(models.Model):
     def store(cls, order, value):
         now = timezone.now()
         try:
-            metric = cls.objects.filter(order=order).latest()
+            last = cls.objects.filter(order=order).latest()
         except cls.DoesNotExist:
             cls.objects.create(order=order, value=value, updated_on=now)
         else:
-            threshold = decimal.Decimal(settings.ORDERS_METRIC_THRESHOLD)
-            if metric.value*(1+threshold) > value or metric.value*threshold < value:
+            error = decimal.Decimal(settings.ORDERS_METRIC_ERROR)
+            if last.value*(1+error) > value or last.value*error < value:
                 cls.objects.create(order=order, value=value, updated_on=now)
             else:
-                metric.updated_on = now
-                metric.save(update_fields=['updated_on'])
+                last.updated_on = now
+                last.save(update_fields=['updated_on'])
 
 
 accounts.register(Order)

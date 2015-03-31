@@ -40,7 +40,7 @@ class SiteDirective(Plugin):
         return groups
     
     @classmethod
-    def get_plugin_choices(cls):
+    def get_choices(cls):
         """ Generates grouped choices ready to use in Field.choices """
         # generators can not be @cached
         yield (None, '-------')

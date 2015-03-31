@@ -23,7 +23,7 @@ def process_transactions(modeladmin, request, queryset):
         return
     for method, transactions in queryset.group_by('source__method').iteritems():
         if method is not None:
-            method = PaymentMethod.get_plugin(method)
+            method = PaymentMethod.get(method)
             procs = method.process(transactions)
             processes += procs
             for trans in transactions:

@@ -22,7 +22,7 @@ class WebApp(models.Model):
     """ Represents a web application """
     name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name])
     type = models.CharField(_("type"), max_length=32,
-            choices=AppType.get_plugin_choices())
+            choices=AppType.get_choices())
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='webapps')
     data = JSONField(_("data"), blank=True, default={},
@@ -45,7 +45,7 @@ class WebApp(models.Model):
     
     @cached_property
     def type_class(self):
-        return AppType.get_plugin(self.type)
+        return AppType.get(self.type)
     
     @cached_property
     def type_instance(self):
@@ -103,7 +103,7 @@ class WebAppOption(models.Model):
     
     @cached_property
     def option_class(self):
-        return AppOption.get_plugin(self.name)
+        return AppOption.get(self.name)
     
     @cached_property
     def option_instance(self):

@@ -7,18 +7,21 @@ from django.db.models import Q
 from django.db.models.loading import get_model
 from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import string_concat, ugettext_lazy as _
 
 from orchestra.core import caches, validators
 from orchestra.core.translations import ModelTranslation
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
+from orchestra.utils.python import import_class
 
 from . import settings
 from .handlers import ServiceHandler
 
 
 autodiscover_modules('handlers')
+
+rate_class = import_class(settings.SERVICES_RATE_CLASS)
 
 
 class Service(models.Model):
@@ -61,7 +64,7 @@ class Service(models.Model):
             help_text=_("Handler used for processing this Service. A handler "
                         "enables customized behaviour far beyond what options "
                         "here allow to."),
-            choices=ServiceHandler.get_plugin_choices())
+            choices=ServiceHandler.get_choices())
     is_active = models.BooleanField(_("active"), default=True)
     ignore_superusers = models.BooleanField(_("ignore superusers"), default=True,
             help_text=_("Designates whether superuser orders are marked as ignored by default or not."))
@@ -128,13 +131,10 @@ class Service(models.Model):
             ),
             default=BILLING_PERIOD)
     rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
-            help_text=_("Algorithm used to interprete the rating table."),
-            # TODO this should be dynamic, retrieved from rate (plans) app
-            choices=(
-                ('STEP_PRICE', _("Step price")),
-                ('MATCH_PRICE', _("Match price")),
-            ),
-            default='STEP_PRICE')
+            help_text=string_concat(_("Algorithm used to interprete the rating table."), *[
+                string_concat('<br>&nbsp;&nbsp;', method.verbose_name, ': ', method.help_text)
+                    for name, method in rate_class.get_methods().iteritems()
+            ]), choices=rate_class.get_choices(), default=rate_class.get_choices()[0][0])
     on_cancel = models.CharField(_("on cancel"), max_length=16,
             help_text=_("Defines the cancellation behaviour of this service."),
             choices=(
@@ -171,7 +171,7 @@ class Service(models.Model):
     def handler(self):
         """ Accessor of this service handler instance """
         if self.handler_type:
-            return ServiceHandler.get_plugin(self.handler_type)(self)
+            return ServiceHandler.get(self.handler_type)(self)
         return ServiceHandler(self)
     
     def clean(self):
@@ -231,8 +231,7 @@ class Service(models.Model):
     
     @property
     def rate_method(self):
-        rate_model = type(self).rates.related.model
-        return rate_model.get_methods()[self.rate_algorithm]
+        return rate_class.get_methods()[self.rate_algorithm]
     
     def update_orders(self, commit=True):
         order_model = get_model(settings.SERVICES_ORDER_MODEL)

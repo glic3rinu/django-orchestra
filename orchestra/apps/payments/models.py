@@ -20,7 +20,7 @@ class PaymentSource(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
             related_name='paymentsources')
     method = models.CharField(_("method"), max_length=32,
-            choices=PaymentMethod.get_plugin_choices())
+            choices=PaymentMethod.get_choices())
     data = JSONField(_("data"), default={})
     is_active = models.BooleanField(_("active"), default=True)
     
@@ -31,7 +31,7 @@ class PaymentSource(models.Model):
     
     @cached_property
     def method_class(self):
-        return PaymentMethod.get_plugin(self.method)
+        return PaymentMethod.get(self.method)
     
     @cached_property
     def method_instance(self):

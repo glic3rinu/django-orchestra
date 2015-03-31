@@ -4,42 +4,57 @@ import textwrap
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.settings import BASE_DOMAIN
 
-MAILBOXES_DOMAIN_MODEL = getattr(settings, 'MAILBOXES_DOMAIN_MODEL', 'domains.Domain')
+
+MAILBOXES_DOMAIN_MODEL = getattr(settings, 'MAILBOXES_DOMAIN_MODEL',
+    'domains.Domain'
+)
 
 
-MAILBOXES_HOME = getattr(settings, 'MAILBOXES_HOME', '/home/./%(name)s/')
+MAILBOXES_HOME = getattr(settings, 'MAILBOXES_HOME',
+    '/home/%(name)s/'
+)
 
 
 MAILBOXES_SIEVE_PATH = getattr(settings, 'MAILBOXES_SIEVE_PATH',
-        os.path.join(MAILBOXES_HOME, 'Maildir/sieve/orchestra.sieve'))
+    os.path.join(MAILBOXES_HOME, 'Maildir/sieve/orchestra.sieve')
+)
 
 
-MAILBOXES_SIEVETEST_PATH = getattr(settings, 'MAILBOXES_SIEVETEST_PATH', '/dev/shm')
+MAILBOXES_SIEVETEST_PATH = getattr(settings, 'MAILBOXES_SIEVETEST_PATH',
+    '/dev/shm'
+)
 
 
 MAILBOXES_SIEVETEST_BIN_PATH = getattr(settings, 'MAILBOXES_SIEVETEST_BIN_PATH',
-        '%(orchestra_root)s/bin/sieve-test')
+    '%(orchestra_root)s/bin/sieve-test'
+)
 
 
 MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH = getattr(settings, 'MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH',
-        '/etc/postfix/virtual_mailboxes')
-        
+    '/etc/postfix/virtual_mailboxes'
+)
+
 
 MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH = getattr(settings, 'MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH',
-        '/etc/postfix/virtual_aliases')
+    '/etc/postfix/virtual_aliases'
+)
 
 
 MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH = getattr(settings, 'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH',
-        '/etc/postfix/virtual_domains')
+    '/etc/postfix/virtual_domains'
+)
 
 
 MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN = getattr(settings, 'MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN', 
-        'orchestra.lan')
+    BASE_DOMAIN
+)
 
 
 MAILBOXES_PASSWD_PATH = getattr(settings, 'MAILBOXES_PASSWD_PATH',
-        '/etc/dovecot/passwd')
+    '/etc/dovecot/passwd'
+)
 
 
 MAILBOXES_MAILBOX_FILTERINGS = getattr(settings, 'MAILBOXES_MAILBOX_FILTERINGS', {
@@ -62,11 +77,15 @@ MAILBOXES_MAILBOX_FILTERINGS = getattr(settings, 'MAILBOXES_MAILBOX_FILTERINGS',
 
 
 MAILBOXES_MAILBOX_DEFAULT_FILTERING = getattr(settings, 'MAILBOXES_MAILBOX_DEFAULT_FILTERING',
-    'REDIRECT')
+    'REDIRECT'
+)
 
 
-MAILBOXES_MAILDIRSIZE_PATH = getattr(settings, 'MAILBOXES_MAILDIRSIZE_PATH', '%(home)s/Maildir/maildirsize')
+MAILBOXES_MAILDIRSIZE_PATH = getattr(settings, 'MAILBOXES_MAILDIRSIZE_PATH',
+    '%(home)s/Maildir/maildirsize'
+)
 
 
 MAILBOXES_LOCAL_ADDRESS_DOMAIN = getattr(settings, 'MAILBOXES_LOCAL_ADDRESS_DOMAIN',
-    'orchestra.lan')
+    BASE_DOMAIN
+)

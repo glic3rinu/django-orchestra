@@ -1,5 +1,7 @@
 import sys
 
+from django.utils.translation import string_concat, ugettext_lazy as _
+
 from orchestra.utils.python import AttrDict
 
 
@@ -117,6 +119,8 @@ def step_price(rates, metric):
                 ix += 1
         minimal = min(minimal, (value, result), key=lambda v: v[0])
     return minimal[1]
+step_price.verbose_name = _("Step price")
+step_price.help_text = _("All price rates with a lower metric are applied.")
 
 
 def match_price(rates, metric):
@@ -144,3 +148,5 @@ def match_price(rates, metric):
             'price': candidates[0].price,
         })]
     return None
+match_price.verbose_name = _("Match price")
+match_price.help_text = _("Only the rate with inmediate inferior metric is applied.")

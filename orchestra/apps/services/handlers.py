@@ -36,8 +36,8 @@ class ServiceHandler(plugins.Plugin):
         return getattr(self.service, attr)
     
     @classmethod
-    def get_plugin_choices(cls):
-        choices = super(ServiceHandler, cls).get_plugin_choices()
+    def get_choices(cls):
+        choices = super(ServiceHandler, cls).get_choices()
         return [('', _("Default"))] + choices
     
     def validate_content_type(self, service):

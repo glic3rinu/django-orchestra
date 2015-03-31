@@ -32,7 +32,7 @@ class RouteAdmin(admin.ModelAdmin):
     
     BACKEND_HELP_TEXT = {
         backend: "This backend operates over '%s'" % ServiceBackend.get_backend(backend).model
-            for backend, __ in ServiceBackend.get_plugin_choices()
+            for backend, __ in ServiceBackend.get_choices()
     }
     DEFAULT_MATCH = {
         backend.get_name(): backend.default_route_match for backend in ServiceBackend.get_backends(active=False)

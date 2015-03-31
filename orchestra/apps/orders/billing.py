@@ -64,7 +64,7 @@ class BillsBackend(object):
         if service.metric and service.billing_period != service.NEVER and service.pricing_period == service.NEVER:
             metric = format(line.metric, '.2f').rstrip('0').rstrip('.')
             size = format(line.size, '.2f').rstrip('0').rstrip('.')
-            description += " (%s*%s)" % (metric, size)
+            description += " (%sx%s)" % (metric, size)
         return description
     
     def create_sublines(self, line, discounts):

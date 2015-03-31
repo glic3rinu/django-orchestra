@@ -7,7 +7,7 @@ import sys
 from django.core.management.base import BaseCommand
 from pyflakes import checker, messages
 
-from orchestra.utils.paths import get_orchestra_root
+from orchestra.utils.paths import get_orchestra_dir
 
 
 # BlackHole, PySyntaxError and checking based on
@@ -93,7 +93,7 @@ class Command(BaseCommand):
     
     def handle(self, *filenames, **options):
         if not filenames:
-            filenames = [get_orchestra_root(), '.']
+            filenames = [get_orchestra_dir(), '.']
         warnings = checkPaths(filenames)
         for warning in warnings:
             print warning

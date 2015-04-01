@@ -46,7 +46,7 @@ def check(codeString, filename):
     try:
         with BlackHole():
             tree = ast.parse(codeString, filename)
-    except SyntaxError, e:
+    except SyntaxError as e:
         return [PySyntaxError(filename, e)]
     else:
         # Okay, it's syntactically valid.  Now parse it into an ast and check it
@@ -67,7 +67,7 @@ def checkPath(filename):
     """
     try:
         return check(file(filename, 'U').read() + '\n', filename)
-    except IOError, msg:
+    except IOError as msg:
         return ["%s: %s" % (filename, msg.args[1])]
     except TypeError:
         pass

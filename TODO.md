@@ -243,6 +243,10 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
     * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
     * add ini, end dates on bill lines and breakup quanity into size(defaut:1) and metric
     * threshold for significative metric accountancy on services.handler
+    * http://orchestra.pangea.org/admin/orders/order/6418/
+    * http://orchestra.pangea.org/admin/orders/order/6495/bill_selected_orders/
+    * >>> round(float(decimal.Decimal('2.63'))/0.5)*0.5
+    * >>> round(float(str(decimal.Decimal('2.99')).split('.')[0]))/1*1
 
 * move normurlpath to orchestra.utils from websites.utils
 
@@ -259,6 +263,12 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * create service templates based on urlqwargs with the most basic services.
 
 * Base price: domini propi (all domains) + extra for other domains
+
+
+* prepend ORCHESTRA_ to orchestra/settings.py
+
+
+* rename backends with generic names to concrete services.. eg VsFTPdTraffic, UNIXSystemUser
 
 
 Translation
@@ -290,3 +300,16 @@ xxxxx         --           0    20M    22M                7    200    300
 * saas validate_creation generic approach, for all backends. standard output
 
 * html code x: &times;
+
+
+* cleanup backendlogs, monitor data and metricstorage
+* create orchestrate databases.Database pk=1 -n --dry-run | --noinput --action save (default)|delete --backend name (limit to this backend) --help
+
+* uwsgi     --max-requests=5000 \           # respawn processes after serving 5000 requests and
+celery max-tasks-per-child
+
+* generate settings.py more like django (installed_apps, middlewares, etc,,,)
+
+* postupgradeorchestra send signals in order to hook custom stuff
+
+* make base home for systemusers that ara homed into main account systemuser

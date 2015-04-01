@@ -13,6 +13,7 @@ from .forms import BillSelectedOptionsForm, BillSelectConfirmationForm, BillSele
 class BillSelectedOrders(object):
     """ Form wizard for billing orders admin action """
     short_description = _("Bill selected orders")
+    verbose_name = _("Bill")
     template = 'admin/orders/order/bill_selected_options.html'
     __name__ = 'bill_selected_orders'
     

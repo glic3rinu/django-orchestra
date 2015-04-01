@@ -141,7 +141,8 @@ class BackendOperation(models.Model):
     @classmethod
     def execute(cls, operations, async=False):
         from . import manager
-        return manager.execute(operations, async=async)
+        scripts, block = manager.generate(operations)
+        return manager.execute(scripts, block=block, async=async)
     
     @classmethod
     def execute_action(cls, instance, action):
@@ -224,7 +225,7 @@ class Route(models.Model):
                 return
             try:
                 bool(self.matches(obj))
-            except Exception, exception:
+            except Exception as exception:
                 name = type(exception).__name__
                 message = exception.message
                 raise ValidationError(': '.join((name, message)))

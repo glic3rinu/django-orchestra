@@ -52,7 +52,7 @@ class ServiceHandler(plugins.Plugin):
             return
         try:
             bool(self.matches(obj))
-        except Exception, exception:
+        except Exception as exception:
             name = type(exception).__name__
             message = exception.message
             raise ValidationError(': '.join((name, message)))
@@ -64,7 +64,7 @@ class ServiceHandler(plugins.Plugin):
             return
         try:
             bool(self.get_metric(obj))
-        except Exception, exception:
+        except Exception as exception:
             name = type(exception).__name__
             message = exception.message
             raise ValidationError(': '.join((name, message)))
@@ -187,17 +187,17 @@ class ServiceHandler(plugins.Plugin):
             size = rdelta.years * 12
             size += rdelta.months
             days = calendar.monthrange(end.year, end.month)[1]
-            size += decimal.Decimal(rdelta.days)/days
+            size += decimal.Decimal(str(rdelta.days))/days
         elif self.billing_period == self.ANUAL:
             size = rdelta.years
-            size += decimal.Decimal(rdelta.months)/12
+            size += decimal.Decimal(str(rdelta.months))/12
             days = 366 if calendar.isleap(end.year) else 365
-            size += decimal.Decimal(rdelta.days)/days
+            size += decimal.Decimal(str(rdelta.days))/days
         elif self.billing_period == self.NEVER:
             size = 1
         else:
             raise NotImplementedError
-        return decimal.Decimal(size)
+        return decimal.Decimal(str(size))
     
     def get_pricing_slots(self, ini, end):
         day = 1

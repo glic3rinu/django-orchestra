@@ -44,6 +44,7 @@ class ResourceAdmin(ExtendedModelAdmin):
     change_view_actions = actions
     change_readonly_fields = ('name', 'content_type')
     prepopulated_fields = {'name': ('verbose_name',)}
+    list_select_related = ('content_type', 'crontab',)
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
         """ Remaind user when monitor routes are not configured """
@@ -243,6 +244,7 @@ def resource_inline_factory(resources):
                 return '%s %s %s' % (data.used, data.resource.unit, update_link)
             return _("Unknonw %s") % update_link
         display_used.short_description = _("Used")
+        display_used.allow_tags = True
         
         def has_add_permission(self, *args, **kwargs):
             """ Hidde add another """

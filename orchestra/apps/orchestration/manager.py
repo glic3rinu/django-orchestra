@@ -9,8 +9,9 @@ from django.core.mail import mail_admins
 from orchestra.utils.python import import_class
 
 from . import settings
+from .backends import ServiceBackend
 from .helpers import send_report
-from .models import BackendLog
+from .models import BackendLog, BackendOperation as Operation
 from .signals import pre_action, post_action
 
 
@@ -55,8 +56,7 @@ def close_connection(execute):
     return wrapper
 
 
-def execute(operations, async=False):
-    """ generates and executes the operations on the servers """
+def generate(operations):
     scripts = OrderedDict()
     cache = {}
     block = False
@@ -86,13 +86,20 @@ def execute(operations, async=False):
             post_action.send(**kwargs)
             if backend.block:
                 block = True
+    for value in scripts.itervalues():
+        backend, operations = value
+        backend.commit()
+    return scripts, block
+
+
+def execute(scripts, block=False, async=False):
+    """ executes the operations on the servers """
     # Execute scripts on each server
     threads = []
     executions = []
     for key, value in scripts.iteritems():
         server, __ = key
         backend, operations = value
-        backend.commit()
         execute = as_task(backend.execute)
         logger.debug('%s is going to be executed on %s' % (backend, server))
         if block:
@@ -125,3 +132,66 @@ def execute(operations, async=False):
             mocked_log = BackendLog(state=BackendLog.EXCEPTION)
             logs.append(mocked_log)
     return logs
+
+
+def collect(instance, action, **kwargs):
+    """ collect operations """
+    operations = kwargs.get('operations', set())
+    route_cache = kwargs.get('route_cache', {})
+    for backend_cls in ServiceBackend.get_backends():
+        # Check if there exists a related instance to be executed for this backend
+        instances = []
+        if backend_cls.is_main(instance):
+            instances = [(instance, action)]
+        else:
+            candidate = backend_cls.get_related(instance)
+            if candidate:
+                if candidate.__class__.__name__ == 'ManyRelatedManager':
+                    if 'pk_set' in kwargs:
+                        # m2m_changed signal
+                        candidates = kwargs['model'].objects.filter(pk__in=kwargs['pk_set'])
+                    else:
+                        candidates = candidate.all()
+                else:
+                    candidates = [candidate]
+                for candidate in candidates:
+                    # Check if a delete for candidate is in operations
+                    delete_mock = Operation.create(backend_cls, candidate, Operation.DELETE)
+                    if delete_mock not in operations:
+                        # related objects with backend.model trigger save()
+                        instances.append((candidate, Operation.SAVE))
+        for selected, iaction in instances:
+            # Maintain consistent state of operations based on save/delete behaviour
+            # Prevent creating a deleted selected by deleting existing saves
+            if iaction == Operation.DELETE:
+                save_mock = Operation.create(backend_cls, selected, Operation.SAVE)
+                try:
+                    operations.remove(save_mock)
+                except KeyError:
+                    pass
+            else:
+                update_fields = kwargs.get('update_fields', None)
+                if update_fields is not None:
+                    # "update_fileds=[]" is a convention for explicitly executing backend
+                    # i.e. account.disable()
+                    if update_fields != []:
+                        execute = False
+                        for field in update_fields:
+                            if field not in backend_cls.ignore_fields:
+                                execute = True
+                                break
+                        if not execute:
+                            continue
+            operation = Operation.create(backend_cls, selected, iaction)
+            # Only schedule operations if the router gives servers to execute into
+            servers = router.get_servers(operation, cache=route_cache)
+            if servers:
+                operation.servers = servers
+                if iaction != Operation.DELETE:
+                    # usually we expect to be using last object state,
+                    # except when we are deleting it
+                    operations.discard(operation)
+                elif iaction == Operation.DELETE:
+                    operation.preload_context()
+                operations.add(operation)
+    return operations

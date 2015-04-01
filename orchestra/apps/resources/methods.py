@@ -1,4 +1,5 @@
 import datetime
+import decimal
 
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -21,7 +22,7 @@ class DataMethod(plugins.Plugin):
 
 class Last(DataMethod):
     name = 'last'
-    verbose_name = _("Last")
+    verbose_name = _("Last value")
     
     def filter(self, dataset):
         try:
@@ -71,7 +72,7 @@ class MonthlyAvg(MonthlySum):
         result = 0
         for data in dataset:
             slot = (data.created_at-ini).total_seconds()
-            result += data.value * slot/total
+            result += data.value * decimal.Decimal(str(slot/total))
             ini = data.created_at
         return result
 

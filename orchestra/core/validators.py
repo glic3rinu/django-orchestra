@@ -18,7 +18,7 @@ def all_valid(kwargs):
     for field, validator in kwargs.iteritems():
         try:
             validator[0](*validator[1:])
-        except ValidationError, error:
+        except ValidationError as error:
             errors[field] = error
     if errors:
         raise ValidationError(errors)
@@ -91,7 +91,7 @@ def validate_username(value):
 def validate_password(value):
     try:
         crack.VeryFascistCheck(value)
-    except ValueError, message:
+    except ValueError as message:
         raise ValidationError("Password %s." % str(message)[3:])
 
 

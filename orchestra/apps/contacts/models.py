@@ -74,7 +74,7 @@ class Contact(models.Model):
         elif self.zipcode and self.country:
             try:
                 validators.validate_zipcode(self.zipcode, self.country)
-            except ValidationError, error:
+            except ValidationError as error:
                 errors['zipcode'] = error
         if errors:
             raise ValidationError(errors)

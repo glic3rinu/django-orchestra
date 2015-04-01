@@ -199,25 +199,24 @@ class ResourceData(models.Model):
                 content_type=ct,
                 object_id=obj.pk,
                 resource=resource
-            )
+            ), False
         except cls.DoesNotExist:
             return cls.objects.create(
                 content_object=obj,
                 resource=resource,
                 allocated=resource.default_allocation
-            )
+            ), True
     
     @property
     def unit(self):
         return self.resource.unit
     
     def get_used(self):
-        resource = data.resource
+        resource = self.resource
         total = 0
         has_result = False
-        today = datetime.date.today()
-        for dataset in data.get_monitor_datasets():
-            usage = data.method_instance.compute_usage(dataset)
+        for dataset in self.get_monitor_datasets():
+            usage = resource.method_instance.compute_usage(dataset)
             if usage is not None:
                 has_result = True
                 total += usage

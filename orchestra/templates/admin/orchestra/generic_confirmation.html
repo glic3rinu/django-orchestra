@@ -17,6 +17,9 @@
 {% if obj %}
 &rsaquo; <a href="{% url opts|admin_urlname:'change' obj.pk %}">{{ obj }}</a>
 &rsaquo; {{ action_name }}
+{% elif add %}
+&rsaquo; <a href="../">{% trans "Add" %} {{ opts.verbose_name }}</a>
+&rsaquo; {{ action_name }}
 {% else %}
 &rsaquo; {{ action_name }} multiple objects
 {% endif %}

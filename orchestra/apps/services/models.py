@@ -211,14 +211,14 @@ class Service(models.Model):
                 if counter >= metric:
                     counter = metric
                     accumulated += (counter - ant_counter) * rate['price']
-                    return decimal.Decimal(accumulated)
+                    return decimal.Decimal(str(accumulated))
                 ant_counter = counter
                 accumulated += rate['price'] * rate['quantity']
         else:
             for rate in rates:
                 counter += rate['quantity']
                 if counter >= position:
-                    return decimal.Decimal(rate['price'])
+                    return decimal.Decimal(str(rate['price']))
     
     def get_rates(self, account, cache=True):
         # rates are cached per account

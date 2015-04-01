@@ -54,7 +54,7 @@ class GitLabSaaSBackend(ServiceController):
         saas.data['user_id'] = user['id']
         # Using queryset update to avoid triggering backends with the post_save signal
         type(saas).objects.filter(pk=saas.pk).update(data=saas.data)
-        print json.dumps(user, indent=4)
+        print(json.dumps(user, indent=4))
     
     def change_password(self, saas, server):
         self.authenticate()
@@ -65,7 +65,7 @@ class GitLabSaaSBackend(ServiceController):
         user['password'] = saas.password
         response = requests.put(user_url, data=user, headers=self.headers)
         user = self.validate_response(response, 200)
-        print json.dumps(user, indent=4)
+        print(json.dumps(user, indent=4))
     
     def set_state(self, saas, server):
         # TODO http://feedback.gitlab.com/forums/176466-general/suggestions/4098632-add-administrative-api-call-to-block-users
@@ -77,7 +77,7 @@ class GitLabSaaSBackend(ServiceController):
         user['state'] = 'active' if saas.active else 'blocked',
         response = requests.patch(user_url, data=user, headers=self.headers)
         user = self.validate_response(response, 200)
-        print json.dumps(user, indent=4)
+        print(json.dumps(user, indent=4))
     
     def delete_user(self, saas, server):
         self.authenticate()

@@ -52,7 +52,7 @@ class BaseTrafficBillingTest(BaseBillingTest):
     
     def report_traffic(self, account, value):
         MonitorData.objects.create(monitor='FTPTraffic', content_object=account.systemusers.get(), value=value)
-        data = ResourceData.get_or_create(account, self.resource)
+        data, __ = ResourceData.get_or_create(account, self.resource)
         data.update()
 
 

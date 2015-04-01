@@ -38,7 +38,7 @@ def monitor(resource_id, ids=None, async=True):
     triggers = []
     model = resource.content_type.model_class()
     for obj in model.objects.filter(**kwargs):
-        data = ResourceData.get_or_create(obj, resource)
+        data, __ = ResourceData.get_or_create(obj, resource)
         data.update()
         if not resource.disable_trigger:
             a = data.used

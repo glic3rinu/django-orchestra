@@ -258,8 +258,8 @@ class MetricStorage(models.Model):
         except cls.DoesNotExist:
             cls.objects.create(order=order, value=value, updated_on=now)
         else:
-            error = decimal.Decimal(settings.ORDERS_METRIC_ERROR)
-            if last.value*(1+error) > value or last.value*error < value:
+            error = decimal.Decimal(str(settings.ORDERS_METRIC_ERROR))
+            if value > last.value+error or value < last.value-error:
                 cls.objects.create(order=order, value=value, updated_on=now)
             else:
                 last.updated_on = now

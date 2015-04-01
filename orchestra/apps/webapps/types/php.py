@@ -123,7 +123,9 @@ class PHPApp(AppType):
     
     def get_php_version_number(self):
         php_version = self.get_php_version()
-        number = re.findall(r'[0-9]+\.?[0-9]+', php_version)
+        number = re.findall(r'[0-9]+\.?[0-9]?', php_version)
+        if not number:
+            raise ValueError("No version number matches for '%s'" % php_version)
         if len(number) > 1:
-            raise ValueError("Multiple version number matches for '%'" % php_version)
+            raise ValueError("Multiple version number matches for '%s'" % php_version)
         return number[0]

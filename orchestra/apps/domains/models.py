@@ -247,7 +247,7 @@ class Record(models.Model):
         }
         try:
             choices[self.type](self.value)
-        except ValidationError, error:
+        except ValidationError as error:
             raise ValidationError({'value': error})
     
     def get_ttl(self):

@@ -1,6 +1,8 @@
 from django import forms
+from django.conf.urls import patterns, url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -35,9 +37,21 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
                        'on_cancel', 'payment_style', 'tax', 'nominal_price')
         }),
     )
-    actions = [update_orders, clone]
-    change_view_actions = actions + [view_help]
+    actions = (update_orders, clone)
+    change_view_actions = actions + (view_help,)
     change_form_template = 'admin/services/service/change_form.html'
+    
+    def get_urls(self):
+        """Returns the additional urls for the change view links"""
+        urls = super(ServiceAdmin, self).get_urls()
+        admin_site = self.admin_site
+        opts = self.model._meta
+        return patterns('',
+            url('^add/help/$',
+                admin_site.admin_view(self.help_view),
+                name='%s_%s_help' % (opts.app_label, opts.model_name)
+            )
+        ) + urls
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Improve performance of account field and filter by account """
@@ -72,6 +86,20 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
             )
         })
         return qs
+    
+    def help_view(self, request, *args):
+        opts = self.model._meta
+        context = {
+            'add': True,
+            'title': _("Need some help?"),
+            'opts': opts,
+            'obj': args[0].get() if args else None,
+            'action_name': _("help"),
+            'app_label': opts.app_label,
+        }
+        return TemplateResponse(request, 'admin/services/service/help.html', context)
+    help_view.url_name = 'help'
+    help_view.verbose_name = _("Help")
 
 
 admin.site.register(Service, ServiceAdmin)

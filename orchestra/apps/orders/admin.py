@@ -59,6 +59,8 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     inlines = (MetricStorageInline,)
     add_inlines = ()
     search_fields = ('account__username', 'description')
+    list_prefetch_related = ('metrics', 'content_object')
+    list_select_related = ('account', 'service')
     
     service_link = admin_link('service')
     content_object_link = admin_link('content_object', order=False)
@@ -78,13 +80,13 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_billed_until.admin_order_field = 'billed_until'
     
     def display_metric(self, order):
-        metric = order.metrics.latest()
-        return metric.value if metric else ''
+        """ dispalys latest metric value, don't uses latest() because not loosing prefetch_related """
+        try:
+            metric = order.metrics.all()[0]
+        except IndexError:
+            return ''
+        return metric.value
     display_metric.short_description = _("Metric")
-    
-    def get_queryset(self, request):
-        qs = super(OrderAdmin, self).get_queryset(request)
-        return qs.select_related('service').prefetch_related('content_object')
 
 
 class MetricStorageAdmin(admin.ModelAdmin):

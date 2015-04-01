@@ -38,7 +38,7 @@ def read_async(fd):
     """
     try:
         return fd.read()
-    except IOError, e:
+    except IOError as e:
         if e.errno != errno.EAGAIN:
             raise e
         else:
@@ -74,7 +74,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
             try:
                 stdout += unicode(stdoutPiece.decode("utf8")) if force_unicode else stdoutPiece
                 sdterr += unicode(stderrPiece.decode("utf8")) if force_unicode else stderrPiece
-            except UnicodeDecodeError, e:
+            except UnicodeDecodeError as e:
                 pass
             else:
                 break

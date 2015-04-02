@@ -25,7 +25,7 @@ class MiscService(models.Model):
             help_text=_("Whether new instances of this service can be created "
                         "or not. Unselect this instead of deleting services."))
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     def clean(self):
@@ -51,7 +51,7 @@ class Miscellaneous(models.Model):
     class Meta:
         verbose_name_plural = _("miscellaneous")
     
-    def __unicode__(self):
+    def __str__(self):
         return self.identifier or self.description[:32] or str(self.service)
     
     @cached_property

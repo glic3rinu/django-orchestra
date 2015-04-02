@@ -1,2 +1,2 @@
-from options import *
-from dashboard import *
+from .options import *
+from .dashboard import *

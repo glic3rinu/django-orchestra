@@ -96,7 +96,7 @@ class Command(BaseCommand):
             filenames = [get_orchestra_dir(), '.']
         warnings = checkPaths(filenames)
         for warning in warnings:
-            print warning
+            print(warning)
         if warnings:
-            print 'Total warnings: %d' % len(warnings)
+            print('Total warnings: %d' % len(warnings))
             raise SystemExit(1)

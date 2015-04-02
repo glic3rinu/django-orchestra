@@ -7,10 +7,8 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra import plugins
 
 
-class DataMethod(plugins.Plugin):
+class DataMethod(plugins.Plugin, metaclass=plugins.PluginMount):
     """ filters and computes dataset usage """
-    __metaclass__ = plugins.PluginMount
-    
     def filter(self, dataset):
         """ Filter the dataset to get the relevant data according to the period """
         raise NotImplementedError

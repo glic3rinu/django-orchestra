@@ -25,7 +25,7 @@ class Server(models.Model):
             choices=settings.ORCHESTRATION_OS_CHOICES,
             default=settings.ORCHESTRATION_DEFAULT_OS)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     def get_address(self):
@@ -83,7 +83,7 @@ class BackendLog(models.Model):
     class Meta:
         get_latest_by = 'id'
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s@%s" % (self.backend, self.server)
     
     @property
@@ -116,7 +116,7 @@ class BackendOperation(models.Model):
         verbose_name = _("Operation")
         verbose_name_plural = _("Operations")
     
-    def __unicode__(self):
+    def __str__(self):
         return '%s.%s(%s)' % (self.backend, self.action, self.instance)
     
     def __hash__(self):
@@ -184,7 +184,7 @@ class Route(models.Model):
     class Meta:
         unique_together = ('backend', 'host')
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s@%s" % (self.backend, self.host)
     
     @property
@@ -218,7 +218,7 @@ class Route(models.Model):
         if not self.match:
             self.match = 'True'
         if self.backend:
-            backend_model = self.backend_class.model
+            backend_model = self.backend_class.model_class()
             try:
                 obj = backend_model.objects.all()[0]
             except IndexError:
@@ -227,8 +227,7 @@ class Route(models.Model):
                 bool(self.matches(obj))
             except Exception as exception:
                 name = type(exception).__name__
-                message = exception.message
-                raise ValidationError(': '.join((name, message)))
+                raise ValidationError(': '.join((name, exception)))
     
     def matches(self, instance):
         safe_locals = {

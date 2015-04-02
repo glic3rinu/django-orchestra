@@ -22,7 +22,7 @@ class MyTicketsListFilter(SimpleListFilter):
     def choices(self, cl):
         """ Remove default All """
         choices = iter(super(MyTicketsListFilter, self).choices(cl))
-        choices.next()
+        next(choices)
         return choices
 
 
@@ -52,6 +52,6 @@ class TicketStateListFilter(SimpleListFilter):
     def choices(self, cl):
         """ Remove default All """
         choices = iter(super(TicketStateListFilter, self).choices(cl))
-        choices.next()
+        next(choices)
         return choices
 

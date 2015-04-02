@@ -431,7 +431,7 @@ class PostfixTraffic(ServiceMonitor):
                     except IOError as e:
                         sys.stderr.write(e)
                     
-                for username, opts in users.iteritems():
+                for username, opts in users.items():
                     size = 0
                     for req_id in reverse[username]:
                         size += targets[req_id][1] * counter.get(req_id, 0)

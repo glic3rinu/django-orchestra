@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import os, sys
 from distutils.sysconfig import get_python_lib
 from setuptools import setup, find_packages

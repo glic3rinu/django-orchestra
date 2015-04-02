@@ -136,10 +136,10 @@ function install_requirements () {
     
     PIP="django==1.7.7 \
          django-celery-email==1.0.4 \
-         django-fluent-dashboard==0.3.5 \
+         django-fluent-dashboard==0.4 \
          https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
          IPy==0.81 \
-         django-extensions==1.1.1 \
+         django-extensions==1.5.2 \
          django-transaction-signals==1.0.0 \
          django-celery==3.1.16 \
          celery==3.1.16 \
@@ -209,10 +209,10 @@ function install_requirements () {
     # Patch passlib
     IMPORT="from django.contrib.auth.hashers import mask_hash, _"
     COLLECTIONS="from collections import OrderedDict"
-    sed -i "s/${IMPORT}, SortedDict/${IMPORT}\n        ${COLLECTIONS}/" \
-        /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py
-    sed -i "s/SortedDict/OrderedDict/g" \
-        /usr/local/lib/python2.7/dist-packages/passlib/ext/django/utils.py
+    ls /usr/local/lib/python*/dist-packages/passlib/ext/django/utils.py \
+        | xargs sed -i "s/${IMPORT}, SortedDict/${IMPORT}\n        ${COLLECTIONS}/"
+    ls /usr/local/lib/python*/dist-packages/passlib/ext/django/utils.py \
+        | xargs sed -i "s/SortedDict/OrderedDict/g"
     
     # Patch dateutil
     sed -i "s/elif not isinstance(dt2, datetime.datetime):/else:/" \

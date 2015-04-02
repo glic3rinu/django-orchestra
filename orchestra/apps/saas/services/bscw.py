@@ -7,18 +7,12 @@ from .. import settings
 from .options import SoftwareService, SoftwareServiceForm
 
 
-# TODO monitor quota since out of sync?
-
 class BSCWForm(SoftwareServiceForm):
     email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size':'40'}))
-    quota = forms.IntegerField(label=_("Quota"), initial=settings.SAAS_BSCW_DEFAULT_QUOTA,
-            help_text=_("Disk quota in MB."))
 
 
 class BSCWDataSerializer(serializers.Serializer):
     email = serializers.EmailField(label=_("Email"))
-    quota = serializers.IntegerField(label=_("Quota"), default=settings.SAAS_BSCW_DEFAULT_QUOTA,
-            help_text=_("Disk quota in MB."))
 
 
 class BSCWService(SoftwareService):

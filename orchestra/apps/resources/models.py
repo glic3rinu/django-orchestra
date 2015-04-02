@@ -83,7 +83,7 @@ class Resource(models.Model):
             ('verbose_name', 'content_type')
         )
     
-    def __unicode__(self):
+    def __str__(self):
         return "{}-{}".format(str(self.content_type), self.name)
     
     @cached_property
@@ -188,7 +188,7 @@ class ResourceData(models.Model):
         unique_together = ('resource', 'content_type', 'object_id')
         verbose_name_plural = _("resource data")
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (str(self.resource), str(self.content_object))
     
     @classmethod
@@ -278,7 +278,7 @@ class MonitorData(models.Model):
         get_latest_by = 'id'
         verbose_name_plural = _("monitor data")
     
-    def __unicode__(self):
+    def __str__(self):
         return str(self.monitor)
     
     @cached_property
@@ -331,7 +331,7 @@ def create_resource_relation():
                 field for field in related._meta.virtual_fields if field.rel.to != ResourceData
             ]
     
-    for ct, resources in Resource.objects.group_by('content_type').iteritems():
+    for ct, resources in Resource.objects.group_by('content_type').items():
         model = ct.model_class()
         relation = GenericRelation('resources.ResourceData')
         model.add_to_class('resource_set', relation)

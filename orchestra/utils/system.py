@@ -42,7 +42,7 @@ def read_async(fd):
         if e.errno != errno.EAGAIN:
             raise e
         else:
-            return u''
+            return ''
 
 
 def runiterator(command, display=False, error_codes=[0], silent=False, stdin='', force_unicode=True):
@@ -53,7 +53,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
     p = subprocess.Popen(command, shell=True, executable='/bin/bash',
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     
-    p.stdin.write(stdin)
+    p.stdin.write(bytes(stdin, 'utf-8'))
     p.stdin.close()
     yield
     
@@ -61,23 +61,18 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
     make_async(p.stderr)
     
     # Async reading of stdout and sterr
-    # TODO cleanup
     while True:
-        # TODO https://github.com/isagalaev/ijson/issues/15
-        stdout = unicode() if force_unicode else ''
-        sdterr = unicode() if force_unicode else ''
+        stdout = ''
+        sdterr = ''
         # Get complete unicode chunks
-        while True:
-            select.select([p.stdout, p.stderr], [], [])
-            stdoutPiece = read_async(p.stdout)
-            stderrPiece = read_async(p.stderr)
-            try:
-                stdout += unicode(stdoutPiece.decode("utf8")) if force_unicode else stdoutPiece
-                sdterr += unicode(stderrPiece.decode("utf8")) if force_unicode else stderrPiece
-            except UnicodeDecodeError as e:
-                pass
-            else:
-                break
+        select.select([p.stdout, p.stderr], [], [])
+        
+        stdoutPiece = read_async(p.stdout)
+        stderrPiece = read_async(p.stderr)
+        
+        stdout += (stdoutPiece or b'').decode('utf8')
+        sdterr += (stderrPiece or b'').decode('utf8')
+        
         if display and stdout:
             sys.stdout.write(stdout)
         if display and stderr:
@@ -96,7 +91,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
 
 def run(command, display=False, error_codes=[0], silent=False, stdin='', async=False, force_unicode=True):
     iterator = runiterator(command, display, error_codes, silent, stdin, force_unicode)
-    iterator.next()
+    next(iterator)
     if async:
         return iterator
     

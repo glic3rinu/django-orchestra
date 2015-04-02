@@ -295,7 +295,7 @@ class MailmanTraffic(ServiceMonitor):
                     except IOError as e:
                         sys.stderr.write(e)
                 
-                for list_name, opts in lists.iteritems():
+                for list_name, opts in lists.items():
                     __, object_id, size = opts
                     if size:
                         cmd = ' '.join(('list_members', list_name, '| wc -l'))

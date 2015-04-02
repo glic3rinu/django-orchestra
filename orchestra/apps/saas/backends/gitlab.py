@@ -84,7 +84,7 @@ class GitLabSaaSBackend(ServiceController):
         user_url = self.get_user_url(saas)
         response = requests.delete(user_url, headers=self.headers)
         user = self.validate_response(response, 200, 404)
-        print json.dumps(user, indent=4)
+        print(json.dumps(user, indent=4))
     
     def _validate_creation(self, saas, server):
         """ checks if a saas object is valid for creation on the server side """
@@ -95,9 +95,9 @@ class GitLabSaaSBackend(ServiceController):
         users = json.loads(requests.get(users_url, headers=self.headers).content)
         for user in users:
             if user['username'] == username:
-                print 'ValidationError: user-exists'
+                print('ValidationError: user-exists')
             if user['email'] == email:
-                print 'ValidationError: email-exists'
+                print('ValidationError: email-exists')
     
     def validate_creation(self, saas):
         self.append(self._validate_creation, saas)

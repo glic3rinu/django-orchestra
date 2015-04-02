@@ -1,5 +1,5 @@
 import sys
-import urlparse
+from urllib.parse import urlparse
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -17,7 +17,7 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
     
     if isinstance(context, dict):
         context = Context(context)
-    if type(to) in [str, unicode]:
+    if isinstance(to, str):
         to = [to]
     
     if not 'site' in context:
@@ -49,13 +49,13 @@ def database_ready():
 
 def dict_setting_to_choices(choices):
     return sorted(
-        [ (name, opt.get('verbose_name', 'name')) for name, opt in choices.iteritems() ],
+        [ (name, opt.get('verbose_name', 'name')) for name, opt in choices.items() ],
         key=lambda e: e[0]
     )
 
 
 def tuple_setting_to_choices(choices):
     return sorted(
-        tuple((name, opt[0]) for name, opt in choices.iteritems()),
+        tuple((name, opt[0]) for name, opt in choices.items()),
         key=lambda e: e[0]
     )

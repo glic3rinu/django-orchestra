@@ -6,7 +6,7 @@ from django.db import models
 from django.db.migrations.recorder import MigrationRecorder
 from django.db.models import F, Q
 from django.db.models.loading import get_model
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes import generic
@@ -32,9 +32,9 @@ class OrderQuerySet(models.QuerySet):
         bill_backend = Order.get_bill_backend()
         qs = self.select_related('account', 'service')
         commit = options.get('commit', True)
-        for account, services in qs.group_by('account', 'service').iteritems():
+        for account, services in qs.group_by('account', 'service').items():
             bill_lines = []
-            for service, orders in services.iteritems():
+            for service, orders in services.items():
                 for order in orders:
                     # Saved for undoing support
                     order.old_billed_on = order.billed_on
@@ -65,8 +65,8 @@ class OrderQuerySet(models.QuerySet):
         conflictive = conflictive.exclude(service__billing_period=Service.NEVER)
         conflictive = conflictive.select_related('service').group_by('account_id', 'service')
         qs = Q()
-        for account_id, services in conflictive.iteritems():
-            for service, orders in services.iteritems():
+        for account_id, services in conflictive.items():
+            for service, orders in services.items():
                 if not service.rates.exists():
                     continue
                 ini = datetime.date.max
@@ -127,8 +127,8 @@ class Order(models.Model):
     class Meta:
         get_latest_by = 'id'
     
-    def __unicode__(self):
-        return unicode(self.service)
+    def __str__(self):
+        return str(self.service)
     
     @classmethod
     def update_orders(cls, instance, service=None, commit=True):
@@ -178,7 +178,7 @@ class Order(models.Model):
                 MetricStorage.store(self, metric)
             metric = ', metric:{}'.format(metric)
         description = handler.get_order_description(instance)
-        logger.info(u"UPDATED order id:{id}, description:{description}{metric}".format(
+        logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
                 id=self.id, description=description, metric=metric).encode('ascii', 'ignore')
         )
         if self.description != description:
@@ -247,8 +247,8 @@ class MetricStorage(models.Model):
     class Meta:
         get_latest_by = 'id'
     
-    def __unicode__(self):
-        return unicode(self.order)
+    def __str__(self):
+        return str(self.order)
     
     @classmethod
     def store(cls, order, value):
@@ -268,12 +268,27 @@ class MetricStorage(models.Model):
 
 accounts.register(Order)
 
+@receiver(pre_delete, dispatch_uid="orders.account_orders")
+def account_orders(sender, **kwargs):
+    account = kwargs['instance']
+    if isinstance(account, Order.account.field.rel.to):
+        account._deleted = True
+
 
 # TODO build a cache hash table {model: related, model: None}
 @receiver(post_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
     if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
+        # Account delete will delete all related orders, no need to maintain order consistency
+        if isinstance(instance, Order.account.field.rel.to):
+#            print 'aaaaaaaaaaaaaAAAAAAAAAAAAAAAAaa'
+            return
+#        print 'delete', sender, kwargs
+        try:
+            print(instance.account.pk)
+        except Exception as e:
+            pass
         if type(instance) in services:
             for order in Order.objects.by_object(instance).active():
                 order.cancel()
@@ -286,6 +301,7 @@ def cancel_orders(sender, **kwargs):
 def update_orders(sender, **kwargs):
     if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
+#        print 'save', sender, kwargs
         if type(instance) in services:
             Order.update_orders(instance)
         elif not hasattr(instance, 'account'):

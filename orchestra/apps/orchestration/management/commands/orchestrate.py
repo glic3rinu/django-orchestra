@@ -32,7 +32,7 @@ class Command(BaseCommand):
         scripts, block = manager.generate(operations)
         servers = []
         # Print scripts
-        for key, value in scripts.iteritems():
+        for key, value in scripts.items():
             server, __ = key
             backend, operations = value
             servers.append(server.name)

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
@@ -10,7 +10,7 @@ from .models import SaaS
 from .services import SoftwareService
 
 
-class SaaSAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
+class SaaSAdmin(SelectPluginAdminMixin, ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'service', 'display_site_domain', 'account_link', 'is_active')
     list_filter = ('service', 'is_active')
     change_readonly_fields = ('service',)

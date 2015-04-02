@@ -1,6 +1,7 @@
 import calendar
 import datetime
 import decimal
+import math
 
 from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
@@ -15,7 +16,7 @@ from orchestra.utils.python import AttrDict
 from . import settings, helpers
 
 
-class ServiceHandler(plugins.Plugin):
+class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     """
     Separates all the logic of billing handling from the model allowing to better
     customize its behaviout
@@ -26,8 +27,6 @@ class ServiceHandler(plugins.Plugin):
     _COMPENSATION = 'COMPENSATION'
     
     model = None
-    
-    __metaclass__ = plugins.PluginMount
     
     def __init__(self, service):
         self.service = service
@@ -54,8 +53,7 @@ class ServiceHandler(plugins.Plugin):
             bool(self.matches(obj))
         except Exception as exception:
             name = type(exception).__name__
-            message = exception.message
-            raise ValidationError(': '.join((name, message)))
+            raise ValidationError(': '.join((name, exception)))
     
     def validate_metric(self, service):
         try:
@@ -66,8 +64,7 @@ class ServiceHandler(plugins.Plugin):
             bool(self.get_metric(obj))
         except Exception as exception:
             name = type(exception).__name__
-            message = exception.message
-            raise ValidationError(': '.join((name, message)))
+            raise ValidationError(': '.join((name, exception)))
     
     def get_content_type(self):
         if not self.model:
@@ -106,18 +103,26 @@ class ServiceHandler(plugins.Plugin):
         return order.ignore
     
     def get_ignore(self, instance):
-        ignore = False
-        account = getattr(instance, 'account', instance)
-        if account.is_superuser:
-            ignore = self.ignore_superusers
-        return ignore
+        if self.ignore_superusers:
+            account = getattr(instance, 'account', instance)
+            if (account.type in settings.SERVICES_IGNORE_ACCOUNT_TYPE or 
+                'superuser' in settings.SERVICES_IGNORE_ACCOUNT_TYPE):
+                    return True
+        return False
     
     def get_metric(self, instance):
         if self.metric:
             safe_locals = {
-                instance._meta.model_name: instance
+                instance._meta.model_name: instance,
+                'instance': instance,
+                'math': math,
+                'log10': math.log10,
+                'Decimal': decimal.Decimal,
             }
-            return eval(self.metric, safe_locals)
+            try:
+                return eval(self.metric, safe_locals)
+            except Exception as error:
+                raise type(error)("%s on '%s'" %(error, self.service))
     
     def get_order_description(self, instance):
         safe_locals = {
@@ -126,7 +131,7 @@ class ServiceHandler(plugins.Plugin):
             instance._meta.model_name: instance,
         }
         if not self.order_description:
-            return u'%s: %s' % (self.description, instance)
+            return '%s: %s' % (self.description, instance)
         return eval(self.order_description, safe_locals)
     
     def get_billing_point(self, order, bp=None, **options):
@@ -359,7 +364,7 @@ class ServiceHandler(plugins.Plugin):
                 else:
                     priced[order] = (price, cprice)
         lines = []
-        for order, prices in priced.iteritems():
+        for order, prices in priced.items():
             discounts = ()
             # Generate lines and discounts from order.nominal_price
             price, cprice = prices

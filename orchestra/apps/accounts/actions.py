@@ -44,7 +44,7 @@ def service_report(modeladmin, request, queryset):
     accounts = []
     fields = []
     # First we get related manager names to fire a prefetch related
-    for name, field in queryset.model._meta._name_map.iteritems():
+    for name, field in queryset.model._meta._name_map.items():
         model = field[0].model
         if model in services.get() and model != queryset.model:
             fields.append((model, name))
@@ -63,3 +63,7 @@ def service_report(modeladmin, request, queryset):
         'date': timezone.now().today()
     }
     return render(request, settings.ACCOUNTS_SERVICE_REPORT_TEMPLATE, context)
+
+
+def delete_related_services(modeladmin, request, queryset):
+    pass

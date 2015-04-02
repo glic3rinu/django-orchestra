@@ -5,7 +5,7 @@ from orchestra.core import services
 
 def generate_services_group():
     models = []
-    for model, options in services.get().iteritems():
+    for model, options in services.get().items():
         if options.get('menu', True):
             models.append("%s.%s" % (model.__module__, model._meta.object_name))
     

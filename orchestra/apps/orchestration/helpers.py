@@ -7,10 +7,9 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 
 
 def send_report(method, args, log):
-    backend = method.im_class().get_name()
     server = args[0]
-    subject = '[Orchestra] %s execution %s on %s'
-    subject = subject % (backend, log.state, server)
+    backend = method.__self__.__class__.__name__
+    subject = '[Orchestra] %s execution %s on %s'  % (backend, log.state, server)
     separator = "\n%s\n\n" % ('~ '*40,)
     message = separator.join([
         "[EXIT CODE] %s" % log.exit_code,

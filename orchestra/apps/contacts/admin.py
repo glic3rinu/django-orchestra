@@ -62,7 +62,7 @@ class ContactAdmin(AccountAdminMixin, ExtendedModelAdmin):
     actions = [SendEmail(),]
     
     def dispaly_name(self, contact):
-        return unicode(contact)
+        return str(contact)
     dispaly_name.short_description = _("Name")
     dispaly_name.admin_order_field = 'short_name'
     

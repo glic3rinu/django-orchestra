@@ -20,7 +20,7 @@ from .decorators import admin_field
 
 def get_modeladmin(model, import_module=True):
     """ returns the modeladmin registred for model """
-    for k,v in admin.site._registry.iteritems():
+    for k,v in admin.site._registry.items():
         if k is model:
             return v
     if import_module:
@@ -97,7 +97,7 @@ def change_url(obj):
 @admin_field
 def admin_link(*args, **kwargs):
     instance = args[-1]
-    if kwargs['field'] in ['id', 'pk', '__unicode__']:
+    if kwargs['field'] in ['id', 'pk', '__str__']:
         obj = instance
     else:
         try:

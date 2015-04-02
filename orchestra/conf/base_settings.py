@@ -48,8 +48,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'orchestra.core.caches.RequestCacheMiddleware',
-    # ATOMIC REQUESTS do not wrap middlewares
-    'orchestra.core.middlewares.TransactionMiddleware',
+    # also handles transations, ATOMIC REQUESTS does not wrap middlewares
     'orchestra.apps.orchestration.middlewares.OperationsMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',

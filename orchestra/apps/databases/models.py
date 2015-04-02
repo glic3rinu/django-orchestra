@@ -26,7 +26,7 @@ class Database(models.Model):
     class Meta:
         unique_together = ('name', 'type')
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.name
     
     @property
@@ -59,7 +59,7 @@ class DatabaseUser(models.Model):
         verbose_name_plural = _("DB users")
         unique_together = ('username', 'type')
     
-    def __unicode__(self):
+    def __str__(self):
         return self.username
     
     def get_username(self):
@@ -68,7 +68,7 @@ class DatabaseUser(models.Model):
     def set_password(self, password):
         if self.type == self.MYSQL:
             # MySQL stores sha1(sha1(password).binary).hex
-            binary = hashlib.sha1(password).digest()
+            binary = hashlib.sha1(password.encode('utf-8')).digest()
             hexdigest = hashlib.sha1(binary).hexdigest()
             self.password = '*%s' % hexdigest.upper()
         else:

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import resolve
 from django.db.models import Q
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -22,7 +23,7 @@ class WebsiteDirectiveInline(admin.TabularInline):
     extra = 1
     
     DIRECTIVES_HELP_TEXT = {
-        op.name: str(unicode(op.help_text)) for op in SiteDirective.get_plugins()
+        op.name: force_text(op.help_text) for op in SiteDirective.get_plugins()
     }
     
     def formfield_for_dbfield(self, db_field, **kwargs):

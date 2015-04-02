@@ -41,7 +41,7 @@ class DomainInline(admin.TabularInline):
     extra = 0
     verbose_name_plural = _("Subdomains")
     
-    domain_link = admin_link('__unicode__')
+    domain_link = admin_link('__str__')
     domain_link.short_description = _("Name")
     account_link = admin_link('account')
     

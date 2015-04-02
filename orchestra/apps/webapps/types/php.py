@@ -61,7 +61,7 @@ class PHPApp(AppType):
     
     @cached
     def get_php_options(self):
-        php_version = self.get_php_version()
+        php_version = self.get_php_version_number()
         php_options = AppOption.get_option_groups()[AppOption.PHP]
         return [op for op in php_options if getattr(self, 'deprecated', 999) > php_version]
     
@@ -93,6 +93,9 @@ class PHPApp(AppType):
                 if function not in enabled_functions:
                     disabled_functions.append(function)
             init_vars['dissabled_functions'] = ','.join(disabled_functions)
+        timeout = self.instance.options.filter(name='timeout').first()
+        if timeout:
+            init_vars['max_execution_time'] = timeout.value
         if self.PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:
             context = self.get_directive_context()
             error_log_path = os.path.normpath(self.PHP_ERROR_LOG_PATH % context)
@@ -128,4 +131,4 @@ class PHPApp(AppType):
             raise ValueError("No version number matches for '%s'" % php_version)
         if len(number) > 1:
             raise ValueError("Multiple version number matches for '%s'" % php_version)
-        return number[0]
+        return float(number[0])

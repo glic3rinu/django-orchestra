@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -20,7 +21,7 @@ class WebAppOptionInline(admin.TabularInline):
     extra = 1
     
     OPTIONS_HELP_TEXT = {
-        op.name: str(unicode(op.help_text)) for op in AppOption.get_plugins()
+        op.name: force_text(op.help_text) for op in AppOption.get_plugins()
     }
     
     class Media:

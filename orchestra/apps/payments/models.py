@@ -26,7 +26,7 @@ class PaymentSource(models.Model):
     
     objects = PaymentSourcesQueryset.as_manager()
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.label, self.method_class.verbose_name)
     
     @cached_property
@@ -76,7 +76,7 @@ class TransactionQuerySet(models.QuerySet):
         return self.exclude(state=Transaction.REJECTED)
     
     def amount(self):
-        return self.aggregate(models.Sum('amount')).values()[0]
+        return next(iter(self.aggregate(models.Sum('amount')).values()))
     
     def processing(self):
         return self.filter(state__in=[Transaction.EXECUTED, Transaction.WAITTING_EXECUTION])
@@ -111,7 +111,7 @@ class Transaction(models.Model):
     
     objects = TransactionQuerySet.as_manager()
     
-    def __unicode__(self):
+    def __str__(self):
         return "Transaction #{}".format(self.id)
     
     @property
@@ -173,7 +173,7 @@ class TransactionProcess(models.Model):
     class Meta:
         verbose_name_plural = _("Transaction processes")
     
-    def __unicode__(self):
+    def __str__(self):
         return '#%i' % self.id
     
     def check_state(*args):

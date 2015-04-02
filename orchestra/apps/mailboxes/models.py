@@ -25,7 +25,7 @@ class Mailbox(models.Model):
     filtering = models.CharField(max_length=16,
             default=settings.MAILBOXES_MAILBOX_DEFAULT_FILTERING,
             choices=[
-                (k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.iteritems()
+                (k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.items()
             ])
     custom_filtering = models.TextField(_("filtering"), blank=True,
             validators=[validators.validate_sieve],
@@ -36,7 +36,7 @@ class Mailbox(models.Model):
     class Meta:
         verbose_name_plural = _("mailboxes")
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     @cached_property
@@ -62,7 +62,7 @@ class Mailbox(models.Model):
     
     def get_filtering(self):
         __, filtering = settings.MAILBOXES_MAILBOX_FILTERINGS[self.filtering]
-        if isinstance(filtering, basestring):
+        if isinstance(filtering, str):
             return filtering
         return filtering(self)
     
@@ -104,7 +104,7 @@ class Address(models.Model):
         verbose_name_plural = _("addresses")
         unique_together = ('name', 'domain')
     
-    def __unicode__(self):
+    def __str__(self):
         return self.email
     
     @property
@@ -154,7 +154,7 @@ class Autoresponse(models.Model):
     message = models.TextField(_("message"))
     enabled = models.BooleanField(_("enabled"), default=False)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.address
 
 

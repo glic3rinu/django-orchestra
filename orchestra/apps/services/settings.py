@@ -33,3 +33,10 @@ SERVICES_RATE_CLASS = getattr(settings, 'SERVICES_RATE_CLASS',
 SERVICES_DEFAULT_IGNORE_PERIOD = getattr(settings, 'SERVICES_DEFAULT_IGNORE_PERIOD',
     'TEN_DAYS'
 )
+
+
+SERVICES_IGNORE_ACCOUNT_TYPE = getattr(settings, 'SERVICES_IGNORE_ACCOUNT_TYPE', (
+    'superuser',
+    'STAFF',
+    'FRIEND',
+))

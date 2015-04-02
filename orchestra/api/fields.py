@@ -20,17 +20,17 @@ class OptionField(serializers.WritableField):
         properties = serializers.RelationsList()
         if value:
             model = getattr(parent.opts.model, self.source or 'options').related.model
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 try:
                     value = json.loads(value)
                 except:
                     raise exceptions.ParseError("Malformed property: %s" % str(value))
             if not related_manager:
                 # POST (new parent object)
-                return [ model(name=n, value=v) for n,v in value.iteritems() ]
+                return [ model(name=n, value=v) for n,v in value.items() ]
             # PUT
             to_save = []
-            for (name, value) in value.iteritems():
+            for (name, value) in value.items():
                 try:
                     # Update existing property
                     prop = related_manager.get(name=name)

@@ -4,9 +4,10 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra import plugins
-from orchestra.plugins.forms import PluginDataForm
+from orchestra.apps.orchestration.models import BackendOperation as Operation
 from orchestra.core import validators
 from orchestra.forms import widgets
+from orchestra.plugins.forms import PluginDataForm
 from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class, random_ascii
 
@@ -90,6 +91,23 @@ class SoftwareService(plugins.Plugin):
         return self.site_domain or '.'.join(
             (self.instance.name, self.site_base_domain)
         )
+    
+    def clean_data(self):
+        data = super(SoftwareService, self).clean_data()
+        if not self.instance.pk:
+            try:
+                log = Operation.execute_action(self.instance, 'validate_creation')[0]
+            except IndexError:
+                pass
+            else:
+                errors = {}
+                if 'user-exists' in log.stdout:
+                    errors['name'] = _("User with this username already exists.")
+                elif 'email-exists' in log.stdout:
+                    errors['email'] = _("User with this email address already exists.")
+                if errors:
+                    raise ValidationError(errors)
+        return data
     
     def save(self):
         pass

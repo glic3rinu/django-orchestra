@@ -23,7 +23,7 @@ class Plan(models.Model):
     allow_multiple = models.BooleanField(_("allow multiple"), default=False,
         help_text=_("Designates whether this plan allow for multiple contractions."))
     
-    def __unicode__(self):
+    def __str__(self):
         return self.get_verbose_name()
     
     def clean(self):
@@ -41,7 +41,7 @@ class ContractedPlan(models.Model):
     class Meta:
         verbose_name_plural = _("plans")
     
-    def __unicode__(self):
+    def __str__(self):
         return str(self.plan)
     
     def clean(self):
@@ -80,7 +80,7 @@ class Rate(models.Model):
     class Meta:
         unique_together = ('service', 'plan', 'quantity')
     
-    def __unicode__(self):
+    def __str__(self):
         return "{}-{}".format(str(self.price), self.quantity)
     
     @classmethod
@@ -90,7 +90,7 @@ class Rate(models.Model):
     @classmethod
     def get_choices(cls):
         choices = []
-        for name, method in cls.RATE_METHODS.iteritems():
+        for name, method in cls.RATE_METHODS.items():
             choices.append((name, method.verbose_name))
         return choices
 

@@ -24,7 +24,7 @@ class HyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
         """ removes postonly_fields from attrs when not posting """
         model_attrs = dict(**attrs)
         if instance is not None:
-            for attr, value in attrs.iteritems():
+            for attr, value in attrs.items():
                 if attr in self.opts.postonly_fields:
                     model_attrs.pop(attr)
         return super(HyperlinkedModelSerializer, self).restore_object(model_attrs, instance)

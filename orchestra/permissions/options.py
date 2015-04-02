@@ -38,7 +38,7 @@ class Permission(object):
         
         # has_permission.perm(user)
         for func in inspect.getmembers(type(self), predicate=inspect.ismethod):
-            if func[1].im_class is not type(self):
+            if not isinstance(self, func[1].__self__.__class__):
                 # aggregated methods
                 setattr(call, func[0], functools.partial(func[1], obj, cls))
             else:
@@ -92,14 +92,14 @@ class RelatedPermission(Permission):
             for relation in relations:
                 parent = getattr(parent, relation).field.rel.to
         else:
-            parent = reduce(getattr, relations, obj)
+            parent = functools.reduce(getattr, relations, obj)
         
         # call interface: has_permission(user, 'perm')
         def call(user, perm):
             return parent.has_permission(user, perm)
         
         # method interface: has_permission.perm(user)
-        for name, func in parent.has_permission.__dict__.iteritems():
+        for name, func in parent.has_permission.__dict__.items():
             if not name.startswith('_'):
                 setattr(call, name, func)
         

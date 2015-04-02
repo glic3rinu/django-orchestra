@@ -18,7 +18,7 @@ class ServiceMount(plugins.PluginMount):
         super(ServiceMount, cls).__init__(name, bases, attrs)
 
 
-class ServiceBackend(plugins.Plugin):
+class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
     """
     Service management backend base class
     
@@ -37,13 +37,8 @@ class ServiceBackend(plugins.Plugin):
     default_route_match = 'True'
     block = False # Force the backend manager to block in multiple backend executions and execute them synchronously
     
-    __metaclass__ = ServiceMount
-    
-    def __unicode__(self):
-        return type(self).__name__
-    
     def __str__(self):
-        return unicode(self)
+        return type(self).__name__
     
     def __init__(self):
         self.head = []
@@ -138,7 +133,7 @@ class ServiceBackend(plugins.Plugin):
                 scripts[method] += commands
             except KeyError:
                 pass
-        return list(scripts.iteritems())
+        return list(scripts.items())
     
     def get_banner(self):
         time = timezone.now().strftime("%h %d, %Y %I:%M:%S %Z")
@@ -159,7 +154,7 @@ class ServiceBackend(plugins.Plugin):
     
     def append(self, *cmd):
         # aggregate commands acording to its execution method
-        if isinstance(cmd[0], basestring):
+        if isinstance(cmd[0], str):
             method = self.script_method
             cmd = cmd[0]
         else:

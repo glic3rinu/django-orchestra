@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from django import forms
 from django.conf.urls import patterns
 from django.contrib import admin
@@ -267,8 +265,8 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
             changes = get_ticket_changes(self, request, ticket)
             if changes:
                 content = markdown_formated_changes(changes)
-                content += request.POST[u'messages-2-0-content']
-                request.POST[u'messages-2-0-content'] = content
+                content += request.POST['messages-2-0-content']
+                request.POST['messages-2-0-content'] = content
         ticket.mark_as_read_by(request.user)
         context = {'title': "Issue #%i - %s" % (ticket.id, ticket.subject)}
         context.update(extra_context or {})

@@ -174,7 +174,7 @@ UNITS_CONVERSIONS = {
 }
 
 def unit_to_bytes(unit):
-    for bytes, units in UNITS_CONVERSIONS.iteritems():
+    for bytes, units in UNITS_CONVERSIONS.items():
         if unit in units:
             return bytes
     raise KeyError("%s is not a valid unit." % unit)

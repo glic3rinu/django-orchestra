@@ -118,6 +118,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             listen.owner = {{ user }}
             listen.group = {{ group }}
             pm = ondemand
+            pm.max_requests = {{ max_requests }}
             {% if max_children %}pm.max_children = {{ max_children }}{% endif %}
             {% if request_terminate_timeout %}request_terminate_timeout = {{ request_terminate_timeout }}{% endif %}
             {% for name, value in init_vars.iteritems %}
@@ -131,7 +132,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         # Format PHP init vars
         init_vars = opt.get_php_init_vars(merge=self.MERGE)
         if init_vars:
-            init_vars = [ '-d %s="%s"' % (k,v) for k,v in init_vars.iteritems() ]
+            init_vars = [ '-d %s="%s"' % (k,v) for k,v in init_vars.items() ]
         init_vars = ', '.join(init_vars)
         context.update({
             'php_binary': os.path.normpath(settings.WEBAPPS_PHP_CGI_BINARY_PATH % context),
@@ -144,6 +145,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             # %(banner)s
             export PHPRC=%(php_rc)s
             export PHP_INI_SCAN_DIR=%(php_ini_scan)s
+            export PHP_FCGI_MAX_REQUESTS=%(max_requests)s
             exec %(php_binary)s %(php_init_vars)s""") % context
     
     def get_fcgid_cmd_options(self, webapp, context):
@@ -152,7 +154,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             'IOTimeout': webapp.get_options().get('timeout', None),
         }
         cmd_options = []
-        for directive, value in maps.iteritems():
+        for directive, value in maps.items():
             if value:
                 cmd_options.append("%s %s" % (directive, value))
         if cmd_options:
@@ -187,6 +189,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         context.update({
             'php_version': webapp.type_instance.get_php_version(),
             'php_version_number': webapp.type_instance.get_php_version_number(),
+            'max_requests': settings.WEBAPPS_PHP_MAX_REQUESTS,
         })
         self.update_fcgid_context(webapp, context)
         self.update_fpm_context(webapp, context)

@@ -1,5 +1,5 @@
 import copy
-from urlparse import parse_qs
+from urllib.parse import urlparse
 
 from django import forms
 from django.contrib import admin

@@ -67,8 +67,8 @@ def _prepend_missing(rates):
 def step_price(rates, metric):
     # Step price
     group = []
-    minimal = (sys.maxint, [])
-    for plan, rates in rates.group_by('plan').iteritems():
+    minimal = (sys.maxsize, [])
+    for plan, rates in rates.group_by('plan').items():
         rates = _prepend_missing(rates)
         value, steps = _compute(rates, metric)
         if plan.is_combinable:

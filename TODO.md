@@ -236,7 +236,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * display subline links on billlines, to show that they exists.
 * update service orders on a celery task? because it take alot
 
-* 
 * billline quantity eval('10x100') instead of miningless description '(10*100)' 
 
 * IMPORTANT do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
@@ -245,8 +244,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
     * threshold for significative metric accountancy on services.handler
     * http://orchestra.pangea.org/admin/orders/order/6418/
     * http://orchestra.pangea.org/admin/orders/order/6495/bill_selected_orders/
-    * >>> round(float(decimal.Decimal('2.63'))/0.5)*0.5
-    * >>> round(float(str(decimal.Decimal('2.99')).split('.')[0]))/1*1
 
 * move normurlpath to orchestra.utils from websites.utils
 
@@ -286,23 +283,13 @@ translation.activate('ca')
 ugettext("Description")
 
 
-Object = disk*15
-bscw quota
-root@web:/home/pangea/bscw/bin ./bsadmin quota report
-                                 Disk                         Objects
-User                     usage   soft   hard time       usage   soft   hard time
-xxx2          --           0    20M    22M                9    200    300     
-xxxxxxxxxxxxx --           0    20M    22M                8    200    300     
-xxxxx         --           0    20M    22M                7    200    300     
-xxxxx         --           0    20M    22M                7    200    300     
-
 
 * saas validate_creation generic approach, for all backends. standard output
 
 * html code x: &times;
 
 
-* cleanup backendlogs, monitor data and metricstorage
+* periodic task to cleanup backendlogs, monitor data and metricstorage 
 * create orchestrate databases.Database pk=1 -n --dry-run | --noinput --action save (default)|delete --backend name (limit to this backend) --help
 
 * uwsgi     --max-requests=5000 \           # respawn processes after serving 5000 requests and
@@ -313,3 +300,19 @@ celery max-tasks-per-child
 * postupgradeorchestra send signals in order to hook custom stuff
 
 * make base home for systemusers that ara homed into main account systemuser
+
+
+* user force_text instead of unicode for _()
+
+* autoscale celery workers http://docs.celeryproject.org/en/latest/userguide/workers.html#autoscaling
+
+
+* Delete transaction middleware
+
+
+* webapp has_website list filter
+
+
+apt-get install python3 python3-pip
+cp /usr/local/lib/python2.7/dist-packages/orchestra.pth /usr/local/lib/python3.4/dist-packages/
+glic3rinu's django-fluent-dashboard

@@ -41,7 +41,7 @@ def insert_resource_serializers():
             pass
         viewset.serializer_class.Meta.fields = fields
     # Create nested serializers on target models
-    for ct, resources in Resource.objects.group_by('content_type').iteritems():
+    for ct, resources in Resource.objects.group_by('content_type').items():
         model = ct.model_class()
         try:
             router.insert(model, 'resources', ResourceSerializer, required=False, many=True, source='resource_set')

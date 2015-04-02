@@ -262,7 +262,7 @@ def insert_resource_inlines():
             if inline.__name__ == 'ResourceInline':
                 modeladmin_class.inlines.remove(inline)
     resources = Resource.objects.filter(is_active=True)
-    for ct, resources in resources.group_by('content_type').iteritems():
+    for ct, resources in resources.group_by('content_type').items():
         inline = resource_inline_factory(resources)
         model = ct.model_class()
         insertattr(model, 'inlines', inline)

@@ -11,6 +11,7 @@ ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
     ('COMPANY', _("Company")),
     ('PUBLICBODY', _("Public body")),
     ('STAFF', _("Staff")),
+    ('FRIEND', _("Friend")),
 ))
 
 

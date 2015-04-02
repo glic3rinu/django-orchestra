@@ -18,7 +18,7 @@ CONTACTS_DEFAULT_CITY = getattr(settings, 'CONTACTS_DEFAULT_CITY',
 
 
 CONTACTS_COUNTRIES = getattr(settings, 'CONTACTS_COUNTRIES', (
-    (k,v) for k,v in data.COUNTRIES.iteritems()
+    (k,v) for k,v in data.COUNTRIES.items()
 ))
 
 

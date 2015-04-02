@@ -33,7 +33,7 @@ class SelectSourceForm(forms.ModelForm):
                     choices.append((source.pk, str(source)))
             self.fields['source'].choices = choices
             self.fields['source'].initial = choices[-1][0]
-            self.fields['bill_link'].initial = admin_link('__unicode__')(bill)
+            self.fields['bill_link'].initial = admin_link('__str__')(bill)
             self.fields['display_type'].initial = bill.get_type_display()
     
     def clean_source(self):

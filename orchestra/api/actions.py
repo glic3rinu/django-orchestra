@@ -10,7 +10,7 @@ class SetPasswordApiMixin(object):
     def set_password(self, request, pk):
         obj = self.get_object()
         data = request.DATA
-        if isinstance(data, basestring):
+        if isinstance(data, str):
             data = {
                 'password': data
             }

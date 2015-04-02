@@ -54,7 +54,7 @@ class MiscServiceAdmin(ExtendedModelAdmin):
 
 class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelAdmin):
     list_display = (
-        '__unicode__', 'service_link', 'amount', 'dispaly_active', 'account_link'
+        '__str__', 'service_link', 'amount', 'dispaly_active', 'account_link'
     )
     list_filter = ('service__name', 'is_active')
     list_select_related = ('service', 'account')

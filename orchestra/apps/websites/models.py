@@ -40,7 +40,7 @@ class Website(models.Model):
     class Meta:
         unique_together = ('name', 'account')
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     @property
@@ -107,7 +107,7 @@ class WebsiteDirective(models.Model):
             choices=SiteDirective.get_choices())
     value = models.CharField(_("value"), max_length=256)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     @cached_property
@@ -133,7 +133,7 @@ class Content(models.Model):
     class Meta:
         unique_together = ('website', 'path')
     
-    def __unicode__(self):
+    def __str__(self):
         try:
             return self.website.name + self.path
         except Website.DoesNotExist:

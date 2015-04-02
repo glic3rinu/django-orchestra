@@ -11,7 +11,7 @@ def filter_actions(modeladmin, ticket, request):
             del_actions.append('take')
     exclude = lambda a: not (a == action or a.url_name == action)
     for action in del_actions:
-        actions = filter(exclude, actions)
+        actions = list(filter(exclude, actions))
     return actions
 
 

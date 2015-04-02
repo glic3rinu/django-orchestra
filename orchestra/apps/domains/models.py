@@ -23,7 +23,7 @@ class Domain(models.Model):
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial,
             help_text=_("Serial number"))
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     @classmethod
@@ -228,7 +228,7 @@ class Record(models.Model):
     type = models.CharField(_("type"), max_length=32, choices=TYPE_CHOICES)
     value = models.CharField(_("value"), max_length=256)
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s %s IN %s %s" % (self.domain, self.get_ttl(), self.type, self.value)
     
     def clean(self):

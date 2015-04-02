@@ -30,6 +30,13 @@ WEBAPPS_FCGID_CMD_OPTIONS_PATH = getattr(settings, 'WEBAPPS_FCGID_CMD_OPTIONS_PA
 )
 
 
+# Greater or equal to your FcgidMaxRequestsPerProcess
+# http://httpd.apache.org/mod_fcgid/mod/mod_fcgid.html#examples
+WEBAPPS_PHP_MAX_REQUESTS = getattr(settings, 'WEBAPPS_PHP_MAX_REQUESTS',
+    400
+)
+
+
 WEBAPPS_PHP_ERROR_LOG_PATH = getattr(settings, 'WEBAPPS_PHP_ERROR_LOG_PATH',
     ''
 )
@@ -92,7 +99,7 @@ WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_
 
 
 #WEBAPPS_TYPES_OVERRIDE = getattr(settings, 'WEBAPPS_TYPES_OVERRIDE', {})
-#for webapp_type, value in WEBAPPS_TYPES_OVERRIDE.iteritems():
+#for webapp_type, value in WEBAPPS_TYPES_OVERRIDE.items():
 #    if value is None:
 #        WEBAPPS_TYPES.pop(webapp_type, None)
 #    else:

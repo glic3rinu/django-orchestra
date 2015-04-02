@@ -18,13 +18,13 @@ class Command(makemessages.Command):
             self.remove_database_files()
     
     def get_contents(self):
-        for model, fields in ModelTranslation._registry.iteritems():
+        for model, fields in ModelTranslation._registry.items():
             for field in fields:
                 contents = []
                 for content in model.objects.values_list('id', field):
                     pk, value = content
                     contents.append(
-                        (pk, u"_(u'%s')" % value)
+                        (pk, "_(u'%s')" % value)
                     )
                 if contents:
                     yield ('_'.join((model._meta.db_table, field)), contents)
@@ -38,7 +38,7 @@ class Command(makemessages.Command):
             2) Django's makemessages will work with no modifications
         """
         for name, contents in self.get_contents():
-            name = unicode(name)
+            name = str(name)
             maximum = None
             content = {}
             for pk, value in contents:
@@ -46,9 +46,9 @@ class Command(makemessages.Command):
                     maximum = pk
                 content[pk] = value
             tmpcontent = []
-            for ix in xrange(maximum+1):
+            for ix in range(maximum+1):
                 tmpcontent.append(content.get(ix, ''))
-            tmpcontent = u'\n'.join(tmpcontent) + '\n'
+            tmpcontent = '\n'.join(tmpcontent) + '\n'
             filename = 'database_%s.sql.py' % name
             self.database_files.append(filename)
             with open(filename, 'w') as tmpfile:

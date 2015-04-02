@@ -32,7 +32,7 @@ def api_link(context):
 
 def get_services():
     childrens = []
-    for model, options in services.get().iteritems():
+    for model, options in services.get().items():
         if options.get('menu', True):
             opts = model._meta
             url = reverse('admin:{}_{}_changelist'.format(
@@ -50,7 +50,7 @@ def get_accounts():
     if isinstalled('orchestra.apps.issues'):
         url = reverse('admin:issues_ticket_changelist')
         childrens.append(items.MenuItem(_("Tickets"), url))
-    for model, options in accounts.get().iteritems():
+    for model, options in accounts.get().items():
         if options.get('menu', True):
             opts = model._meta
             url = reverse('admin:{}_{}_changelist'.format(

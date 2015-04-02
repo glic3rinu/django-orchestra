@@ -24,7 +24,7 @@ class VPS(models.Model):
         verbose_name = "VPS"
         verbose_name_plural = "VPSs"
     
-    def __unicode__(self):
+    def __str__(self):
         return self.hostname
     
     def set_password(self, raw_password):

@@ -2,7 +2,7 @@ import ftplib
 import os
 import time
 import textwrap
-from StringIO import StringIO
+from io import StringIO
 
 from django.conf import settings as djsettings
 from django.contrib.contenttypes.models import ContentType

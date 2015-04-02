@@ -55,7 +55,7 @@ class Contact(models.Model):
             choices=settings.CONTACTS_COUNTRIES,
             default=settings.CONTACTS_DEFAULT_COUNTRY)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.full_name or self.short_name
     
     def clean(self):

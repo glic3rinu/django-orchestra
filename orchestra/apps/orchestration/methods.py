@@ -29,7 +29,8 @@ def SSH(backend, log, server, cmds, async=False):
     """
     script = '\n'.join(cmds)
     script = script.replace('\r', '')
-    digest = hashlib.md5(script).hexdigest()
+    bscript = script.encode('utf-8')
+    digest = hashlib.md5(bscript).hexdigest()
     path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_PATH, digest)
     remote_path = "%s.remote" % path
     log.script = '# %s\n%s' % (remote_path, script)
@@ -41,8 +42,8 @@ def SSH(backend, log, server, cmds, async=False):
     try:
         # Avoid "Argument list too long" on large scripts by genereting a file
         # and scping it to the remote server
-        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT, 0600), 'w') as handle:
-            handle.write(script)
+        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT, 0o600), 'wb') as handle:
+            handle.write(bscript)
         
         # ssh connection
         ssh = paramiko.SSHClient()
@@ -62,7 +63,7 @@ def SSH(backend, log, server, cmds, async=False):
         # Copy script to remote server
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.put(path, remote_path)
-        sftp.chmod(remote_path, 0600)
+        sftp.chmod(remote_path, 0o600)
         sftp.close()
         os.remove(path)
         
@@ -124,7 +125,7 @@ def SSH(backend, log, server, cmds, async=False):
 
 def Python(backend, log, server, cmds, async=False):
     # TODO collect stdout?
-    script = [ str(cmd.func.func_name) + str(cmd.args) for cmd in cmds ]
+    script = [ str(cmd.func.__name__) + str(cmd.args) for cmd in cmds ]
     script = json.dumps(script, indent=4).replace('"', '')
     log.script = '\n'.join([log.script, script])
     log.save(update_fields=['script'])
@@ -133,7 +134,7 @@ def Python(backend, log, server, cmds, async=False):
             with CaptureStdout() as stdout:
                 result = cmd(server)
             for line in stdout:
-                log.stdout += unicode(line, errors='replace') + '\n'
+                log.stdout += line + '\n'
             if async:
                 log.save(update_fields=['stdout'])
     except:

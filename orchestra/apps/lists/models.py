@@ -30,7 +30,7 @@ class List(models.Model):
     class Meta:
         unique_together = ('address_name', 'address_domain')
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     @property

@@ -24,6 +24,7 @@ autodiscover_modules('handlers')
 rate_class = import_class(settings.SERVICES_RATE_CLASS)
 
 
+
 class Service(models.Model):
     NEVER = ''
 #    DAILY = 'DAILY'
@@ -46,6 +47,8 @@ class Service(models.Model):
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
     
+    _ignore_types = ' and '.join(', '.join(settings.SERVICES_IGNORE_ACCOUNT_TYPE).rsplit(', ', 1)).lower()
+    
     description = models.CharField(_("description"), max_length=256, unique=True)
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"),
             help_text=_("Content type of the related service objects."))
@@ -66,8 +69,8 @@ class Service(models.Model):
                         "here allow to."),
             choices=ServiceHandler.get_choices())
     is_active = models.BooleanField(_("active"), default=True)
-    ignore_superusers = models.BooleanField(_("ignore superusers"), default=True,
-            help_text=_("Designates whether superuser orders are marked as ignored by default or not."))
+    ignore_superusers = models.BooleanField(_("ignore %s") % _ignore_types, default=True,
+            help_text=_("Designates whether %s orders are marked as ignored by default or not.") % _ignore_types)
     # Billing
     billing_period = models.CharField(_("billing period"), max_length=16,
             help_text=_("Renewal period for recurring invoicing."),
@@ -133,7 +136,7 @@ class Service(models.Model):
     rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
             help_text=string_concat(_("Algorithm used to interprete the rating table."), *[
                 string_concat('<br>&nbsp;&nbsp;', method.verbose_name, ': ', method.help_text)
-                    for name, method in rate_class.get_methods().iteritems()
+                    for name, method in rate_class.get_methods().items()
             ]), choices=rate_class.get_choices(), default=rate_class.get_choices()[0][0])
     on_cancel = models.CharField(_("on cancel"), max_length=16,
             help_text=_("Defines the cancellation behaviour of this service."),
@@ -153,7 +156,7 @@ class Service(models.Model):
             ),
             default=PREPAY)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.description
     
     @classmethod

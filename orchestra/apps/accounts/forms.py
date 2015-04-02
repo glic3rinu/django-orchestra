@@ -62,12 +62,12 @@ def create_account_creation_form():
             field_name = 'create_%s' % model._meta.model_name
             if self.cleaned_data[field_name]:
                 kwargs = {
-                    key: eval(value, {'account': account}) for key, value in related_kwargs.iteritems()
+                    key: eval(value, {'account': account}) for key, value in related_kwargs.items()
                 }
                 model.objects.create(account=account, **kwargs)
     
     fields.update({
-        'create_related_fields': fields.keys(),
+        'create_related_fields': list(fields.keys()),
         'clean': clean,
         'save_model': save_model,
         'save_related': save_related,

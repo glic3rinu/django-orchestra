@@ -6,9 +6,7 @@ from ..forms.fields import MultiSelectFormField
 from ..utils.apps import isinstalled
 
 
-class MultiSelectField(models.CharField):
-    __metaclass__ = models.SubfieldBase
-    
+class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
     def formfield(self, **kwargs):
         defaults = {
             'required': not self.blank,
@@ -22,7 +20,7 @@ class MultiSelectField(models.CharField):
         return MultiSelectFormField(**defaults)
     
     def get_db_prep_value(self, value, connection=None, prepared=False):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
         elif isinstance(value, list):
             return ','.join(value)

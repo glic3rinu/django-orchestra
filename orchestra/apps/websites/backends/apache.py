@@ -219,7 +219,7 @@ class Apache2Backend(ServiceController):
     
     def get_saas(self, directives):
         saas = []
-        for name, values in directives.iteritems():
+        for name, values in directives.items():
             if name.endswith('-saas'):
                 for value in values:
                     context = {

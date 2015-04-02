@@ -21,7 +21,7 @@ def process_transactions(modeladmin, request, queryset):
         msg = _("Selected transactions must be on '{state}' state")
         messages.error(request, msg.format(state=Transaction.WAITTING_PROCESSING))
         return
-    for method, transactions in queryset.group_by('source__method').iteritems():
+    for method, transactions in queryset.group_by('source__method').items():
         if method is not None:
             method = PaymentMethod.get(method)
             procs = method.process(transactions)

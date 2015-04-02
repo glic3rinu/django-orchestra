@@ -9,7 +9,7 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 def run_monitor(modeladmin, request, queryset):
     """ Resource and ResourceData run monitors """
     referer = request.META.get('HTTP_REFERER')
-    async = modeladmin.model.monitor.func_defaults[0]
+    async = modeladmin.model.monitor.__defaults__[0]
     logs = set()
     for resource in queryset:
         results = resource.monitor()

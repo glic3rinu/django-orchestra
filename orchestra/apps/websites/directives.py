@@ -47,7 +47,7 @@ class SiteDirective(Plugin):
         options = cls.get_option_groups()
         for option in options.pop(None, ()):
             yield (option.name, option.verbose_name)
-        for group, options in options.iteritems():
+        for group, options in options.items():
             yield (group, [(op.name, op.verbose_name) for op in options])
     
     def validate(self, website):

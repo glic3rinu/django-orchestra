@@ -19,16 +19,16 @@ class ShowTextWidget(forms.Widget):
         if hasattr(self, 'initial'):
             value = self.initial
         if self.bold: 
-            final_value = u'<b>%s</b>' % (value)
+            final_value = '<b>%s</b>' % (value)
         else:
             final_value = '<br/>'.join(value.split('\n'))
         if self.warning:
             final_value = (
-                u'<ul class="messagelist"><li class="warning">%s</li></ul>'
+                '<ul class="messagelist"><li class="warning">%s</li></ul>'
                 % final_value)
         if self.hidden:
             final_value = (
-                u'%s<input type="hidden" name="%s" value="%s"/>'
+                '%s<input type="hidden" name="%s" value="%s"/>'
                 % (final_value, name, value))
         return mark_safe(final_value)
     

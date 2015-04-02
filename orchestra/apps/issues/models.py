@@ -20,7 +20,7 @@ class Queue(models.Model):
             default=contacts_settings.CONTACTS_DEFAULT_EMAIL_USAGES,
             help_text=_("Contacts to notify by email"))
     
-    def __unicode__(self):
+    def __str__(self):
         return self.verbose_name or self.name
     
     def save(self, *args, **kwargs):
@@ -77,8 +77,8 @@ class Ticket(models.Model):
     class Meta:
         ordering = ['-updated_at']
     
-    def __unicode__(self):
-        return unicode(self.pk)
+    def __str__(self):
+        return str(self.pk)
     
     def get_notification_emails(self):
         """ Get emails of the users related to the ticket """
@@ -164,8 +164,8 @@ class Message(models.Model):
     class Meta:
         get_latest_by = 'id'
     
-    def __unicode__(self):
-        return u"#%i" % self.id
+    def __str__(self):
+        return "#%i" % self.id
     
     def save(self, *args, **kwargs):
         """ notify stakeholders of ticket update """

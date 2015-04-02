@@ -1,3 +1,4 @@
+
 import logging
 import threading
 import traceback
@@ -47,7 +48,7 @@ def close_connection(execute):
     def wrapper(*args, **kwargs):
         try:
             log = execute(*args, **kwargs)
-        except:
+        except Exception as e:
             pass
         else:
             wrapper.log = log
@@ -86,7 +87,7 @@ def generate(operations):
             post_action.send(**kwargs)
             if backend.block:
                 block = True
-    for value in scripts.itervalues():
+    for value in scripts.values():
         backend, operations = value
         backend.commit()
     return scripts, block
@@ -97,13 +98,13 @@ def execute(scripts, block=False, async=False):
     # Execute scripts on each server
     threads = []
     executions = []
-    for key, value in scripts.iteritems():
+    for key, value in scripts.items():
         server, __ = key
         backend, operations = value
         execute = as_task(backend.execute)
         logger.debug('%s is going to be executed on %s' % (backend, server))
         if block:
-            # Execute one bakend at a time, no need for threads
+            # Execute one backend at a time, no need for threads
             execute(server, async=async)
         else:
             execute = close_connection(execute)

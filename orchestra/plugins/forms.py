@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.encoding import force_text
 
 from orchestra.forms.widgets import ReadOnlyWidget
 
@@ -10,7 +11,7 @@ class PluginDataForm(forms.ModelForm):
         super(PluginDataForm, self).__init__(*args, **kwargs)
         if self.plugin_field in self.fields:
             value = self.plugin.get_name()
-            display = '%s <a href=".">change</a>' % unicode(self.plugin.verbose_name)
+            display = '%s <a href=".">change</a>' % force_text(self.plugin.verbose_name)
             self.fields[self.plugin_field].widget = ReadOnlyWidget(value, display)
             self.fields[self.plugin_field].help_text = getattr(self.plugin, 'help_text', '')
         if self.instance:
@@ -29,9 +30,17 @@ class PluginDataForm(forms.ModelForm):
     
     def clean(self):
         data = {}
-        for field, value in self.instance.data.iteritems():
+        # Update data fields
+        for field in self.declared_fields:
             try:
                 data[field] = self.cleaned_data[field]
             except KeyError:
-                data[field] = value
+                data[field] = self.data[field]
+        # Keep old data fields
+        for field, value in self.instance.data.items():
+            if field not in data:
+                try:
+                    data[field] = self.cleaned_data[field]
+                except KeyError:
+                    data[field] = value
         self.cleaned_data['data'] = data

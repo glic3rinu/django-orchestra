@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.encoding import force_text
 
 from .validators import validate_domain_protocol
 
@@ -36,7 +37,7 @@ class WebsiteDirectiveInlineFormSet(forms.models.BaseInlineFormSet):
                 if value is not None:
                     if directive.unique_value and value in values.get(name, []):
                         form.add_error('value', ValidationError(
-                            _("This value is already used by other %s.") % unicode(directive.get_verbose_name())
+                            _("This value is already used by other %s.") % force_text(directive.get_verbose_name())
                         ))
                 try:
                     values[name].append(value)

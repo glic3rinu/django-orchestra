@@ -31,7 +31,7 @@ class BillContact(models.Model):
             default=settings.BILLS_CONTACT_DEFAULT_COUNTRY)
     vat = models.CharField(_("VAT number"), max_length=64)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     def get_name(self):
@@ -98,7 +98,7 @@ class Bill(models.Model):
     class Meta:
         get_latest_by = 'id'
     
-    def __unicode__(self):
+    def __str__(self):
         return self.number
     
     @cached_property
@@ -235,7 +235,7 @@ class Bill(models.Model):
     
     def get_total(self):
         total = 0
-        for tax, subtotal in self.get_subtotals().iteritems():
+        for tax, subtotal in self.get_subtotals().items():
             subtotal, taxes = subtotal
             total += subtotal + taxes
         return total
@@ -287,7 +287,7 @@ class BillLine(models.Model):
     amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
             related_name='amendment_lines', null=True, blank=True)
     
-    def __unicode__(self):
+    def __str__(self):
         return "#%i" % self.number
     
     @cached_property

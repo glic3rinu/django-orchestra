@@ -1,5 +1,5 @@
-import StringIO
 import zipfile
+from io import StringIO
 
 from django.contrib import messages
 from django.contrib.admin import helpers
@@ -20,7 +20,7 @@ from .helpers import validate_contact
 
 def download_bills(modeladmin, request, queryset):
     if queryset.count() > 1:
-        stringio = StringIO.StringIO()
+        stringio = StringIO()
         archive = zipfile.ZipFile(stringio, 'w')
         for bill in queryset:
             pdf = html_to_pdf(bill.html or bill.render())
@@ -122,7 +122,7 @@ def undo_billing(modeladmin, request, queryset):
             except KeyError:
                 group[line.order] = [line]
     # TODO force incomplete info
-    for order, lines in group.iteritems():
+    for order, lines in group.items():
         # Find path from ini to end
         for attr in ['order_id', 'order_billed_on', 'order_billed_until']:
             if not getattr(self, attr):
@@ -131,7 +131,7 @@ def undo_billing(modeladmin, request, queryset):
         if 'a' != order.billed_on:
             raise ValidationError(_("Dates don't match"))
         prev = order.billed_on
-        for ix in xrange(0, len(lines)):
+        for ix in range(0, len(lines)):
             if lines[ix].order_b: # TODO we need to look at the periods here
                 pass
         order.billed_until = self.order_billed_until

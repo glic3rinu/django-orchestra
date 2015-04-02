@@ -80,7 +80,7 @@ class ChangeViewActionsMixin(object):
         """ allow customization on modelamdin """
         views = []
         for action in self.change_view_actions:
-            if isinstance(action, basestring):
+            if isinstance(action, str):
                 action = getattr(self, action)
             view = action_to_view(action, self)
             view.url_name = getattr(action, 'url_name', action.__name__)

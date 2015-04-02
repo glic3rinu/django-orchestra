@@ -39,7 +39,7 @@ class TransactionInline(admin.TabularInline):
     )
     readonly_fields = fields
     
-    transaction_link = admin_link('__unicode__', short_description=_("ID"))
+    transaction_link = admin_link('__str__', short_description=_("ID"))
     bill_link = admin_link('bill')
     source_link = admin_link('source')
     display_state = admin_colored('state', colors=STATE_COLORS)

@@ -1,3 +1,5 @@
+import textwrap
+
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
@@ -26,11 +28,11 @@ class BSCWBackend(ServiceController):
         if hasattr(saas, 'password'):
             self.append(textwrap.dedent("""\
                 if [[ ! $(%(bsadmin)s register %(email)s) && ! $(%(bsadmin)s users -n %(username)s) ]]; then
-                    # Change password
-                    %(bsadmin)s chpwd %(username)s '%(password)s'
-                else
                     # Create new user
                     %(bsadmin)s register -r %(email)s %(username)s '%(password)s'
+                else
+                    # Change password
+                    %(bsadmin)s chpwd %(username)s '%(password)s'
                 fi
                 """) % context
             )

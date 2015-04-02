@@ -3,7 +3,7 @@ import lxml.builder
 import os
 from lxml import etree
 from lxml.builder import E
-from StringIO import StringIO
+from io import StringIO
 
 from django import forms
 from django.utils import timezone

@@ -44,7 +44,7 @@ class Account(auth.AbstractBaseUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     @property

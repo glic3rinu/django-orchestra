@@ -17,7 +17,7 @@ class AdminFormMixin(object):
     def as_admin(self):
         prepopulated_fields = {}
         fieldsets = [
-            (None, {'fields': self.fields.keys()})
+            (None, {'fields': list(self.fields.keys())})
         ]
         adminform = helpers.AdminForm(self, fieldsets, prepopulated_fields)
         template = Template(
@@ -32,7 +32,7 @@ class AdminFormSet(BaseModelFormSet):
     def as_admin(self):
         prepopulated = {}
         fieldsets = [
-            (None, {'fields': self.form().fields.keys()})
+            (None, {'fields': list(self.form().fields.keys())})
         ]
         readonly = getattr(self.form.Meta, 'readonly_fields', ())
         if not hasattr(self.modeladmin, 'verbose_name_plural'):
@@ -114,7 +114,11 @@ class AdminPasswordChangeForm(forms.Form):
         if password:
             self.user.set_password(password)
             if commit:
-                self.user.save(update_fields=['password'])
+                try:
+                    self.user.save(update_fields=['password'])
+                except ValueError:
+                    # password is not a field but an attribute
+                    self.user.save() # Trigger the backend
         for ix, rel in enumerate(self.related):
             password = self.cleaned_data['password1_%s' % ix]
             if password:

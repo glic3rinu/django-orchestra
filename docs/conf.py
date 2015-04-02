@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 # -*- coding: utf-8 -*-
 #
 # django-orchestra documentation build configuration file, created by

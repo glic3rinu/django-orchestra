@@ -34,7 +34,7 @@ class PhpListSaaSBackend(ServiceController):
                 'adminpassword': saas.password,
             }
             response = requests.post(install_link, data=post)
-            print response.content
+            print(response.content)
             if response.status_code != 200:
                 raise RuntimeError("Bad status code %i" % response.status_code)
         else:

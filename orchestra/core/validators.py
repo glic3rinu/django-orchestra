@@ -15,7 +15,7 @@ from ..utils.python import import_class
 def all_valid(kwargs):
     """ helper function to merge multiple validators at once """
     errors = {}
-    for field, validator in kwargs.iteritems():
+    for field, validator in kwargs.items():
         try:
             validator[0](*validator[1:])
         except ValidationError as error:

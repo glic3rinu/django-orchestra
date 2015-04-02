@@ -36,7 +36,7 @@ class SaaS(models.Model):
             ('name', 'service'),
         )
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s@%s" % (self.name, self.service)
     
     @cached_property

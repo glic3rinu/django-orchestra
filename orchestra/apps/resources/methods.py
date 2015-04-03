@@ -63,11 +63,14 @@ class MonthlyAvg(MonthlySum):
         )
     
     def compute_usage(self, dataset):
-        last = dataset.latest()
+        result = 0
+        try:
+            last = dataset.latest()
+        except dataset.model.DoesNotExist:
+            return result
         epoch = self.get_epoch()
         total = (last.created_at-epoch).total_seconds()
         ini = epoch
-        result = 0
         for data in dataset:
             slot = (data.created_at-ini).total_seconds()
             result += data.value * decimal.Decimal(str(slot/total))

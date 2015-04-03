@@ -42,7 +42,7 @@ class Command(BaseCommand):
             CELERYD_CHDIR="%(site_dir)s"
             
             # How to call "manage.py celeryd_multi"
-            CELERYD_MULTI="$CELERYD_CHDIR/manage.py celeryd_multi"
+            CELERYD_MULTI="python3 $CELERYD_CHDIR/manage.py celeryd_multi"
             
             # Extra arguments to celeryd
             CELERYD_OPTS="-P:w1 processes -c:w1 %(processes)s -Q:w1 celery"
@@ -67,14 +67,14 @@ class Command(BaseCommand):
             CELERYD_STATE_DB="$CELERYD_CHDIR/persistent_revokes"
             
             # Celeryev
-            CELERYEV="$CELERYD_CHDIR/manage.py"
+            CELERYEV="python3 $CELERYD_CHDIR/manage.py"
             CELERYEV_CAM="djcelery.snapshot.Camera"
             CELERYEV_USER="$CELERYD_USER"
             CELERYEV_GROUP="$CELERYD_USER"
             CELERYEV_OPTS="celerycam"
             
             # Celerybeat
-            CELERYBEAT="${CELERYD_CHDIR}/manage.py celerybeat"
+            CELERYBEAT="python3 ${CELERYD_CHDIR}/manage.py celerybeat"
             CELERYBEAT_USER="$CELERYD_USER"
             CELERYBEAT_GROUP="$CELERYD_USER"
             CELERYBEAT_CHDIR="$CELERYD_CHDIR"

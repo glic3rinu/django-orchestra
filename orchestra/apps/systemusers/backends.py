@@ -40,8 +40,8 @@ class SystemUserBackend(ServiceController):
         self.append(textwrap.dedent("""\
             { sleep 2 && killall -u %(user)s -s KILL; } &
             killall -u %(user)s || true
-            userdel %(user)s || true
-            groupdel %(group)s || true""") % context
+            userdel %(user)s || exit_code=1
+            groupdel %(group)s || exit_code=1""") % context
         )
         self.delete_home(context, user)
     
@@ -52,7 +52,7 @@ class SystemUserBackend(ServiceController):
     def delete_home(self, context, user):
         if user.home.rstrip('/') == user.get_base_home().rstrip('/'):
             # TODO delete instead of this shit
-            self.append("mv %(home)s %(home)s.deleted" % context)
+            self.append("mv %(home)s %(home)s.deleted || exit_code=1" % context)
     
     def get_groups(self, user):
         if user.is_main:

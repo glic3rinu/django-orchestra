@@ -238,7 +238,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * billline quantity eval('10x100') instead of miningless description '(10*100)' 
 
-* IMPORTANT do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
+# FIXME do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
     * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
     * add ini, end dates on bill lines and breakup quanity into size(defaut:1) and metric
     * threshold for significative metric accountancy on services.handler
@@ -313,6 +313,16 @@ celery max-tasks-per-child
 * webapp has_website list filter
 
 
+
+# FIXME account deletion generates a integrity error
+
+
 apt-get install python3 python3-pip
 cp /usr/local/lib/python2.7/dist-packages/orchestra.pth /usr/local/lib/python3.4/dist-packages/
 glic3rinu's django-fluent-dashboard
+* gevent is not ported to python3 :'(
+* uwsgi python3
+
+
+# FIXME what to do when deleting accounts? set fk null and fill a username charfield? issues, invoices.. we whant all this to go away?
+* implement delete All related services

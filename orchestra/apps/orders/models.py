@@ -268,40 +268,46 @@ class MetricStorage(models.Model):
 
 accounts.register(Order)
 
-@receiver(pre_delete, dispatch_uid="orders.account_orders")
-def account_orders(sender, **kwargs):
-    account = kwargs['instance']
-    if isinstance(account, Order.account.field.rel.to):
-        account._deleted = True
+#@receiver(pre_delete, dispatch_uid="orders.account_orders")
+#def account_orders(sender, **kwargs):
+#    account = kwargs['instance']
+#    if isinstance(account, Order.account.field.rel.to):
+#        account._deleted = True
 
 
+# FIXME account deletion generates a integrity error
 # TODO build a cache hash table {model: related, model: None}
 @receiver(post_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
     if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
         # Account delete will delete all related orders, no need to maintain order consistency
-        if isinstance(instance, Order.account.field.rel.to):
-#            print 'aaaaaaaaaaaaaAAAAAAAAAAAAAAAAaa'
+#        if isinstance(instance, Order.account.field.rel.to):
+#            return
+        if sender is Order.account.field.rel.to:
             return
-#        print 'delete', sender, kwargs
-        try:
-            print(instance.account.pk)
-        except Exception as e:
-            pass
+        print('delete', sender, instance, instance.pk)
         if type(instance) in services:
             for order in Order.objects.by_object(instance).active():
                 order.cancel()
         elif not hasattr(instance, 'account'):
             related = helpers.get_related_object(instance)
+            # FIXME this shit returns objects that are already deleted
+            # Indeterminate behaviour
             if related and related != instance:
+#                if isinstance(related, Order.account.field.rel.to):
+#                    return
+                print('related', type(related), related, related.pk)
+#                try:
+#                    type(related).objects.get(pk=related.pk)
+#                except related.DoesNotExist:
+#                    print('not exists', type(related), related, related.pk)
                 Order.update_orders(related)
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):
     if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
-#        print 'save', sender, kwargs
         if type(instance) in services:
             Order.update_orders(instance)
         elif not hasattr(instance, 'account'):

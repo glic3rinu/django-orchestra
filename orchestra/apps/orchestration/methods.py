@@ -86,22 +86,25 @@ def SSH(backend, log, server, cmds, async=False):
         # Log results
         logger.debug('%s running on %s' % (backend, server))
         if async:
+            second = False
             while True:
                 # Non-blocking is the secret ingridient in the async sauce
                 select.select([channel], [], [])
                 if channel.recv_ready():
-                    part = channel.recv(1024)
+                    part = channel.recv(1024).decode('utf-8')
                     while part:
                         log.stdout += part
-                        part = channel.recv(1024)
+                        part = channel.recv(1024).decode('utf-8')
                 if channel.recv_stderr_ready():
-                    part = channel.recv_stderr(1024)
+                    part = channel.recv_stderr(1024).decode('utf-8')
                     while part:
                         log.stderr += part
-                        part = channel.recv_stderr(1024)
+                        part = channel.recv_stderr(1024).decode('utf-8')
                 log.save(update_fields=['stdout', 'stderr'])
                 if channel.exit_status_ready():
-                    break
+                    if second:
+                        break
+                    second = True
         else:
             log.stdout += channel.makefile('rb', -1).read().decode('utf-8')
             log.stderr += channel.makefile_stderr('rb', -1).read().decode('utf-8')

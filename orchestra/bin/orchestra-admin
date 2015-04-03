@@ -119,13 +119,14 @@ function install_requirements () {
     check_root
     ORCHESTRA_PATH=$(get_orchestra_dir)
     
-    APT="python-pip \
-         python-psycopg2 \
+    APT="python3 \
+         python3-pip \
+         python3-psycopg2 \
          postgresql \
          rabbitmq-server \
-         python-dev \
+         python3-dev \
          bind9utils \
-         python-cracklib \
+         python3-cracklib \
          libz-dev \
          libxml2-dev \
          libxslt1-dev \
@@ -166,7 +167,7 @@ function install_requirements () {
         APT="${APT} \
             iceweasel \
             dnsutils \
-            python-mysqldb"
+            python3-mysqldb"
         PIP="${PIP} \
             selenium \
             xvfbwrapper \
@@ -199,7 +200,7 @@ function install_requirements () {
         update-ca-certificates
     fi
     
-    run pip install $PIP
+    run pip3 install $PIP
     
     # Some versions of rabbitmq-server will not start automatically by default unless ...
     sed -i "s/# Default-Start:.*/# Default-Start:     2 3 4 5/" /etc/init.d/rabbitmq-server

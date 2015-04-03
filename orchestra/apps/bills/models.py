@@ -273,7 +273,7 @@ class BillLine(models.Model):
     rate = models.DecimalField(_("rate"), blank=True, null=True, max_digits=12, decimal_places=2)
     quantity = models.DecimalField(_("quantity"), max_digits=12, decimal_places=2)
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
-    tax = models.PositiveIntegerField(_("tax"))
+    tax = models.DecimalField(_("tax"), max_digits=2, decimal_places=2)
     # Undo
 #    initial = models.DateTimeField(null=True)
 #    end = models.DateTimeField(null=True)

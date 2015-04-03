@@ -92,7 +92,7 @@ class ReadOnlySQLPasswordHashField(ReadOnlyPasswordHashField):
                 summary = mark_safe("<strong>%s</strong>" % _("No password set."))
             else:
                 size = len(value)
-                summary = value[:size/2] + '*'*(size-size/2)
+                summary = value[:int(size/2)] + '*'*int(size-size/2)
                 summary = "<strong>hash</strong>: %s" % summary
                 if value.startswith('*'):
                     summary = "<strong>algorithm</strong>: sha1_bin_hex %s" % summary

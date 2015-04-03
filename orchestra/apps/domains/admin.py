@@ -60,7 +60,7 @@ class DomainInline(admin.TabularInline):
 
 class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'structured_name', 'display_is_top', 'websites', 'account_link'
+        'structured_name', 'display_is_top', 'display_websites', 'account_link'
     )
     add_fields = ('name', 'account')
     fields = ('name', 'account_link')
@@ -85,7 +85,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_is_top.boolean = True
     display_is_top.admin_order_field = 'top'
     
-    def websites(self, domain):
+    def display_websites(self, domain):
         if apps.isinstalled('orchestra.apps.websites'):
             webs = domain.websites.all()
             if webs:
@@ -95,9 +95,9 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                     links.append('<a href="%s">%s</a>' % (url, web.name))
                 return '<br>'.join(links)
         return _("No website")
-    websites.admin_order_field = 'websites__name'
-    websites.short_description = _("Websites")
-    websites.allow_tags = True
+    display_websites.admin_order_field = 'websites__name'
+    display_websites.short_description = _("Websites")
+    display_websites.allow_tags = True
     
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """

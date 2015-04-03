@@ -38,10 +38,7 @@ class OperationsMiddleware(object):
     Stores all the operations derived from save and delete signals and executes them
     at the end of the request/response cycle
     
-    It also works as a transaction middleware. Each view function will be run
-    with commit_on_response activated - that way a save() doesn't do a direct
-    commit, the commit is done when a successful response is created. If an
-    exception happens, the database is rolled back.
+    It also works as a transaction middleware, making requets to run within an atomic block.
     """
     # Thread local is used because request object is not available on model signals
     thread_locals = local()
@@ -77,55 +74,38 @@ class OperationsMiddleware(object):
         instance = kwargs.pop('instance')
         manager.collect(instance, action, **kwargs)
     
-    def commit_transaction(self):
-        if not transaction.get_autocommit():
-            if transaction.is_dirty():
-                # Note: it is possible that the commit fails. If the reason is
-                # closed connection or some similar reason, then there is
-                # little hope to proceed nicely. However, in some cases (
-                # deferred foreign key checks for exampl) it is still possible
-                # to rollback().
-                try:
-                    transaction.commit()
-                except Exception:
-                    # If the rollback fails, the transaction state will be
-                    # messed up. It doesn't matter, the connection will be set
-                    # to clean state after the request finishes. And, we can't
-                    # clean the state here properly even if we wanted to, the
-                    # connection is in transaction but we can't rollback...
-                    transaction.rollback()
-                    transaction.leave_transaction_management()
-                    raise
-            transaction.leave_transaction_management()
+    def enter_transaction_management(self):
+        type(self).thread_locals.transaction = transaction.atomic()
+        type(self).thread_locals.transaction.__enter__()
+    
+    def leave_transaction_management(self, exception=None):
+        type(self).thread_locals.transaction.__exit__(exception, None, None)
     
     def process_request(self, request):
         """ Store request on a thread local variable """
         type(self).thread_locals.request = request
-        # Enters transaction management
-        transaction.enter_transaction_management()
+        self.enter_transaction_management()
     
     def process_exception(self, request, exception):
         """Rolls back the database and leaves transaction management"""
-        if transaction.is_dirty():
-            # This rollback might fail because of network failure for example.
-            # If rollback isn't possible it is impossible to clean the
-            # connection's state. So leave the connection in dirty state and
-            # let request_finished signal deal with cleaning the connection.
-            transaction.rollback()
-        transaction.leave_transaction_management()
+        self.leave_transaction_management(exception)
     
     def process_response(self, request, response):
         """ Processes pending backend operations """
         if not isinstance(response, HttpResponseServerError):
             operations = type(self).get_pending_operations()
             if operations:
-                scripts, block = manager.generate(operations)
+                try:
+                    scripts, block = manager.generate(operations)
+                except Exception as exception:
+                    self.leave_transaction_management(exception)
+                    raise
                 # We commit transaction just before executing operations
                 # because here is when IntegrityError show up
-                self.commit_transaction()
+                self.leave_transaction_management()
                 logs = manager.execute(scripts, block=block)
                 if logs and resolve(request.path).app_name == 'admin':
                     message_user(request, logs)
                 return response
-        self.commit_transaction()
+        self.leave_transaction_management()
         return response

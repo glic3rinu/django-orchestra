@@ -165,9 +165,9 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         transactions = bill.transactions.all()
         if len(transactions) == 1:
             args = (transactions[0].pk,)
-            url = reverse('admin:%s_%s_change' % (t_opts.app_label, t_opts.module_name), args=args)
+            url = reverse('admin:%s_%s_change' % (t_opts.app_label, t_opts.model_name), args=args)
         else:
-            url = reverse('admin:%s_%s_changelist' % (t_opts.app_label, t_opts.module_name))
+            url = reverse('admin:%s_%s_changelist' % (t_opts.app_label, t_opts.model_name))
             url += '?bill=%i' % bill.pk
         state = bill.get_payment_state_display().upper()
         color = PAYMENT_STATE_COLORS.get(bill.payment_state, 'grey')

@@ -313,16 +313,15 @@ celery max-tasks-per-child
 * webapp has_website list filter
 
 
-
-# FIXME account deletion generates a integrity error
-
-
-apt-get install python3 python3-pip
-cp /usr/local/lib/python2.7/dist-packages/orchestra.pth /usr/local/lib/python3.4/dist-packages/
 glic3rinu's django-fluent-dashboard
 * gevent is not ported to python3 :'(
 * uwsgi python3
+https://github.com/django-nose/django-nose/archive/master.zip
+django_debug_toolbar-1.3.0-py2.py3-none-any.whl
 
 
+# FIXME account deletion generates a integrity error
 # FIXME what to do when deleting accounts? set fk null and fill a username charfield? issues, invoices.. we whant all this to go away?
 * implement delete All related services
+
+* address name change does not remove old one :P

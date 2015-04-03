@@ -9,7 +9,7 @@ class UsedContentTypeFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         qset = model_admin.model._default_manager.all().order_by()
         result = ()
-        for pk, name in qset.values_list('content_type', 'content_type__name').distinct():
+        for pk, name in qset.values_list('content_type', 'content_type__model').distinct():
             result += ((str(pk), name.capitalize()),)
         return result
     

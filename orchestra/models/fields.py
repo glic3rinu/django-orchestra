@@ -15,7 +15,7 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
             'choices': self.choices
         }
         if self.has_default():
-            defaults['initial'] = eval(self.get_default())
+            defaults['initial'] = self.get_default()
         defaults.update(kwargs)
         return MultiSelectFormField(**defaults)
     
@@ -27,13 +27,13 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
     
     def to_python(self, value):
         if value:
-            if isinstance(value, list) and value[0].startswith('('):
-                # Workaround unknown bug on default model values
-                # [u"('SUPPORT'", u" 'ADMIN'", u" 'BILLING'", u" 'TECH'", u" 'ADDS'", u" 'EMERGENCY')"]
-                value = list(eval(', '.join(value)))
-            if isinstance(value, list):
-                return value
-            return value.split(',')
+#            if isinstance(value, tuple) and value[0].startswith('('):
+#                # Workaround unknown bug on default model values
+#                # [u"('SUPPORT'", u" 'ADMIN'", u" 'BILLING'", u" 'TECH'", u" 'ADDS'", u" 'EMERGENCY')"]
+#                value = list(eval(', '.join(value)))
+            if isinstance(value, str):
+                return value.split(',')
+            return value
         return []
     
     def contribute_to_class(self, cls, name):

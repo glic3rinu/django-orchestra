@@ -7,10 +7,7 @@ from rest_framework import serializers
 
 from orchestra.apps.databases.models import Database, DatabaseUser
 from orchestra.forms import widgets
-from orchestra.plugins.forms import PluginDataForm
 from orchestra.utils.python import random_ascii
-
-from .. import settings
 
 from .php import PHPApp, PHPAppForm, PHPAppSerializer
 

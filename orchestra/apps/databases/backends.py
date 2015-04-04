@@ -132,12 +132,6 @@ class MysqlDisk(ServiceMonitor):
         if db.type != db.MYSQL:
             return
         context = self.get_context(db)
-        self.append("echo %(db_id)s $(monitor %(db_name)s)" % context)
-    
-    def monitor(self, db):
-        if db.type != db.MYSQL:
-            return
-        context = self.get_context(db)
         self.append('echo %(db_id)s $(monitor "%(db_name)s")' % context)
     
     def get_context(self, db):

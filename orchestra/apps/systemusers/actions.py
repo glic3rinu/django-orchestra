@@ -1,16 +1,9 @@
-from functools import partial
-
 from django import forms
 from django.contrib import messages, admin
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
-from django.shortcuts import render
-from django.utils.safestring import mark_safe
-from django.utils.text import capfirst
 from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.decorators import action_with_confirmation
-from orchestra.admin.utils import change_url
 from orchestra.apps.orchestration.models import BackendOperation as Operation
 
 

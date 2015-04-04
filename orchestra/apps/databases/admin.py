@@ -1,12 +1,11 @@
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
-from orchestra.admin.utils import admin_link, change_url
-from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
+from orchestra.admin.utils import change_url
+from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 
 from .forms import DatabaseCreationForm, DatabaseUserChangeForm, DatabaseUserCreationForm
 from .models import Database, DatabaseUser

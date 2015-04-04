@@ -2,7 +2,6 @@ import os
 
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _

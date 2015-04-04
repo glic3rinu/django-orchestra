@@ -1,26 +1,15 @@
 import os
 import socket
-import time
-import textwrap
 
-from django.conf import settings as djsettings
-from django.contrib.contenttypes.models import ContentType
-from django.core.management.base import CommandError
-from django.core.urlresolvers import reverse
 import requests
-from selenium.webdriver.support.select import Select
 
-from orchestra.apps.accounts.models import Account
 from orchestra.apps.domains.models import Domain, Record
 from orchestra.apps.domains.backends import Bind9MasterDomainBackend
 from orchestra.apps.orchestration.models import Server, Route
-from orchestra.apps.resources.models import Resource
 from orchestra.apps.webapps.tests.functional_tests.tests import StaticWebAppMixin, RESTWebAppMixin, WebAppMixin, PHPFcidWebAppMixin, PHPFPMWebAppMixin
-from orchestra.utils.system import run, sshrun
-from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error, save_response_on_error
+from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, save_response_on_error
 
-from ... import backends, settings
-from ...models import Website
+from ... import backends
 
 
 class WebsiteMixin(WebAppMixin):

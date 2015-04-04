@@ -1,6 +1,4 @@
-from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.db import transaction
 from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _

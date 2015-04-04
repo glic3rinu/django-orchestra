@@ -1,5 +1,3 @@
-import decimal
-
 from django.core.validators import ValidationError
 from django.db import models
 from django.db.models import Q

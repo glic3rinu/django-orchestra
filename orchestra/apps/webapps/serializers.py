@@ -1,5 +1,3 @@
-from rest_framework import serializers
-
 from orchestra.api.fields import OptionField
 from orchestra.api.serializers import HyperlinkedModelSerializer
 from orchestra.apps.accounts.serializers import AccountSerializerMixin

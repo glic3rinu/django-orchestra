@@ -17,7 +17,7 @@ from orchestra.utils.system import run, sshrun
 from orchestra.utils.tests import (BaseLiveServerTestCase, random_ascii, snapshot_on_error,
         save_response_on_error)
 
-from ... import backends, settings
+from ... import backends
 from ...models import SystemUser
 
 

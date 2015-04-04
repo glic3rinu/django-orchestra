@@ -5,7 +5,6 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.forms import widgets
 from orchestra.plugins.forms import PluginDataForm
 from orchestra.utils.functional import cached
 

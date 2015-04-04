@@ -1,21 +1,10 @@
-import textwrap
-
-from django import forms
-from django.conf.urls import patterns, url
-from django.core.urlresolvers import reverse
 from django.contrib import admin
-from django.contrib.admin.util import unquote
-from django.contrib.auth.admin import UserAdmin
-from django.utils.translation import ugettext, ugettext_lazy as _
-from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
-from orchestra.admin.utils import wrap_admin_view
 from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 from orchestra.apps.accounts.filters import IsActiveListFilter
-from orchestra.forms import UserCreationForm, UserChangeForm
 
-from . import settings
 from .actions import grant_permission, delete_selected
 from .filters import IsMainListFilter
 from .forms import SystemUserCreationForm, SystemUserChangeForm

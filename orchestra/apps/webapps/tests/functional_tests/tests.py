@@ -1,25 +1,14 @@
 import ftplib
 import os
-import time
-import textwrap
 from io import StringIO
 
 from django.conf import settings as djsettings
-from django.contrib.contenttypes.models import ContentType
-from django.core.management.base import CommandError
-from django.core.urlresolvers import reverse
-from selenium.webdriver.support.select import Select
 
-from orchestra.apps.accounts.models import Account
-from orchestra.apps.domains.models import Domain
 from orchestra.apps.orchestration.models import Server, Route
-from orchestra.apps.resources.models import Resource
 from orchestra.apps.systemusers.backends import SystemUserBackend
-from orchestra.utils.system import run, sshrun
 from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error, save_response_on_error
 
-from ... import backends, settings
-from ...models import WebApp
+from ... import backends
 
 
 class WebAppMixin(object):

@@ -1,5 +1,5 @@
 from django.forms import widgets
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 

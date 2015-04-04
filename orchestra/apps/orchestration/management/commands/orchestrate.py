@@ -5,7 +5,6 @@ from django.db.models.loading import get_model
 from django.utils.six.moves import input
 
 from orchestra.apps.orchestration import manager
-from orchestra.apps.orchestration.models import BackendOperation as Operation
 
 
 class Command(BaseCommand):

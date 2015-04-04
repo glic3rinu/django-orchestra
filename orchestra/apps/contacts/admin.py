@@ -1,10 +1,10 @@
 from django import forms
 from django.contrib import admin
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import AtLeastOneRequiredInlineFormSet, ExtendedModelAdmin
 from orchestra.admin.actions import SendEmail
-from orchestra.admin.utils import insertattr, admin_link, change_url
+from orchestra.admin.utils import insertattr, change_url
 from orchestra.apps.accounts.admin import AccountAdmin, AccountAdminMixin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 

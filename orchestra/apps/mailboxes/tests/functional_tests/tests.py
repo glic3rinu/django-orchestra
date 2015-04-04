@@ -1,4 +1,3 @@
-import email.utils
 import imaplib
 import os
 import poplib
@@ -16,7 +15,7 @@ from selenium.webdriver.support.select import Select
 
 from orchestra.apps.orchestration.models import Server, Route
 from orchestra.apps.resources.models import Resource
-from orchestra.utils.system import run, sshrun
+from orchestra.utils.system import sshrun
 from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, snapshot_on_error, save_response_on_error
 
 from ... import backends, settings

@@ -5,7 +5,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
 from orchestra.apps.orchestration.models import BackendOperation as Operation
-from orchestra.utils.python import AttrDict
 
 from . import settings
 

@@ -5,7 +5,6 @@ from django.contrib.contenttypes import generic
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.utils.functional import cached_property
-from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin

@@ -1,8 +1,6 @@
 from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr
 from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.apps.services.models import Service

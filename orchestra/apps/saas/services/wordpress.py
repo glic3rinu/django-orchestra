@@ -1,5 +1,4 @@
 from django import forms
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 

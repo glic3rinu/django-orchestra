@@ -3,13 +3,11 @@ from urllib.parse import parse_qs
 
 from django import forms
 from django.contrib import admin
-from django.core.urlresolvers import reverse
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link, change_url
-from orchestra.apps.accounts.admin import SelectAccountAdminMixin, AccountAdminMixin
+from orchestra.apps.accounts.admin import SelectAccountAdminMixin
 from orchestra.apps.accounts.filters import IsActiveListFilter
 
 from . import settings

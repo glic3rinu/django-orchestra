@@ -1,6 +1,6 @@
 import sys
 
-from django.utils.translation import string_concat, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.utils.python import AttrDict
 

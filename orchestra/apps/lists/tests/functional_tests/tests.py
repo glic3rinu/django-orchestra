@@ -1,23 +1,18 @@
-import email.utils
 import os
 import smtplib
 import time
-import textwrap
 import requests
 from email.mime.text import MIMEText
 
 from django.conf import settings as djsettings
-from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import CommandError
 from django.core.urlresolvers import reverse
 from selenium.webdriver.support.select import Select
 
 from orchestra.admin.utils import change_url
-from orchestra.apps.accounts.models import Account
 from orchestra.apps.domains.models import Domain
 from orchestra.apps.orchestration.models import Server, Route
-from orchestra.apps.resources.models import Resource
-from orchestra.utils.system import run, sshrun
+from orchestra.utils.system import sshrun
 from orchestra.utils.tests import (BaseLiveServerTestCase, random_ascii, snapshot_on_error,
         save_response_on_error)
 

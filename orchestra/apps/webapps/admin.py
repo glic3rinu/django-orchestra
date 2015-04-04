@@ -10,7 +10,6 @@ from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
-from . import settings
 from .options import AppOption
 from .types import AppType
 from .models import WebApp, WebAppOption

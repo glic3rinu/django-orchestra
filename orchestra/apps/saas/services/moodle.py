@@ -1,8 +1,6 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.plugins.forms import PluginDataForm
-
 from .options import SoftwareService, SoftwareServiceForm
 
 

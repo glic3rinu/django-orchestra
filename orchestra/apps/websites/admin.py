@@ -11,7 +11,6 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.apps.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 
-from . import settings
 from .directives import SiteDirective
 from .forms import WebsiteAdminForm, WebsiteDirectiveInlineFormSet
 from .models import Content, Website, WebsiteDirective

@@ -1,5 +1,4 @@
 import copy
-from functools import partial
 
 from .models import Domain, Record
 

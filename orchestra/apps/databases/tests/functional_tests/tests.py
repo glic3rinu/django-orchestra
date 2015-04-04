@@ -2,17 +2,13 @@ import MySQLdb
 import os
 import socket
 import time
-from functools import partial
 
 from django.conf import settings as djsettings
 from django.core.management.base import CommandError
 from django.core.urlresolvers import reverse
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 
 from orchestra.admin.utils import change_url
-from orchestra.apps.accounts.models import Account
 from orchestra.apps.orchestration.models import Server, Route
 from orchestra.utils.system import sshrun
 from orchestra.utils.tests import (BaseLiveServerTestCase, random_ascii, save_response_on_error,

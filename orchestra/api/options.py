@@ -1,7 +1,6 @@
 from django.conf import settings as django_settings
-from django.core.exceptions import ImproperlyConfigured
 from django.utils.module_loading import autodiscover_modules
-from rest_framework.routers import DefaultRouter, Route, replace_methodname
+from rest_framework.routers import DefaultRouter
 
 from orchestra import settings
 from orchestra.utils.python import import_class

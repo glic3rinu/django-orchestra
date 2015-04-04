@@ -1,6 +1,5 @@
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
-from rest_framework.routers import replace_methodname
 
 
 def link_wrap(view, view_names):

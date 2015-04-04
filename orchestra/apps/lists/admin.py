@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.conf.urls import patterns
 from django.contrib.auth.admin import UserAdmin
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link

@@ -1,6 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
 
-from orchestra.apps.accounts.models import Account
 from orchestra.core import services
 
 

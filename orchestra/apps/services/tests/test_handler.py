@@ -4,9 +4,8 @@ import decimal
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
-from orchestra.apps.accounts.models import Account
 from orchestra.apps.systemusers.models import SystemUser
-from orchestra.utils.tests import BaseTestCase, random_ascii
+from orchestra.utils.tests import BaseTestCase
 
 from .. import helpers
 from ..models import Service, Plan

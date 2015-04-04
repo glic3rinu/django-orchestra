@@ -1,7 +1,5 @@
 from django.core.exceptions import ValidationError
 
-from orchestra.utils.functional import cached
-
 
 class Plugin(object):
     verbose_name = None

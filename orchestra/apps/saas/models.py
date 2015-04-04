@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
 from orchestra.core import services, validators
-from orchestra.models.fields import NullableCharField
 
 from .fields import VirtualDatabaseRelation
 from .services import SoftwareService

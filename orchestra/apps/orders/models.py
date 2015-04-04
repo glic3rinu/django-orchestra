@@ -3,12 +3,10 @@ import decimal
 import logging
 
 from django.db import models
-from django.db.migrations.recorder import MigrationRecorder
 from django.db.models import F, Q
 from django.db.models.loading import get_model
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
-from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone

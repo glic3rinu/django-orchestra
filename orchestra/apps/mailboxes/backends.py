@@ -1,13 +1,10 @@
 import logging
 import textwrap
-import os
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
-from orchestra.apps.systemusers.backends import SystemUserBackend
 from orchestra.apps.resources import ServiceMonitor
 #from orchestra.utils.humanize import unit_to_bytes
 

@@ -4,8 +4,6 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.plugins.forms import PluginDataForm
-
 from ..options import AppOption
 
 from . import AppType

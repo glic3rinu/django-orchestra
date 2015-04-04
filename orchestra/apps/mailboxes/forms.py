@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.forms import UserCreationForm, UserChangeForm
 from orchestra.utils.python import AttrDict
 
-from .models import Address, Mailbox
+from .models import Address
 
 
 class MailboxForm(forms.ModelForm):

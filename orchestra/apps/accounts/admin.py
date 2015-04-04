@@ -6,7 +6,6 @@ from django.conf.urls import patterns, url
 from django.contrib import admin, messages
 from django.contrib.admin.util import unquote
 from django.contrib.auth import admin as auth
-from django.db.models.loading import get_model
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.six.moves.urllib.parse import parse_qsl
@@ -18,7 +17,6 @@ from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, ch
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
 
-from . import settings
 from .actions import disable, list_contacts, service_report, delete_related_services
 from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm

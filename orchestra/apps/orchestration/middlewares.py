@@ -1,7 +1,7 @@
 from threading import local
 
 from django.core.urlresolvers import resolve
-from django.db import connection, transaction
+from django.db import transaction
 from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 from django.http.response import HttpResponseServerError

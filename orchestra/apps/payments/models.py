@@ -124,7 +124,7 @@ class Transaction(models.Model):
             if amount >= self.bill.total:
                 raise ValidationError(_("New transactions can not be allocated for this bill."))
     
-    def check_state(*args):
+    def check_state(self, *args):
         if self.state not in args:
             raise TypeError("Transaction not in %s" % ' or '.join(args))
     
@@ -176,7 +176,7 @@ class TransactionProcess(models.Model):
     def __str__(self):
         return '#%i' % self.id
     
-    def check_state(*args):
+    def check_state(self, *args):
         if self.state not in args:
             raise TypeError("Transaction process not in %s" % ' or '.join(args))
     

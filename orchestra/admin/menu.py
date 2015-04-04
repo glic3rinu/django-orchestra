@@ -1,11 +1,8 @@
 from admin_tools.menu import items, Menu
 from django.core.urlresolvers import reverse
-from django.utils.encoding import force_text
 from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
-from django.utils.safestring import mark_safe
 
-from orchestra import get_version, settings
 from orchestra.core import services, accounts
 from orchestra.utils.apps import isinstalled
 

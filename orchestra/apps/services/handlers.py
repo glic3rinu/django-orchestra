@@ -116,6 +116,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                 instance._meta.model_name: instance,
                 'instance': instance,
                 'math': math,
+                'logsteps': lambda n, size=1: \
+                    round(n/(size*10**int(math.log10(max(n, 1)))))*size*10**int(math.log10(max(n, 1))),
                 'log10': math.log10,
                 'Decimal': decimal.Decimal,
             }

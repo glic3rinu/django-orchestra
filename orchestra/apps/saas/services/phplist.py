@@ -1,12 +1,11 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import serializers
 
 from orchestra.apps.databases.models import Database, DatabaseUser
 from orchestra.forms import widgets
-from orchestra.plugins.forms import PluginDataForm
 
 from .. import settings
 from .options import SoftwareService, SoftwareServiceForm

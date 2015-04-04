@@ -1,12 +1,9 @@
-import json
 import re
 
 import requests
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.apps.orchestration import ServiceController
-
-from .. import settings
 
 
 class PhpListSaaSBackend(ServiceController):
@@ -16,7 +13,6 @@ class PhpListSaaSBackend(ServiceController):
     block = True
     
     def _save(self, saas, server):
-        base_domain = settings.SAAS_PHPLIST_BASE_DOMAIN
         admin_link = 'http://%s/admin/' % saas.get_site_domain()
         admin_content = requests.get(admin_link).content
         if admin_content.startswith('Cannot connect to Database'):

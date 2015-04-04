@@ -139,13 +139,13 @@ class AdminPasswordChangeForm(forms.Form):
 
 class SendEmailForm(forms.Form):
     email_from = forms.EmailField(label=_("From"),
-            widget=forms.TextInput(attrs={'size':'118'}))
+            widget=forms.TextInput(attrs={'size': '118'}))
     to = forms.CharField(label="To", required=False,
             widget=ShowTextWidget())
     extra_to = forms.CharField(label="To (extra)", required=False,
-            widget=forms.TextInput(attrs={'size':'118'}))
+            widget=forms.TextInput(attrs={'size': '118'}))
     subject = forms.CharField(label=_("Subject"),
-            widget=forms.TextInput(attrs={'size':'118'}))
+            widget=forms.TextInput(attrs={'size': '118'}))
     message = forms.CharField(label=_("Message"),
             widget=forms.Textarea(attrs={'cols': 118, 'rows': 15}))
     

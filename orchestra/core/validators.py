@@ -1,7 +1,6 @@
 import re
 
 import crack
-import localflavor
 import phonenumbers
 
 from django.core import validators
@@ -47,7 +46,7 @@ def validate_ipv6_address(value):
 def validate_ip_address(value):
     msg = _("%s is not a valid IP address") % value
     try:
-        ip = IP(value)
+        IP(value)
     except:
         raise ValidationError(msg)
 

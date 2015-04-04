@@ -161,6 +161,7 @@ class Order(models.Model):
             elif orders:
                 order = orders.get()
                 order.cancel(commit=commit)
+                logger.info("CANCELLED order id: {id}".format(id=order.id))
                 updates.append((order, 'cancelled'))
         return updates
     
@@ -284,8 +285,6 @@ def cancel_orders(sender, **kwargs):
         # Account delete will delete all related orders, no need to maintain order consistency
 #        if isinstance(instance, Order.account.field.rel.to):
 #            return
-        if sender is Order.account.field.rel.to:
-            return
         print('delete', sender, instance, instance.pk)
         if type(instance) in services:
             for order in Order.objects.by_object(instance).active():
@@ -299,10 +298,10 @@ def cancel_orders(sender, **kwargs):
 #                    return
                 print('related', type(related), related, related.pk)
 #                try:
-#                    type(related).objects.get(pk=related.pk)
+                type(related).objects.get(pk=related.pk)
 #                except related.DoesNotExist:
 #                    print('not exists', type(related), related, related.pk)
-                Order.update_orders(related)
+                print([(str(a).encode('utf8'), b) for a, b in Order.update_orders(related)])
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):

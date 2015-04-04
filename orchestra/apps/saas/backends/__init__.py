@@ -1,5 +1,4 @@
 import pkgutil
-import textwrap
 
 
 class SaaSServiceMixin(object):

@@ -4,7 +4,6 @@ from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.utils import wrap_admin_view
-from orchestra.utils.functional import cached
 
 
 class SelectPluginAdminMixin(object):

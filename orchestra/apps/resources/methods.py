@@ -25,7 +25,7 @@ class Last(DataMethod):
     def filter(self, dataset):
         try:
             return dataset.order_by('object_id', '-id').distinct('object_id')
-        except MonitorData.DoesNotExist:
+        except dataset.model.DoesNotExist:
             return dataset.none()
     
     def compute_usage(self, dataset):

@@ -3,6 +3,7 @@
 # This is a helper script for creating a basic LXC container with some convenient packages
 # ./create.sh [container_name]
 
+
 set -u
 
 NAME=${1:-orchestra}
@@ -35,7 +36,7 @@ chroot $CONTAINER locale-gen
 
 
 chroot $CONTAINER apt-get install -y --force-yes \
-    nano git screen sudo iputils-ping python2.7 python-pip wget curl dnsutils rsyslog
+    nano git screen sudo iputils-ping python3 python3-pip wget curl dnsutils rsyslog
 
 chroot $CONTAINER apt-get clean
 

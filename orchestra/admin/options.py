@@ -5,19 +5,18 @@ from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import update_session_auth_hash
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.forms.models import BaseInlineFormSet
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
-from django.utils.text import camel_case_to_spaces
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
 
 from .forms import AdminPasswordChangeForm
 #from django.contrib.auth.forms import AdminPasswordChangeForm
-from .utils import set_url_query, action_to_view, wrap_admin_view
+from .utils import set_url_query, action_to_view
 
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())
@@ -35,8 +34,8 @@ class ChangeListDefaultFilter(object):
         """ Default filter as 'my_nodes=True' """
         defaults = []
         for key, value in self.default_changelist_filters:
-             set_url_query(request, key, value)
-             defaults.append(key)
+            set_url_query(request, key, value)
+            defaults.append(key)
         # hack response cl context in order to hook default filter awaearness
         # into search_form.html template
         response = super(ChangeListDefaultFilter, self).changelist_view(request, extra_context)

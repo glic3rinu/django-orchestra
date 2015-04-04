@@ -27,7 +27,7 @@ class OptionField(serializers.WritableField):
                     raise exceptions.ParseError("Malformed property: %s" % str(value))
             if not related_manager:
                 # POST (new parent object)
-                return [ model(name=n, value=v) for n,v in value.items() ]
+                return [model(name=n, value=v) for n,v in value.items()]
             # PUT
             to_save = []
             for (name, value) in value.items():

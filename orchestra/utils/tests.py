@@ -16,7 +16,6 @@ from orchestra.apps.accounts.models import Account
 from .python import random_ascii
 
 
-
 class AppDependencyMixin(object):
     DEPENDENCIES = ()
     

@@ -63,7 +63,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
     # Async reading of stdout and sterr
     while True:
         stdout = ''
-        sdterr = ''
+        stderr = ''
         # Get complete unicode chunks
         select.select([p.stdout, p.stderr], [], [])
         
@@ -71,7 +71,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
         stderrPiece = read_async(p.stderr)
         
         stdout += (stdoutPiece or b'').decode('utf8')
-        sdterr += (stderrPiece or b'').decode('utf8')
+        stderr += (stderrPiece or b'').decode('utf8')
         
         if display and stdout:
             sys.stdout.write(stdout)
@@ -79,7 +79,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
             sys.stderr.write(stderr)
         
         state = _Attribute(stdout)
-        state.stderr = sdterr
+        state.stderr = stderr
         state.return_code =  p.poll()
         yield state
         

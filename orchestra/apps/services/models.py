@@ -1,9 +1,7 @@
 import decimal
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import ValidationError
 from django.db import models
-from django.db.models import Q
 from django.db.models.loading import get_model
 from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
@@ -11,8 +9,6 @@ from django.utils.translation import string_concat, ugettext_lazy as _
 
 from orchestra.core import caches, validators
 from orchestra.core.translations import ModelTranslation
-from orchestra.core.validators import validate_name
-from orchestra.models import queryset
 from orchestra.utils.python import import_class
 
 from . import settings

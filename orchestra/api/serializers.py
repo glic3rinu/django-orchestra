@@ -1,5 +1,5 @@
 from django.forms import widgets
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from ..core.validators import validate_password

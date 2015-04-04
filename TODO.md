@@ -286,7 +286,7 @@ ugettext("Description")
 
 * saas validate_creation generic approach, for all backends. standard output
 
-* html code x: &times;
+* html code x: &times; for bill line verbose quantity
 
 
 * periodic task to cleanup backendlogs, monitor data and metricstorage 
@@ -299,16 +299,10 @@ celery max-tasks-per-child
 
 * postupgradeorchestra send signals in order to hook custom stuff
 
-* make base home for systemusers that ara homed into main account systemuser
+* make base home for systemusers that ara homed into main account systemuser, and prevent shell users to have nested homes (if nnot implemented already)
 
-
-* user force_text instead of unicode for _()
 
 * autoscale celery workers http://docs.celeryproject.org/en/latest/userguide/workers.html#autoscaling
-
-
-* Delete transaction middleware
-
 
 * webapp has_website list filter
 
@@ -316,12 +310,25 @@ celery max-tasks-per-child
 glic3rinu's django-fluent-dashboard
 * gevent is not ported to python3 :'(
 * uwsgi python3
-https://github.com/django-nose/django-nose/archive/master.zip
-django_debug_toolbar-1.3.0-py2.py3-none-any.whl
 
 
-# FIXME account deletion generates a integrity error
+# FIXME account deletion generates an integrity error
+https://code.djangoproject.com/ticket/24576
 # FIXME what to do when deleting accounts? set fk null and fill a username charfield? issues, invoices.. we whant all this to go away?
 * implement delete All related services
 
 * address name change does not remove old one :P
+
+* read https://docs.djangoproject.com/en/dev/releases/1.8/ and fix deprecation warnings
+* remove admin object links , like contents webapps
+
+* SaaS and WebApp fieldsets, and helptexts !
+
+* remove all six stuff "from django.utils.six.moves import input"
+* replace make_option in management commands
+
+
+* rename apps to contrib find . -type f -name "*py"|xargs grep apps | grep -v  'orchestra\.apps\.'
+
+* replace staticcheck by run(flake8 {orchestra,project} | grep -v "W293\|E501")
+* rename utils.system to utils.sys

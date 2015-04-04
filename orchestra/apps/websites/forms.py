@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.encoding import force_text
+from django.utils.translation import ugettext_lazy as _
 
 from .validators import validate_domain_protocol
 

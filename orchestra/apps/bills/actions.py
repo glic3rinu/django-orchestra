@@ -3,6 +3,7 @@ from io import StringIO
 
 from django.contrib import messages
 from django.contrib.admin import helpers
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse

@@ -1,5 +1,4 @@
 from django.contrib.auth import models as auth
-from django.conf import settings as djsettings
 from django.core import validators
 from django.db import models
 from django.db.models.loading import get_model

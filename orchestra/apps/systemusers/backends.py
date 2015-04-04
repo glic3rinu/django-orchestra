@@ -16,6 +16,8 @@ class SystemUserBackend(ServiceController):
     
     def save(self, user):
         context = self.get_context(user)
+        if not context['user']:
+            return
         groups = ','.join(self.get_groups(user))
         context['groups_arg'] = '--groups %s' % groups if groups else ''
         # TODO userd add will fail if %(user)s group already exists
@@ -37,6 +39,8 @@ class SystemUserBackend(ServiceController):
     
     def delete(self, user):
         context = self.get_context(user)
+        if not context['user']:
+            return
         self.append(textwrap.dedent("""\
             { sleep 2 && killall -u %(user)s -s KILL; } &
             killall -u %(user)s || true

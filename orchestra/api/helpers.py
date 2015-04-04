@@ -3,12 +3,6 @@ from rest_framework.reverse import reverse
 from rest_framework.routers import replace_methodname
 
 
-def replace_collectionmethodname(format_string, methodname):
-    ret = replace_methodname(format_string, methodname)
-    ret = ret.replace('{collectionmethodname}', methodname)
-    return ret
-
-
 def link_wrap(view, view_names):
     def wrapper(self, request, view=view, *args, **kwargs):
         """ wrapper function that inserts HTTP links on view """

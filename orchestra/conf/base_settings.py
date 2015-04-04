@@ -48,11 +48,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'orchestra.core.caches.RequestCacheMiddleware',
-    # also handles transations, ATOMIC REQUESTS does not wrap middlewares
+    # also handles transations, ATOMIC_REQUESTS does not wrap middlewares
     'orchestra.apps.orchestration.middlewares.OperationsMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 )
 
 
@@ -69,7 +68,6 @@ TEMPLATE_CONTEXT_PROCESSORS =(
 
 INSTALLED_APPS = (
     # django-orchestra apps
-
     'orchestra',
     'orchestra.apps.accounts',
     'orchestra.apps.contacts',

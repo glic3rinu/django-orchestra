@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.db.models.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
@@ -47,7 +48,7 @@ def create_account_creation_form():
             if model.objects.filter(**kwargs).exists():
                 verbose_name = model._meta.verbose_name
                 field_name = 'create_%s' % model._meta.model_name
-                errors[field] = ValidationError(
+                errors[field_name] = ValidationError(
                     _("A %(type)s with this name already exists."),
                     params={'type': verbose_name})
         if errors:

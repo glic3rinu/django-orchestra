@@ -23,7 +23,7 @@ class Register(object):
     
     def get(self, *args):
         if args:
-            return self._registry[arg[0]]
+            return self._registry[args[0]]
         return self._registry
 
 

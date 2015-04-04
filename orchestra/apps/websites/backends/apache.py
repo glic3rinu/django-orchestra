@@ -208,7 +208,7 @@ class Apache2Backend(ServiceController):
         proxies = []
         for proxy in directives.get('proxy', []):
             location, target = proxy.split()
-            location = normurlpath(source)
+            location = normurlpath(location)
             proxy = textwrap.dedent("""\
                 ProxyPass {location}/ {target}
                 ProxyPassReverse {location}/ {target}""".format(

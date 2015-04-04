@@ -1,6 +1,5 @@
 from django.contrib import admin
-from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.apps.accounts.admin import AccountAdminMixin

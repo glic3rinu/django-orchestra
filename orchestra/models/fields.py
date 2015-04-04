@@ -54,7 +54,7 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
     def get_choices_selected(self, arr_choices=''):
         if not arr_choices:
             return False
-        return [ value for value,__ in arr_choices ]
+        return [value for value, __ in arr_choices]
 
 
 class NullableCharField(models.CharField):

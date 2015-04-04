@@ -5,7 +5,7 @@ Django-orchestra ships with a set of management commands for automating some of 
 
 These commands are meant to be run within a **clean** Debian-like distribution, you should be specially careful while following this guide on a customized system.
 
-Django-orchestra can be installed on any Linux system, however it is **strongly recommended** to chose the reference platform for your deployment (Debian 7.0 wheezy and Python 2.7).
+Django-orchestra can be installed on any Linux system, however it is **strongly recommended** to chose the reference platform for your deployment (Debian 8.0 jessie and Python 3.4).
 
 
 1. Create a system user for running Orchestra
@@ -18,7 +18,7 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 
 2. Install django-orchestra's source code
     ```bash
-    sudo apt-get install python-pip
+    sudo apt-get install python3-pip
     sudo pip install django-orchestra==dev
     ```
 
@@ -38,21 +38,21 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 
 5. Create and configure a Postgres database
     ```bash
-    sudo python manage.py setuppostgres --db_password <password>
-    python manage.py syncdb
-    python manage.py migrate
+    sudo python3 manage.py setuppostgres --db_password <password>
+    python3 manage.py syncdb
+    python3 manage.py migrate
     ```
 
 7. Configure celeryd
     ```bash
-    sudo python manage.py setupcelery --username orchestra
+    sudo python3 manage.py setupcelery --username orchestra
     ```
 
 8. Configure the web server:
     ```bash
-    python manage.py collectstatic --noinput
-    sudo apt-get install nginx-full uwsgi uwsgi-plugin-python
-    sudo python manage.py setupnginx
+    python3 manage.py collectstatic --noinput
+    sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
+    sudo python3 manage.py setupnginx
     ```
 
 9. Start all services:
@@ -65,17 +65,17 @@ Upgrade
 =======
 To upgrade your Orchestra installation to the last release you can use `upgradeorchestra` management command. Before rolling the upgrade it is strongly recommended to check the [release notes](http://django-orchestra.readthedocs.org/en/latest/).
 ```bash
-sudo python manage.py upgradeorchestra
+sudo python3 manage.py upgradeorchestra
 ```
 
 Current in *development* version (master branch) can be installed by
 ```bash
-sudo python manage.py upgradeorchestra dev
+sudo python3 manage.py upgradeorchestra dev
 ```
 
 Additionally the following command can be used in order to determine the currently installed version:
 ```bash
-python manage.py orchestraversion
+python3 manage.py orchestraversion
 ```
 
 

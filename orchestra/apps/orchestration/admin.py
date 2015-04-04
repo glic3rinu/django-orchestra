@@ -29,6 +29,7 @@ class RouteAdmin(admin.ModelAdmin):
     ]
     list_editable = ['host', 'match', 'is_active']
     list_filter = ['host', 'is_active', 'backend']
+    ordering = ('backend',)
     
     BACKEND_HELP_TEXT = {
         backend: "This backend operates over '%s'" % ServiceBackend.get_backend(backend).model

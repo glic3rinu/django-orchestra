@@ -8,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeViewActionsMixin
 from orchestra.admin.filters import UsedContentTypeFilter
-from orchestra.apps.accounts.admin import AccountAdminMixin
 from orchestra.core import services
 
 from .actions import update_orders, view_help, clone

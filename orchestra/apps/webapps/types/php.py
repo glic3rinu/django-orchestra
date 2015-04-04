@@ -118,6 +118,7 @@ class PHPApp(AppType):
             wrapper_path = os.path.normpath(self.FCGID_WRAPPER_PATH % context)
             return ('fcgid', self.instance.get_path(), wrapper_path)
         else:
+            php_version = self.get_php_version()
             raise ValueError("Unknown directive for php version '%s'" % php_version)
     
     def get_php_version(self):

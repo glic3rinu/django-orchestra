@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra import plugins
 from orchestra.plugins.forms import PluginDataForm
@@ -31,7 +32,7 @@ class AppType(plugins.Plugin):
     def validate(self):
         """ Unique name validation """
         if self.unique_name:
-            if not self.instance.pk and Webapp.objects.filter(name=self.instance.name, type=self.instance.type).exists():
+            if not self.instance.pk and type(self.instance).objects.filter(name=self.instance.name, type=self.instance.type).exists():
                 raise ValidationError({
                     'name': _("A WordPress blog with this name already exists."),
                 })

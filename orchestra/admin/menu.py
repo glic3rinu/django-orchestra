@@ -41,10 +41,10 @@ def get_services():
 
 def get_accounts():
     childrens=[]
-    if isinstalled('orchestra.apps.payments'):
+    if isinstalled('orchestra.contrib.payments'):
         url = reverse('admin:payments_transactionprocess_changelist')
         childrens.append(items.MenuItem(_("Transaction processes"), url))
-    if isinstalled('orchestra.apps.issues'):
+    if isinstalled('orchestra.contrib.issues'):
         url = reverse('admin:issues_ticket_changelist')
         childrens.append(items.MenuItem(_("Tickets"), url))
     for model, options in accounts.get().items():
@@ -59,12 +59,12 @@ def get_accounts():
 
 def get_administration_items():
     childrens = []
-    if isinstalled('orchestra.apps.services'):
+    if isinstalled('orchestra.contrib.services'):
         url = reverse('admin:services_service_changelist')
         childrens.append(items.MenuItem(_("Services"), url))
         url = reverse('admin:plans_plan_changelist')
         childrens.append(items.MenuItem(_("Plans"), url))
-    if isinstalled('orchestra.apps.orchestration'):
+    if isinstalled('orchestra.contrib.orchestration'):
         route = reverse('admin:orchestration_route_changelist')
         backendlog = reverse('admin:orchestration_backendlog_changelist')
         server = reverse('admin:orchestration_server_changelist')
@@ -73,7 +73,7 @@ def get_administration_items():
             items.MenuItem(_("Backend logs"), backendlog),
             items.MenuItem(_("Servers"), server),
         ]))
-    if isinstalled('orchestra.apps.resources'):
+    if isinstalled('orchestra.contrib.resources'):
         resource = reverse('admin:resources_resource_changelist')
         data = reverse('admin:resources_resourcedata_changelist')
         monitor = reverse('admin:resources_monitordata_changelist')
@@ -82,10 +82,10 @@ def get_administration_items():
             items.MenuItem(_("Data"), data),
             items.MenuItem(_("Monitoring"), monitor),
         ]))
-    if isinstalled('orchestra.apps.miscellaneous'):
+    if isinstalled('orchestra.contrib.miscellaneous'):
         url = reverse('admin:miscellaneous_miscservice_changelist')
         childrens.append(items.MenuItem(_("Miscellaneous"), url))
-    if isinstalled('orchestra.apps.issues'):
+    if isinstalled('orchestra.contrib.issues'):
         url = reverse('admin:issues_queue_changelist')
         childrens.append(items.MenuItem(_("Ticket queues"), url))
     if isinstalled('djcelery'):

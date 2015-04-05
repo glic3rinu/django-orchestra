@@ -282,12 +282,9 @@ from django.utils import translation
 translation.activate('ca')
 ugettext("Description")
 
-
-
 * saas validate_creation generic approach, for all backends. standard output
 
 * html code x: &times; for bill line verbose quantity
-
 
 * periodic task to cleanup backendlogs, monitor data and metricstorage 
 * create orchestrate databases.Database pk=1 -n --dry-run | --noinput --action save (default)|delete --backend name (limit to this backend) --help
@@ -301,11 +298,9 @@ celery max-tasks-per-child
 
 * make base home for systemusers that ara homed into main account systemuser, and prevent shell users to have nested homes (if nnot implemented already)
 
-
 * autoscale celery workers http://docs.celeryproject.org/en/latest/userguide/workers.html#autoscaling
 
 * webapp has_website list filter
-
 
 glic3rinu's django-fluent-dashboard
 * gevent is not ported to python3 :'(
@@ -322,13 +317,6 @@ https://code.djangoproject.com/ticket/24576
 * read https://docs.djangoproject.com/en/dev/releases/1.8/ and fix deprecation warnings
 * remove admin object links , like contents webapps
 
-* SaaS and WebApp fieldsets, and helptexts !
+* SaaS and WebApp types and services fieldsets, and helptexts !
 
-* remove all six stuff "from django.utils.six.moves import input"
 * replace make_option in management commands
-
-
-* rename apps to contrib find . -type f -name "*py"|xargs grep apps | grep -v  'orchestra\.apps\.'
-
-* replace staticcheck by run(flake8 {orchestra,project} | grep -v "W293\|E501")
-* rename utils.system to utils.sys

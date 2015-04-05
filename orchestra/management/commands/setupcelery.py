@@ -5,7 +5,7 @@ from os import path
 from django.core.management.base import BaseCommand
 
 from orchestra.utils.paths import get_site_dir, get_orchestra_dir
-from orchestra.utils.system import run, check_root
+from orchestra.utils.sys import run, check_root
 
 
 class Command(BaseCommand):

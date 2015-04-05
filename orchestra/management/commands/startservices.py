@@ -3,7 +3,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from orchestra.settings import START_SERVICES
-from orchestra.utils.system import run, check_root
+from orchestra.utils.sys import run, check_root
 
 
 def run_tuple(services, action, options, optional=False):

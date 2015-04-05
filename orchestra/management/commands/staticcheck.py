@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from orchestra.utils.paths import get_orchestra_dir, get_site_dir
-from orchestra.utils.system import run
+from orchestra.utils.sys import run
 
 
 class Command(BaseCommand):

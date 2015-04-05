@@ -9,7 +9,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 
 from orchestra import get_version
-from orchestra.utils.system import run, check_root
+from orchestra.utils.sys import run, check_root
 
 
 r = functools.partial(run, silent=False)

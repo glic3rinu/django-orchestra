@@ -1,0 +1,120 @@
+import textwrap
+
+from django.utils.translation import ugettext_lazy as _
+
+from orchestra.contrib.orchestration import ServiceController
+
+from .. import settings
+
+from . import WebAppServiceMixin
+
+
+# Based on https://github.com/mtomic/wordpress-install/blob/master/wpinstall.php
+class WordPressBackend(WebAppServiceMixin, ServiceController):
+    verbose_name = _("Wordpress")
+    model = 'webapps.WebApp'
+    default_route_match = "webapp.type == 'wordpress-php'"
+    script_executable = '/usr/bin/php'
+    
+    def prepare(self):
+        self.append(textwrap.dedent("""\
+            <?php
+            function exc($cmd) {
+                passthru($cmd, $exit_code);
+                if ($exit_code != 0) {
+                    echo "ERROR: execution returned non-zero code: $exit_code. cmd was:\\n$cmd\\n";
+                    exit($exit_code);
+                }
+            }""")
+        )
+    
+    def save(self, webapp):
+        context = self.get_context(webapp)
+        self.append(textwrap.dedent("""\
+            if (count(glob("%(app_path)s/*")) > 1) {
+                die("App directory not empty.");
+            }
+            exc('mkdir -p %(app_path)s');
+            exc('rm -f %(app_path)s/index.html');
+            exc('wget http://wordpress.org/latest.tar.gz -O - --no-check-certificate | tar -xzvf - -C %(app_path)s --strip-components=1');
+            exc('mkdir %(app_path)s/wp-content/uploads');
+            exc('chmod 750 %(app_path)s/wp-content/uploads');
+            exc('chown -R %(user)s:%(group)s %(app_path)s');
+            
+            $config_file = file('%(app_path)s/' . 'wp-config-sample.php');
+            $secret_keys = file_get_contents('https://api.wordpress.org/secret-key/1.1/salt/');
+            $secret_keys = explode( "\\n", $secret_keys );
+            foreach ( $secret_keys as $k => $v ) {
+                $secret_keys[$k] = substr( $v, 28, 64 );
+            }
+            array_pop($secret_keys);
+            
+            $config_file = str_replace('database_name_here', '%(db_name)s', $config_file);
+            $config_file = str_replace('username_here', '%(db_user)s', $config_file);
+            $config_file = str_replace('password_here', '%(password)s', $config_file);
+            $config_file = str_replace('localhost', '%(db_host)s', $config_file);
+            $config_file = str_replace("'AUTH_KEY',         'put your unique phrase here'", "'AUTH_KEY',         '{$secret_keys[0]}'", $config_file);
+            $config_file = str_replace("'SECURE_AUTH_KEY',  'put your unique phrase here'", "'SECURE_AUTH_KEY',  '{$secret_keys[1]}'", $config_file);
+            $config_file = str_replace("'LOGGED_IN_KEY',    'put your unique phrase here'", "'LOGGED_IN_KEY',    '{$secret_keys[2]}'", $config_file);
+            $config_file = str_replace("'NONCE_KEY',        'put your unique phrase here'", "'NONCE_KEY',        '{$secret_keys[3]}'", $config_file);
+            $config_file = str_replace("'AUTH_SALT',        'put your unique phrase here'", "'AUTH_SALT',        '{$secret_keys[4]}'", $config_file);
+            $config_file = str_replace("'SECURE_AUTH_SALT', 'put your unique phrase here'", "'SECURE_AUTH_SALT', '{$secret_keys[5]}'", $config_file);
+            $config_file = str_replace("'LOGGED_IN_SALT',   'put your unique phrase here'", "'LOGGED_IN_SALT',   '{$secret_keys[6]}'", $config_file);
+            $config_file = str_replace("'NONCE_SALT',       'put your unique phrase here'", "'NONCE_SALT',       '{$secret_keys[7]}'", $config_file);
+            
+            if(file_exists('%(app_path)s/' .'wp-config.php')) {
+                unlink('%(app_path)s/' .'wp-config.php');
+            }
+            
+            $fw = fopen('%(app_path)s/' . 'wp-config.php', 'a');
+            foreach ( $config_file as $line_num => $line ) {
+                fwrite($fw, $line);
+            }
+            define('WP_CONTENT_DIR', 'wp-content/');
+            define('WP_LANG_DIR', WP_CONTENT_DIR . '/languages' );
+            define('WP_USE_THEMES', true);
+            define('DB_NAME', '%(db_name)s');
+            define('DB_USER', '%(db_user)s');
+            define('DB_PASSWORD', '%(password)s');
+            define('DB_HOST', '%(db_host)s');
+            
+            $_GET['step'] = 2;
+            $_POST['weblog_title'] = "%(title)s";
+            $_POST['user_name'] = "admin";
+            $_POST['admin_email'] = "%(email)s";
+            $_POST['blog_public'] = true;
+            $_POST['admin_password'] = "%(password)s";
+            $_POST['admin_password2'] = "%(password)s";
+            
+            function wp_new_blog_notification($blog_title, $blog_url, $user_id, $password){
+                // do nothing
+            }
+            ob_start();
+            require_once('%(app_path)s/wp-admin/install.php');
+            $response = ob_get_contents();
+            ob_end_clean();
+            if (strpos($response, '<h1>Success!</h1>') === false) {
+                echo "Error has occured during installation\\n";
+                echo $msg;
+                exit(1);
+            }""") % context
+        )
+    
+    def commit(self):
+        self.append('?>')
+    
+    def delete(self, webapp):
+        context = self.get_context(webapp)
+        self.append("exc('rm -rf %(app_path)s');" % context)
+    
+    def get_context(self, webapp):
+        context = super(WordPressBackend, self).get_context(webapp)
+        context.update({
+            'db_name': webapp.data['db_name'],
+            'db_user': webapp.data['db_user'],
+            'password': webapp.data['password'],
+            'db_host': settings.WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST,
+            'title': "%s blog's" % webapp.account.get_full_name(),
+            'email': webapp.account.email,
+        })
+        return context

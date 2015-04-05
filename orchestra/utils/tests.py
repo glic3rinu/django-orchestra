@@ -11,7 +11,7 @@ from orm.api import Api
 from selenium.webdriver.firefox.webdriver import WebDriver
 from xvfbwrapper import Xvfb
 
-from orchestra.apps.accounts.models import Account
+from orchestra.contrib.accounts.models import Account
 
 from .python import random_ascii
 
@@ -24,7 +24,7 @@ class AppDependencyMixin(object):
         current_app = cls.__module__.split('.tests.')[0]
         INSTALLED_APPS = (
             'orchestra',
-            'orchestra.apps.accounts',
+            'orchestra.contrib.accounts',
             current_app
         )
         INSTALLED_APPS += cls.DEPENDENCIES

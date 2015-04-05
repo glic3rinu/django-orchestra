@@ -3,10 +3,9 @@ from os.path import expanduser
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.utils.six.moves import input
 
 from orchestra.utils.paths import get_project_dir, get_site_dir, get_project_name
-from orchestra.utils.system import run, check_root, get_default_celeryd_username
+from orchestra.utils.sys import run, check_root, get_default_celeryd_username
 
 
 class Command(BaseCommand):

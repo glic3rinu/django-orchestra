@@ -4,7 +4,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from orchestra.utils.system import run, check_root
+from orchestra.utils.sys import run, check_root
 
 class Command(BaseCommand):
     def __init__(self, *args, **kwargs):

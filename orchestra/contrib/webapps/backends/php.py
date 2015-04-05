@@ -4,7 +4,7 @@ import textwrap
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 
 from . import WebAppServiceMixin
 from .. import settings
@@ -132,7 +132,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         # Format PHP init vars
         init_vars = opt.get_php_init_vars(merge=self.MERGE)
         if init_vars:
-            init_vars = [ '-d %s="%s"' % (k,v) for k,v in init_vars.items() ]
+            init_vars = [ "-d %s='%s'" % (k, v.replace("'", '"')) for k,v in init_vars.items() ]
         init_vars = ', '.join(init_vars)
         context.update({
             'php_binary': os.path.normpath(settings.WEBAPPS_PHP_CGI_BINARY_PATH % context),
@@ -156,7 +156,9 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         cmd_options = []
         for directive, value in maps.items():
             if value:
-                cmd_options.append("%s %s" % (directive, value))
+                cmd_options.append(
+                    "%s %s" % (directive, value.replace("'", '"'))
+                )
         if cmd_options:
             head = (
                 '# %(banner)s\n'
@@ -172,6 +174,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             'wrapper_path': wrapper_path,
             'wrapper_dir': os.path.dirname(wrapper_path),
         })
+        replace(context, "'", '"')
         context.update({
             'cmd_options': self.get_fcgid_cmd_options(webapp, context),
             'cmd_options_path': settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH % context,
@@ -191,6 +194,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             'php_version_number': webapp.type_instance.get_php_version_number(),
             'max_requests': settings.WEBAPPS_PHP_MAX_REQUESTS,
         })
-        self.update_fcgid_context(webapp, context)
         self.update_fpm_context(webapp, context)
+        # Fcgid context do contain special charactes
+        replace(context, "'", '"')
+        self.update_fcgid_context(webapp, context)
         return context

@@ -1,6 +1,8 @@
 import pkgutil
 import textwrap
 
+from orchestra.contrib.orchestration.backends import replace
+
 from .. import settings
 
 
@@ -30,7 +32,7 @@ class WebAppServiceMixin(object):
         self.append("rm -fr %(app_path)s" % context)
     
     def get_context(self, webapp):
-        return {
+        context = {
             'user': webapp.get_username(),
             'group': webapp.get_groupname(),
             'app_name': webapp.name,
@@ -40,6 +42,7 @@ class WebAppServiceMixin(object):
             'under_construction_path': settings.settings.WEBAPPS_UNDER_CONSTRUCTION_PATH,
             'is_mounted': webapp.content_set.exists(),
         }
+        replace(context, "'", '"')
 
 
 for __, module_name, __ in pkgutil.walk_packages(__path__):

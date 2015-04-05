@@ -1,3 +1,4 @@
+from orchestra.contrib.orchestration import replace
 from orchestra.contrib.resources import ServiceMonitor
 
 
@@ -27,6 +28,7 @@ class OpenVZTraffic(ServiceMonitor):
             "    | awk '{print $1+$9}'")
     
     def get_context(self, container):
-        return {
+        context = {
             'hostname': container.hostname,
         }
+        return replace(context, "'", '"')

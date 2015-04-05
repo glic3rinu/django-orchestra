@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 
 from . import WebAppServiceMixin
 
@@ -24,4 +24,4 @@ class SymbolicLinkBackend(WebAppServiceMixin, ServiceController):
         context.update({
             'link_path': webapp.data['path'],
         })
-        return context
+        return replace(context, "'", '"')

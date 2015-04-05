@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from orchestra.api import router
+from orchestra.api import router, LogApiMixin
 from orchestra.contrib.accounts.api import AccountApiMixin
 
 from . import settings
@@ -8,7 +8,7 @@ from .models import Website
 from .serializers import WebsiteSerializer
 
 
-class WebsiteViewSet(AccountApiMixin, viewsets.ModelViewSet):
+class WebsiteViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
     model = Website
     serializer_class = WebsiteSerializer
     filter_fields = ('name',)

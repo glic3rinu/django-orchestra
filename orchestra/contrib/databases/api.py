@@ -1,19 +1,19 @@
 from rest_framework import viewsets
 
-from orchestra.api import router, SetPasswordApiMixin
+from orchestra.api import router, SetPasswordApiMixin, LogApiMixin
 from orchestra.contrib.accounts.api import AccountApiMixin
 
 from .models import Database, DatabaseUser
 from .serializers import DatabaseSerializer, DatabaseUserSerializer
 
 
-class DatabaseViewSet(AccountApiMixin, viewsets.ModelViewSet):
+class DatabaseViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
     model = Database
     serializer_class = DatabaseSerializer
     filter_fields = ('name',)
 
 
-class DatabaseUserViewSet(AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
+class DatabaseUserViewSet(LogApiMixin, AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
     model = DatabaseUser
     serializer_class = DatabaseUserSerializer
     filter_fields = ('username',)

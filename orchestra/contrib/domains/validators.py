@@ -112,7 +112,7 @@ def validate_zone(zone):
     checkzone = settings.DOMAINS_CHECKZONE_BIN_PATH
     try:
         with open(zone_path, 'wb') as f:
-            f.write(zone_path)
+            f.write(zone.encode('ascii'))
         # Don't use /dev/stdin becuase the 'argument list is too long' error
         check = run(' '.join([checkzone, zone_name, zone_path]), error_codes=[0,1], display=False)
     finally:

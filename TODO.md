@@ -1,30 +1,21 @@
 ==== TODO ====
-
-* scape strings before executing scripts in order to prevent exploits: django templates automatically scapes things. Most important is to ensuer that all escape ' to &quot
-* Don't store passwords and other service parameters that can be changed by the services i.e. mailman, vps etc. Find an execution mechanism that trigger `change_password()`
-
-* abort transaction on orchestration when `state == TIMEOUT` ?
 * use format_html_join for orchestration email alerts
 
 * enforce an emergency email contact and account to contact contacts about problems when mailserver is down
 
 * add `BackendLog` retry action
+
 * webmail identities and addresses
 
 * Permissions .filter_queryset()
 
 * env vars instead of multiple settings files: https://devcenter.heroku.com/articles/config-vars ?
 
-* Log changes from rest api (serialized objects)
-
+# TODO Log changes from rest api (serialized objects)
 
 * backend logs with hal logo
 
 * LAST version of this shit http://wkhtmltopdf.org/downloads.h otml
-
-* translations
-    from django.utils import translation
-    with translation.override('en'):
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
@@ -39,18 +30,13 @@
 
 * Maildir billing tests/ webdisk billing tests (avg metric)
 
-
 * when using modeladmin to store shit like self.account, make sure to have a cleanslate in each request? no, better reuse the last one
 
 * jabber with mailbox accounts (dovecot mail notification)
 
 * rename accounts register to "account", and reated api and admin references
 
-* prevent deletion of main user by the user itself
-
 * AccountAdminMixin auto adds 'account__name' on searchfields
-
-* Separate panel from server passwords?  Store passwords on panel? set_password special backend operation?
 
 * What fields we really need on contacts? name email phone and what more?
 
@@ -58,34 +44,22 @@
 
 * DOC: Complitely decouples scripts execution, billing, service definition
 
-* delete main user -> delete account or prevent delete main user
-
-
-* multiple domains creation; line separated domains
-
-
 * init.d celery scripts
     -# Required-Start:    $network $local_fs $remote_fs postgresql celeryd
     -# Required-Stop:     $network $local_fs $remote_fs postgresql celeryd
 
-
 * regenerate virtual_domains every time (configure a separate file for orchestra on postfix)
-* update_fields=[] doesn't trigger post save!
 
 * Backend optimization
     * fields = ()
     * ignore_fields = ()
     * based on a merge set of save(update_fields)
 
-* parmiko write to a channel instead of transfering files?  http://sysadmin.circularvale.com/programming/paramiko-channel-hangs/
-
 * proforma without billing contact?
 
 * print open invoices as proforma?
 
-* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture¶
-
-
+* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture
 
 * ForeignKey.swappable
 * Field.editable
@@ -94,8 +68,6 @@
 * REST PERMISSIONS
 
 * caching based on "def text2int(textnum, numwords={}):"
-
-* multiple files monitoring
 
 * sync() ServiceController method that synchronizes orchestra and servers (delete or import)
 
@@ -119,7 +91,6 @@
 * domain validation parse named-checzone output to assign errors to fields
 
 * Directory Protection on webapp and use webapp path as base path (validate)
-* User [Group] webapp/website option (validation) which overrides default mainsystemuser
 
 * validate systemuser.home on server-side
 
@@ -137,7 +108,7 @@
 
 * Resource graph for each related object
 
-* SaaS model splitted into SaaSUser and SaaSSite? inherit from SaaS
+* SaaS model splitted into SaaSUser and SaaSSite? inherit from SaaS, proxy model?
 
 * prevent @pangea.org email addresses on contacts, enforce at least one email without @pangea.org
 
@@ -159,7 +130,6 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 
 
 * logs on panel/logs/ ? mkdir ~webapps, backend post save signal? 
-* transaction fault tolerant on backend.execute()
 * <IfModule security2_module> and other IfModule on backend SecRule
 
 * Orchestra global search box on the page head, based https://github.com/django/django/blob/master/django/contrib/admin/options.py#L866 and iterating over all registered services and inspectin its admin.search_fields
@@ -185,7 +155,7 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 
 * tags = GenericRelation(TaggedItem, related_query_name='bookmarks')
 
-* make home for all systemusers (/home/username) and fix monitors
+# make home for all systemusers (/home/username) and fix monitors
 
 * user provided crons
 
@@ -195,7 +165,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * make account available on all admin forms
 
-* WPMU blog traffic
+# WPMU blog traffic
 
 * normurlpath '' return '/'
 
@@ -211,32 +181,30 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * Document metric interpretation help_text
 * document plugin serialization, data_serializer?
 
-* bill line managemente, remove, undo (only when possible), move, copy, paste
+# bill line managemente, remove, undo (only when possible), move, copy, paste
     * budgets: no undo feature
 
 * Autocomplete admin fields like <site_name>.phplist... with js
-* autoexpand mailbox.filter according to filtering options
+* autoexpand mailbox.filter according to filtering options (js)
 
 * allow empty metric pack for default rates? changes on rating algo
-* IMPORTANT make sure no order is created for mailboxes that include disk? or just don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
+# IMPORTANT make sure no order is created for mailboxes that include disk? or just don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
 
 * Improve performance of admin change lists with debug toolbar and prefech_related
-*  and miscellaneous.service.name == 'domini-registre' 
-* DOMINI REGISTRE MIGRATION SCRIPTS
+# DOMINI REGISTRE MIGRATION SCRIPTS
 
-* lines too long on invoice, double lines or cut, and make margin wider
+# lines too long on invoice, double lines or cut, and make margin wider
 * PHP_TIMEOUT env variable in sync with fcgid idle timeout
     http://foaa.de/old-blog/2010/11/php-apache-and-fastcgi-a-comprehensive-overview/trackback/index.html#pni-top0
 
 * payment methods icons
 * use server.name | server.address on python backends, like gitlab instead of settings?
-* saas change password feature (the only way of re.running a backend)
 
 * TODO raise404, here and everywhere
-* display subline links on billlines, to show that they exists.
+# display subline links on billlines, to show that they exists.
 * update service orders on a celery task? because it take alot
 
-* billline quantity eval('10x100') instead of miningless description '(10*100)' 
+# billline quantity eval('10x100') instead of miningless description '(10*100)' 
 
 # FIXME do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
     * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
@@ -249,23 +217,19 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * write down insights
 
-* use english on services defs and so on, an translate them on render time
+# use english on services defs and so on, an translate them on render time
 
 * websites directives get_location() and use it on last change view validation stage to compare with contents.location and also on the backend ?
 
 * modeladmin Default filter + search isn't working, prepend filter when searching
 
-*  IMPORTANT do all modles.py TODOs and create migrations for finished apps
+# IMPORTANT do all modles.py TODOs and create migrations for finished apps
 
-* create service templates based on urlqwargs with the most basic services.
+* create service help templates based on urlqwargs with the most basic services.
 
-* Base price: domini propi (all domains) + extra for other domains
+# TDOO Base price: domini propi (all domains) + extra for other domains
 
-
-* prepend ORCHESTRA_ to orchestra/settings.py
-
-
-* rename backends with generic names to concrete services.. eg VsFTPdTraffic, UNIXSystemUser
+# TODO prepend ORCHESTRA_ to orchestra/settings.py
 
 
 Translation
@@ -296,7 +260,7 @@ celery max-tasks-per-child
 
 * postupgradeorchestra send signals in order to hook custom stuff
 
-* make base home for systemusers that ara homed into main account systemuser, and prevent shell users to have nested homes (if nnot implemented already)
+# FIXME make base home for systemusers that ara homed into main account systemuser, and prevent shell users to have nested homes (if nnot implemented already)
 
 * autoscale celery workers http://docs.celeryproject.org/en/latest/userguide/workers.html#autoscaling
 
@@ -312,11 +276,24 @@ https://code.djangoproject.com/ticket/24576
 # FIXME what to do when deleting accounts? set fk null and fill a username charfield? issues, invoices.. we whant all this to go away?
 * implement delete All related services
 
-* address name change does not remove old one :P
+# FIXME address name change does not remove old one :P
 
 * read https://docs.djangoproject.com/en/dev/releases/1.8/ and fix deprecation warnings
-* remove admin object links , like contents webapps
+* remove admin object display_links , like contents webapps
 
 * SaaS and WebApp types and services fieldsets, and helptexts !
 
 * replace make_option in management commands
+
+* welcome, pangea linke doesnt work
+
+# FIXME model contact info and account info (email, name, etc) correctly/unredundant/dry
+
+
+* Use the new django.contrib.admin.RelatedOnlyFieldListFilter in ModelAdmin.list_filter to limit the list_filter choices to foreign objects which are attached to those from the ModelAdmin.
++ Query Expressions, Conditional Expressions, and Database Functions¶
+* forms: You can now pass a callable that returns an iterable of choices when instantiating a ChoiceField.
+
+
+* migrate to DRF3.x
+

@@ -3,7 +3,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.orchestration.models import BackendOperation as Operation
 
 from . import settings
@@ -28,7 +28,7 @@ class Bind9MasterDomainBackend(ServiceController):
         context = self.get_context(domain)
         domain.refresh_serial()
         context['zone'] = ';; %(banner)s\n' % context
-        context['zone'] += domain.render_zone()
+        context['zone'] += domain.render_zone().replace("'", '"')
         self.append(textwrap.dedent("""\
             echo -e '%(zone)s' > %(zone_path)s.tmp
             diff -N -I'^\s*;;' %(zone_path)s %(zone_path)s.tmp || UPDATED=1
@@ -98,20 +98,18 @@ class Bind9MasterDomainBackend(ServiceController):
             'banner': self.get_banner(),
             'slaves': '; '.join(slaves) or 'none',
             'also_notify': '; '.join(slaves) + ';' if slaves else '',
-        }
-        context.update({
             'conf_path': settings.DOMAINS_MASTERS_PATH,
-            'conf': textwrap.dedent("""
-                zone "%(name)s" {
-                    // %(banner)s
-                    type master;
-                    file "%(zone_path)s";
-                    allow-transfer { %(slaves)s; };
-                    also-notify { %(also_notify)s };
-                    notify yes;
-                };""") % context
-        })
-        return context
+        }
+        context['conf'] = textwrap.dedent("""
+            zone "%(name)s" {
+                // %(banner)s
+                type master;
+                file "%(zone_path)s";
+                allow-transfer { %(slaves)s; };
+                also-notify { %(also_notify)s };
+                notify yes;
+            };""") % context
+        return replace(context, "'", '"')
 
 
 class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
@@ -141,16 +139,14 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
             'banner': self.get_banner(),
             'subdomains': domain.subdomains.all(),
             'masters': '; '.join(self.get_masters(domain)) or 'none',
-        }
-        context.update({
             'conf_path': settings.DOMAINS_SLAVES_PATH,
-            'conf': textwrap.dedent("""
-                zone "%(name)s" {
-                    // %(banner)s
-                    type slave;
-                    file "%(name)s";
-                    masters { %(masters)s; };
-                    allow-notify { %(masters)s; };
-                };""") % context
-        })
-        return context
+        }
+        context['conf'] = textwrap.dedent("""
+            zone "%(name)s" {
+                // %(banner)s
+                type slave;
+                file "%(name)s";
+                masters { %(masters)s; };
+                allow-notify { %(masters)s; };
+            };""") % context
+        return replace(context, "'", '"')

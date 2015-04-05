@@ -8,17 +8,23 @@ from orchestra.contrib.orchestration import manager
 
 class Command(BaseCommand):
     help = 'Runs orchestration backends.'
-    option_list = BaseCommand.option_list
-    args = "[app_label] [filter]"
+    
+    def add_arguments(self, parser):
+        parser.add_argument('model', nargs='+',
+            help='App label of an application to synchronize the 
+        parser.add_argument('query', nargs='?',
+            help='Query arguments for filter().')
+        parser.add_argument('--noinput', action='store_false', dest='interactive', default=True,
+            help='Tells Django to NOT prompt the user for input of any kind.')
+        parser.add_argument('--action', action='store', dest='database',
+            default='save', help='Executes action. Defaults to "save".')
     
     def handle(self, *args, **options):
-        model_label = args[0]
-        model = get_model(*model_label.split('.'))
-        # TODO options
-        action = options.get('action', 'save')
-        interactive = options.get('interactive', True)
+        model = get_model(*options['model'].split('.'))
+        action = options.get('action')
+        interactive = options.get('interactive')
         kwargs = {}
-        for comp in args[1:]:
+        for comp in options.get('query', []):
             comps = iter(comp.split('='))
             for arg in comps:
                 kwargs[arg] = next(comps).strip().rstrip(',')
@@ -51,4 +57,3 @@ class Command(BaseCommand):
                     return
                 break
 #        manager.execute(scripts, block=block)
-

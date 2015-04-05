@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 
-from orchestra.api import router
+from orchestra.api import router, LogApiMixin
 from orchestra.contrib.accounts.api import AccountApiMixin
 from orchestra.utils.html import html_to_pdf
 
@@ -11,7 +11,7 @@ from .serializers import BillSerializer
 
 
 
-class BillViewSet(AccountApiMixin, viewsets.ModelViewSet):
+class BillViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
     model = Bill
     serializer_class = BillSerializer
     

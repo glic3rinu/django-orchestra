@@ -1,3 +1,4 @@
+import re
 from functools import partial
 
 from django.apps import apps
@@ -7,6 +8,15 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra import plugins
 
 from . import methods
+
+
+def replace(context, pattern, repl):
+    if isinstance(context, str):
+        return context.replace(patter, repl)
+    for key, value in context.items():
+        if isinstance(value, str):
+            context[key] = value.replace(pattern, repl)
+    return context
 
 
 class ServiceMount(plugins.PluginMount):

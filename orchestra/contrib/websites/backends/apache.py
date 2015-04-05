@@ -5,7 +5,7 @@ import textwrap
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
 
 from .. import settings
@@ -82,7 +82,7 @@ class Apache2Backend(ServiceController):
             apache_conf += self.render_virtual_host(site, context, ssl=True)
         if site.protocol == site.HTTPS_ONLY:
             apache_conf += self.render_redirect_https(context)
-        context['apache_conf'] = apache_conf
+        context['apache_conf'] = apache_conf.replace("'", '"')
         self.append(textwrap.dedent("""\
             apache_conf='%(apache_conf)s'
             {
@@ -172,7 +172,7 @@ class Apache2Backend(ServiceController):
             ca = [settings.WEBSITES_DEFAULT_SSL_CA]
             if not (cert and key):
                 return []
-        config = 'SSLEngine on\n'
+        config = "SSLEngine on\n"
         config += "SSLCertificateFile %s\n" % cert[0]
         config += "SSLCertificateKeyFile %s\n" % key[0]
         if ca:
@@ -297,7 +297,7 @@ class Apache2Backend(ServiceController):
             'error_log': site.get_www_error_log_path(),
             'banner': self.get_banner(),
         }
-        return context
+        return replace(context, "'", '"')
     
     def get_content_context(self, content):
         context = self.get_context(content.website)
@@ -307,7 +307,7 @@ class Apache2Backend(ServiceController):
             'app_name': content.webapp.name,
             'app_path': content.webapp.get_path(),
         })
-        return context
+        return replace(context, "'", '"')
 
 
 class Apache2Traffic(ServiceMonitor):
@@ -368,8 +368,9 @@ class Apache2Traffic(ServiceMonitor):
         self.append('monitor {object_id} "{last_date}" {log_file}'.format(**context))
     
     def get_context(self, site):
-        return {
+        context = {
             'log_file': '%s{,.1}' % site.get_www_access_log_path(),
             'last_date': self.get_last_date(site.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': site.pk,
         }
+        return replace(context, "'", '"')

@@ -2,14 +2,14 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from orchestra.api import router
+from orchestra.api import router, LogApiMixin
 
 from .models import Ticket, Queue
 from .serializers import TicketSerializer, QueueSerializer
 
 
 
-class TicketViewSet(viewsets.ModelViewSet):
+class TicketViewSet(LogApiMixin, viewsets.ModelViewSet):
     model = Ticket
     serializer_class = TicketSerializer
     
@@ -32,7 +32,8 @@ class TicketViewSet(viewsets.ModelViewSet):
         return qs.filter(creator=self.request.user)
 
 
-class QueueViewSet(mixins.ListModelMixin,
+class QueueViewSet(LogApiMixin,
+                   mixins.ListModelMixin,
                    mixins.RetrieveModelMixin,
                    viewsets.GenericViewSet):
     model = Queue

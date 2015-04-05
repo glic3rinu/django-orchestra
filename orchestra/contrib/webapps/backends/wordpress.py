@@ -2,7 +2,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 
 from .. import settings
 
@@ -49,10 +49,10 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             }
             array_pop($secret_keys);
             
-            $config_file = str_replace('database_name_here', '%(db_name)s', $config_file);
-            $config_file = str_replace('username_here', '%(db_user)s', $config_file);
-            $config_file = str_replace('password_here', '%(password)s', $config_file);
-            $config_file = str_replace('localhost', '%(db_host)s', $config_file);
+            $config_file = str_replace('database_name_here', "%(db_name)s", $config_file);
+            $config_file = str_replace('username_here', "%(db_user)s", $config_file);
+            $config_file = str_replace('password_here', "%(password)s", $config_file);
+            $config_file = str_replace('localhost', "%(db_host)s", $config_file);
             $config_file = str_replace("'AUTH_KEY',         'put your unique phrase here'", "'AUTH_KEY',         '{$secret_keys[0]}'", $config_file);
             $config_file = str_replace("'SECURE_AUTH_KEY',  'put your unique phrase here'", "'SECURE_AUTH_KEY',  '{$secret_keys[1]}'", $config_file);
             $config_file = str_replace("'LOGGED_IN_KEY',    'put your unique phrase here'", "'LOGGED_IN_KEY',    '{$secret_keys[2]}'", $config_file);
@@ -73,10 +73,10 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             define('WP_CONTENT_DIR', 'wp-content/');
             define('WP_LANG_DIR', WP_CONTENT_DIR . '/languages' );
             define('WP_USE_THEMES', true);
-            define('DB_NAME', '%(db_name)s');
-            define('DB_USER', '%(db_user)s');
-            define('DB_PASSWORD', '%(password)s');
-            define('DB_HOST', '%(db_host)s');
+            define('DB_NAME', "%(db_name)s");
+            define('DB_USER', "%(db_user)s");
+            define('DB_PASSWORD', "%(password)s");
+            define('DB_HOST', "%(db_host)s");
             
             $_GET['step'] = 2;
             $_POST['weblog_title'] = "%(title)s";
@@ -114,7 +114,7 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             'db_user': webapp.data['db_user'],
             'password': webapp.data['password'],
             'db_host': settings.WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST,
-            'title': "%s blog's" % webapp.account.get_full_name(),
             'email': webapp.account.email,
+            'title': "%s blog's" % webapp.account.get_full_name(),
         })
-        return context
+        return replace(context, '"', "'")

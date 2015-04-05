@@ -2,7 +2,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 
 from .. import settings
 
@@ -46,9 +46,10 @@ class BSCWBackend(ServiceController):
         self.append("%(bsadmin)s rmuser -n %(username)s" % context)
     
     def get_context(self, saas):
-        return {
+        context = {
             'bsadmin': settings.SAAS_BSCW_BSADMIN_PATH,
             'email': saas.data.get('email'),
             'username': saas.name,
             'password': getattr(saas, 'password', None),
         }
+        return replace(context, "'", '"')

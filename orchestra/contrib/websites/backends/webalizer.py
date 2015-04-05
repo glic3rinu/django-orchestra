@@ -3,7 +3,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 
 from .. import settings
 
@@ -91,4 +91,4 @@ class WebalizerBackend(ServiceController):
             SearchEngine   alltheweb.com   query=
             
             DumpSites      yes""") % context
-        return context
+        return replace(context, "'", '"')

@@ -1,7 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import viewsets, exceptions
 
-from orchestra.api import router, SetPasswordApiMixin
+from orchestra.api import router, SetPasswordApiMixin, LogApiMixin
 
 from .models import Account
 from .serializers import AccountSerializer
@@ -13,7 +13,7 @@ class AccountApiMixin(object):
         return qs.filter(account=self.request.user.pk)
 
 
-class AccountViewSet(SetPasswordApiMixin, viewsets.ModelViewSet):
+class AccountViewSet(LogApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
     model = Account
     serializer_class = AccountSerializer
     singleton_pk = lambda _,request: request.user.pk

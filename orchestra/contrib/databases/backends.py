@@ -2,7 +2,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
 
 from . import settings
@@ -46,10 +46,11 @@ class MySQLBackend(ServiceController):
         super(MySQLBackend, self).commit()
     
     def get_context(self, database):
-        return {
+        context = {
             'database': database.name,
             'host': settings.DATABASES_DEFAULT_HOST,
         }
+        return replace(replace(context, "'", '"'), ';', '')
 
 
 class MySQLUserBackend(ServiceController):
@@ -83,11 +84,12 @@ class MySQLUserBackend(ServiceController):
         self.append("mysql -e 'FLUSH PRIVILEGES;'")
     
     def get_context(self, user):
-        return {
+        context = {
             'username': user.username,
             'password': user.password,
             'host': settings.DATABASES_DEFAULT_HOST,
         }
+        return replace(replace(context, "'", '"'), ';', '')
 
 
 class MysqlDisk(ServiceMonitor):
@@ -135,7 +137,8 @@ class MysqlDisk(ServiceMonitor):
         self.append('echo %(db_id)s $(monitor "%(db_name)s")' % context)
     
     def get_context(self, db):
-        return {
+        context = {
             'db_name': db.name,
             'db_id': db.pk,
         }
+        return replace(replace(context, "'", '"'), ';', '')

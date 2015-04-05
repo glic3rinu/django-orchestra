@@ -4,7 +4,7 @@ import textwrap
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
 #from orchestra.utils.humanize import unit_to_bytes
 
@@ -19,8 +19,8 @@ from .models import Address
 logger = logging.getLogger(__name__)
 
 
-class MailSystemUserBackend(ServiceController):
-    verbose_name = _("Mail system users")
+class UNIXUserMaildirBackend(ServiceController):
+    verbose_name = _("UNIX maildir user")
     model = 'mailboxes.Mailbox'
     
     def save(self, mailbox):
@@ -70,11 +70,11 @@ class MailSystemUserBackend(ServiceController):
             'home': mailbox.get_home(),
             'initial_shell': '/dev/null',
         }
-        return context
+        return replace(context, "'", '"')
 
 
-class PasswdVirtualUserBackend(ServiceController):
-    verbose_name = _("Mail virtual user (passwd-file)")
+class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
+    verbose_name = _("Dovecot-Postfix virtualuser")
     model = 'mailboxes.Mailbox'
     # TODO related_models = ('resources__content_type') ?? needed for updating disk usage from resource.data
     
@@ -166,7 +166,7 @@ class PasswdVirtualUserBackend(ServiceController):
         }
         context['extra_fields'] = self.get_extra_fields(mailbox, context)
         context['passwd'] = '{user}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context)
-        return context
+        return replace(context, "'", '"')
 
 
 class PostfixAddressBackend(ServiceController):
@@ -178,15 +178,15 @@ class PostfixAddressBackend(ServiceController):
     
     def include_virtual_alias_domain(self, context):
         self.append(textwrap.dedent("""
-            [[ $(grep "^\s*%(domain)s\s*$" %(virtual_alias_domains)s) ]] || {
-                echo "%(domain)s" >> %(virtual_alias_domains)s
+            [[ $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]] || {
+                echo '%(domain)s' >> %(virtual_alias_domains)s
                 UPDATED_VIRTUAL_ALIAS_DOMAINS=1
             }""") % context)
     
     def exclude_virtual_alias_domain(self, context):
         domain = context['domain']
         if not Address.objects.filter(domain=domain).exists():
-            self.append('sed -i "/^%(domain)s\s*/d" %(virtual_alias_domains)s' % context)
+            self.append("sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s" % context)
     
     def update_virtual_alias_maps(self, address, context):
         # Virtual mailbox stuff
@@ -201,8 +201,8 @@ class PostfixAddressBackend(ServiceController):
         if destination:
             context['destination'] = destination
             self.append(textwrap.dedent("""
-                LINE="%(email)s\t%(destination)s"
-                if [[ ! $(grep "^%(email)s\s" %(virtual_alias_maps)s) ]]; then
+                LINE='%(email)s\t%(destination)s'
+                if [[ ! $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
                    echo "${LINE}" >> %(virtual_alias_maps)s
                    UPDATED_VIRTUAL_ALIAS_MAPS=1
                 else
@@ -213,13 +213,13 @@ class PostfixAddressBackend(ServiceController):
                 fi""") % context)
         else:
             logger.warning("Address %i is empty" % address.pk)
-            self.append('sed -i "/^%(email)s\s/d" %(virtual_alias_maps)s' % context)
+            self.append("sed -i '/^%(email)s\s/d' %(virtual_alias_maps)s" % context)
             self.append('UPDATED_VIRTUAL_ALIAS_MAPS=1')
     
     def exclude_virtual_alias_maps(self, context):
         self.append(textwrap.dedent("""
-            if [[ $(grep "^%(email)s\s" %(virtual_alias_maps)s) ]]; then
-               sed -i "/^%(email)s\s.*$/d" %(virtual_alias_maps)s
+            if [[ $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
+               sed -i '/^%(email)s\s.*$/d' %(virtual_alias_maps)s
                UPDATED_VIRTUAL_ALIAS_MAPS=1
             fi""") % context)
     
@@ -255,15 +255,15 @@ class PostfixAddressBackend(ServiceController):
             'email': address.email,
             'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
         })
-        return context
+        return replace(context, "'", '"')
 
 
 class AutoresponseBackend(ServiceController):
     verbose_name = _("Mail autoresponse")
-    model = 'mail.Autoresponse'
+    model = 'mailboxes.Autoresponse'
 
 
-class MaildirDisk(ServiceMonitor):
+class DovecotMaildirDisk(ServiceMonitor):
     """
     Maildir disk usage based on Dovecot maildirsize file
     
@@ -271,10 +271,10 @@ class MaildirDisk(ServiceMonitor):
     """
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.DISK
-    verbose_name = _("Maildir disk usage")
+    verbose_name = _("Dovecot Maildir size")
     
     def prepare(self):
-        super(MaildirDisk, self).prepare()
+        super(DovecotMaildirDisk, self).prepare()
         current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {
@@ -291,21 +291,21 @@ class MaildirDisk(ServiceMonitor):
             'object_id': mailbox.pk
         }
         context['maildir_path'] = settings.MAILBOXES_MAILDIRSIZE_PATH % context
-        return context
+        return replace(context, "'", '"')
 
 
-class PostfixTraffic(ServiceMonitor):
+class PostfixMailscannerTraffic(ServiceMonitor):
     """
     A high-performance log parser
     Reads the mail.log file only once, for all users
     """
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.TRAFFIC
-    verbose_name = _("Postfix traffic usage")
+    verbose_name = _("Postfix-Mailscanner traffic")
     script_executable = '/usr/bin/python'
     
     def prepare(self):
-        mail_log = '/var/log/mail.log'
+        mail_log = settings.MAILBOXES_MAIL_LOG_PATH
         context = {
             'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
             'mail_logs': str((mail_log, mail_log+'.1')),
@@ -444,12 +444,12 @@ class PostfixTraffic(ServiceMonitor):
         self.append("prepare(%(object_id)s, '%(mailbox)s', '%(last_date)s')" % context)
     
     def get_context(self, mailbox):
-        return {
-#            'mainlog': settings.LISTS_MAILMAN_POST_LOG_PATH,
+        context = {
             'mailbox': mailbox.name,
             'object_id': mailbox.pk,
             'last_date': self.get_last_date(mailbox.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
+        return replace(context, "'", '"')
 
 
 

@@ -2,7 +2,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
 
 from . import settings
@@ -26,14 +26,10 @@ class MailmanBackend(ServiceController):
     ]
     
     def include_virtual_alias_domain(self, context):
-        # TODO  for list virtual_domains cleaning up we need to know the old domain name when a list changes its address
-        #       domain, but this is not possible with the current design.
-        #       sync the whole file everytime?
-        # TODO same for mailbox virtual domains
         if context['address_domain']:
             self.append(textwrap.dedent("""
-                [[ $(grep "^\s*%(address_domain)s\s*$" %(virtual_alias_domains)s) ]] || {
-                    echo "%(address_domain)s" >> %(virtual_alias_domains)s
+                [[ $(grep '^\s*%(address_domain)s\s*$' %(virtual_alias_domains)s) ]] || {
+                    echo '%(address_domain)s' >> %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
                 }""") % context
             )
@@ -41,7 +37,7 @@ class MailmanBackend(ServiceController):
     def exclude_virtual_alias_domain(self, context):
         address_domain = context['address_domain']
         if not List.objects.filter(address_domain=address_domain).exists():
-            self.append('sed -i "/^%(address_domain)s\s*$/d" %(virtual_alias_domains)s' % context)
+            self.append("sed -i '/^%(address_domain)s\s*$/d' %(virtual_alias_domains)s" % context)
     
     def get_virtual_aliases(self, context):
         aliases = ['# %(banner)s' % context]
@@ -54,7 +50,7 @@ class MailmanBackend(ServiceController):
         context = self.get_context(mail_list)
         # Create list
         self.append(textwrap.dedent("""\
-            [[ ! -e %(mailman_root)s/lists/%(name)s ]] && {
+            [[ ! -e '%(mailman_root)s/lists/%(name)s' ]] && {
                 newlist --quiet --emailhost='%(domain)s' '%(name)s' '%(admin)s' '%(password)s'
             }""") % context)
         # Custom domain
@@ -150,7 +146,7 @@ class MailmanBackend(ServiceController):
             'admin': mail_list.admin_email,
             'mailman_root': settings.LISTS_MAILMAN_ROOT_PATH,
         })
-        return context
+        return replace(context, "'", '"')
 
 
 class MailmanTrafficBash(ServiceMonitor):
@@ -213,11 +209,12 @@ class MailmanTrafficBash(ServiceMonitor):
         )
     
     def get_context(self, mail_list):
-        return {
+        context = {
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
             'last_date': self.get_last_date(mail_list.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
+        return replace(context, "'", '"')
 
 
 class MailmanTraffic(ServiceMonitor):
@@ -312,11 +309,12 @@ class MailmanTraffic(ServiceMonitor):
         self.append('monitor(lists, end_date, months, postlogs)')
     
     def get_context(self, mail_list):
-        return {
+        context = {
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
             'last_date': self.get_last_date(mail_list.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
+        return replace(context, "'", '"')
 
 
 class MailmanSubscribers(ServiceMonitor):
@@ -328,7 +326,8 @@ class MailmanSubscribers(ServiceMonitor):
         self.append('echo %(object_id)i $(list_members %(list_name)s | wc -l)' % context)
     
     def get_context(self, mail_list):
-        return {
+        context = {
             'list_name': mail_list.name,
             'object_id': mail_list.pk,
         }
+        return replace(context, "'", '"')

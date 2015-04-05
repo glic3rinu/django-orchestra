@@ -3,14 +3,14 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
 
 from . import settings
 
 
-class SystemUserBackend(ServiceController):
-    verbose_name = _("System user")
+class UNIXUserBackend(ServiceController):
+    verbose_name = _("UNIX user")
     model = 'systemusers.SystemUser'
     actions = ('save', 'delete', 'grant_permission')
     
@@ -73,16 +73,16 @@ class SystemUserBackend(ServiceController):
             'mainuser': user.username if user.is_main else user.account.username,
             'home': user.get_home()
         }
-        return context
+        return replace(context, "'", '"')
 
 
-class SystemUserDisk(ServiceMonitor):
+class UNIXUserDisk(ServiceMonitor):
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.DISK
-    verbose_name = _('Systemuser disk')
+    verbose_name = _('UNIX user disk')
     
     def prepare(self):
-        super(SystemUserDisk, self).prepare()
+        super(UNIXUserDisk, self).prepare()
         self.append(textwrap.dedent("""\
             function monitor () {
                 { du -bs "$1" || echo 0; } | awk {'print $1'}
@@ -98,85 +98,21 @@ class SystemUserDisk(ServiceMonitor):
             self.append("echo %(object_id)s 0" % context)
     
     def get_context(self, user):
-        return {
+        context = {
             'object_id': user.pk,
             'home': user.home,
         }
-
-
-class FTPTrafficBash(ServiceMonitor):
-    model = 'systemusers.SystemUser'
-    resource = ServiceMonitor.TRAFFIC
-    verbose_name = _('Systemuser FTP traffic (Bash)')
-    
-    def prepare(self):
-        super(FTPTrafficBash, self).prepare()
-        context = {
-            'log_file': '%s{,.1}' % settings.SYSTEMUSERS_FTP_LOG_PATH,
-            'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
-        }
-        self.append(textwrap.dedent("""\
-            function monitor () {
-                OBJECT_ID=$1
-                INI_DATE=$(date "+%%Y%%m%%d%%H%%M%%S" -d "$2")
-                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
-                USERNAME="$3"
-                LOG_FILE=%(log_file)s
-                {
-                    grep " bytes, " ${LOG_FILE} \\
-                        | grep " \\[${USERNAME}\\] " \\
-                        | awk -v ini="${INI_DATE}" -v end="${END_DATE}" '
-                            BEGIN {
-                                sum = 0
-                                months["Jan"] = "01"
-                                months["Feb"] = "02"
-                                months["Mar"] = "03"
-                                months["Apr"] = "04"
-                                months["May"] = "05"
-                                months["Jun"] = "06"
-                                months["Jul"] = "07"
-                                months["Aug"] = "08"
-                                months["Sep"] = "09"
-                                months["Oct"] = "10"
-                                months["Nov"] = "11"
-                                months["Dec"] = "12"
-                            } {
-                                # Fri Jul  1 13:23:17 2014
-                                split($4, time, ":")
-                                day = sprintf("%%02d", $3)
-                                # line_date = year month day hour minute second
-                                line_date = $5 months[$2] day time[1] time[2] time[3]
-                                if ( line_date > ini && line_date < end) {
-                                    sum += $(NF-2)
-                                }
-                            } END {
-                                print sum
-                            }' || [[ $? == 1 ]] && true
-                } | xargs echo ${OBJECT_ID}
-            }""") % context)
-    
-    def monitor(self, user):
-        context = self.get_context(user)
-        self.append(
-            'monitor {object_id} "{last_date}" "{username}"'.format(**context)
-        )
-    
-    def get_context(self, user):
-        return {
-            'last_date': self.get_last_date(user.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
-            'object_id': user.pk,
-            'username': user.username,
-        }
+        return replace(context, "'", '"')
 
 
 class Exim4Traffic(ServiceMonitor):
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.TRAFFIC
-    verbose_name = _("Exim4 traffic usage")
+    verbose_name = _("Exim4 traffic")
     script_executable = '/usr/bin/python'
     
     def prepare(self):
-        mainlog = '/var/log/exim4/mainlog'
+        mainlog = settings.LISTS_MAILMAN_POST_LOG_PATH
         context = {
             'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
             'mainlogs': str((mainlog, mainlog+'.1')),
@@ -240,19 +176,18 @@ class Exim4Traffic(ServiceMonitor):
         self.append("prepare(%(object_id)s, '%(username)s', '%(last_date)s')" % context)
     
     def get_context(self, user):
-        return {
-#            'mainlog': settings.LISTS_MAILMAN_POST_LOG_PATH,
+        context = {
             'username': user.username,
             'object_id': user.pk,
             'last_date': self.get_last_date(user.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
+        return replace(context, "'", '"')
 
 
-
-class FTPTraffic(ServiceMonitor):
+class VsFTPdTraffic(ServiceMonitor):
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.TRAFFIC
-    verbose_name = _('Systemuser FTP traffic')
+    verbose_name = _('VsFTPd traffic')
     script_executable = '/usr/bin/python'
     
     def prepare(self):
@@ -266,13 +201,13 @@ class FTPTraffic(ServiceMonitor):
             import sys
             from datetime import datetime
             from dateutil import tz
-
+            
             def to_local_timezone(date, tzlocal=tz.tzlocal()):
                 date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %Z')
                 date = date.replace(tzinfo=tz.tzutc())
                 date = date.astimezone(tzlocal)
                 return date
-
+            
             vsftplogs = {vsftplogs}
             # Use local timezone
             end_date = to_local_timezone('{current_date}')
@@ -292,13 +227,13 @@ class FTPTraffic(ServiceMonitor):
                 'Nov': '11',
                 'Dec': '12',
             }}
-
+            
             def prepare(object_id, username, ini_date):
                 global users
                 ini_date = to_local_timezone(ini_date)
                 ini_date = int(ini_date.strftime('%Y%m%d%H%M%S'))
                 users[username] = [ini_date, object_id, 0]
-
+            
             def monitor(users, end_date, months, vsftplogs):
                 user_regex = re.compile(r'\] \[([^ ]+)\] (OK|FAIL) ')
                 bytes_regex = re.compile(r', ([0-9]+) bytes, ')
@@ -335,9 +270,10 @@ class FTPTraffic(ServiceMonitor):
         self.append('monitor(users, end_date, months, vsftplogs)')
     
     def get_context(self, user):
-        return {
+        context = {
             'last_date': self.get_last_date(user.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': user.pk,
             'username': user.username,
         }
+        return replace(context, "'", '"')
 

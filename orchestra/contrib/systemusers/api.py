@@ -1,14 +1,14 @@
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import viewsets, exceptions
 
-from orchestra.api import router, SetPasswordApiMixin
+from orchestra.api import router, SetPasswordApiMixin, LogApiMixin
 from orchestra.contrib.accounts.api import AccountApiMixin
 
 from .models import SystemUser
 from .serializers import SystemUserSerializer
 
 
-class SystemUserViewSet(AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
+class SystemUserViewSet(LogApiMixin, AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
     model = SystemUser
     serializer_class = SystemUserSerializer
     filter_fields = ('username',)

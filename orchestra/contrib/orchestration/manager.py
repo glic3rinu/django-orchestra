@@ -173,6 +173,8 @@ def collect(instance, action, **kwargs):
             else:
                 update_fields = kwargs.get('update_fields', None)
                 if update_fields is not None:
+                    # TODO remove this, django does not execute post_save if update_fields=[]...
+                    # Maybe open a ticket at Djangoproject ?
                     # "update_fileds=[]" is a convention for explicitly executing backend
                     # i.e. account.disable()
                     if update_fields != []:

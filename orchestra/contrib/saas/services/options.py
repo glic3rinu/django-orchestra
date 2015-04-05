@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra import plugins
@@ -16,10 +17,16 @@ from .. import settings
 class SoftwareServiceForm(PluginDataForm):
     site_url = forms.CharField(label=_("Site URL"), widget=widgets.ShowTextWidget, required=False)
     password = forms.CharField(label=_("Password"), required=False,
-            widget=widgets.ReadOnlyWidget('<strong>Unknown password</strong>'),
-            help_text=_("Passwords are not stored, so there is no way to see this "
-                        "service's password, but you can change the password using "
-                        "<a href=\"password/\">this form</a>."))
+        widget=widgets.ReadOnlyWidget('<strong>Unknown password</strong>'),
+        validators=[
+            RegexValidator(r'^[^"\'\\]+$',
+                           _('Enter a valid password. '
+                             'This value may contain any ascii character except for '
+                             ' \'/"/\\/ characters.'), 'invalid'),
+        ],
+        help_text=_("Passwords are not stored, so there is no way to see this "
+                    "service's password, but you can change the password using "
+                    "<a href=\"password/\">this form</a>."))
     password1 = forms.CharField(label=_("Password"), validators=[validators.validate_password],
             widget=forms.PasswordInput)
     password2 = forms.CharField(label=_("Password confirmation"),

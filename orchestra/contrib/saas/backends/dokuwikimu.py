@@ -2,7 +2,7 @@ import os
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 
 from .. import settings
 
@@ -28,4 +28,4 @@ class DokuWikiMuBackend(ServiceController):
             'template': settings.WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH,
             'app_path': os.path.join(settings.WEBAPPS_DOKUWIKIMU_FARM_PATH, webapp.name)
         })
-        return context
+        return replace(context, "'", '"')

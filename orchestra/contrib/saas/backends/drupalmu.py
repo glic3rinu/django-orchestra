@@ -3,7 +3,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.orchestration import ServiceController, replace
 
 from .. import settings
 
@@ -34,4 +34,4 @@ class DrupalMuBackend(ServiceController):
         context = super(DrupalMuBackend, self).get_context(webapp)
         context['drupal_path'] = settings.WEBAPPS_DRUPAL_SITES_PATH % context
         context['drupal_settings'] = os.path.join(context['drupal_path'], 'settings.php')
-        return context
+        return replace(context, "'", '"')

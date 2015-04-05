@@ -1,7 +1,7 @@
 from django.conf import settings
 from django_countries import data
 
-from orchestra.settings import BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 BILLS_NUMBER_LENGTH = getattr(settings, 'BILLS_NUMBER_LENGTH',
@@ -60,12 +60,12 @@ BILLS_SELLER_PHONE = getattr(settings, 'BILLS_SELLER_PHONE',
 
 
 BILLS_SELLER_EMAIL = getattr(settings, 'BILLS_SELLER_EMAIL',
-    'sales@{}'.format(BASE_DOMAIN)
+    'sales@{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
 BILLS_SELLER_WEBSITE = getattr(settings, 'BILLS_SELLER_WEBSITE',
-    'www.{}'.format(BASE_DOMAIN)
+    'www.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 

@@ -2,7 +2,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from orchestra.settings import START_SERVICES
+from orchestra.settings import ORCHESTRA_START_SERVICES
 from orchestra.utils.sys import run, check_root
 
 
@@ -53,7 +53,7 @@ class ManageServiceCommand(BaseCommand):
 
 
 class Command(ManageServiceCommand):
-    services = START_SERVICES
+    services = ORCHESTRA_START_SERVICES
     action = 'start'
     option_list = BaseCommand.option_list
     help = 'Start all related services. Usefull for reload configuration and files.'

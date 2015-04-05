@@ -8,6 +8,7 @@ from orchestra.contrib.accounts.serializers import AccountSerializerMixin
 from orchestra.core.validators import validate_password
 
 from .models import SystemUser
+from .validators import validate_home
 
 
 class GroupSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
@@ -38,7 +39,7 @@ class SystemUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             username=attrs.get('username') or self.object.username,
             shell=attrs.get('shell') or self.object.shell,
         )
-        user.validate_home(attrs, self.account)
+        validate_home(user, attrs, self.account)
         return attrs
     
     def validate_password(self, attrs, source):

@@ -7,7 +7,10 @@ from ..core import services, accounts
 
 
 class APIRoot(views.APIView):
-    names = ['SITE_NAME', 'SITE_VERBOSE_NAME']
+    names = (
+        'ORCHESTRA_SITE_NAME',
+        'ORCHESTRA_SITE_VERBOSE_NAME'
+    )
     
     def get(self, request, format=None):
         root_url = reverse('api-root', request=request, format=format)

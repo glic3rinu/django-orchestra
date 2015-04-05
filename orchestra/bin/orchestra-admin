@@ -137,7 +137,7 @@ function install_requirements () {
     
     PIP="django==1.8 \
          django-celery-email==1.0.4 \
-         django-fluent-dashboard==0.4 \
+         https://github.com/glic3rinu/django-fluent-dashboard/archive/master.zip \
          https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
          IPy==0.81 \
          django-extensions==1.5.2 \

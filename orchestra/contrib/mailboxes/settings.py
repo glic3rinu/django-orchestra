@@ -4,7 +4,7 @@ import textwrap
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.settings import BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 MAILBOXES_DOMAIN_MODEL = getattr(settings, 'MAILBOXES_DOMAIN_MODEL',
@@ -48,7 +48,7 @@ MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH = getattr(settings, 'MAILBOXES_VIRTUAL_ALIA
 
 
 MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN = getattr(settings, 'MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN', 
-    BASE_DOMAIN
+    ORCHESTRA_BASE_DOMAIN
 )
 
 
@@ -87,7 +87,7 @@ MAILBOXES_MAILDIRSIZE_PATH = getattr(settings, 'MAILBOXES_MAILDIRSIZE_PATH',
 
 
 MAILBOXES_LOCAL_ADDRESS_DOMAIN = getattr(settings, 'MAILBOXES_LOCAL_ADDRESS_DOMAIN',
-    BASE_DOMAIN
+    ORCHESTRA_BASE_DOMAIN
 )
 
 

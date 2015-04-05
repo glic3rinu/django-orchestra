@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from orchestra.settings import BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT',
@@ -169,5 +169,5 @@ WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
 
 
 WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = getattr(settings, 'WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST',
-    'mysql.{}'.format(BASE_DOMAIN)
+    'mysql.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )

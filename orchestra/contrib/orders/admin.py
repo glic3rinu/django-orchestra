@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.db.models import Prefetch
 from django.utils import timezone
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -17,7 +18,7 @@ from .models import Order, MetricStorage
 
 class MetricStorageInline(admin.TabularInline):
     model = MetricStorage
-    readonly_fields = ('value', 'updated_on')
+    readonly_fields = ('value', 'created_on', 'updated_on')
     extra = 0
     
     def has_add_permission(self, request, obj=None):
@@ -33,10 +34,11 @@ class MetricStorageInline(admin.TabularInline):
     
     def get_queryset(self, request):
         qs = super(MetricStorageInline, self).get_queryset(request)
-        if self.parent_object and self.parent_object.pk:
-            qs = qs.filter(order=self.parent_object.pk).order_by('-id')
+        change_view = bool(self.parent_object and self.parent_object.pk)
+        if change_view:
+            qs = qs.order_by('-id')
             try:
-                tenth_id = qs.values_list('id', flat=True)[10]
+                tenth_id = qs.values_list('id', flat=True)[9]
             except IndexError:
                 pass
             else:
@@ -59,7 +61,10 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     inlines = (MetricStorageInline,)
     add_inlines = ()
     search_fields = ('account__username', 'description')
-    list_prefetch_related = ('metrics', 'content_object')
+    list_prefetch_related = (
+        'content_object',
+        Prefetch('metrics', queryset=MetricStorage.objects.order_by('-id')),
+    )
     list_select_related = ('account', 'service')
     
     service_link = admin_link('service')

@@ -31,6 +31,12 @@ class UNIXUserBackend(ServiceController):
             chmod 750 %(home)s
             chown %(user)s:%(user)s %(home)s""") % context
         )
+        if context['home'] != context['base_home']:
+            self.append(textwrap.dedent("""
+                mkdir -p %(base_home)s
+                chmod 750 %(base_home)s
+                chown %(user)s:%(user)s %(base_home)s""") % context
+            )
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
             context['member'] = member
             self.append('usermod -a -G %(user)s %(member)s' % context)
@@ -45,18 +51,14 @@ class UNIXUserBackend(ServiceController):
             { sleep 2 && killall -u %(user)s -s KILL; } &
             killall -u %(user)s || true
             userdel %(user)s || exit_code=1
-            groupdel %(group)s || exit_code=1""") % context
+            groupdel %(group)s || exit_code=1
+            mv %(base_home)s %(base_home)s.deleted || exit_code=1
+            """) % context
         )
-        self.delete_home(context, user)
     
     def grant_permission(self, user):
         context = self.get_context(user)
         # TODO setacl
-    
-    def delete_home(self, context, user):
-        if user.home.rstrip('/') == user.get_base_home().rstrip('/'):
-            # TODO delete instead of this shit
-            self.append("mv %(home)s %(home)s.deleted || exit_code=1" % context)
     
     def get_groups(self, user):
         if user.is_main:
@@ -71,7 +73,8 @@ class UNIXUserBackend(ServiceController):
             'password': user.password if user.active else '*%s' % user.password,
             'shell': user.shell,
             'mainuser': user.username if user.is_main else user.account.username,
-            'home': user.get_home()
+            'home': user.get_home(),
+            'base_home': self.get_base_home(),
         }
         return replace(context, "'", '"')
 
@@ -91,16 +94,12 @@ class UNIXUserDisk(ServiceMonitor):
     
     def monitor(self, user):
         context = self.get_context(user)
-        if user.is_main or os.path.normpath(user.home) == user.get_base_home():
-            self.append("echo %(object_id)s $(monitor %(home)s)" % context)
-        else:
-            # Home is already included in other user home
-            self.append("echo %(object_id)s 0" % context)
+        self.append("echo %(object_id)s $(monitor %(base_home)s)" % context)
     
     def get_context(self, user):
         context = {
             'object_id': user.pk,
-            'home': user.home,
+            'base_home': user.get_base_home(),
         }
         return replace(context, "'", '"')
 

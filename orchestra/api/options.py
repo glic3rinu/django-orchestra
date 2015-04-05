@@ -56,7 +56,7 @@ class LogApiMixin(object):
 class LinkHeaderRouter(DefaultRouter):
     def get_api_root_view(self):
         """ returns the root view, with all the linked collections """
-        APIRoot = import_class(settings.API_ROOT_VIEW)
+        APIRoot = import_class(settings.ORCHESTRA_API_ROOT_VIEW)
         APIRoot.router = self
         return APIRoot.as_view()
     

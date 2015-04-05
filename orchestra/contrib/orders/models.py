@@ -178,7 +178,7 @@ class Order(models.Model):
             metric = ', metric:{}'.format(metric)
         description = handler.get_order_description(instance)
         logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
-                id=self.id, description=description, metric=metric).encode('ascii', 'ignore')
+                id=self.id, description=description, metric=metric).encode('ascii', 'replace')
         )
         if self.description != description:
             self.description = description

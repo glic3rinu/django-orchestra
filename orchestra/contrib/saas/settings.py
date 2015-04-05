@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from orchestra.settings import BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 SAAS_ENABLED_SERVICES = getattr(settings, 'SAAS_ENABLED_SERVICES', (
@@ -21,7 +21,7 @@ SAAS_WORDPRESS_ADMIN_PASSWORD = getattr(settings, 'SAAS_WORDPRESSMU_ADMIN_PASSWO
 
 
 SAAS_WORDPRESS_BASE_URL = getattr(settings, 'SAAS_WORDPRESS_BASE_URL',
-    'http://blogs.{}/'.format(BASE_DOMAIN)
+    'http://blogs.{}/'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
@@ -46,12 +46,12 @@ SAAS_PHPLIST_DB_NAME = getattr(settings, 'SAAS_PHPLIST_DB_NAME',
 
 
 SAAS_PHPLIST_BASE_DOMAIN = getattr(settings, 'SAAS_PHPLIST_BASE_DOMAIN',
-    'lists.{}'.format(BASE_DOMAIN)
+    'lists.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
 SAAS_SEAFILE_DOMAIN = getattr(settings, 'SAAS_SEAFILE_DOMAIN',
-    'seafile.{}'.format(BASE_DOMAIN)
+    'seafile.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
@@ -61,7 +61,7 @@ SAAS_SEAFILE_DEFAULT_QUOTA = getattr(settings, 'SAAS_SEAFILE_DEFAULT_QUOTA',
 
 
 SAAS_BSCW_DOMAIN = getattr(settings, 'SAAS_BSCW_DOMAIN',
-    'bscw.{}'.format(BASE_DOMAIN)
+    'bscw.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
@@ -80,6 +80,6 @@ SAAS_GITLAB_ROOT_PASSWORD = getattr(settings, 'SAAS_GITLAB_ROOT_PASSWORD',
 
 
 SAAS_GITLAB_DOMAIN = getattr(settings, 'SAAS_GITLAB_DOMAIN',
-    'gitlab.{}'.format(BASE_DOMAIN)
+    'gitlab.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 

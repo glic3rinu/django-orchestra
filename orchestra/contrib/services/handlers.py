@@ -504,7 +504,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                             new_price += self.get_price(order, metric) * size
                             new_metric += metric
                         size = self.get_price_size(rini, bp)
-                        old_price = self.get_price(order, charged) * size
+                        old_price = self.get_price(account, charged) * size
                         if new_price > old_price:
                             metric = new_metric - charged
                             price = new_price - old_price
@@ -520,7 +520,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                 if self.get_pricing_period() == self.NEVER:
                     # Changes (Mailbox disk-like)
                     for cini, cend, metric in order.get_metric(ini, bp, changes=True):
-                        price = self.get_price(order, metric)
+                        price = self.get_price(account, metric)
                         lines.append(self.generate_line(order, price, cini, cend, metric=metric))
                 elif self.get_pricing_period() == self.billing_period:
                     # pricing_slots (Traffic-like)
@@ -528,7 +528,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                         raise NotImplementedError
                     for cini, cend in self.get_pricing_slots(ini, bp):
                         metric = order.get_metric(cini, cend)
-                        price = self.get_price(order, metric)
+                        price = self.get_price(account, metric)
                         lines.append(self.generate_line(order, price, cini, cend, metric=metric))
                 else:
                     raise NotImplementedError
@@ -541,7 +541,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                 if self.get_pricing_period() == self.NEVER:
                     # get metric (Job-like)
                     metric = order.get_metric(date)
-                    price = self.get_price(order, metric)
+                    price = self.get_price(account, metric)
                     lines.append(self.generate_line(order, price, date, metric=metric))
                 else:
                     raise NotImplementedError

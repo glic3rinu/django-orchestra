@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from orchestra.settings import BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 LISTS_DOMAIN_MODEL = getattr(settings, 'LISTS_DOMAIN_MODEL',
@@ -9,12 +9,12 @@ LISTS_DOMAIN_MODEL = getattr(settings, 'LISTS_DOMAIN_MODEL',
 
 
 LISTS_DEFAULT_DOMAIN = getattr(settings, 'LIST_DEFAULT_DOMAIN',
-    'lists.{}'.format(BASE_DOMAIN)
+    'lists.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
 LISTS_LIST_URL = getattr(settings, 'LISTS_LIST_URL',
-    'https://lists.{}/mailman/listinfo/%(name)s'.format(BASE_DOMAIN)
+    'https://lists.{}/mailman/listinfo/%(name)s'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 

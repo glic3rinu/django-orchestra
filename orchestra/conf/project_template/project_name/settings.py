@@ -68,5 +68,5 @@ LOCALE_PATHS = (
 # DEFAULT_FROM_EMAIL = 'orchestra@yourhost.eu'
 
 
-SITE_NAME = '{{ project_name }}'
+ORCHESTRA_SITE_NAME = '{{ project_name }}'
 

@@ -75,18 +75,11 @@
 
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
 
-* reconsider binding webapps to systemusers (pangea multiple users wordpress-ftp, moodle-pangea, etc)
-* Secondary user home in /home/secondaryuser and simlink to /home/main/webapps/app so it can have private storage?
-* Grant permissions to systemusers, the problem of creating a related permission model is out of sync with the server-side. evaluate tradeoff
+* Grant permissions to systemusers
 
 * Make one dedicated CGI user for each account only for CGI execution (fpm/fcgid). Different from the files owner, and without W permissions, so attackers can not inject backdors and malware.
-* In most cases we can prevent the creation of files for the CGI users, preventing attackers to upload and executing PHPShells.
-* Make main systemuser able to write/read everything on its home, including stuff created by the CGI user and secondary users
-* Prevent users from accessing other users home while at the same time allow access Apache/fcgid/fpm and secondary users (x)
 
 * resource min max allocation with validation
-
-* mailman needs both aliases when address_name is provided (default messages and bounces and all)
 
 * domain validation parse named-checzone output to assign errors to fields
 
@@ -94,7 +87,7 @@
 
 * validate systemuser.home on server-side
 
-* webapp backend option compatibility check?
+* webapp backend option compatibility check? raise exception, missconfigured error
 
 * admin systemuser home/directory, add default home and empty directory with has_shell on admin
 
@@ -115,8 +108,6 @@
 * forms autocomplete="off", doesn't work in chrome
 
 ln -s /proc/self/fd /dev/fd
-
-* escape passwords and not allow ' on them !
 
 
 POST INSTALL
@@ -155,8 +146,6 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 
 * tags = GenericRelation(TaggedItem, related_query_name='bookmarks')
 
-# make home for all systemusers (/home/username) and fix monitors
-
 * user provided crons
 
 * ```<?php
@@ -167,15 +156,13 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 # WPMU blog traffic
 
-* normurlpath '' return '/'
-
 * more robust backend error handling, continue executing but exit code > 0 if failure: failing_cmd || exit_code=1 and don't forget to call super.commit()!!
 
 * website directives uniquenes validation on serializers
 
 + is_Active custom filter with support for instance.account.is_Active annotate with F() needed (django 1.8)
 
-* delete apache logs and php logs
+# delete apache logs and php logs
 
 * document service help things: discount/refound/compensation effect and metric table
 * Document metric interpretation help_text
@@ -218,6 +205,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * write down insights
 
 # use english on services defs and so on, an translate them on render time
+    python3 manage.py dumpdata services.Service --indent 4 --natural
 
 * websites directives get_location() and use it on last change view validation stage to compare with contents.location and also on the backend ?
 
@@ -228,8 +216,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * create service help templates based on urlqwargs with the most basic services.
 
 # TDOO Base price: domini propi (all domains) + extra for other domains
-
-# TODO prepend ORCHESTRA_ to orchestra/settings.py
 
 
 Translation
@@ -260,16 +246,12 @@ celery max-tasks-per-child
 
 * postupgradeorchestra send signals in order to hook custom stuff
 
-# FIXME make base home for systemusers that ara homed into main account systemuser, and prevent shell users to have nested homes (if nnot implemented already)
-
 * autoscale celery workers http://docs.celeryproject.org/en/latest/userguide/workers.html#autoscaling
 
 * webapp has_website list filter
 
 glic3rinu's django-fluent-dashboard
 * gevent is not ported to python3 :'(
-* uwsgi python3
-
 
 # FIXME account deletion generates an integrity error
 https://code.djangoproject.com/ticket/24576
@@ -289,11 +271,10 @@ https://code.djangoproject.com/ticket/24576
 
 # FIXME model contact info and account info (email, name, etc) correctly/unredundant/dry
 
-
 * Use the new django.contrib.admin.RelatedOnlyFieldListFilter in ModelAdmin.list_filter to limit the list_filter choices to foreign objects which are attached to those from the ModelAdmin.
 + Query Expressions, Conditional Expressions, and Database Functions¶
 * forms: You can now pass a callable that returns an iterable of choices when instantiating a ChoiceField.
 
-
 * migrate to DRF3.x
 
+* move all tests on django-orchestra/tests

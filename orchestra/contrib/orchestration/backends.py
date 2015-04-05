@@ -11,8 +11,7 @@ from . import methods
 
 
 def replace(context, pattern, repl):
-    if isinstance(context, str):
-        return context.replace(patter, repl)
+    """ applies replace to all context str values """
     for key, value in context.items():
         if isinstance(value, str):
             context[key] = value.replace(pattern, repl)
@@ -23,7 +22,7 @@ class ServiceMount(plugins.PluginMount):
     def __init__(cls, name, bases, attrs):
         # Make sure backends specify a model attribute
         if not (attrs.get('abstract', False) or name == 'ServiceBackend' or cls.model):
-                raise AttributeError("'%s' does not have a defined model attribute." % cls)
+            raise AttributeError("'%s' does not have a defined model attribute." % cls)
         super(ServiceMount, cls).__init__(name, bases, attrs)
 
 
@@ -36,15 +35,16 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
     the changes of all modified objects, reloading the daemon just once.
     """
     model = None
-    related_models = () # ((model, accessor__attribute),)
+    related_models = ()  # ((model, accessor__attribute),)
     script_method = methods.SSH
     script_executable = '/bin/bash'
     function_method = methods.Python
-    type = 'task' # 'sync'
+    type = 'task'  # 'sync'
     ignore_fields = []
     actions = []
     default_route_match = 'True'
-    block = False # Force the backend manager to block in multiple backend executions and execute them synchronously
+    # Force the backend manager to block in multiple backend executions executing them synchronously
+    block = False
     
     def __str__(self):
         return type(self).__name__

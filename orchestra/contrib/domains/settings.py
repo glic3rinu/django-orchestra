@@ -1,15 +1,15 @@
 from django.conf import settings
 
-from orchestra.settings import BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 DOMAINS_DEFAULT_NAME_SERVER = getattr(settings, 'DOMAINS_DEFAULT_NAME_SERVER',
-    'ns.{}'.format(BASE_DOMAIN)
+    'ns.{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
 DOMAINS_DEFAULT_HOSTMASTER = getattr(settings, 'DOMAINS_DEFAULT_HOSTMASTER',
-    'hostmaster@{}'.format(BASE_DOMAIN)
+    'hostmaster@{}'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 
@@ -70,14 +70,14 @@ DOMAINS_DEFAULT_A = getattr(settings, 'DOMAINS_DEFAULT_A',
 
 
 DOMAINS_DEFAULT_MX = getattr(settings, 'DOMAINS_DEFAULT_MX', (
-    '10 mail.{}.'.format(BASE_DOMAIN),
-    '10 mail2.{}.'.format(BASE_DOMAIN),
+    '10 mail.{}.'.format(ORCHESTRA_BASE_DOMAIN),
+    '10 mail2.{}.'.format(ORCHESTRA_BASE_DOMAIN),
 ))
 
 
 DOMAINS_DEFAULT_NS = getattr(settings, 'DOMAINS_DEFAULT_NS', (
-    'ns1.{}.'.format(BASE_DOMAIN),
-    'ns2.{}.'.format(BASE_DOMAIN),
+    'ns1.{}.'.format(ORCHESTRA_BASE_DOMAIN),
+    'ns2.{}.'.format(ORCHESTRA_BASE_DOMAIN),
 ))
 
 

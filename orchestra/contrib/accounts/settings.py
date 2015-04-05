@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.settings import BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
@@ -53,9 +53,9 @@ ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
     ('domains.Domain',
         'name',
         {
-            'name': '"%s.{}" % account.username.replace("_", "-")'.format(BASE_DOMAIN),
+            'name': '"%s.{}" % account.username.replace("_", "-")'.format(ORCHESTRA_BASE_DOMAIN),
         },
-        _("Designates whether to creates a related subdomain &lt;username&gt;.{} or not.".format(BASE_DOMAIN)),
+        _("Designates whether to creates a related subdomain &lt;username&gt;.{} or not.".format(ORCHESTRA_BASE_DOMAIN)),
     ),
 ))
 

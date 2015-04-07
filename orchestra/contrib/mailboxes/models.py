@@ -17,16 +17,14 @@ class Mailbox(models.Model):
     name = models.CharField(_("name"), max_length=64, unique=True,
         help_text=_("Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."),
         validators=[
-            RegexValidator(r'^[\w.@+-]+$', _("Enter a valid mailbox name."))
+            RegexValidator(r'^[\w.@+-]+$', _("Enter a valid mailbox name.")),
         ])
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
         related_name='mailboxes')
     filtering = models.CharField(max_length=16,
         default=settings.MAILBOXES_MAILBOX_DEFAULT_FILTERING,
-        choices=[
-            (k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.items()
-        ])
+        choices=[(k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.items()])
     custom_filtering = models.TextField(_("filtering"), blank=True,
         validators=[validators.validate_sieve],
         help_text=_("Arbitrary email filtering in sieve language. "
@@ -80,7 +78,7 @@ class Mailbox(models.Model):
     
     def get_local_address(self):
         if not settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
-            raise AttributeError("Mailboxes do not have a defined local address domain")
+            raise AttributeError("Mailboxes do not have a defined local address domain.")
         return '@'.join((self.name, settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN))
 
 

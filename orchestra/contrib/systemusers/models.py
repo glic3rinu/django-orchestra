@@ -40,7 +40,6 @@ class SystemUser(models.Model):
     groups = models.ManyToManyField('self', blank=True,  symmetrical=False,
         help_text=_("A new group will be created for the user. "
                     "Which additional groups would you like them to be a member of?"))
-#    is_main = models.BooleanField(_("is main"), default=False)
     is_active = models.BooleanField(_("active"), default=True,
         help_text=_("Designates whether this account should be treated as active. "
                     "Unselect this instead of deleting accounts."))

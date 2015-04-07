@@ -18,8 +18,9 @@ class BSCWBackend(ServiceController):
         self.append(textwrap.dedent("""\
             if [[ $(%(bsadmin)s register %(email)s) ]]; then
                 echo 'ValidationError: email-exists'
-            elif [[ $(%(bsadmin)s users -n %(username)s) ]]; then
-                echo 'ValidationError: username-exists'
+            fi
+            if [[ $(%(bsadmin)s users -n %(username)s) ]]; then
+                echo 'ValidationError: user-exists'
             fi""") % context
         )
     

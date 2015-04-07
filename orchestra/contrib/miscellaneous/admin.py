@@ -42,7 +42,7 @@ class MiscServiceAdmin(ExtendedModelAdmin):
     num_instances.admin_order_field = 'instances__count'
     
     def get_queryset(self, request):
-        qs = super(MiscServiceAdmin, self).queryset(request)
+        qs = super(MiscServiceAdmin, self).get_queryset(request)
         return qs.annotate(models.Count('instances', distinct=True))
     
     def formfield_for_dbfield(self, db_field, **kwargs):

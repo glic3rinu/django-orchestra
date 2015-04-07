@@ -53,7 +53,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             bool(self.matches(obj))
         except Exception as exception:
             name = type(exception).__name__
-            raise ValidationError(': '.join((name, exception)))
+            raise ValidationError(': '.join((name, str(exception))))
     
     def validate_metric(self, service):
         try:
@@ -64,7 +64,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             bool(self.get_metric(obj))
         except Exception as exception:
             name = type(exception).__name__
-            raise ValidationError(': '.join((name, exception)))
+            raise ValidationError(': '.join((name, str(exception))))
     
     def get_content_type(self):
         if not self.model:

@@ -241,6 +241,7 @@ class MetricStorage(models.Model):
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     created_on = models.DateField(_("created"), auto_now_add=True)
 #    default=lambda: timezone.now())
+    # TODO time field?
     updated_on = models.DateTimeField(_("updated"))
     
     class Meta:

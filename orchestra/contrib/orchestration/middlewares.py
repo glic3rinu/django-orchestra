@@ -8,9 +8,9 @@ from django.http.response import HttpResponseServerError
 
 from orchestra.utils.python import OrderedSet
 
-from . import manager
+from . import manager, Operation
 from .helpers import message_user
-from .models import BackendLog, BackendOperation as Operation
+from .models import BackendLog
 
 
 @receiver(post_save, dispatch_uid='orchestration.post_save_collector')

@@ -1,7 +1,7 @@
 from orchestra.utils.tests import BaseTestCase
 
-from .. import backends
-from ..models import Route, Server, BackendOperation as Operation
+from .. import backends, Operation
+from ..models import Route, Server
 
 
 class RouterTests(BaseTestCase):

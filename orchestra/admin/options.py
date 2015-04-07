@@ -244,7 +244,7 @@ class ChangePasswordAdminMixin(object):
             'save_as': False,
             'show_save': True,
         }
-        context.update(admin.site.each_context())
+        context.update(admin.site.each_context(request))
         return TemplateResponse(request,
             self.change_user_password_template,
             context, current_app=self.admin_site.name)

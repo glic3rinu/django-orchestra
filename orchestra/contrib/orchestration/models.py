@@ -1,9 +1,9 @@
-import copy
 import socket
 
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
@@ -98,12 +98,6 @@ class BackendOperation(models.Model):
     """
     Encapsulates an operation, storing its related object, the action and the backend.
     """
-    DELETE = 'delete'
-    SAVE = 'save'
-    MONITOR = 'monitor'
-    EXCEEDED = 'exceeded'
-    RECOVERY = 'recovery'
-    
     log = models.ForeignKey('orchestration.BackendLog', related_name='operations')
     backend = models.CharField(_("backend"), max_length=256)
     action = models.CharField(_("action"), max_length=64)
@@ -119,46 +113,7 @@ class BackendOperation(models.Model):
     def __str__(self):
         return '%s.%s(%s)' % (self.backend, self.action, self.instance)
     
-    def __hash__(self):
-        """ set() """
-        backend = getattr(self, 'backend', self.backend)
-        return hash(backend) + hash(self.instance) + hash(self.action)
-    
-    def __eq__(self, operation):
-        """ set() """
-        return hash(self) == hash(operation)
-    
-    @classmethod
-    def create(cls, backend, instance, action, servers=None):
-        op = cls(backend=backend.get_name(), instance=instance, action=action)
-        op.backend = backend
-        # instance should maintain any dynamic attribute until backend execution
-        # deep copy is prefered over copy otherwise objects will share same atributes (queryset cache)
-        op.instance = copy.deepcopy(instance)
-        op.servers = servers
-        return op
-    
-    @classmethod
-    def execute(cls, operations, async=False):
-        from . import manager
-        scripts, block = manager.generate(operations)
-        return manager.execute(scripts, block=block, async=async)
-    
-    @classmethod
-    def execute_action(cls, instance, action):
-        backends = ServiceBackend.get_backends(instance=instance, action=action)
-        operations = [cls.create(backend_cls, instance, action) for backend_cls in backends]
-        return cls.execute(operations)
-    
-    def preload_context(self):
-        """
-        Heuristic
-        Running get_context will prevent most of related objects do not exist errors
-        """
-        if self.action == self.DELETE:
-            if hasattr(self.backend, 'get_context'):
-                self.backend().get_context(self.instance)
-    
+    @cached_property
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
 
@@ -187,7 +142,7 @@ class Route(models.Model):
     def __str__(self):
         return "%s@%s" % (self.backend, self.host)
     
-    @property
+    @cached_property
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
     

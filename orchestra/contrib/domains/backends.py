@@ -4,7 +4,7 @@ import textwrap
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController, replace
-from orchestra.contrib.orchestration.models import BackendOperation as Operation
+from orchestra.contrib.orchestration import Operation
 
 from . import settings
 
@@ -41,10 +41,11 @@ class Bind9MasterDomainBackend(ServiceController):
     
     def update_conf(self, context):
         self.append(textwrap.dedent("""\
-            sed '/zone "%(name)s".*/,/^\s*};\s*$/!d' %(conf_path)s | diff -B -I"^\s*//" - <(echo '%(conf)s') || {
+            conf='%(conf)s'
+            sed '/zone "%(name)s".*/,/^\s*};\s*$/!d' %(conf_path)s | diff -B -I"^\s*//" - <(echo "${conf}") || {
                 sed -i -e '/zone\s\s*"%(name)s".*/,/^\s*};/d' \\
                        -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s
-                echo '%(conf)s' >> %(conf_path)s
+                echo "${conf}" >> %(conf_path)s
                 UPDATED=1
             }""") % context
         )
@@ -80,7 +81,7 @@ class Bind9MasterDomainBackend(ServiceController):
     def get_servers(self, domain, backend):
         """ Get related server IPs from registered backend routes """
         from orchestra.contrib.orchestration.manager import router
-        operation = Operation.create(backend, domain, Operation.SAVE)
+        operation = Operation(backend, domain, Operation.SAVE)
         servers = []
         for server in router.get_servers(operation):
             servers.append(server.get_ip())

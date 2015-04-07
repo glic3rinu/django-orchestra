@@ -1,6 +1,7 @@
 from django.core.validators import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services, accounts
@@ -14,6 +15,9 @@ from . import rating
 class Plan(models.Model):
     name = models.CharField(_("name"), max_length=32, unique=True, validators=[validate_name])
     verbose_name = models.CharField(_("verbose_name"), max_length=128, blank=True)
+    # TODO is_active = models.BooleanField(_("active"), default=True,
+#            help_text=_("Designates whether this account should be treated as active. "
+#                        "Unselect this instead of deleting accounts."))
     is_default = models.BooleanField(_("default"), default=False,
         help_text=_("Designates whether this plan is used by default or not."))
     is_combinable = models.BooleanField(_("combinable"), default=True,
@@ -41,6 +45,10 @@ class ContractedPlan(models.Model):
     
     def __str__(self):
         return str(self.plan)
+    
+    @cached_property
+    def active(self):
+        return self.plan.is_active and self.account.is_active
     
     def clean(self):
         if not self.pk and not self.plan.allow_multiple:

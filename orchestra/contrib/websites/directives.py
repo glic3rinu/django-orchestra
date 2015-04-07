@@ -80,7 +80,7 @@ class Proxy(SiteDirective):
 
 
 class ErrorDocument(SiteDirective):
-    name = 'error_document'
+    name = 'error-document'
     verbose_name = _("ErrorDocumentRoot")
     help_text = _("&lt;error code&gt; &lt;URL/path/message&gt;<br>"
                   "<tt>&nbsp;500 http://foo.example.com/cgi-bin/tester</tt><br>"
@@ -93,7 +93,7 @@ class ErrorDocument(SiteDirective):
 
 
 class SSLCA(SiteDirective):
-    name = 'ssl_ca'
+    name = 'ssl-ca'
     verbose_name = _("SSL CA")
     help_text = _("Filesystem path of the CA certificate file.")
     regex = r'^[^ ]+$'
@@ -102,7 +102,7 @@ class SSLCA(SiteDirective):
 
 
 class SSLCert(SiteDirective):
-    name = 'ssl_cert'
+    name = 'ssl-cert'
     verbose_name = _("SSL cert")
     help_text = _("Filesystem path of the certificate file.")
     regex = r'^[^ ]+$'
@@ -111,7 +111,7 @@ class SSLCert(SiteDirective):
 
 
 class SSLKey(SiteDirective):
-    name = 'ssl_key'
+    name = 'ssl-key'
     verbose_name = _("SSL key")
     help_text = _("Filesystem path of the key file.")
     regex = r'^[^ ]+$'
@@ -120,7 +120,7 @@ class SSLKey(SiteDirective):
 
 
 class SecRuleRemove(SiteDirective):
-    name = 'sec_rule_remove'
+    name = 'sec-rule-remove'
     verbose_name = _("SecRuleRemoveById")
     help_text = _("Space separated ModSecurity rule IDs.")
     regex = r'^[0-9\s]+$'
@@ -128,7 +128,7 @@ class SecRuleRemove(SiteDirective):
 
 
 class SecEngine(SiteDirective):
-    name = 'sec_engine'
+    name = 'sec-engine'
     verbose_name = _("SecRuleEngine Off")
     help_text = _("URL path with disabled modsecurity engine.")
     regex = r'^/[^ ]*$'

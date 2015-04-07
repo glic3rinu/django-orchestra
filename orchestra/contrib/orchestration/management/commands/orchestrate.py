@@ -10,13 +10,13 @@ class Command(BaseCommand):
     help = 'Runs orchestration backends.'
     
     def add_arguments(self, parser):
-        parser.add_argument('model', nargs='+',
-            help='App label of an application to synchronize the 
-        parser.add_argument('query', nargs='?',
+        parser.add_argument('model',
+            help='Label of a model to execute the orchestration.')
+        parser.add_argument('query', nargs='*',
             help='Query arguments for filter().')
         parser.add_argument('--noinput', action='store_false', dest='interactive', default=True,
             help='Tells Django to NOT prompt the user for input of any kind.')
-        parser.add_argument('--action', action='store', dest='database',
+        parser.add_argument('--action', action='store', dest='action',
             default='save', help='Executes action. Defaults to "save".')
     
     def handle(self, *args, **options):

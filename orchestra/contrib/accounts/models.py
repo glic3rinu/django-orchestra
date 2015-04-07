@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
-from orchestra.contrib.orchestration.models import BackendOperation as Operation
+from orchestra.contrib.orchestration import Operation
 from orchestra.core import services, accounts
 from orchestra.utils import send_email_template
 

@@ -12,6 +12,7 @@ from .services import SoftwareService
 class SaaSAdmin(SelectPluginAdminMixin, ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'service', 'display_site_domain', 'account_link', 'is_active')
     list_filter = ('service', 'is_active')
+    search_fields = ('name', 'account__username')
     change_readonly_fields = ('service',)
     plugin = SoftwareService
     plugin_field = 'service'

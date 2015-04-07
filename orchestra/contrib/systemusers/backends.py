@@ -74,7 +74,7 @@ class UNIXUserBackend(ServiceController):
             'shell': user.shell,
             'mainuser': user.username if user.is_main else user.account.username,
             'home': user.get_home(),
-            'base_home': self.get_base_home(),
+            'base_home': user.get_base_home(),
         }
         return replace(context, "'", '"')
 
@@ -111,7 +111,7 @@ class Exim4Traffic(ServiceMonitor):
     script_executable = '/usr/bin/python'
     
     def prepare(self):
-        mainlog = settings.LISTS_MAILMAN_POST_LOG_PATH
+        mainlog = settings.SYSTEMUSERS_MAIL_LOG_PATH
         context = {
             'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
             'mainlogs': str((mainlog, mainlog+'.1')),

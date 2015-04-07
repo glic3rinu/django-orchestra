@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.utils import get_object_from_url
 
+
 @transaction.atomic
 def update_orders(modeladmin, request, queryset, extra_context=None):
     if not queryset:

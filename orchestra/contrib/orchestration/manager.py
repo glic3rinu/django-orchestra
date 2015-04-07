@@ -9,10 +9,10 @@ from django.core.mail import mail_admins
 
 from orchestra.utils.python import import_class
 
-from . import settings
+from . import settings, Operation
 from .backends import ServiceBackend
 from .helpers import send_report
-from .models import BackendLog, BackendOperation as Operation
+from .models import BackendLog
 from .signals import pre_action, post_action
 
 
@@ -95,6 +95,9 @@ def generate(operations):
 
 def execute(scripts, block=False, async=False):
     """ executes the operations on the servers """
+    if settings.ORCHESTRATION_DISABLE_EXECUTION:
+        logger.info('Orchestration execution is dissabled by ORCHESTRATION_DISABLE_EXECUTION settings.')
+        return []
     # Execute scripts on each server
     threads = []
     executions = []
@@ -120,10 +123,9 @@ def execute(scripts, block=False, async=False):
         if hasattr(execution, 'log'):
             for operation in operations:
                 logger.info("Executed %s" % str(operation))
-                operation.log = execution.log
-                if operation.object_id:
-                    # Not all backends are call with objects saved on the database
-                    operation.save()
+                if operation.instance.pk:
+                    # Not all backends are called with objects saved on the database
+                    operation.create(execution.log)
             stdout = execution.log.stdout.strip()
             stdout and logger.debug('STDOUT %s', stdout)
             stderr = execution.log.stderr.strip()
@@ -157,7 +159,7 @@ def collect(instance, action, **kwargs):
                     candidates = [candidate]
                 for candidate in candidates:
                     # Check if a delete for candidate is in operations
-                    delete_mock = Operation.create(backend_cls, candidate, Operation.DELETE)
+                    delete_mock = Operation(backend_cls, candidate, Operation.DELETE)
                     if delete_mock not in operations:
                         # related objects with backend.model trigger save()
                         instances.append((candidate, Operation.SAVE))
@@ -165,7 +167,7 @@ def collect(instance, action, **kwargs):
             # Maintain consistent state of operations based on save/delete behaviour
             # Prevent creating a deleted selected by deleting existing saves
             if iaction == Operation.DELETE:
-                save_mock = Operation.create(backend_cls, selected, Operation.SAVE)
+                save_mock = Operation(backend_cls, selected, Operation.SAVE)
                 try:
                     operations.remove(save_mock)
                 except KeyError:
@@ -185,7 +187,7 @@ def collect(instance, action, **kwargs):
                                 break
                         if not execute:
                             continue
-            operation = Operation.create(backend_cls, selected, iaction)
+            operation = Operation(backend_cls, selected, iaction)
             # Only schedule operations if the router gives servers to execute into
             servers = router.get_servers(operation, cache=route_cache)
             if servers:

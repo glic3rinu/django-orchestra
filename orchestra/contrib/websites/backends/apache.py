@@ -163,9 +163,9 @@ class Apache2Backend(ServiceController):
         return [(location, directives)]
     
     def get_ssl(self, directives):
-        cert = directives.get('ssl_cert')
-        key = directives.get('ssl_key')
-        ca = directives.get('ssl_ca')
+        cert = directives.get('ssl-cert')
+        key = directives.get('ssl-key')
+        ca = directives.get('ssl-ca')
         if not (cert and key):
             cert = [settings.WEBSITES_DEFAULT_SSL_CERT]
             key = [settings.WEBSITES_DEFAULT_SSL_KEY]
@@ -181,11 +181,11 @@ class Apache2Backend(ServiceController):
         
     def get_security(self, directives):
         security = []
-        for rules in directives.get('sec_rule_remove', []):
+        for rules in directives.get('sec-rule-remove', []):
             for rule in rules.value.split():
                 sec_rule = "SecRuleRemoveById %i" % int(rule)
                 security.append(('', sec_rule))
-        for location in directives.get('sec_engine', []):
+        for location in directives.get('sec-engine', []):
             sec_rule = textwrap.dedent("""\
                 <Location %s>
                     SecRuleEngine off

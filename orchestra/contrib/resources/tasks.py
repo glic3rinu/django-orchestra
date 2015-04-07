@@ -1,6 +1,6 @@
 from celery import shared_task
 
-from orchestra.contrib.orchestration.models import BackendOperation as Operation
+from orchestra.contrib.orchestration import Operation
 from orchestra.models.utils import get_model_field_path
 
 from .backends import ServiceMonitor

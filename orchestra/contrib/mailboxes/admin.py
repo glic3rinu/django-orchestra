@@ -107,7 +107,8 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         'email', 'account_link', 'domain_link', 'display_mailboxes', 'display_forward',
     )
     list_filter = (HasMailboxListFilter, HasForwardListFilter)
-    fields = ('account_link', ('name', 'domain'), 'mailboxes', 'forward')
+    fields = ('account_link', 'email_link', 'mailboxes', 'forward')
+    add_fields = ('account_link', ('name', 'domain'), 'mailboxes', 'forward')
     inlines = [AutoresponseInline]
     search_fields = ('name', 'domain__name', 'forward', 'mailboxes__name', 'account__username')
     readonly_fields = ('account_link', 'domain_link', 'email_link')

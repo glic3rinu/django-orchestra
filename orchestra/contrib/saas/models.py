@@ -52,6 +52,8 @@ class SaaS(models.Model):
         return self.is_active and self.account.is_active
     
     def clean(self):
+        if not self.pk:
+            self.name = self.name.lower()
         self.data = self.service_instance.clean_data()
     
     def get_site_domain(self):

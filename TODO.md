@@ -11,8 +11,6 @@
 
 * env vars instead of multiple settings files: https://devcenter.heroku.com/articles/config-vars ?
 
-# TODO Log changes from rest api (serialized objects)
-
 * backend logs with hal logo
 
 * LAST version of this shit http://wkhtmltopdf.org/downloads.h otml
@@ -175,9 +173,8 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * autoexpand mailbox.filter according to filtering options (js)
 
 * allow empty metric pack for default rates? changes on rating algo
-# IMPORTANT make sure no order is created for mailboxes that include disk? or just don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
+# don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
 
-* Improve performance of admin change lists with debug toolbar and prefech_related
 # DOMINI REGISTRE MIGRATION SCRIPTS
 
 # lines too long on invoice, double lines or cut, and make margin wider
@@ -191,7 +188,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 # display subline links on billlines, to show that they exists.
 * update service orders on a celery task? because it take alot
 
-# billline quantity eval('10x100') instead of miningless description '(10*100)' 
+# billline quantity eval('10x100') instead of miningless description '(10*100)' line.verbose_quantity
 
 # FIXME do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
     * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
@@ -211,12 +208,12 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * modeladmin Default filter + search isn't working, prepend filter when searching
 
-# IMPORTANT do all modles.py TODOs and create migrations for finished apps
-
 * create service help templates based on urlqwargs with the most basic services.
 
 # TDOO Base price: domini propi (all domains) + extra for other domains
 
+# IMPORTANT op.instance = copy.deepcopy(instance) ValueError: Cannot assign "<SaaS: blog@WordPressService>": "SaaS" instance isn't saved in the database.
+# Separate operation from models !! BackendOperation and Operation
 
 Translation
 -----------
@@ -258,7 +255,7 @@ https://code.djangoproject.com/ticket/24576
 # FIXME what to do when deleting accounts? set fk null and fill a username charfield? issues, invoices.. we whant all this to go away?
 * implement delete All related services
 
-# FIXME address name change does not remove old one :P
+# FIXME address name change does not remove old one :P, readonly, perhaps we can regenerate all addresses using backend.prepare()?
 
 * read https://docs.djangoproject.com/en/dev/releases/1.8/ and fix deprecation warnings
 * remove admin object display_links , like contents webapps
@@ -277,4 +274,5 @@ https://code.djangoproject.com/ticket/24576
 
 * migrate to DRF3.x
 
-* move all tests on django-orchestra/tests
+* move all tests to django-orchestra/tests
+* *natural keys: those fields that uniquely identify a service, list.name, website.name, webapp.name+account, make sure rest api can not edit thos things

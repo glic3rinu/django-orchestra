@@ -38,7 +38,7 @@ class MySQLBackend(ServiceController):
         if database.type != database.MYSQL:
             return
         context = self.get_context(database)
-        self.append("mysql -e 'DROP DATABASE `%(database)s`;' || exit_code=1" % context)
+        self.append("mysql -e 'DROP DATABASE `%(database)s`;' || exit_code=$?" % context)
         self.append("mysql mysql -e 'DELETE FROM db WHERE db = \"%(database)s\";'" % context)
         
     def commit(self):
@@ -76,7 +76,7 @@ class MySQLUserBackend(ServiceController):
             return
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
-            mysql -e 'DROP USER "%(username)s"@"%(host)s";' \
+            mysql -e 'DROP USER "%(username)s"@"%(host)s";' || exit_code=$? \
             """) % context
         )
     

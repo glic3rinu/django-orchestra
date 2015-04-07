@@ -32,6 +32,10 @@ SYSTEMUSERS_FTP_LOG_PATH = getattr(settings, 'SYSTEMUSERS_FTP_LOG_PATH',
 )
 
 
+SYSTEMUSERS_MAIL_LOG_PATH = getattr(settings, 'SYSTEMUSERS_MAIL_LOG_PATH',
+    '/var/log/exim4/mainlog'
+)
+
 SYSTEMUSERS_DEFAULT_GROUP_MEMBERS = getattr(settings, 'SYSTEMUSERS_DEFAULT_GROUP_MEMBERS',
     ('www-data',)
 )

@@ -1,10 +1,12 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin.html import monospace_format
 from orchestra.admin.utils import admin_link, admin_date, admin_colored
 
+from . import settings
 from .backends import ServiceBackend
 from .models import Server, Route, BackendLog, BackendOperation
 from .widgets import RouteBackendSelect
@@ -66,6 +68,19 @@ class RouteAdmin(admin.ModelAdmin):
         if obj:
             form.base_fields['backend'].help_text = self.BACKEND_HELP_TEXT.get(obj.backend, '')
         return form
+    
+    def show_orchestration_disabled(self, request):
+        if settings.ORCHESTRATION_DISABLE_EXECUTION:
+            msg = _("Orchestration execution is disabled by <tt>ORCHESTRATION_DISABLE_EXECUTION</tt> setting.")
+            self.message_user(request, mark_safe(msg), messages.WARNING)
+    
+    def changelist_view(self, request, extra_context=None):
+        self.show_orchestration_disabled(request)
+        return super(RouteAdmin, self).changelist_view(request, extra_context)
+    
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        self.show_orchestration_disabled(request)
+        return super(RouteAdmin, self).changeform_view(request, object_id, form_url, extra_context)
 
 
 class BackendOperationInline(admin.TabularInline):

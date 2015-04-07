@@ -4,7 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.decorators import action_with_confirmation
-from orchestra.contrib.orchestration.models import BackendOperation as Operation
+from orchestra.contrib.orchestration import Operation
 
 
 class GrantPermissionForm(forms.Form):

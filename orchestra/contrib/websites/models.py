@@ -46,6 +46,10 @@ class Website(models.Model):
         context = self.get_settings_context()
         return settings.WEBSITES_UNIQUE_NAME_FORMAT % context
     
+    @cached_property
+    def active(self):
+        return self.is_active and self.account.is_active
+    
     def get_settings_context(self):
         """ format settings strings """
         return {

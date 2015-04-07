@@ -4,7 +4,7 @@ from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra import plugins
-from orchestra.contrib.orchestration.models import BackendOperation as Operation
+from orchestra.contrib.orchestration import Operation
 from orchestra.core import validators
 from orchestra.forms import widgets
 from orchestra.plugins.forms import PluginDataForm
@@ -109,7 +109,7 @@ class SoftwareService(plugins.Plugin):
                 errors = {}
                 if 'user-exists' in log.stdout:
                     errors['name'] = _("User with this username already exists.")
-                elif 'email-exists' in log.stdout:
+                if 'email-exists' in log.stdout:
                     errors['email'] = _("User with this email address already exists.")
                 if errors:
                     raise ValidationError(errors)

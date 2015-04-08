@@ -13,12 +13,12 @@ CONTACTS_DEFAULT_EMAIL_USAGES = getattr(settings, 'CONTACTS_DEFAULT_EMAIL_USAGES
 
 
 CONTACTS_DEFAULT_CITY = getattr(settings, 'CONTACTS_DEFAULT_CITY',
-'Barcelona'
+    'Barcelona'
 )
 
 
-CONTACTS_COUNTRIES = getattr(settings, 'CONTACTS_COUNTRIES', (
-    (k,v) for k,v in data.COUNTRIES.items()
+CONTACTS_COUNTRIES = getattr(settings, 'CONTACTS_COUNTRIES', tuple(
+    ((k,v) for k,v in data.COUNTRIES.items())
 ))
 
 

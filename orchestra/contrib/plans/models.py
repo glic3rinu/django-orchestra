@@ -15,9 +15,9 @@ from . import rating
 class Plan(models.Model):
     name = models.CharField(_("name"), max_length=32, unique=True, validators=[validate_name])
     verbose_name = models.CharField(_("verbose_name"), max_length=128, blank=True)
-    # TODO is_active = models.BooleanField(_("active"), default=True,
-#            help_text=_("Designates whether this account should be treated as active. "
-#                        "Unselect this instead of deleting accounts."))
+    is_active = models.BooleanField(_("active"), default=True,
+        help_text=_("Designates whether this account should be treated as active. "
+                    "Unselect this instead of deleting accounts."))
     is_default = models.BooleanField(_("default"), default=False,
         help_text=_("Designates whether this plan is used by default or not."))
     is_combinable = models.BooleanField(_("combinable"), default=True,

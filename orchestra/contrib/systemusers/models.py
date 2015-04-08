@@ -91,7 +91,7 @@ class SystemUser(models.Model):
                 raise ValidationError({
                     'directory': directory_error,
                 })
-        if self.has_shell and self.home != self.get_base_home():
+        if self.has_shell and self.home and self.home != self.get_base_home():
             raise ValidationError({
                 'home': _("Shell users should use their own home."),
             })

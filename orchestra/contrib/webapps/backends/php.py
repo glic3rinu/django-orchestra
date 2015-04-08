@@ -179,6 +179,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             'cmd_options': self.get_fcgid_cmd_options(webapp, context),
             'cmd_options_path': settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH % context,
         })
+        return context
     
     def update_fpm_context(self, webapp, context):
         context.update({

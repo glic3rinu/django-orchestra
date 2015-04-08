@@ -7,9 +7,7 @@ from orchestra.core import accounts, validators
 from orchestra.models.fields import MultiSelectField
 
 from . import settings
-
-
-validate_phone = lambda p: validators.validate_phone(p, settings.CONTACTS_DEFAULT_COUNTRY)
+from .validators import validate_phone
 
 
 class ContactQuerySet(models.QuerySet):

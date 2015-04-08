@@ -16,7 +16,7 @@ from orchestra.utils.sys import run
 
 from . import tasks
 from .backends import ServiceMonitor
-from .methods import DataMethod
+from .aggregations import Aggregation
 from .validators import validate_scale
 
 
@@ -47,9 +47,8 @@ class Resource(models.Model):
     verbose_name = models.CharField(_("verbose name"), max_length=256)
     content_type = models.ForeignKey(ContentType,
         help_text=_("Model where this resource will be hooked."))
-    # TODO rename to aggregation
-    period = models.CharField(_("aggregation"), max_length=16,
-        choices=DataMethod.get_choices(), default=DataMethod.get_choices()[0][0],
+    aggregation = models.CharField(_("aggregation"), max_length=16,
+        choices=Aggregation.get_choices(), default=Aggregation.get_choices()[0][0],
         help_text=_("Method used for aggregating this resource monitored data."))
     on_demand = models.BooleanField(_("on demand"), default=False,
         help_text=_("If enabled the resource will not be pre-allocated, "
@@ -87,13 +86,13 @@ class Resource(models.Model):
         return "{}-{}".format(str(self.content_type), self.name)
     
     @cached_property
-    def method_class(self):
-        return DataMethod.get(self.period)
+    def aggregation_class(self):
+        return Aggregation.get(self.aggregation)
     
     @cached_property
-    def method_instance(self):
+    def aggregation_instance(self):
         """ Per request lived type_instance """
-        return self.method_class(self)
+        return self.aggregation_class(self)
     
     def clean(self):
         self.verbose_name = self.verbose_name.strip()
@@ -216,7 +215,7 @@ class ResourceData(models.Model):
         total = 0
         has_result = False
         for dataset in self.get_monitor_datasets():
-            usage = resource.method_instance.compute_usage(dataset)
+            usage = resource.aggregation_instance.compute_usage(dataset)
             if usage is not None:
                 has_result = True
                 total += usage
@@ -258,7 +257,7 @@ class ResourceData(models.Model):
                     object_id__in=pks
                 )
             datasets.append(
-                resource.method_instance.filter(dataset)
+                resource.aggregation_instance.filter(dataset)
             )
         return datasets
 

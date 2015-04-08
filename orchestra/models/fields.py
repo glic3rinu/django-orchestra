@@ -22,7 +22,7 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
     def get_db_prep_value(self, value, connection=None, prepared=False):
         if isinstance(value, str):
             return value
-        elif isinstance(value, list):
+        else:
             return ','.join(value)
     
     def to_python(self, value):
@@ -49,7 +49,6 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
             if (opt_select not in arr_choices):
                 msg = self.error_messages['invalid_choice'] % value
                 raise exceptions.ValidationError(msg)
-        return
     
     def get_choices_selected(self, arr_choices=''):
         if not arr_choices:

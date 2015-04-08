@@ -6,8 +6,8 @@ import math
 from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone, translation
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra import plugins
 from orchestra.utils.humanize import text2int
@@ -130,11 +130,14 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         safe_locals = {
             'instance': instance,
             'obj': instance,
+            'ugettext': ugettext,
             instance._meta.model_name: instance,
         }
-        if not self.order_description:
-            return '%s: %s' % (self.description, instance)
-        return eval(self.order_description, safe_locals)
+        account = getattr(instance, 'account', instance)
+        with translation.override(account.language):
+            if not self.order_description:
+                return '%s: %s' % (ugettext(self.description), instance)
+            return eval(self.order_description, safe_locals)
     
     def get_billing_point(self, order, bp=None, **options):
         not_cachable = self.billing_point == self.FIXED_DATE and options.get('fixed_point')

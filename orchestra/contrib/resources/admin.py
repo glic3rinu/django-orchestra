@@ -21,15 +21,15 @@ from .models import Resource, ResourceData, MonitorData
 
 class ResourceAdmin(ExtendedModelAdmin):
     list_display = (
-        'id', 'verbose_name', 'content_type', 'period', 'on_demand',
+        'id', 'verbose_name', 'content_type', 'aggregation', 'on_demand',
         'default_allocation', 'unit', 'crontab', 'is_active'
     )
     list_display_links = ('id', 'verbose_name')
     list_editable = ('default_allocation', 'crontab', 'is_active',)
-    list_filter = (UsedContentTypeFilter, 'period', 'on_demand', 'disable_trigger')
+    list_filter = (UsedContentTypeFilter, 'aggregation', 'on_demand', 'disable_trigger')
     fieldsets = (
         (None, {
-            'fields': ('verbose_name', 'name', 'content_type', 'period'),
+            'fields': ('verbose_name', 'name', 'content_type', 'aggregation'),
         }),
         (_("Configuration"), {
             'fields': ('unit', 'scale', 'on_demand', 'default_allocation', 'disable_trigger',

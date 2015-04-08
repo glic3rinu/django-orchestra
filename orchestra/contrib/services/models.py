@@ -236,7 +236,7 @@ class Service(models.Model):
         order_model = get_model(settings.SERVICES_ORDER_MODEL)
         related_model = self.content_type.model_class()
         updates = []
-        for instance in related_model.objects.all().select_related('account'):
+        for instance in related_model.objects.select_related('account').all():
             updates += order_model.update_orders(instance, service=self, commit=commit)
         return updates
 

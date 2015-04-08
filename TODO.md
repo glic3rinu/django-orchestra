@@ -176,6 +176,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 # don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
 
 # DOMINI REGISTRE MIGRATION SCRIPTS
+# IMPORTANT delete domain  xina:  missing FROM-clause entry for table "t3" LINE 1: SELECT (CONCAT(T3.name, domains_domain.name)) AS "structured...
 
 # lines too long on invoice, double lines or cut, and make margin wider
 * PHP_TIMEOUT env variable in sync with fcgid idle timeout
@@ -276,3 +277,7 @@ https://code.djangoproject.com/ticket/24576
 
 * move all tests to django-orchestra/tests
 * *natural keys: those fields that uniquely identify a service, list.name, website.name, webapp.name+account, make sure rest api can not edit thos things
+
+# migrations accounts, bill, orders, auth -> migrate the rest (contacts lambda error)
+
+# MultiCHoiceField proper serialization

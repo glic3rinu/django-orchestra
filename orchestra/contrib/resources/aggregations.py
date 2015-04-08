@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra import plugins
 
 
-class DataMethod(plugins.Plugin, metaclass=plugins.PluginMount):
+class Aggregation(plugins.Plugin, metaclass=plugins.PluginMount):
     """ filters and computes dataset usage """
     def filter(self, dataset):
         """ Filter the dataset to get the relevant data according to the period """
@@ -18,7 +18,7 @@ class DataMethod(plugins.Plugin, metaclass=plugins.PluginMount):
         raise NotImplementedError
 
 
-class Last(DataMethod):
+class Last(Aggregation):
     name = 'last'
     verbose_name = _("Last value")
     

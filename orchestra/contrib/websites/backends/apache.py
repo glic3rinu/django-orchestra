@@ -228,26 +228,6 @@ class Apache2Backend(ServiceController):
                     directive = settings.WEBSITES_SAAS_DIRECTIVES[name]
                     saas += self.get_directives(directive, context)
         return saas
-#    def get_protections(self, site):
-#        protections = ''
-#        context = self.get_context(site)
-#        for protection in site.directives.filter(name='directory_protection'):
-#            path, name, passwd = protection.value.split()
-#            path = os.path.join(context['root'], path)
-#            passwd = os.path.join(self.USER_HOME % context, passwd)
-#            protections += textwrap.dedent("""
-#                <Directory %s>
-#                    AllowOverride All
-#                    #AuthPAM_Enabled off
-#                    AuthType Basic
-#                    AuthName %s
-#                    AuthUserFile %s
-#                    <Limit GET POST>
-#                        require valid-user
-#                    </Limit>
-#                </Directory>""" % (path, name, passwd)
-#            )
-#        return protections
     
     def enable_or_disable(self, site):
         context = self.get_context(site)
@@ -311,6 +291,10 @@ class Apache2Backend(ServiceController):
 
 
 class Apache2Traffic(ServiceMonitor):
+    """
+    Parses apache logs,
+    looking for the size of each request on the last word of the log line
+    """
     model = 'websites.Website'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Apache 2 Traffic")

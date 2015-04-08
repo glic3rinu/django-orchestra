@@ -42,7 +42,7 @@ class WebAppServiceMixin(object):
             'under_construction_path': settings.settings.WEBAPPS_UNDER_CONSTRUCTION_PATH,
             'is_mounted': webapp.content_set.exists(),
         }
-        replace(context, "'", '"')
+        return replace(context, "'", '"')
 
 
 for __, module_name, __ in pkgutil.walk_packages(__path__):

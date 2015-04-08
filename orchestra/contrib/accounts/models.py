@@ -91,7 +91,7 @@ class Account(auth.AbstractBaseUser):
             if source in services and hasattr(source, 'active'):
                 for obj in getattr(self, rel.get_accessor_name()).all():
                     OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=[])
-        
+    
     def send_email(self, template, context, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)
         email_to = contacts.values_list('email', flat=True)

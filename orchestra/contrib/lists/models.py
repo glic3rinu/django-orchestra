@@ -22,9 +22,9 @@ class List(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
         related_name='lists')
     # TODO also admin
-    # TODO is_active = models.BooleanField(_("active"), default=True,
-#            help_text=_("Designates whether this account should be treated as active. "
-#                        "Unselect this instead of deleting accounts."))
+    is_active = models.BooleanField(_("active"), default=True,
+        help_text=_("Designates whether this account should be treated as active. "
+                    "Unselect this instead of deleting accounts."))
     password = None
     
     class Meta:

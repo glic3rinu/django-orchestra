@@ -70,8 +70,8 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
         stdoutPiece = read_async(p.stdout)
         stderrPiece = read_async(p.stderr)
         
-        stdout += (stdoutPiece or b'').decode('utf8')
-        stderr += (stderrPiece or b'').decode('utf8')
+        stdout += (stdoutPiece or b'').decode('utf8', errors='replace')
+        stderr += (stderrPiece or b'').decode('utf8', errors='replace')
         
         if display and stdout:
             sys.stdout.write(stdout)

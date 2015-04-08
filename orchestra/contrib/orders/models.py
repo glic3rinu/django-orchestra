@@ -112,7 +112,7 @@ class Order(models.Model):
     object_id = models.PositiveIntegerField(null=True)
     service = models.ForeignKey(settings.ORDERS_SERVICE_MODEL, verbose_name=_("service"),
         related_name='orders')
-    registered_on = models.DateField(_("registered"), default=lambda: timezone.now())
+    registered_on = models.DateField(_("registered"), default=timezone.now)
     cancelled_on = models.DateField(_("cancelled"), null=True, blank=True)
     billed_on = models.DateField(_("billed"), null=True, blank=True)
     billed_until = models.DateField(_("billed until"), null=True, blank=True)
@@ -137,7 +137,7 @@ class Order(models.Model):
         else:
             services = [service]
         for service in services:
-            orders = Order.objects.by_object(instance, service=service).active()
+            orders = Order.objects.by_object(instance, service=service).select_related('service').active()
             if service.handler.matches(instance):
                 if not orders:
                     account_id = getattr(instance, 'account_id', instance.pk)
@@ -152,12 +152,16 @@ class Order(models.Model):
                     updates.append((order, 'created'))
                     logger.info("CREATED new order id: {id}".format(id=order.id))
                 else:
-                    order = orders.get()
+                    if len(orders) > 1:
+                        raise ValueError("A single active order was expected.")
+                    order = orders[0]
                     updates.append((order, 'updated'))
                 if commit:
                     order.update()
             elif orders:
-                order = orders.get()
+                if len(orders) > 1:
+                    raise ValueError("A single active order was expected.")
+                order = orders[0]
                 order.cancel(commit=commit)
                 logger.info("CANCELLED order id: {id}".format(id=order.id))
                 updates.append((order, 'cancelled'))
@@ -178,7 +182,7 @@ class Order(models.Model):
             metric = ', metric:{}'.format(metric)
         description = handler.get_order_description(instance)
         logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
-                id=self.id, description=description, metric=metric).encode('ascii', 'replace')
+            id=self.id, description=description, metric=metric).encode('ascii', 'replace')
         )
         if self.description != description:
             self.description = description
@@ -268,39 +272,26 @@ class MetricStorage(models.Model):
 
 accounts.register(Order)
 
-#@receiver(pre_delete, dispatch_uid="orders.account_orders")
-#def account_orders(sender, **kwargs):
-#    account = kwargs['instance']
-#    if isinstance(account, Order.account.field.rel.to):
-#        account._deleted = True
 
-
-# FIXME account deletion generates a integrity error
+# TODO perhas use cache = caches.get_request_cache() to cache an account delete and don't processes get_related_objects() if the case
+# FIXME https://code.djangoproject.com/ticket/24576
 # TODO build a cache hash table {model: related, model: None}
 @receiver(post_delete, dispatch_uid="orders.cancel_orders")
 def cancel_orders(sender, **kwargs):
     if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
         # Account delete will delete all related orders, no need to maintain order consistency
-#        if isinstance(instance, Order.account.field.rel.to):
-#            return
-        print('delete', sender, instance, instance.pk)
+        if isinstance(instance, Order.account.field.rel.to):
+            return
         if type(instance) in services:
             for order in Order.objects.by_object(instance).active():
                 order.cancel()
         elif not hasattr(instance, 'account'):
+            # FIXME Indeterminate behaviour
             related = helpers.get_related_object(instance)
-            # FIXME this shit returns objects that are already deleted
-            # Indeterminate behaviour
             if related and related != instance:
-#                if isinstance(related, Order.account.field.rel.to):
-#                    return
-                print('related', type(related), related, related.pk)
-#                try:
                 type(related).objects.get(pk=related.pk)
-#                except related.DoesNotExist:
-#                    print('not exists', type(related), related, related.pk)
-                print([(str(a).encode('utf8'), b) for a, b in Order.update_orders(related)])
+
 
 @receiver(post_save, dispatch_uid="orders.update_orders")
 def update_orders(sender, **kwargs):

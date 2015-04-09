@@ -14,8 +14,8 @@ class RateInline(admin.TabularInline):
 
 
 class PlanAdmin(ExtendedModelAdmin):
-    list_display = ('name', 'is_default', 'is_combinable', 'allow_multiple')
-    list_filter = ('is_default', 'is_combinable', 'allow_multiple')
+    list_display = ('name', 'is_default', 'is_combinable', 'allow_multiple', 'is_active')
+    list_filter = ('is_default', 'is_combinable', 'allow_multiple', 'is_active')
     fields = ('verbose_name', 'name', 'is_default', 'is_combinable', 'allow_multiple')
     prepopulated_fields = {
         'name': ('verbose_name',)

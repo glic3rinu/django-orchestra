@@ -9,6 +9,7 @@ from .validators import validate_domain_protocol
 class WebsiteAdminForm(forms.ModelForm):
     def clean(self):
         """ Prevent multiples domains on the same protocol """
+        super(WebsiteAdminForm, self).clean()
         domains = self.cleaned_data.get('domains')
         if not domains:
             return self.cleaned_data

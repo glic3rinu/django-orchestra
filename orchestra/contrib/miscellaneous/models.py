@@ -56,10 +56,7 @@ class Miscellaneous(models.Model):
     
     @cached_property
     def active(self):
-        try:
-            return self.is_active and self.account.is_active
-        except type(self).account.field.rel.to.DoesNotExist:
-            return self.is_active
+        return self.is_active and self.service.is_active and self.account.is_active
     
     def get_description(self):
         return ' '.join((str(self.amount), self.service.description or self.service.verbose_name))

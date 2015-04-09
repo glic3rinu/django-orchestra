@@ -40,6 +40,7 @@ class Apache2Backend(ServiceController):
         context['extra_conf'] = '\n'.join([conf for location, conf in extra_conf])
         return Template(textwrap.dedent("""\
             <VirtualHost {{ ip }}:{{ port }}>
+                IncludeOptional /etc/apache2/site[s]-override/{{ site_unique_name }}.con[f]
                 ServerName {{ site.domains.all|first }}\
             {% if site.domains.all|slice:"1:" %}
                 ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}\
@@ -50,7 +51,6 @@ class Apache2Backend(ServiceController):
                 SuexecUserGroup {{ user }} {{ group }}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
-                IncludeOptional /etc/apache2/extra-vhos[t]/{{ site_unique_name }}.con[f]
             </VirtualHost>
             """)
         ).render(Context(context))
@@ -181,8 +181,8 @@ class Apache2Backend(ServiceController):
         
     def get_security(self, directives):
         security = []
-        for rules in directives.get('sec-rule-remove', []):
-            for rule in rules.value.split():
+        for values in directives.get('sec-rule-remove', []):
+            for rule in values.split():
                 sec_rule = "SecRuleRemoveById %i" % int(rule)
                 security.append(('', sec_rule))
         for location in directives.get('sec-engine', []):
@@ -267,12 +267,12 @@ class Apache2Backend(ServiceController):
             'site': site,
             'site_name': site.name,
             'ip': settings.WEBSITES_DEFAULT_IP,
-            'site_unique_name': site.unique_name,
+            'site_unique_name': '0-'+site.unique_name,
             'user': self.get_username(site),
             'group': self.get_groupname(site),
             # TODO remove '0-'
             'sites_enabled': "%s.conf" % os.path.join(sites_enabled, '0-'+site.unique_name),
-            'sites_available': "%s.conf" % os.path.join(sites_available, site.unique_name),
+            'sites_available': "%s.conf" % os.path.join(sites_available, '0-'+site.unique_name),
             'access_log': site.get_www_access_log_path(),
             'error_log': site.get_www_error_log_path(),
             'banner': self.get_banner(),

@@ -39,9 +39,9 @@ class UNIXUserBackend(ServiceController):
             )
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
             context['member'] = member
-            self.append('usermod -a -G %(user)s %(member)s' % context)
+            self.append('usermod -a -G %(user)s %(member)s || exit_code=$?' % context)
         if not user.is_main:
-            self.append('usermod -a -G %(user)s %(mainuser)s' % context)
+            self.append('usermod -a -G %(user)s %(mainuser)s || exit_code=$?' % context)
     
     def delete(self, user):
         context = self.get_context(user)
@@ -52,9 +52,12 @@ class UNIXUserBackend(ServiceController):
             killall -u %(user)s || true
             userdel %(user)s || exit_code=1
             groupdel %(group)s || exit_code=1
-            mv %(base_home)s %(base_home)s.deleted || exit_code=1
             """) % context
         )
+        if context['deleted_home']:
+            self.append("mv %(base_home)s %(deleted_home)s || exit_code=1" % context)
+        else:
+            self.append("rm -fr %(base_home)s" % context)
     
     def grant_permission(self, user):
         context = self.get_context(user)
@@ -76,6 +79,7 @@ class UNIXUserBackend(ServiceController):
             'home': user.get_home(),
             'base_home': user.get_base_home(),
         }
+        context['deleted_home'] = settings.SYSTEMUSERS_MOVE_ON_DELETE_PATH % context
         return replace(context, "'", '"')
 
 

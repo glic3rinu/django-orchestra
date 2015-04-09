@@ -50,7 +50,7 @@ class Operation():
             if hasattr(self.backend, 'get_context'):
                 self.backend().get_context(self.instance)
     
-    def create(self, log):
+    def store(self, log):
         from .models import BackendOperation
         return BackendOperation.objects.create(
             log=log,

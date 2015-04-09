@@ -29,6 +29,7 @@ class PluginDataForm(forms.ModelForm):
                     self.fields[field].widget = ReadOnlyWidget(value, display)
     
     def clean(self):
+        super(PluginDataForm, self).clean()
         data = {}
         # Update data fields
         for field in self.declared_fields:

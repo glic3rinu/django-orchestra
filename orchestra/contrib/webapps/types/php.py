@@ -77,15 +77,16 @@ class PHPApp(AppType):
             php_version = self.get_php_version()
             webapps = self.instance.account.webapps.filter(type=self.instance.type)
             for webapp in webapps:
-                if webapp.type_instance.get_php_version == php_version:
+                if webapp.type_instance.get_php_version() == php_version:
                     options += list(webapp.options.all())
         php_options = [option.name for option in self.get_php_options()]
         enabled_functions = set()
         for opt in options:
             if opt.name in php_options:
-                init_vars[opt.name] = opt.value
-            elif opt.name == 'enabled_functions':
-                enabled_functions.union(set(opt.value.split(',')))
+                if opt.name == 'enabled_functions':
+                    enabled_functions = enabled_functions.union(set(opt.value.split(',')))
+                else:
+                    init_vars[opt.name] = opt.value
         if enabled_functions:
             disabled_functions = []
             for function in self.PHP_DISABLED_FUNCTIONS:
@@ -94,7 +95,9 @@ class PHPApp(AppType):
             init_vars['dissabled_functions'] = ','.join(disabled_functions)
         timeout = self.instance.options.filter(name='timeout').first()
         if timeout:
-            init_vars['max_execution_time'] = timeout.value
+            # Give a little slack here
+            timeout = str(int(timeout.value)-2)
+            init_vars['max_execution_time'] = timeout
         if self.PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:
             context = self.get_directive_context()
             error_log_path = os.path.normpath(self.PHP_ERROR_LOG_PATH % context)

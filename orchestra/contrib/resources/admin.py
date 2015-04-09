@@ -126,7 +126,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     display_unit.admin_order_field = 'resource__unit'
     
     def display_used(self, data):
-        if not data.used:
+        if data.used is None:
             return ''
         url = reverse('admin:resources_resourcedata_used_monitordata', args=(data.pk,))
         return '<a href="%s">%s</a>' % (url, data.used)

@@ -262,6 +262,10 @@ class ResourceData(models.Model):
         return datasets
 
 
+class MonitorDataQuerySet(models.QuerySet):
+    group_by = queryset.group_by
+
+
 class MonitorData(models.Model):
     """ Stores monitored data """
     monitor = models.CharField(_("monitor"), max_length=256,
@@ -272,6 +276,7 @@ class MonitorData(models.Model):
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     
     content_object = GenericForeignKey()
+    objects = MonitorDataQuerySet.as_manager()
     
     class Meta:
         get_latest_by = 'id'

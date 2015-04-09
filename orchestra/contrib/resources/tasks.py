@@ -27,7 +27,7 @@ def monitor(resource_id, ids=None, async=True):
         # Execute monitor
         monitorings = []
         for obj in model.objects.filter(**kwargs):
-            op = Operation.create(backend, obj, Operation.MONITOR)
+            op = Operation(backend, obj, Operation.MONITOR)
             operations.append(op)
             monitorings.append(op)
         # TODO async=True only when running with celery
@@ -44,10 +44,10 @@ def monitor(resource_id, ids=None, async=True):
             a = data.used
             b = data.allocated
             if data.used > (data.allocated or 0):
-                op = Operation.create(backend, obj, Operation.EXCEEDED)
+                op = Operation(backend, obj, Operation.EXCEEDED)
                 triggers.append(op)
             elif data.used < (data.allocated or 0):
-                op = Operation.create(backend, obj, Operation.RECOVERY)
+                op = Operation(backend, obj, Operation.RECOVERY)
                 triggers.append(op)
     Operation.execute(triggers)
     return operations

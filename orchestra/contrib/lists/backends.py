@@ -119,7 +119,7 @@ class MailmanBackend(ServiceController):
                 postmap %(virtual_alias)s
             fi
             if [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]]; then
-                /etc/init.d/postfix reload
+                service postfix reload
             fi""") % context
         )
     

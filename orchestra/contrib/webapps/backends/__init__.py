@@ -29,7 +29,10 @@ class WebAppServiceMixin(object):
             )
     
     def delete_webapp_dir(self, context):
-        self.append("rm -fr %(app_path)s" % context)
+        if context['deleted_app_path']:
+            self.append("mv %(app_path)s %(deleted_app_path)s || exit_code=1" % context)
+        else:
+            self.append("rm -fr %(app_path)s" % context)
     
     def get_context(self, webapp):
         context = {
@@ -37,11 +40,12 @@ class WebAppServiceMixin(object):
             'group': webapp.get_groupname(),
             'app_name': webapp.name,
             'type': webapp.type,
-            'app_path': webapp.get_path().rstrip('/'),
+            'app_path': webapp.get_path(),
             'banner': self.get_banner(),
             'under_construction_path': settings.settings.WEBAPPS_UNDER_CONSTRUCTION_PATH,
             'is_mounted': webapp.content_set.exists(),
         }
+        context['deleted_app_path'] = settings.WEBAPPS_MOVE_ON_DELETE_PATH % context
         return replace(context, "'", '"')
 
 

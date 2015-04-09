@@ -1,3 +1,5 @@
+import re
+
 from django.conf.urls import patterns, url
 from django.contrib.admin.utils import unquote
 from django.shortcuts import render, redirect
@@ -58,10 +60,19 @@ class SelectPluginAdminMixin(object):
         template = 'admin/plugins/select_plugin.html'
         return render(request, template, context)
     
+    def get_plugin_value(self, request):
+        plugin_value = request.GET.get(self.plugin_field) or request.POST.get(self.plugin_field)
+        if not plugin_value and request.method == 'POST':
+            # HACK baceuse django add_preserved_filters removes extising queryargs
+            value = re.search(r"type=([^&^']+)[&']", request.META.get('HTTP_REFERER', ''))
+            if value:
+                plugin_value = value.groups()[0]
+        return plugin_value
+    
     def add_view(self, request, form_url='', extra_context=None):
         """ Redirects to select account view if required """
         if request.user.is_superuser:
-            plugin_value = request.GET.get(self.plugin_field) or request.POST.get(self.plugin_field)
+            plugin_value = self.get_plugin_value(request)
             if plugin_value or len(self.plugin.get_plugins()) == 1:
                 self.plugin_value = plugin_value
                 if not plugin_value:

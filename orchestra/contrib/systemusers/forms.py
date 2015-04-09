@@ -60,6 +60,7 @@ class SystemUserFormMixin(object):
         }
     
     def clean(self):
+        super(SystemUserFormMixin, self).clean()
         home = self.cleaned_data.get('home')
         if home and self.MOCK_USERNAME in home:
             username = self.cleaned_data.get('username', '')

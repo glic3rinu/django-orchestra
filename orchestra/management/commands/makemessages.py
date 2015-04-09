@@ -51,7 +51,7 @@ class Command(makemessages.Command):
             tmpcontent = '\n'.join(tmpcontent) + '\n'
             filename = 'database_%s.sql.py' % name
             self.database_files.append(filename)
-            with open(filename, 'w') as tmpfile:
+            with open(filename, 'wb') as tmpfile:
                 tmpfile.write(tmpcontent.encode('utf-8'))
     
     def remove_database_files(self):

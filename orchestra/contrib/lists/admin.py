@@ -6,17 +6,20 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import admin_link
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
+from orchestra.contrib.accounts.filters import IsActiveListFilter
 
 from .forms import ListCreationForm, ListChangeForm
 from .models import List
 
 
 class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('name', 'address_name', 'address_domain_link', 'account_link')
+    list_display = (
+        'name', 'address_name', 'address_domain_link', 'account_link', 'display_active'
+    )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('account_link', 'name',)
+            'fields': ('account_link', 'name', 'is_active')
         }),
         (_("Address"), {
             'classes': ('wide',),
@@ -30,7 +33,7 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
     fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('account_link', 'name',)
+            'fields': ('account_link', 'name', 'is_active')
         }),
         (_("Address"), {
             'classes': ('wide',),
@@ -42,6 +45,7 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
         }),
     )
     search_fields = ('name', 'address_name', 'address_domain__name', 'account__username')
+    list_filter = (IsActiveListFilter,)
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name',)
     form = ListChangeForm

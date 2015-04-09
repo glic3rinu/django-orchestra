@@ -118,14 +118,17 @@ class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
     
     def delete(self, mailbox):
         context = self.get_context(mailbox)
-        self.append("{ sleep 2 && killall -u %(uid)s -s KILL; } &" % context)
-        self.append("killall -u %(uid)s || true" % context)
-        self.append("sed -i '/^%(user)s:.*/d' %(passwd_path)s" % context)
-        self.append("sed -i '/^%(user)s@%(mailbox_domain)s\s.*/d' %(virtual_mailbox_maps)s" % context)
-        self.append("UPDATED_VIRTUAL_MAILBOX_MAPS=1")
-        # TODO delete
-        context['deleted'] = context['home'].rstrip('/') + '.deleted'
-        self.append("mv %(home)s %(deleted)s" % context)
+        self.append(textwrap.dedent("""\
+            { sleep 2 && killall -u %(uid)s -s KILL; } &
+            killall -u %(uid)s || true
+            sed -i '/^%(user)s:.*/d' %(passwd_path)s
+            sed -i '/^%(user)s@%(mailbox_domain)s\s.*/d' %(virtual_mailbox_maps)s
+            UPDATED_VIRTUAL_MAILBOX_MAPS=1""") % context
+        )
+        if context['deleted_home']:
+            self.append("mv %(home)s %(deleted_home)s || exit_code=1" % context)
+        else:
+            self.append("rm -fr %(home)s" % context)
     
     def get_extra_fields(self, mailbox, context):
         context['quota'] = self.get_quota(mailbox)
@@ -159,13 +162,16 @@ class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
             'group': self.DEFAULT_GROUP,
             'quota': self.get_quota(mailbox),
             'passwd_path': settings.MAILBOXES_PASSWD_PATH,
-            'home': mailbox.get_home().rstrip('/'),
+            'home': mailbox.get_home(),
             'banner': self.get_banner(),
             'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH,
             'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
         }
         context['extra_fields'] = self.get_extra_fields(mailbox, context)
-        context['passwd'] = '{user}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context)
+        context.update({
+            'passwd': '{user}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context),
+            'deleted_home': settings.MAILBOXES_MOVE_ON_DELETE_PATH % context,
+        })
         return replace(context, "'", '"')
 
 
@@ -177,11 +183,13 @@ class PostfixAddressBackend(ServiceController):
     )
     
     def include_virtual_alias_domain(self, context):
-        self.append(textwrap.dedent("""
-            [[ $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]] || {
-                echo '%(domain)s' >> %(virtual_alias_domains)s
-                UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-            }""") % context)
+        if context['domain'] != context['local_domain']:
+            self.append(textwrap.dedent("""
+                [[ $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]] || {
+                    echo '%(domain)s' >> %(virtual_alias_domains)s
+                    UPDATED_VIRTUAL_ALIAS_DOMAINS=1
+                }""") % context
+            )
     
     def exclude_virtual_alias_domain(self, context):
         domain = context['domain']
@@ -193,7 +201,7 @@ class PostfixAddressBackend(ServiceController):
 #        destination = []
 #        for mailbox in address.get_mailboxes():
 #            context['mailbox'] = mailbox
-#            destination.append("%(mailbox)s@%(mailbox_domain)s" % context)
+#            destination.append("%(mailbox)s@%(local_domain)s" % context)
 #        for forward in address.forward:
 #            if '@' in forward:
 #                destination.append(forward)
@@ -237,7 +245,7 @@ class PostfixAddressBackend(ServiceController):
         context = self.get_context_files()
         self.append(textwrap.dedent("""
             [[ $UPDATED_VIRTUAL_ALIAS_MAPS == 1 ]] && { postmap %(virtual_alias_maps)s; }
-            [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { /etc/init.d/postfix reload; }
+            [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { service postfix reload; }
             """) % context
         )
         self.append('exit 0')
@@ -253,7 +261,7 @@ class PostfixAddressBackend(ServiceController):
         context.update({
             'domain': address.domain,
             'email': address.email,
-            'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
+            'local_domain': settings.MAILBOXES_LOCAL_DOMAIN,
         })
         return replace(context, "'", '"')
 
@@ -344,11 +352,13 @@ class PostfixMailscannerTraffic(ServiceMonitor):
             def inside_period(month, day, time, ini_date):
                 global months
                 global end_datetime
-                # Mar 19 17:13:22
+                # Mar  9 17:13:22
                 month = months[month]
                 year = end_datetime.year
                 if month == '12' and end_datetime.month == 1:
                     year = year+1
+                if len(day) == 1:
+                    day = '0' + day
                 date = str(year) + month + day
                 date += time.replace(':', '')
                 return ini_date < int(date) < end_date

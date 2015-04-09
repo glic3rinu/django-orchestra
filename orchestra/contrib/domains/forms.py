@@ -59,6 +59,7 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
 class RecordInlineFormSet(forms.models.BaseInlineFormSet):
     def clean(self):
         """ Checks if everything is consistent """
+        super(RecordInlineFormSet, self).clean()
         if any(self.errors):
             return
         if self.instance.name:

@@ -9,7 +9,7 @@ def domain_for_validation(instance, records):
     so when validation calls render_zone() it will use the new provided data
     """
     domain = copy.copy(instance)
-    def get_records():
+    def get_records(records=records):
         for data in records:
             yield Record(type=data['type'], value=data['value'])
     domain.get_records = get_records
@@ -19,7 +19,8 @@ def domain_for_validation(instance, records):
         domain.top = domain.get_parent(top=True)
     if domain.top:
         # is a subdomain
-        subdomains = [sub for sub in domain.top.subdomains.all() if sub.pk != domain.pk]
+        subdomains = domain.top.subdomains.select_related('top').prefetch_related('records').all()
+        subdomains = [sub for sub in subdomains if sub.pk != domain.pk]
         domain.top.get_subdomains = lambda: subdomains + [domain]
     elif not domain.pk:
         # is a new top domain

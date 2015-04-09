@@ -125,7 +125,7 @@ def execute(scripts, block=False, async=False):
                 logger.info("Executed %s" % str(operation))
                 if operation.instance.pk:
                     # Not all backends are called with objects saved on the database
-                    operation.create(execution.log)
+                    operation.store(execution.log)
             stdout = execution.log.stdout.strip()
             stdout and logger.debug('STDOUT %s', stdout)
             stderr = execution.log.stderr.strip()

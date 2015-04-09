@@ -17,6 +17,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def save(self, webapp):
         context = self.get_context(webapp)
+        self.create_webapp_dir(context)
+        self.set_under_construction(context)
         if webapp.type_instance.is_fpm:
             self.save_fpm(webapp, context)
             self.delete_fcgid(webapp, context)
@@ -25,8 +27,6 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             self.delete_fpm(webapp, context)
     
     def save_fpm(self, webapp, context):
-        self.create_webapp_dir(context)
-        self.set_under_construction(context)
         self.append(textwrap.dedent("""\
             fpm_config='%(fpm_config)s'
             {
@@ -39,8 +39,6 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         )
     
     def save_fcgid(self, webapp, context):
-        self.create_webapp_dir(context)
-        self.set_under_construction(context)
         self.append("mkdir -p %(wrapper_dir)s" % context)
         self.append(textwrap.dedent("""\
             wrapper='%(wrapper)s'
@@ -104,7 +102,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         merge = settings.WEBAPPS_MERGE_PHP_WEBAPPS
         context.update({
             'init_vars': webapp.type_instance.get_php_init_vars(merge=self.MERGE),
-            'max_children': webapp.get_options().get('processes', False),
+            'max_children': webapp.get_options().get('processes',
+                settings.WEBAPPS_FPM_DEFAULT_MAX_CHILDREN),
             'request_terminate_timeout': webapp.get_options().get('timeout', False),
         })
         context['fpm_listen'] = webapp.type_instance.FPM_LISTEN % context
@@ -119,7 +118,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             listen.group = {{ group }}
             pm = ondemand
             pm.max_requests = {{ max_requests }}
-            {% if max_children %}pm.max_children = {{ max_children }}{% endif %}
+            pm.max_children = {{ max_children }}
             {% if request_terminate_timeout %}request_terminate_timeout = {{ request_terminate_timeout }}{% endif %}
             {% for name, value in init_vars.iteritems %}
             php_admin_value[{{ name | safe }}] = {{ value | safe }}{% endfor %}
@@ -133,7 +132,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         init_vars = opt.get_php_init_vars(merge=self.MERGE)
         if init_vars:
             init_vars = [ "-d %s='%s'" % (k, v.replace("'", '"')) for k,v in init_vars.items() ]
-        init_vars = ', '.join(init_vars)
+        init_vars = ' \\\n    '.join(init_vars)
         context.update({
             'php_binary': os.path.normpath(settings.WEBAPPS_PHP_CGI_BINARY_PATH % context),
             'php_rc': os.path.normpath(settings.WEBAPPS_PHP_CGI_RC_DIR % context),

@@ -18,11 +18,14 @@ class Command(BaseCommand):
             help='Tells Django to NOT prompt the user for input of any kind.')
         parser.add_argument('--action', action='store', dest='action',
             default='save', help='Executes action. Defaults to "save".')
+        parser.add_argument('--dry-run', action='store_true', dest='dry', default=False,
+            help='Only prints scrtipt.')
     
     def handle(self, *args, **options):
         model = get_model(*options['model'].split('.'))
         action = options.get('action')
         interactive = options.get('interactive')
+        dry = options.get('dry')
         kwargs = {}
         for comp in options.get('query', []):
             comps = iter(comp.split('='))
@@ -42,7 +45,9 @@ class Command(BaseCommand):
             servers.append(server.name)
             sys.stdout.write('# Execute on %s\n' % server.name)
             for method, commands in backend.scripts:
-                sys.stdout.write('\n'.join(commands) + '\n')
+                script = '\n'.join(commands) + '\n'
+                script = script.encode('ascii', errors='replace')
+                sys.stdout.write(script.decode('ascii'))
         if interactive:
             context = {
                 'servers': ', '.join(servers),
@@ -56,4 +61,10 @@ class Command(BaseCommand):
                 if confirm == 'no':
                     return
                 break
-#        manager.execute(scripts, block=block)
+        if not dry:
+            logs = manager.execute(scripts, block=block)
+            for log in logs:
+                print(log.stdout)
+                sys.stderr.write(log.stderr)
+            for log in logs:
+                print(log.backend, log.state)

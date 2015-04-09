@@ -13,10 +13,6 @@ class WordpressMuBackend(ServiceController):
     model = 'webapps.WebApp'
     default_route_match = "webapp.type == 'wordpress-mu'"
     
-    @property
-    def script(self):
-        return self.cmds
-    
     def login(self, session):
         base_url = self.get_base_url()
         login_url = base_url + '/wp-login.php'
@@ -113,11 +109,7 @@ class WordpressMuBackend(ServiceController):
             self.validate_response(response)
     
     def save(self, webapp):
-        if webapp.type != 'wordpress-mu':
-            return
         self.append(self.create_blog, webapp)
     
     def delete(self, webapp):
-        if webapp.type != 'wordpress-mu':
-            return
         self.append(self.delete_blog, webapp)

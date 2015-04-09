@@ -180,14 +180,6 @@ class PHPMaginQuotesSybase(PHPAppOption):
     regex = r'^(On|Off|on|off)$'
 
 
-class PHPMaxExecutonTime(PHPAppOption):
-    name = 'max_execution_time'
-    verbose_name = _("Max execution time")
-    help_text = _("Maximum time in seconds a script is allowed to run before it is terminated by "
-                "the parser (Integer between 0 and 999).")
-    regex = r'^[0-9]{1,3}$'
-
-
 class PHPMaxInputTime(PHPAppOption):
     name = 'max_input_time'
     verbose_name = _("Max input time")

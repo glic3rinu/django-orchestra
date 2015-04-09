@@ -280,4 +280,9 @@ https://code.djangoproject.com/ticket/24576
 
 # migrations accounts, bill, orders, auth -> migrate the rest (contacts lambda error)
 
-# MultiCHoiceField proper serialization
+* MultiCHoiceField proper serialization
+
+# Apache restart fails: detect if appache running, and execute start
+# PHP backend is retarded does not detect well the version
+# Change crons, create cron for deleted webapps and users
+* UNIFY PHP FPM settings name

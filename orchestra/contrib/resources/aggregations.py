@@ -19,12 +19,13 @@ class Aggregation(plugins.Plugin, metaclass=plugins.PluginMount):
 
 
 class Last(Aggregation):
+    """ Sum of the last value of all monitors """
     name = 'last'
     verbose_name = _("Last value")
     
     def filter(self, dataset):
         try:
-            return dataset.order_by('object_id', '-id').distinct('object_id')
+            return dataset.order_by('object_id', '-id').distinct('monitor')
         except dataset.model.DoesNotExist:
             return dataset.none()
     
@@ -38,6 +39,7 @@ class Last(Aggregation):
 
 
 class MonthlySum(Last):
+    """ Monthly sum the values of all monitors """
     name = 'monthly-sum'
     verbose_name = _("Monthly Sum")
     
@@ -50,8 +52,13 @@ class MonthlySum(Last):
 
 
 class MonthlyAvg(MonthlySum):
+    """ sum of the monthly averages of each monitor """
     name = 'monthly-avg'
     verbose_name = _("Monthly AVG")
+    
+    def filter(self, dataset):
+        qs = super(MonthlyAvg, self).filter(dataset)
+        return qs.order_by('created_at')
     
     def get_epoch(self):
         today = timezone.now()
@@ -64,21 +71,27 @@ class MonthlyAvg(MonthlySum):
     
     def compute_usage(self, dataset):
         result = 0
-        try:
-            last = dataset.latest()
-        except dataset.model.DoesNotExist:
+        has_result = False
+        for monitor, dataset in dataset.group_by('monitor').items():
+            try:
+                last = dataset[-1]
+            except IndexError:
+                continue
+            epoch = self.get_epoch()
+            total = (last.created_at-epoch).total_seconds()
+            ini = epoch
+            for data in dataset:
+                has_result = True
+                slot = (data.created_at-ini).total_seconds()
+                result += data.value * decimal.Decimal(str(slot/total))
+                ini = data.created_at
+        if has_result:
             return result
-        epoch = self.get_epoch()
-        total = (last.created_at-epoch).total_seconds()
-        ini = epoch
-        for data in dataset:
-            slot = (data.created_at-ini).total_seconds()
-            result += data.value * decimal.Decimal(str(slot/total))
-            ini = data.created_at
-        return result
+        return None
 
 
 class Last10DaysAvg(MonthlyAvg):
+    """ sum of the last 10 days averages of each monitor """
     name = 'last-10-days-avg'
     verbose_name = _("Last 10 days AVG")
     days = 10
@@ -88,4 +101,5 @@ class Last10DaysAvg(MonthlyAvg):
         return today - datetime.timedelta(days=self.days)
     
     def filter(self, dataset):
-        return dataset.filter(created_at__gt=self.get_epoch())
+        epoch = self.get_epoch()
+        return dataset.filter(created_at__gt=epoch).order_by('created_at')

@@ -5,14 +5,15 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import change_url
+from orchestra.admin.utils import change_url, get_modeladmin
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
+from .filters import HasWebsiteListFilter
+from .models import WebApp, WebAppOption
 from .options import AppOption
 from .types import AppType
-from .models import WebApp, WebAppOption
 
 
 class WebAppOptionInline(admin.TabularInline):
@@ -36,7 +37,9 @@ class WebAppOptionInline(admin.TabularInline):
                 plugin = self.parent_object.type_class
             else:
                 request = kwargs['request']
-                plugin = AppType.get(request.GET['type'])
+                webapp_modeladmin = get_modeladmin(self.parent_model)
+                plugin_value = webapp_modeladmin.get_plugin_value(request)
+                plugin = AppType.get(plugin_value)
             kwargs['choices'] = plugin.get_options_choices()
             # Help text based on select widget
             target = 'this.id.replace("name", "value")'
@@ -46,7 +49,7 @@ class WebAppOptionInline(admin.TabularInline):
 
 class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_detail', 'display_websites', 'account_link')
-    list_filter = ('type',)
+    list_filter = ('type', HasWebsiteListFilter)
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link', )
     change_readonly_fields = ('name', 'type', 'display_websites')

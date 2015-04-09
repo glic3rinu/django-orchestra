@@ -1,23 +1,28 @@
+import textwrap
+
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController, replace
 
-from . import WebAppServiceMixin
+from .php import PHPBackend
 
 
-class SymbolicLinkBackend(WebAppServiceMixin, ServiceController):
+class SymbolicLinkBackend(PHPBackend, ServiceController):
     verbose_name = _("Symbolic link webapp")
     model = 'webapps.WebApp'
     default_route_match = "webapp.type == 'symbolic-link'"
     
-    def save(self, webapp):
-        context = self.get_context(webapp)
-        self.append("ln -s '%(link_path)s' %(app_path)s" % context)
-        self.append("chown -h %(user)s:%(group)s %(app_path)s" % context)
+    def create_webapp_dir(self, context):
+        self.append(textwrap.dedent("""\
+            if [[ ! -e %(app_path)s ]]; then
+                ln -s '%(link_path)s' %(app_path)s
+            fi
+            chown -h %(user)s:%(group)s %(app_path)s
+            """) % context
+        )
     
-    def delete(self, webapp):
-        context = self.get_context(webapp)
-        self.delete_webapp_dir(context)
+    def set_under_construction(self, context):
+        pass
     
     def get_context(self, webapp):
         context = super(SymbolicLinkBackend, self).get_context(webapp)

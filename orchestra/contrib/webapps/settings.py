@@ -13,6 +13,11 @@ WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
     '/opt/php/5.4/socks/%(user)s-%(app_name)s.sock'
 )
 
+WEBAPPS_FPM_DEFAULT_MAX_CHILDREN = getattr(settings, 'WEBAPPS_FPM_DEFAULT_MAX_CHILDREN',
+    3
+)
+
+
 WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
     '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf')
 
@@ -145,7 +150,6 @@ WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
     'orchestra.contrib.webapps.options.PHPMagicQuotesGPC',
     'orchestra.contrib.webapps.options.PHPMagicQuotesRuntime',
     'orchestra.contrib.webapps.options.PHPMaginQuotesSybase',
-    'orchestra.contrib.webapps.options.PHPMaxExecutonTime',
     'orchestra.contrib.webapps.options.PHPMaxInputTime',
     'orchestra.contrib.webapps.options.PHPMaxInputVars',
     'orchestra.contrib.webapps.options.PHPMemoryLimit',
@@ -170,4 +174,9 @@ WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
 
 WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = getattr(settings, 'WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST',
     'mysql.{}'.format(ORCHESTRA_BASE_DOMAIN)
+)
+
+
+WEBAPPS_MOVE_ON_DELETE_PATH = getattr(settings, 'WEBAPPS_MOVE_ON_DELETE_PATH',
+    ''
 )

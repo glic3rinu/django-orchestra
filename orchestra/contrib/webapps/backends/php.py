@@ -76,27 +76,44 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         self.delete_webapp_dir(context)
     
     def delete_fpm(self, webapp, context):
-        self.append("rm -f %(fpm_path)s" % context)
+        # Better not delete a pool used by other apps
+        if not self.MERGE:
+            self.append("rm -f %(fpm_path)s" % context)
     
     def delete_fcgid(self, webapp, context):
-        self.append("rm -f %(wrapper_path)s" % context)
-        self.append("rm -f %(cmd_options_path)s" % context)
+        # Better not delete a wrapper used by other apps
+        if not self.MERGE:
+            self.append("rm -f %(wrapper_path)s" % context)
+            self.append("rm -f %(cmd_options_path)s" % context)
+    
+    def prepare(self):
+        super(PHPBackend, self).prepare()
+        # Coordinate apache restart with php backend in order not to overdo it
+        self.append('echo "PHPBackend" >> /dev/shm/restart.apache2')
     
     def commit(self):
-        if self.content:
-            self.append(textwrap.dedent("""
-                if [[ $UPDATEDFPM == 1 ]]; then
-                    service php5-fpm reload
-                    service php5-fpm start
-                fi
-                """)
-            )
-            self.append(textwrap.dedent("""\
-                if [[ $UPDATED_APACHE == 1 ]]; then
+        self.append(textwrap.dedent("""
+            if [[ $UPDATEDFPM == 1 ]]; then
+                service php5-fpm reload
+                service php5-fpm start
+            fi
+            # Coordinate apache restart with apache backend
+            locked=1
+            state="$(grep -v 'PHPBackend' /dev/shm/restart.apache2)" || locked=0
+            echo -n "$state" > /dev/shm/restart.apache2
+            if [[ $UPDATED_APACHE == 1 ]]; then
+                if [[ $locked == 0 ]]; then
                     service apache2 reload
+                else
+                    echo "PHPBackend RESTART" >> /dev/shm/restart.apache2
                 fi
-                """)
-            )
+            elif [[ "$state" =~ .*RESTART$ ]]; then
+                rm /dev/shm/restart.apache2
+                service apache2 reload
+            fi
+            """)
+        )
+        super(PHPBackend, self).commit()
     
     def get_fpm_config(self, webapp, context):
         merge = settings.WEBAPPS_MERGE_PHP_WEBAPPS

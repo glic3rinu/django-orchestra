@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 
 from django.db import models
 from django.db.models.signals import pre_save, pre_delete
@@ -56,9 +57,7 @@ class WebApp(models.Model):
     
     @cached
     def get_options(self):
-        return {
-            opt.name: opt.value for opt in self.options.all()
-        }
+        return OrderedDict((opt.name, opt.value) for opt in self.options.all())
     
     def get_directive(self):
         return self.type_instance.get_directive()

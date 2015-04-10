@@ -56,7 +56,7 @@ class PHPAppOption(AppOption):
         super(PHPAppOption, self).validate()
         if self.deprecated:
             php_version = self.instance.webapp.type_instance.get_php_version_number()
-            if php_version and php_version > self.deprecated:
+            if php_version and self.deprecated and float(php_version) > self.deprecated:
                 raise ValidationError(
                     _("This option is deprecated since PHP version %s.") % str(self.deprecated)
                 )
@@ -76,7 +76,8 @@ class Timeout(AppOption):
     # FPM pm.request_terminate_timeout
     # PHP max_execution_time ini
     verbose_name = _("Process timeout")
-    help_text = _("Maximum time in seconds allowed for a request to complete (a number between 0 and 999).")
+    help_text = _("Maximum time in seconds allowed for a request to complete (a number between 0 and 999).<br>"
+                  "Also sets <tt>max_request_time</tt> when php-cgi is used.")
     regex = r'^[0-9]{1,3}$'
     group = AppOption.PROCESS
 
@@ -94,7 +95,7 @@ class Processes(AppOption):
 class PHPEnabledFunctions(PHPAppOption):
     name = 'enabled_functions'
     verbose_name = _("Enabled functions")
-    help_text = ' '.join(settings.WEBAPPS_PHP_DISABLED_FUNCTIONS)
+    help_text = ','.join(settings.WEBAPPS_PHP_DISABLED_FUNCTIONS)
     regex = r'^[\w\.,-]+$'
 
 
@@ -145,7 +146,7 @@ class PHPDisplayErrors(PHPAppOption):
     name = 'display_errors'
     verbose_name = _("Display errors")
     help_text = _("Determines whether errors should be printed to the screen as part of the output or "
-                "if they should be hidden from the user (On or Off).")
+                  "if they should be hidden from the user (On or Off).")
     regex = r'^(On|Off|on|off)$'
 
 
@@ -159,7 +160,7 @@ class PHPMagicQuotesGPC(PHPAppOption):
     name = 'magic_quotes_gpc'
     verbose_name = _("Magic quotes GPC")
     help_text = _("Sets the magic_quotes state for GPC (Get/Post/Cookie) operations (On or Off) "
-                "<b>DEPRECATED as of PHP 5.3.0</b>.")
+                  "<b>DEPRECATED as of PHP 5.3.0</b>.")
     regex = r'^(On|Off|on|off)$'
     deprecated = 5.3
 
@@ -168,7 +169,7 @@ class PHPMagicQuotesRuntime(PHPAppOption):
     name = 'magic_quotes_runtime'
     verbose_name = _("Magic quotes runtime")
     help_text = _("Functions that return data from any sort of external source will have quotes escaped "
-                "with a backslash (On or Off) <b>DEPRECATED as of PHP 5.3.0</b>.")
+                  "with a backslash (On or Off) <b>DEPRECATED as of PHP 5.3.0</b>.")
     regex = r'^(On|Off|on|off)$'
     deprecated = 5.3
 
@@ -200,7 +201,7 @@ class PHPMemoryLimit(PHPAppOption):
     name = 'memory_limit'
     verbose_name = _("Memory limit")
     help_text = _("This sets the maximum amount of memory in bytes that a script is allowed to allocate "
-                "(Value between 0M and 999M).")
+                  "(Value between 0M and 999M).")
     regex = r'^[0-9]{1,3}M$'
 
 
@@ -222,7 +223,7 @@ class PHPRegisterGlobals(PHPAppOption):
     name = 'register_globals'
     verbose_name = _("Register globals")
     help_text = _("Whether or not to register the EGPCS (Environment, GET, POST, Cookie, Server) "
-                "variables as global variables (On or Off).")
+                  "variables as global variables (On or Off).")
     regex = r'^(On|Off|on|off)$'
 
 
@@ -235,21 +236,21 @@ class PHPPostMaxSize(PHPAppOption):
 
 class PHPSendmailPath(PHPAppOption):
     name = 'sendmail_path'
-    verbose_name = _("sendmail_path")
+    verbose_name = _("Sendmail path")
     help_text = _("Where the sendmail program can be found.")
     regex = r'^[^ ]+$'
 
 
 class PHPSessionBugCompatWarn(PHPAppOption):
     name = 'session.bug_compat_warn'
-    verbose_name = _("session.bug_compat_warn")
+    verbose_name = _("Session bug compat warning")
     help_text = _("Enables an PHP bug on session initialization for legacy behaviour (On or Off).")
     regex = r'^(On|Off|on|off)$'
 
 
 class PHPSessionAutoStart(PHPAppOption):
     name = 'session.auto_start'
-    verbose_name = _("session.auto_start")
+    verbose_name = _("Session auto start")
     help_text = _("Specifies whether the session module starts a session automatically on request "
                 "startup (On or Off).")
     regex = r'^(On|Off|on|off)$'
@@ -287,7 +288,7 @@ class PHPSuhosinRequestMaxVars(PHPAppOption):
 
 class PHPSuhosinSessionEncrypt(PHPAppOption):
     name = 'suhosin.session.encrypt'
-    verbose_name = _("suhosin.session.encrypt")
+    verbose_name = _("Suhosin session encrypt")
     help_text = _("On or Off")
     regex = r'^(On|Off|on|off)$'
 
@@ -301,13 +302,13 @@ class PHPSuhosinSimulation(PHPAppOption):
 
 class PHPSuhosinExecutorIncludeWhitelist(PHPAppOption):
     name = 'suhosin.executor.include.whitelist'
-    verbose_name = _("suhosin.executor.include.whitelist")
+    verbose_name = _("Suhosin executor include whitelist")
     regex = r'.*$'
 
 
 class PHPUploadMaxFileSize(PHPAppOption):
     name = 'upload_max_filesize'
-    verbose_name = _("upload_max_filesize")
+    verbose_name = _("Upload max filezise")
     help_text = _("Value between 0M and 999M.")
     regex = r'^[0-9]{1,3}M$'
 

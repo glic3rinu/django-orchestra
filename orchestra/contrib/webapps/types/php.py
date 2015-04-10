@@ -1,5 +1,6 @@
 import os
 import re
+from collections import OrderedDict
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
@@ -60,16 +61,16 @@ class PHPApp(AppType):
     
     @cached
     def get_php_options(self):
-        php_version = self.get_php_version_number()
+        php_version = float(self.get_php_version_number())
         php_options = AppOption.get_option_groups()[AppOption.PHP]
-        return [op for op in php_options if getattr(self, 'deprecated', 999) > php_version]
+        return [op for op in php_options if (op.deprecated or 999) > php_version]
     
     def get_php_init_vars(self, merge=False):
         """
         process php options for inclusion on php.ini
         per_account=True merges all (account, webapp.type) options
         """
-        init_vars = {}
+        init_vars = OrderedDict()
         options = self.instance.options.all()
         if merge:
             # Get options from the same account and php_version webapps
@@ -108,6 +109,7 @@ class PHPApp(AppType):
         context = super(PHPApp, self).get_directive_context()
         context.update({
             'php_version': self.get_php_version(),
+            'php_version_number': self.get_php_version_number(),
         })
         return context
     
@@ -134,4 +136,4 @@ class PHPApp(AppType):
             raise ValueError("No version number matches for '%s'" % php_version)
         if len(number) > 1:
             raise ValueError("Multiple version number matches for '%s'" % php_version)
-        return float(number[0])
+        return number[0]

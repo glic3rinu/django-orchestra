@@ -19,6 +19,7 @@ class Apache2Backend(ServiceController):
     model = 'websites.Website'
     related_models = (
         ('websites.Content', 'website'),
+        ('webapps.WebApp', 'website_set'),
     )
     verbose_name = _("Apache 2")
     
@@ -41,9 +42,9 @@ class Apache2Backend(ServiceController):
         return Template(textwrap.dedent("""\
             <VirtualHost {{ ip }}:{{ port }}>
                 IncludeOptional /etc/apache2/site[s]-override/{{ site_unique_name }}.con[f]
-                ServerName {{ site.domains.all|first }}\
-            {% if site.domains.all|slice:"1:" %}
-                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}\
+                ServerName {{ server_name }}\
+            {% if server_alias %}
+                ServerAlias {{ server_alias|join:' ' }}{% endif %}\
             {% if access_log %}
                 CustomLog {{ access_log }} common{% endif %}\
             {% if error_log %}
@@ -59,9 +60,9 @@ class Apache2Backend(ServiceController):
         context['port'] = self.HTTP_PORT
         return Template(textwrap.dedent("""
             <VirtualHost {{ ip }}:{{ port }}>
-                ServerName {{ site.domains.all|first }}\
-            {% if site.domains.all|slice:"1:" %}
-                ServerAlias {{ site.domains.all|slice:"1:"|join:' ' }}{% endif %}\
+                ServerName {{ server_name }}\
+            {% if server_alias %}
+                ServerAlias {{ server_alias|join:' ' }}{% endif %}\
             {% if access_log %}
                 CustomLog {{ access_log }} common{% endif %}\
             {% if error_log %}
@@ -75,33 +76,67 @@ class Apache2Backend(ServiceController):
     
     def save(self, site):
         context = self.get_context(site)
-        apache_conf = '# %(banner)s\n' % context
-        if site.protocol in (site.HTTP, site.HTTP_AND_HTTPS):
-            apache_conf += self.render_virtual_host(site, context, ssl=False)
-        if site.protocol in (site.HTTP_AND_HTTPS, site.HTTPS_ONLY, site.HTTPS):
-            apache_conf += self.render_virtual_host(site, context, ssl=True)
-        if site.protocol == site.HTTPS_ONLY:
-            apache_conf += self.render_redirect_https(context)
-        context['apache_conf'] = apache_conf.replace("'", '"')
-        self.append(textwrap.dedent("""\
-            apache_conf='%(apache_conf)s'
-            {
-                echo -e "${apache_conf}" | diff -N -I'^\s*#' %(sites_available)s -
-            } || {
-                echo -e "${apache_conf}" > %(sites_available)s
-                UPDATED=1
-            }""") % context
-        )
-        self.enable_or_disable(site)
+        if context['server_name']:
+            apache_conf = '# %(banner)s\n' % context
+            if site.protocol in (site.HTTP, site.HTTP_AND_HTTPS):
+                apache_conf += self.render_virtual_host(site, context, ssl=False)
+            if site.protocol in (site.HTTP_AND_HTTPS, site.HTTPS_ONLY, site.HTTPS):
+                apache_conf += self.render_virtual_host(site, context, ssl=True)
+            if site.protocol == site.HTTPS_ONLY:
+                apache_conf += self.render_redirect_https(context)
+            context['apache_conf'] = apache_conf.replace("'", '"')
+            self.append(textwrap.dedent("""\
+                apache_conf='%(apache_conf)s'
+                {
+                    echo -e "${apache_conf}" | diff -N -I'^\s*#' %(sites_available)s -
+                } || {
+                    echo -e "${apache_conf}" > %(sites_available)s
+                    UPDATED=1
+                }""") % context
+            )
+        if context['server_name'] and site.active:
+            self.append(textwrap.dedent("""\
+                if [[ ! -f %(sites_enabled)s ]]; then
+                    a2ensite %(site_unique_name)s.conf
+                    UPDATED=1
+                fi""") % context
+            )
+        else:
+            self.append(textwrap.dedent("""\
+                if [[ -f %(sites_enabled)s ]]; then
+                    a2dissite %(site_unique_name)s.conf;
+                    UPDATED=1
+                fi""") % context
+            )
     
     def delete(self, site):
         context = self.get_context(site)
         self.append("a2dissite %(site_unique_name)s.conf && UPDATED=1" % context)
         self.append("rm -f %(sites_available)s" % context)
     
+    def prepare(self):
+        super(Apache2Backend, self).prepare()
+        # Coordinate apache restart with php backend in order not to overdo it
+        self.append('echo "Apache2Backend" >> /dev/shm/restart.apache2')
+    
     def commit(self):
         """ reload Apache2 if necessary """
-        self.append('if [[ $UPDATED == 1 ]]; then service apache2 reload; fi')
+        self.append(textwrap.dedent("""\
+            locked=1
+            state="$(grep -v 'Apache2Backend' /dev/shm/restart.apache2)" || locked=0
+            echo -n "$state" > /dev/shm/restart.apache2
+            if [[ $UPDATED == 1 ]]; then
+                if [[ $locked == 0 ]]; then
+                    service apache2 reload
+                else
+                    echo "Apache2Backend RESTART" >> /dev/shm/restart.apache2
+                fi
+            elif [[ "$state" =~ .*RESTART$ ]]; then
+                rm /dev/shm/restart.apache2
+                service apache2 reload
+            fi""")
+        )
+        super(Apache2Backend, self).commit()
     
     def get_directives(self, directive, context):
         method, args = directive[0], directive[1:]
@@ -122,9 +157,15 @@ class Apache2Backend(ServiceController):
     
     def get_static_directives(self, context, app_path):
         context['app_path'] = os.path.normpath(app_path % context)
-        location = "%(location)s/" % context
-        directive = "Alias %(location)s/ %(app_path)s/" % context
-        return [(location, directive)]
+        directive = self.get_location_filesystem_map(context)
+        return [
+            (context['location'], directive),
+        ]
+    
+    def get_location_filesystem_map(self, context):
+        if not context['location']:
+            return 'DocumentRoot %(app_path)s' % context
+        return 'Alias %(location)s %(app_path)s' % context
     
     def get_fpm_directives(self, context, socket, app_path):
         if ':' in socket:
@@ -139,28 +180,28 @@ class Apache2Backend(ServiceController):
             'app_path': os.path.normpath(app_path),
             'socket': socket,
         })
-        location = "%(location)s/" % context
-        directives = textwrap.dedent("""\
-            ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}
-            Alias %(location)s/ %(app_path)s/""".format(target=target) % context
-        )
-        return [(location, directives)]
+        directives = "ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}\n".format(target=target) % context
+        directives += self.get_location_filesystem_map(context)
+        return [
+            (context['location'], directives),
+        ]
     
     def get_fcgid_directives(self, context, app_path, wrapper_path):
         context.update({
             'app_path': os.path.normpath(app_path),
             'wrapper_path': wrapper_path,
         })
-        location = "%(location)s/" % context
-        directives = textwrap.dedent("""\
-            Alias %(location)s/ %(app_path)s/
+        directives = self.get_location_filesystem_map(context)
+        directives += textwrap.dedent("""
             ProxyPass %(location)s/ !
             <Directory %(app_path)s/>
                 Options +ExecCGI
                 AddHandler fcgid-script .php
                 FcgidWrapper %(wrapper_path)s
             </Directory>""") % context
-        return [(location, directives)]
+        return [
+            (context['location'], directives),
+        ]
     
     def get_ssl(self, directives):
         cert = directives.get('ssl-cert')
@@ -177,7 +218,9 @@ class Apache2Backend(ServiceController):
         config += "SSLCertificateKeyFile %s\n" % key[0]
         if ca:
            config += "SSLCACertificateFile %s\n" % ca[0]
-        return [('', config)]
+        return [
+            ('', config),
+        ]
         
     def get_security(self, directives):
         security = []
@@ -201,20 +244,27 @@ class Apache2Backend(ServiceController):
                 redirect = "RedirectMatch %s %s" % (location, target)
             else:
                 redirect = "Redirect %s %s" % (location, target)
-            redirects.append((location, redirect))
+            redirects.append(
+                (location, redirect)
+            )
         return redirects
     
     def get_proxies(self, directives):
         proxies = []
         for proxy in directives.get('proxy', []):
-            location, target = proxy.split()
+            proxy = proxy.split()
+            location = proxy[0]
+            target = proxy[1]
+            options = ' '.join(proxy[2:])
             location = normurlpath(location)
             proxy = textwrap.dedent("""\
-                ProxyPass {location}/ {target}
+                ProxyPass {location}/ {target} {options}
                 ProxyPassReverse {location}/ {target}""".format(
-                    location=location, target=target)
+                    location=location, target=target, options=options)
             )
-            proxies.append((location, proxy))
+            proxies.append(
+                (location, proxy)
+            )
         return proxies
     
     def get_saas(self, directives):
@@ -229,23 +279,6 @@ class Apache2Backend(ServiceController):
                     saas += self.get_directives(directive, context)
         return saas
     
-    def enable_or_disable(self, site):
-        context = self.get_context(site)
-        if site.is_active:
-            self.append(textwrap.dedent("""\
-                if [[ ! -f %(sites_enabled)s ]]; then
-                    a2ensite %(site_unique_name)s.conf
-                    UPDATED=1
-                fi""") % context
-            )
-        else:
-            self.append(textwrap.dedent("""\
-                if [[ -f %(sites_enabled)s ]]; then
-                    a2dissite %(site_unique_name)s.conf;
-                    UPDATED=1
-                fi""") % context
-            )
-    
     def get_username(self, site):
         option = site.get_directives().get('user_group')
         if option:
@@ -259,10 +292,21 @@ class Apache2Backend(ServiceController):
             return group
         return site.get_groupname()
     
+    def get_server_names(self, site):
+        server_name = None
+        server_alias = []
+        for domain in site.domains.all():
+            if not server_name and not domain.name.startswith('*'):
+                server_name = domain.name
+            else:
+                server_alias.append(domain.name)
+        return server_name, server_alias
+    
     def get_context(self, site):
         base_apache_conf = settings.WEBSITES_BASE_APACHE_CONF
         sites_available = os.path.join(base_apache_conf, 'sites-available')
         sites_enabled = os.path.join(base_apache_conf, 'sites-enabled')
+        server_name, server_alias = self.get_server_names(site)
         context = {
             'site': site,
             'site_name': site.name,
@@ -270,6 +314,8 @@ class Apache2Backend(ServiceController):
             'site_unique_name': '0-'+site.unique_name,
             'user': self.get_username(site),
             'group': self.get_groupname(site),
+            'server_name': server_name,
+            'server_alias': server_alias,
             # TODO remove '0-'
             'sites_enabled': "%s.conf" % os.path.join(sites_enabled, '0-'+site.unique_name),
             'sites_available': "%s.conf" % os.path.join(sites_available, '0-'+site.unique_name),

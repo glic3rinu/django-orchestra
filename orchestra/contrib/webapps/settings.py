@@ -110,6 +110,7 @@ WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_
 #        WEBAPPS_TYPES[webapp_type] = value
 
 
+
 WEBAPPS_PHP_DISABLED_FUNCTIONS = getattr(settings, 'WEBAPPS_PHP_DISABLED_FUNCTION', [
     'exec',
     'passthru',

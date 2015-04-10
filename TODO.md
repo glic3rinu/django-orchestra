@@ -283,6 +283,9 @@ https://code.djangoproject.com/ticket/24576
 * MultiCHoiceField proper serialization
 
 # Apache restart fails: detect if appache running, and execute start
-# PHP backend is retarded does not detect well the version
 # Change crons, create cron for deleted webapps and users
 * UNIFY PHP FPM settings name
+# virtualhost name name-account?
+# php version update should trigger webiste upgrade (wrapper name/fpm config for apache), public root and other config also needs apache to execute
+* add a delay to changes on the webserver apache to no overwelm it with backend executions?
+# Delete webapps deletes wrapper that may be used for other sites, maybe merging webapps is a bad idea after all?

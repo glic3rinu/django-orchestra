@@ -88,7 +88,7 @@ class Processes(AppOption):
     # FPM pm.max_children
     verbose_name = _("Number of processes")
     help_text = _("Maximum number of children that can be alive at the same time (a number between 0 and 9).")
-    regex = r'^[0-9]$'
+    regex = r'^[0-9]{1,2}$'
     group = AppOption.PROCESS
 
 

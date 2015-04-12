@@ -286,6 +286,14 @@ https://code.djangoproject.com/ticket/24576
 # Change crons, create cron for deleted webapps and users
 * UNIFY PHP FPM settings name
 # virtualhost name name-account?
-# php version update should trigger webiste upgrade (wrapper name/fpm config for apache), public root and other config also needs apache to execute
 * add a delay to changes on the webserver apache to no overwelm it with backend executions?
-# Delete webapps deletes wrapper that may be used for other sites, maybe merging webapps is a bad idea after all?
+* replace unique_name by natural_key?
+* do not require contact or create default
+* send signals for backend triggers
+* monitor resources with multiple backends not possible to identify the correct last execution, allow to specify backends only once or change backend.model = 'resources.MonitorData'
+* force ignore slack billing period overridig when billing
+* fpm reload starts new pools?
+* more processes for webmail, or use fpm pool
+* rename resource.monitors to resource.backends ?
+
+* abstract model classes enabling overriding?

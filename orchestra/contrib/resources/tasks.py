@@ -12,7 +12,7 @@ def monitor(resource_id, ids=None, async=True):
     
     resource = Resource.objects.get(pk=resource_id)
     resource_model = resource.content_type.model_class()
-    operations = []
+    logs = []
     # Execute monitors
     for monitor_name in resource.monitors:
         backend = ServiceMonitor.get_backend(monitor_name)
@@ -28,10 +28,9 @@ def monitor(resource_id, ids=None, async=True):
         monitorings = []
         for obj in model.objects.filter(**kwargs):
             op = Operation(backend, obj, Operation.MONITOR)
-            operations.append(op)
             monitorings.append(op)
         # TODO async=True only when running with celery
-        Operation.execute(monitorings, async=async)
+        logs += Operation.execute(monitorings, async=async)
     
     kwargs = {'id__in': ids} if ids else {}
     # Update used resources and trigger resource exceeded and revovery
@@ -50,4 +49,4 @@ def monitor(resource_id, ids=None, async=True):
                 op = Operation(backend, obj, Operation.RECOVERY)
                 triggers.append(op)
     Operation.execute(triggers)
-    return operations
+    return logs

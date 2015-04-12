@@ -142,27 +142,28 @@ def collect(instance, action, **kwargs):
     operations = kwargs.get('operations', set())
     route_cache = kwargs.get('route_cache', {})
     for backend_cls in ServiceBackend.get_backends():
-        # Check if there exists a related instance to be executed for this backend
+        # Check if there exists a related instance to be executed for this backend and action
         instances = []
-        if backend_cls.is_main(instance):
-            instances = [(instance, action)]
-        else:
-            candidate = backend_cls.get_related(instance)
-            if candidate:
-                if candidate.__class__.__name__ == 'ManyRelatedManager':
-                    if 'pk_set' in kwargs:
-                        # m2m_changed signal
-                        candidates = kwargs['model'].objects.filter(pk__in=kwargs['pk_set'])
+        if action in backend_cls.actions:
+            if backend_cls.is_main(instance):
+                instances = [(instance, action)]
+            else:
+                candidate = backend_cls.get_related(instance)
+                if candidate:
+                    if candidate.__class__.__name__ == 'ManyRelatedManager':
+                        if 'pk_set' in kwargs:
+                            # m2m_changed signal
+                            candidates = kwargs['model'].objects.filter(pk__in=kwargs['pk_set'])
+                        else:
+                            candidates = candidate.all()
                     else:
-                        candidates = candidate.all()
-                else:
-                    candidates = [candidate]
-                for candidate in candidates:
-                    # Check if a delete for candidate is in operations
-                    delete_mock = Operation(backend_cls, candidate, Operation.DELETE)
-                    if delete_mock not in operations:
-                        # related objects with backend.model trigger save()
-                        instances.append((candidate, Operation.SAVE))
+                        candidates = [candidate]
+                    for candidate in candidates:
+                        # Check if a delete for candidate is in operations
+                        delete_mock = Operation(backend_cls, candidate, Operation.DELETE)
+                        if delete_mock not in operations:
+                            # related objects with backend.model trigger save()
+                            instances.append((candidate, Operation.SAVE))
         for selected, iaction in instances:
             # Maintain consistent state of operations based on save/delete behaviour
             # Prevent creating a deleted selected by deleting existing saves

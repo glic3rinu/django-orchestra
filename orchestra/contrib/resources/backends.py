@@ -42,7 +42,7 @@ class ServiceMonitor(ServiceBackend):
         from .models import MonitorData
         try:
             return MonitorData.objects.filter(content_type=self.content_type,
-                                              object_id=object_id).latest()
+                monitor=type(self).get_name(), object_id=object_id).latest()
         except MonitorData.DoesNotExist:
             return None
         

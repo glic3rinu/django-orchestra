@@ -33,7 +33,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 echo -e "${fpm_config}" | diff -N -I'^\s*;;' %(fpm_path)s -
             } || {
                 echo -e "${fpm_config}" > %(fpm_path)s
-                UPDATEDFPM=1
+                UPDATED_FPM=1
             }
             """) % context
         )
@@ -46,7 +46,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 echo -e "${wrapper}" | diff -N -I'^\s*#' %(wrapper_path)s -
             } || {
                 echo -e "${wrapper}" > %(wrapper_path)s
-                [[ ${UPDATED_APACHE} -eq 0 ]] && UPDATED_APACHE=%(is_mounted)i
+                if [[ %(is_mounted)i -eq 1 ]]; then
+                    # Reload fcgid wrapper
+                    pkill -SIGHUP -U %(user)s "^%(php_binary)s$" || true
+                fi
             }
             """) % context
         )
@@ -93,15 +96,14 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def commit(self):
         self.append(textwrap.dedent("""
-            if [[ $UPDATEDFPM == 1 ]]; then
+            if [[ $UPDATED_FPM -eq 1 ]]; then
                 service php5-fpm reload
-                service php5-fpm start
             fi
             # Coordinate apache restart with apache backend
             locked=1
             state="$(grep -v 'PHPBackend' /dev/shm/restart.apache2)" || locked=0
             echo -n "$state" > /dev/shm/restart.apache2
-            if [[ $UPDATED_APACHE == 1 ]]; then
+            if [[ $UPDATED_APACHE -eq 1 ]]; then
                 if [[ $locked == 0 ]]; then
                     service apache2 reload
                 else
@@ -151,18 +153,19 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             init_vars = [ "-d %s='%s'" % (k, v.replace("'", '"')) for k,v in init_vars.items() ]
         init_vars = ' \\\n    '.join(init_vars)
         context.update({
-            'php_binary': os.path.normpath(settings.WEBAPPS_PHP_CGI_BINARY_PATH % context),
+            'php_binary_path': os.path.normpath(settings.WEBAPPS_PHP_CGI_BINARY_PATH % context),
             'php_rc': os.path.normpath(settings.WEBAPPS_PHP_CGI_RC_DIR % context),
             'php_ini_scan': os.path.normpath(settings.WEBAPPS_PHP_CGI_INI_SCAN_DIR % context),
             'php_init_vars': init_vars,
         })
+        context['php_binary'] = os.path.basename(context['php_binary_path'])
         return textwrap.dedent("""\
             #!/bin/sh
             # %(banner)s
             export PHPRC=%(php_rc)s
             export PHP_INI_SCAN_DIR=%(php_ini_scan)s
             export PHP_FCGI_MAX_REQUESTS=%(max_requests)s
-            exec %(php_binary)s %(php_init_vars)s""") % context
+            exec %(php_binary_path)s %(php_init_vars)s""") % context
     
     def get_fcgid_cmd_options(self, webapp, context):
         maps = {

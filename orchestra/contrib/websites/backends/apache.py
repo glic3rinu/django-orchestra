@@ -25,7 +25,7 @@ class Apache2Backend(ServiceController):
     
     def render_virtual_host(self, site, context, ssl=False):
         context['port'] = self.HTTPS_PORT if ssl else self.HTTP_PORT
-        extra_conf = self.get_content_directives(site)
+        extra_conf = self.get_content_directives(site, context)
         directives = site.get_directives()
         if ssl:
             extra_conf += self.get_ssl(directives)
@@ -147,11 +147,11 @@ class Apache2Backend(ServiceController):
                     (self.__class__.__name__, method))
         return method(context, *args)
     
-    def get_content_directives(self, site):
+    def get_content_directives(self, site, context):
         directives = []
         for content in site.content_set.all():
             directive = content.webapp.get_directive()
-            context = self.get_content_context(content)
+            self.set_content_context(content, context)
             directives += self.get_directives(directive, context)
         return directives
     
@@ -189,15 +189,27 @@ class Apache2Backend(ServiceController):
     def get_fcgid_directives(self, context, app_path, wrapper_path):
         context.update({
             'app_path': os.path.normpath(app_path),
-            'wrapper_path': wrapper_path,
+            'wrapper_name': os.path.basename(wrapper_path),
         })
-        directives = self.get_location_filesystem_map(context)
+        directives = ''
+        # This Alias trick is used instead of FcgidWrapper because we don't want to define
+        # a new fcgid process class each time an app is mounted (num proc limits enforcement).
+        if 'wrapper_dir' not in context:
+            # fcgi-bin only needs to be defined once per vhots
+            context['wrapper_dir'] = os.path.dirname(wrapper_path)
+            directives = textwrap.dedent("""\
+                Alias /fcgi-bin/ %(wrapper_dir)s/
+                <Location /fcgi-bin/>
+                    SetHandler fcgid-script
+                    Options +ExecCGI
+                </Location>
+                """) % context
+        directives += self.get_location_filesystem_map(context)
         directives += textwrap.dedent("""
             ProxyPass %(location)s/ !
             <Directory %(app_path)s/>
-                Options +ExecCGI
-                AddHandler fcgid-script .php
-                FcgidWrapper %(wrapper_path)s
+                AddHandler php-fcgi .php
+                Action php-fcgi /fcgi-bin/%(wrapper_name)s
             </Directory>""") % context
         return [
             (context['location'], directives),
@@ -295,7 +307,7 @@ class Apache2Backend(ServiceController):
     def get_server_names(self, site):
         server_name = None
         server_alias = []
-        for domain in site.domains.all():
+        for domain in site.domains.all().order_by('name'):
             if not server_name and not domain.name.startswith('*'):
                 server_name = domain.name
             else:
@@ -311,29 +323,28 @@ class Apache2Backend(ServiceController):
             'site': site,
             'site_name': site.name,
             'ip': settings.WEBSITES_DEFAULT_IP,
-            'site_unique_name': '0-'+site.unique_name,
+            'site_unique_name': site.unique_name,
             'user': self.get_username(site),
             'group': self.get_groupname(site),
             'server_name': server_name,
             'server_alias': server_alias,
-            # TODO remove '0-'
-            'sites_enabled': "%s.conf" % os.path.join(sites_enabled, '0-'+site.unique_name),
-            'sites_available': "%s.conf" % os.path.join(sites_available, '0-'+site.unique_name),
+            'sites_enabled': "%s.conf" % os.path.join(sites_enabled, site.unique_name),
+            'sites_available': "%s.conf" % os.path.join(sites_available, site.unique_name),
             'access_log': site.get_www_access_log_path(),
             'error_log': site.get_www_error_log_path(),
             'banner': self.get_banner(),
         }
         return replace(context, "'", '"')
     
-    def get_content_context(self, content):
-        context = self.get_context(content.website)
-        context.update({
+    def set_content_context(self, content, context):
+        content_context = {
             'type': content.webapp.type,
             'location': normurlpath(content.path),
             'app_name': content.webapp.name,
             'app_path': content.webapp.get_path(),
-        })
-        return replace(context, "'", '"')
+        }
+        content_context = replace(content_context, "'", '"')
+        context.update(content_context)
 
 
 class Apache2Traffic(ServiceMonitor):

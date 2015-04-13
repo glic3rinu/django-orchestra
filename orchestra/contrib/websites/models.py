@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 
 from django.db import models
 from django.utils.functional import cached_property
@@ -69,8 +70,8 @@ class Website(models.Model):
     
     @cached
     def get_directives(self):
-        directives = {}
-        for opt in self.directives.all():
+        directives = OrderedDict()
+        for opt in self.directives.all().order_by('name', 'value'):
             try:
                 directives[opt.name].append(opt.value)
             except KeyError:
@@ -104,7 +105,7 @@ class Website(models.Model):
 
 class WebsiteDirective(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
-            related_name='directives')
+        related_name='directives')
     name = models.CharField(_("name"), max_length=128,
             choices=SiteDirective.get_choices())
     value = models.CharField(_("value"), max_length=256)

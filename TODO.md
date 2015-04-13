@@ -285,15 +285,12 @@ https://code.djangoproject.com/ticket/24576
 # Apache restart fails: detect if appache running, and execute start
 # Change crons, create cron for deleted webapps and users
 * UNIFY PHP FPM settings name
-# virtualhost name name-account?
+# virtualhost name: name-account?
 * add a delay to changes on the webserver apache to no overwelm it with backend executions?
 * replace unique_name by natural_key?
 * do not require contact or create default
 * send signals for backend triggers
-* monitor resources with multiple backends not possible to identify the correct last execution, allow to specify backends only once or change backend.model = 'resources.MonitorData'
 * force ignore slack billing period overridig when billing
 * fpm reload starts new pools?
-* more processes for webmail, or use fpm pool
 * rename resource.monitors to resource.backends ?
-
 * abstract model classes enabling overriding?

@@ -139,7 +139,7 @@ WEBAPPS_ENABLED_OPTIONS = getattr(settings, 'WEBAPPS_ENABLED_OPTIONS', (
     'orchestra.contrib.webapps.options.PublicRoot',
     'orchestra.contrib.webapps.options.Timeout',
     'orchestra.contrib.webapps.options.Processes',
-    'orchestra.contrib.webapps.options.PHPEnabledFunctions',
+    'orchestra.contrib.webapps.options.PHPEnableFunctions',
     'orchestra.contrib.webapps.options.PHPAllowURLInclude',
     'orchestra.contrib.webapps.options.PHPAllowURLFopen',
     'orchestra.contrib.webapps.options.PHPAutoAppendFile',

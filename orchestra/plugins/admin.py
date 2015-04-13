@@ -64,7 +64,8 @@ class SelectPluginAdminMixin(object):
         plugin_value = request.GET.get(self.plugin_field) or request.POST.get(self.plugin_field)
         if not plugin_value and request.method == 'POST':
             # HACK baceuse django add_preserved_filters removes extising queryargs
-            value = re.search(r"type=([^&^']+)[&']", request.META.get('HTTP_REFERER', ''))
+            value = re.search(r"%s=([^&^']+)[&']" % self.plugin_field,
+                    request.META.get('HTTP_REFERER', ''))
             if value:
                 plugin_value = value.groups()[0]
         return plugin_value

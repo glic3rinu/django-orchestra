@@ -57,7 +57,7 @@ class WebApp(models.Model):
     
     @cached
     def get_options(self):
-        return OrderedDict((opt.name, opt.value) for opt in self.options.all())
+        return OrderedDict((opt.name, opt.value) for opt in self.options.all().order_by('name'))
     
     def get_directive(self):
         return self.type_instance.get_directive()

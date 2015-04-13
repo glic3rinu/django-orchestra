@@ -92,9 +92,9 @@ class Processes(AppOption):
     group = AppOption.PROCESS
 
 
-class PHPEnabledFunctions(PHPAppOption):
-    name = 'enabled_functions'
-    verbose_name = _("Enabled functions")
+class PHPEnableFunctions(PHPAppOption):
+    name = 'enable_functions'
+    verbose_name = _("Enable functions")
     help_text = ','.join(settings.WEBAPPS_PHP_DISABLED_FUNCTIONS)
     regex = r'^[\w\.,-]+$'
 

@@ -71,7 +71,7 @@ class PHPApp(AppType):
         per_account=True merges all (account, webapp.type) options
         """
         init_vars = OrderedDict()
-        options = self.instance.options.all()
+        options = self.instance.options.all().order_by('name')
         if merge:
             # Get options from the same account and php_version webapps
             options = []
@@ -84,7 +84,7 @@ class PHPApp(AppType):
         enabled_functions = set()
         for opt in options:
             if opt.name in php_options:
-                if opt.name == 'enabled_functions':
+                if opt.name == 'enable_functions':
                     enabled_functions = enabled_functions.union(set(opt.value.split(',')))
                 else:
                     init_vars[opt.name] = opt.value
@@ -93,7 +93,7 @@ class PHPApp(AppType):
             for function in self.PHP_DISABLED_FUNCTIONS:
                 if function not in enabled_functions:
                     disabled_functions.append(function)
-            init_vars['dissabled_functions'] = ','.join(disabled_functions)
+            init_vars['disable_functions'] = ','.join(disabled_functions)
         timeout = self.instance.options.filter(name='timeout').first()
         if timeout:
             # Give a little slack here

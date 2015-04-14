@@ -99,13 +99,11 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
         return None
     
     @classmethod
-    def get_backends(cls, instance=None, action=None, active=None):
+    def get_backends(cls, instance=None, action=None):
         backends = cls.get_plugins()
         included = []
         # Filter for instance or action
         for backend in backends:
-            if active is not None and backend.get_name() not in active:
-                continue
             include = True
             if instance:
                 opts = instance._meta
@@ -205,5 +203,5 @@ class ServiceController(ServiceBackend):
         """ filter controller classes """
         backends = super(ServiceController, cls).get_backends()
         return [
-            backend for backend in backends if isinstance(backend, ServiceController)
+            backend for backend in backends if issubclass(backend, ServiceController)
         ]

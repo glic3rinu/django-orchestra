@@ -36,7 +36,7 @@ def get_modeladmin(model, import_module=True):
 def insertattr(model, name, value):
     """ Inserts attribute to a modeladmin """
     modeladmin = None
-    if isinstance(model, models.Model)
+    if issubclass(model, models.Model):
         modeladmin = get_modeladmin(model)
         modeladmin_class = type(modeladmin)
     elif not inspect.isclass(model):

@@ -169,10 +169,6 @@ class Route(models.Model):
                 servers.append(route.host)
         return servers
     
-    @classmethod
-    def get_active_backends(cls):
-        return cls.objects.filter(is_active=True).values_list('backend', flat=True)
-    
     def clean(self):
         if not self.match:
             self.match = 'True'

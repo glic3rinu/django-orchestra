@@ -21,7 +21,7 @@ class ServiceMonitor(ServiceBackend):
     def get_plugins(cls):
         """ filter controller classes """
         return [
-            plugin for plugin in cls.plugins if isinstance(plugin, ServiceMonitor)
+            plugin for plugin in cls.plugins if issubclass(plugin, ServiceMonitor)
         ]
     
     @classmethod

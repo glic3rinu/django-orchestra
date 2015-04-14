@@ -6,14 +6,11 @@ from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 from django.http.response import HttpResponseServerError
 
-from orchestra.utils.python import OrderedSet, import_class
+from orchestra.utils.python import OrderedSet
 
-from . import manager, Operation, settings
+from . import manager, Operation
 from .helpers import message_user
 from .models import BackendLog
-
-
-router = import_class(settings.ORCHESTRATION_ROUTER)
 
 
 @receiver(post_save, dispatch_uid='orchestration.post_save_collector')
@@ -67,16 +64,6 @@ class OperationsMiddleware(object):
         return {}
     
     @classmethod
-    def get_active_cache(cls):
-        """ chache the routes to save sql queries """
-        if hasattr(cls.thread_locals, 'request'):
-            request = cls.thread_locals.request
-            if not hasattr(request, 'active_cache'):
-                request.active_cache = router.get_active_backends()
-            return request.active_cache
-        return router.get_active_backends()
-    
-    @classmethod
     def collect(cls, action, **kwargs):
         """ Collects all pending operations derived from model signals """
         request = getattr(cls.thread_locals, 'request', None)
@@ -84,7 +71,6 @@ class OperationsMiddleware(object):
             return
         kwargs['operations'] = cls.get_pending_operations()
         kwargs['route_cache'] = cls.get_route_cache()
-        kwargs['active_backends'] = cls.get_active_cache()
         instance = kwargs.pop('instance')
         manager.collect(instance, action, **kwargs)
     

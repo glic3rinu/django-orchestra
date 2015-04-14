@@ -1,4 +1,3 @@
-
 import logging
 import threading
 import traceback
@@ -141,8 +140,7 @@ def collect(instance, action, **kwargs):
     """ collect operations """
     operations = kwargs.get('operations', set())
     route_cache = kwargs.get('route_cache', {})
-    active_backends = kwargs.get('active_backends', None)
-    for backend_cls in ServiceBackend.get_backends(active=active_backends):
+    for backend_cls in ServiceBackend.get_backends():
         # Check if there exists a related instance to be executed for this backend and action
         instances = []
         if action in backend_cls.actions:

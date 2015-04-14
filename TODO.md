@@ -186,7 +186,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * use server.name | server.address on python backends, like gitlab instead of settings?
 
 * TODO raise404, here and everywhere
-# display subline links on billlines, to show that they exists.
 * update service orders on a celery task? because it take alot
 
 # billline quantity eval('10x100') instead of miningless description '(10*100)' line.verbose_quantity
@@ -246,7 +245,6 @@ celery max-tasks-per-child
 
 * autoscale celery workers http://docs.celeryproject.org/en/latest/userguide/workers.html#autoscaling
 
-* webapp has_website list filter
 
 glic3rinu's django-fluent-dashboard
 * gevent is not ported to python3 :'(
@@ -294,3 +292,6 @@ https://code.djangoproject.com/ticket/24576
 * fpm reload starts new pools?
 * rename resource.monitors to resource.backends ?
 * abstract model classes enabling overriding?
+
+# Ignore superusers & co on billing
+# bill.totals make it 100% computed?

@@ -11,7 +11,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra import plugins
 from orchestra.utils.humanize import text2int
-from orchestra.utils.python import AttrDict
+from orchestra.utils.python import AttrDict, cmp_to_key
 
 from . import settings, helpers
 
@@ -399,6 +399,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                 pend = order.billed_until or order.registered_on
                 pini = pend - rdelta
                 metric = self.get_register_or_renew_events(porders, pini, pend)
+                position = min(position, metric)
                 price = self.get_price(account, metric, position=position, rates=rates)
                 ini = order.billed_until or order.registered_on
                 end = order.new_billed_until
@@ -445,8 +446,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         if self.payment_style == self.PREPAY and self.on_cancel == self.COMPENSATE:
             # Get orders pending for compensation
             givers = list(related_orders.givers(ini, end))
-            givers.sort(cmp=helpers.cmp_billed_until_or_registered_on)
-            orders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
+            givers = sorted(givers, key=cmp_to_key(helpers.cmp_billed_until_or_registered_on))
+            orders = sorted(orders, key=cmp_to_key(helpers.cmp_billed_until_or_registered_on))
             self.assign_compensations(givers, orders, **options)
         
         rates = self.get_rates(account)
@@ -459,7 +460,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                 ini -= rdelta
             porders = related_orders.pricing_orders(ini, end)
             porders = list(set(orders).union(set(porders)))
-            porders.sort(cmp=helpers.cmp_billed_until_or_registered_on)
+            porders = sorted(porders, key=cmp_to_key(helpers.cmp_billed_until_or_registered_on))
             if concurrent:
                 # Periodic billing with no pricing period
                 lines = self.bill_concurrent_orders(account, porders, rates, ini, end)

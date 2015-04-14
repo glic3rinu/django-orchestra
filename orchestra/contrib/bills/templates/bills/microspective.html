@@ -79,7 +79,7 @@
     {% with sublines=line.sublines.all %}
     <span class="{% if not sublines %}last {% endif %}column-id">{{ line.id }}</span>
     <span class="{% if not sublines %}last {% endif %}column-description">{{ line.description }}</span>
-    <span class="{% if not sublines %}last {% endif %}column-quantity">{{ line.quantity|default:"&nbsp;" }}</span>
+    <span class="{% if not sublines %}last {% endif %}column-quantity">{{ line.get_verbose_quantity|default:"&nbsp;"|safe }}</span>
     <span class="{% if not sublines %}last {% endif %}column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
     <span class="{% if not sublines %}last {% endif %}column-subtotal">{{ line.subtotal }} &{{ currency.lower }};</span>
     <br>
@@ -96,7 +96,7 @@
 </div>
 <div id="totals">
     <br>&nbsp;<br>
-    {% for tax, subtotal in bill.get_subtotals.iteritems %}
+    {% for tax, subtotal in bill.get_subtotals.items %}
         <span class="subtotal column-title">subtotal {{ tax }}% {% trans "VAT" %}</span>
         <span class="subtotal column-value">{{ subtotal | first }} &{{ currency.lower }};</span>
         <br>

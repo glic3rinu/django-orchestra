@@ -24,6 +24,7 @@ WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
 
 WEBAPPS_FCGID_WRAPPER_PATH = getattr(settings, 'WEBAPPS_FCGID_WRAPPER_PATH',
     # Inside SuExec Document root
+    # Make sure all account wrappers are in the same DIR
     '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper'
 )
 

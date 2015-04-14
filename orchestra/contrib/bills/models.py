@@ -2,6 +2,8 @@ from dateutil.relativedelta import relativedelta
 
 from django.core.validators import ValidationError, RegexValidator
 from django.db import models
+from django.db.models import F, Sum
+from django.db.models.functions import Coalesce
 from django.template import loader, Context
 from django.utils import timezone, translation
 from django.utils.encoding import force_text
@@ -89,6 +91,7 @@ class Bill(models.Model):
     is_sent = models.BooleanField(_("sent"), default=False)
     due_on = models.DateField(_("due on"), null=True, blank=True)
     updated_on = models.DateField(_("updated on"), auto_now=True)
+    # TODO allways compute total or what?
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     comments = models.TextField(_("comments"), blank=True)
     html = models.TextField(_("HTML"), blank=True)
@@ -227,18 +230,17 @@ class Bill(models.Model):
     
     def get_subtotals(self):
         subtotals = {}
-        for line in self.lines.all():
-            subtotal, taxes = subtotals.get(line.tax, (0, 0))
-            subtotal += line.get_total()
-            subtotals[line.tax] = (subtotal, (line.tax/100)*subtotal)
+        lines = self.lines.annotate(totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)))
+        for tax, total in lines.values_list('tax', 'totals'):
+            subtotal, taxes = subtotals.get(tax, (0, 0))
+            subtotal += total
+            subtotals[tax] = (subtotal, round(tax/100*subtotal, 2))
         return subtotals
     
     def get_total(self):
-        total = 0
-        for tax, subtotal in self.get_subtotals().items():
-            subtotal, taxes = subtotal
-            total += subtotal + taxes
-        return total
+        totals = self.lines.annotate(
+            totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100))
+        return round(totals.aggregate(Sum('totals'))['totals__sum'], 2)
 
 
 class Invoice(Bill):
@@ -272,12 +274,12 @@ class BillLine(models.Model):
     description = models.CharField(_("description"), max_length=256)
     rate = models.DecimalField(_("rate"), blank=True, null=True, max_digits=12, decimal_places=2)
     quantity = models.DecimalField(_("quantity"), max_digits=12, decimal_places=2)
+    verbose_quantity = models.CharField(_("Verbose quantity"), max_length=16)
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
-    tax = models.DecimalField(_("tax"), max_digits=2, decimal_places=2)
+    tax = models.DecimalField(_("tax"), max_digits=4, decimal_places=2)
     # Undo
 #    initial = models.DateTimeField(null=True)
 #    end = models.DateTimeField(null=True)
-    
     order = models.ForeignKey(settings.BILLS_ORDER_MODEL, null=True, blank=True,
         help_text=_("Informative link back to the order"), on_delete=models.SET_NULL)
     order_billed_on = models.DateField(_("order billed"), null=True, blank=True)
@@ -297,10 +299,11 @@ class BillLine(models.Model):
     
     def get_total(self):
         """ Computes subline discounts """
-        total = self.subtotal
-        for subline in self.sublines.all():
-            total += subline.total
-        return total
+        if self.pk:
+            return self.subtotal + sum(self.sublines.values_list('total', flat=True))
+    
+    def get_verbose_quantity(self):
+        return self.verbose_quantity or self.quantity
     
     def undo(self):
         # TODO warn user that undoing bills with compensations lead to compensation lost
@@ -313,12 +316,11 @@ class BillLine(models.Model):
         self.order.billed_on = self.order_billed_on
         self.delete()
     
-    def save(self, *args, **kwargs):
-        # TODO cost and consistency of this shit
-        super(BillLine, self).save(*args, **kwargs)
-        if self.bill.is_open:
-            self.bill.total = self.bill.get_total()
-            self.bill.save(update_fields=['total'])
+#    def save(self, *args, **kwargs):
+#        super(BillLine, self).save(*args, **kwargs)
+#        if self.bill.is_open:
+#            self.bill.total = self.bill.get_total()
+#            self.bill.save(update_fields=['total'])
 
 
 class BillSubline(models.Model):
@@ -339,12 +341,12 @@ class BillSubline(models.Model):
     total = models.DecimalField(max_digits=12, decimal_places=2)
     type = models.CharField(_("type"), max_length=16, choices=TYPES, default=OTHER)
     
-    def save(self, *args, **kwargs):
-        # TODO cost of this shit
-        super(BillSubline, self).save(*args, **kwargs)
-        if self.line.bill.is_open:
-            self.line.bill.total = self.line.bill.get_total()
-            self.line.bill.save(update_fields=['total'])
+#    def save(self, *args, **kwargs):
+#        # TODO cost of this shit
+#        super(BillSubline, self).save(*args, **kwargs)
+#        if self.line.bill.is_open:
+#            self.line.bill.total = self.line.bill.get_total()
+#            self.line.bill.save(update_fields=['total'])
 
 
 accounts.register(Bill)

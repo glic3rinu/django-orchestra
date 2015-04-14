@@ -192,10 +192,11 @@ class Apache2Backend(ServiceController):
             'wrapper_name': os.path.basename(wrapper_path),
         })
         directives = ''
-        # This Alias trick is used instead of FcgidWrapper because we don't want to define
+        # This Action trick is used instead of FcgidWrapper because we don't want to define
         # a new fcgid process class each time an app is mounted (num proc limits enforcement).
         if 'wrapper_dir' not in context:
             # fcgi-bin only needs to be defined once per vhots
+            # We assume that all account wrapper paths will share the same dir
             context['wrapper_dir'] = os.path.dirname(wrapper_path)
             directives = textwrap.dedent("""\
                 Alias /fcgi-bin/ %(wrapper_dir)s/

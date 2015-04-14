@@ -56,8 +56,17 @@ class WebApp(models.Model):
         self.data = apptype.clean_data()
     
     @cached
-    def get_options(self):
-        return OrderedDict((opt.name, opt.value) for opt in self.options.all().order_by('name'))
+    def get_options(self, merge=False):
+        if merge:
+            options = OrderedDict()
+            qs = WebAppOption.objects.filter(webapp__account=self.account, webapp__type=self.type)
+            for name, value in qs.values_list('name', 'value').order_by('name'):
+                if name in options:
+                    options[name] = max(options[name], value)
+                else:
+                    options[name] = value
+            return options
+        return OrderedDict(self.options.values_list('name', 'value').order_by('name'))
     
     def get_directive(self):
         return self.type_instance.get_directive()

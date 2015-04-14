@@ -33,18 +33,20 @@ class BillsBackend(object):
                             bill = Invoice.objects.create(account=account, is_open=True)
                 bills.append(bill)
             # Create bill line
-            billine = bill.lines.create(
+            quantity = line.metric*line.size
+            if quantity != 0:
+                billine = bill.lines.create(
                     rate=service.nominal_price,
                     quantity=line.metric*line.size,
+                    verbose_quantity=self.get_verbose_quantity(line),
                     subtotal=line.subtotal,
                     tax=service.tax,
                     description=self.get_line_description(line),
-                    
                     order=line.order,
                     order_billed_on=line.order.old_billed_on,
                     order_billed_until=line.order.old_billed_until
-            )
-            self.create_sublines(billine, line.discounts)
+                )
+                self.create_sublines(billine, line.discounts)
         return bills
     
     def format_period(self, ini, end):
@@ -61,11 +63,23 @@ class BillsBackend(object):
         description = line.order.description
         if service.billing_period != service.NEVER:
             description += " %s" % self.format_period(line.ini, line.end)
-        if service.metric and service.billing_period != service.NEVER and service.pricing_period == service.NEVER:
-            metric = format(line.metric, '.2f').rstrip('0').rstrip('.')
-            size = format(line.size, '.2f').rstrip('0').rstrip('.')
-            description += " (%sx%s)" % (metric, size)
         return description
+    
+    def get_verbose_quantity(self, line):
+#        service = line.order.service
+#        if service.metric and service.billing_period != service.NEVER and service.pricing_period == service.NEVER:
+        metric = format(line.metric, '.2f').rstrip('0').rstrip('.')
+        if metric.endswith('.00'):
+            metric = metric.split('.')[0]
+        size = format(line.size, '.2f').rstrip('0').rstrip('.')
+        if size.endswith('.00'):
+            size = metric.split('.')[0]
+        if metric == '1':
+            return size
+        if size == '1':
+            return metric
+        return "%s&times;%s" % (metric, size)
+#        return ''
     
     def create_sublines(self, line, discounts):
         for discount in discounts:

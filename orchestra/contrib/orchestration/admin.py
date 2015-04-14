@@ -37,7 +37,7 @@ class RouteAdmin(admin.ModelAdmin):
             for backend, __ in ServiceBackend.get_choices()
     }
     DEFAULT_MATCH = {
-        backend.get_name(): backend.default_route_match for backend in ServiceBackend.get_backends(active=False)
+        backend.get_name(): backend.default_route_match for backend in ServiceBackend.get_backends()
     }
     
     def display_model(self, route):

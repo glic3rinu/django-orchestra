@@ -99,15 +99,12 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
         return None
     
     @classmethod
-    def get_backends(cls, instance=None, action=None, active=True):
-        from .models import Route
+    def get_backends(cls, instance=None, action=None, active=None):
         backends = cls.get_plugins()
         included = []
-        if active:
-            active_backends = Route.objects.filter(is_active=True).values_list('backend', flat=True)
         # Filter for instance or action
         for backend in backends:
-            if active and backend.get_name() not in active_backends:
+            if active is not None and backend.get_name() not in active:
                 continue
             include = True
             if instance:
@@ -208,5 +205,5 @@ class ServiceController(ServiceBackend):
         """ filter controller classes """
         backends = super(ServiceController, cls).get_backends()
         return [
-            backend for backend in backends if ServiceController in backend.__mro__
+            backend for backend in backends if isinstance(backend, ServiceController)
         ]

@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import F, Sum
+from django.db.models.functions import Coalesce
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -58,7 +60,9 @@ class ClosedBillLineInline(BillLineInline):
     # TODO reimplement as nested inlines when upstream
     #      https://code.djangoproject.com/ticket/9025
     
-    fields = ('display_description', 'rate', 'quantity', 'tax', 'display_subtotal', 'display_total')
+    fields = (
+        'display_description', 'rate', 'quantity', 'tax', 'display_subtotal', 'display_total'
+    )
     readonly_fields = fields
     
     def display_description(self, line):
@@ -76,6 +80,11 @@ class ClosedBillLineInline(BillLineInline):
         return '<br>'.join(subtotals)
     display_subtotal.short_description = _("Subtotal")
     display_subtotal.allow_tags = True
+    
+    def display_total(self, line):
+        return line.get_total()
+    display_total.short_description = _("Total")
+    display_total.allow_tags = True
     
     def has_add_permission(self, request):
         return False
@@ -134,6 +143,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_view_actions = [
         actions.view_bill, actions.download_bills, actions.send_bills, actions.close_bills
     ]
+    search_fields = ('number', 'account__username', 'comments')
     actions = [actions.download_bills, actions.close_bills, actions.send_bills]
     change_readonly_fields = ('account_link', 'type', 'is_open')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
@@ -147,10 +157,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     num_lines.short_description = _("lines")
     
     def display_total(self, bill):
-        return "%s &%s;" % (bill.total, settings.BILLS_CURRENCY.lower())
+        return "%s &%s;" % (round(bill.totals, 2), settings.BILLS_CURRENCY.lower())
     display_total.allow_tags = True
     display_total.short_description = _("total")
-    display_total.admin_order_field = 'total'
+    display_total.admin_order_field = 'totals'
     
     def type_link(self, bill):
         bill_type = bill.type.lower()
@@ -210,8 +220,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def get_inline_instances(self, request, obj=None):
         inlines = super(BillAdmin, self).get_inline_instances(request, obj)
         if obj and not obj.is_open:
-            return [inline for inline in inlines if not isinstance(inline, BillLineInline)]
-        return [inline for inline in inlines if not isinstance(inline, ClosedBillLineInline)]
+            return [inline for inline in inlines if type(inline) is not BillLineInline]
+        return [inline for inline in inlines if type(inline) is not ClosedBillLineInline]
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -223,8 +233,13 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         
     def get_queryset(self, request):
         qs = super(BillAdmin, self).get_queryset(request)
-        qs = qs.annotate(models.Count('lines'))
-        qs = qs.prefetch_related('lines', 'lines__sublines', 'transactions')
+        qs = qs.annotate(
+            models.Count('lines'),
+            totals=Sum(
+                (F('lines__subtotal') + Coalesce(F('lines__sublines__total'), 0)) * (1+F('lines__tax')/100)
+            ),
+        )
+        qs = qs.prefetch_related('transactions')
         return qs
     
     def change_view(self, request, object_id, **kwargs):

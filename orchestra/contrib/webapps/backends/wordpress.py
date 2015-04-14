@@ -39,7 +39,6 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             exc('wget http://wordpress.org/latest.tar.gz -O - --no-check-certificate | tar -xzvf - -C %(app_path)s --strip-components=1');
             exc('mkdir %(app_path)s/wp-content/uploads');
             exc('chmod 750 %(app_path)s/wp-content/uploads');
-            exc('chown -R %(user)s:%(group)s %(app_path)s');
             
             $config_file = file('%(app_path)s/' . 'wp-config-sample.php');
             $secret_keys = file_get_contents('https://api.wordpress.org/secret-key/1.1/salt/');
@@ -70,6 +69,8 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             foreach ( $config_file as $line_num => $line ) {
                 fwrite($fw, $line);
             }
+            exc('chown -R %(user)s:%(group)s %(app_path)s');
+            
             define('WP_CONTENT_DIR', 'wp-content/');
             define('WP_LANG_DIR', WP_CONTENT_DIR . '/languages' );
             define('WP_USE_THEMES', true);

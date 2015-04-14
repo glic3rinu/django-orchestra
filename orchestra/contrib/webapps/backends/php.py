@@ -118,12 +118,11 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         super(PHPBackend, self).commit()
     
     def get_fpm_config(self, webapp, context):
-        merge = settings.WEBAPPS_MERGE_PHP_WEBAPPS
+        options = webapp.get_options(merge=self.MERGE)
         context.update({
             'init_vars': webapp.type_instance.get_php_init_vars(merge=self.MERGE),
-            'max_children': webapp.get_options().get('processes',
-                settings.WEBAPPS_FPM_DEFAULT_MAX_CHILDREN),
-            'request_terminate_timeout': webapp.get_options().get('timeout', False),
+            'max_children': options.get('processes', settings.WEBAPPS_FPM_DEFAULT_MAX_CHILDREN),
+            'request_terminate_timeout': options.get('timeout', False),
         })
         context['fpm_listen'] = webapp.type_instance.FPM_LISTEN % context
         fpm_config = Template(textwrap.dedent("""\
@@ -139,7 +138,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             pm.max_requests = {{ max_requests }}
             pm.max_children = {{ max_children }}
             {% if request_terminate_timeout %}request_terminate_timeout = {{ request_terminate_timeout }}{% endif %}
-            {% for name, value in init_vars.iteritems %}
+            {% for name, value in init_vars.items %}
             php_admin_value[{{ name | safe }}] = {{ value | safe }}{% endfor %}
             """
         ))
@@ -168,9 +167,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             exec %(php_binary_path)s %(php_init_vars)s""") % context
     
     def get_fcgid_cmd_options(self, webapp, context):
+        options = webapp.get_options(merge=self.MERGE)
         maps = {
-            'MaxProcesses': webapp.get_options().get('processes', None),
-            'IOTimeout': webapp.get_options().get('timeout', None),
+            'MaxProcesses': options.get('processes', None),
+            'IOTimeout': options.get('timeout', None),
         }
         cmd_options = []
         for directive, value in maps.items():

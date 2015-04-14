@@ -30,8 +30,6 @@ class Last(Aggregation):
             return dataset.none()
     
     def compute_usage(self, dataset):
-        # FIXME Aggregation of 0s returns None! django bug?
-        #       value = dataset.aggregate(models.Sum('value'))['value__sum']
         values = dataset.values_list('value', flat=True)
         if values:
             return sum(values)

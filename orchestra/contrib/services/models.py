@@ -214,11 +214,13 @@ class Service(models.Model):
                 ant_counter = counter
                 accumulated += rate['price'] * rate['quantity']
         else:
+            if metric < position:
+                raise ValueError("Metric can not be less than the position.")
             for rate in rates:
                 counter += rate['quantity']
                 if counter >= position:
                     return decimal.Decimal(str(rate['price']))
-    
+
     def get_rates(self, account, cache=True):
         # rates are cached per account
         if not cache:

@@ -17,6 +17,7 @@ class Bind9MasterDomainBackend(ServiceController):
         ('domains.Domain', 'origin'),
     )
     ignore_fields = ['serial']
+    CONF_PATH = settings.DOMAINS_MASTERS_PATH
     
     @classmethod
     def is_main(cls, obj):
@@ -27,6 +28,10 @@ class Bind9MasterDomainBackend(ServiceController):
     def save(self, domain):
         context = self.get_context(domain)
         domain.refresh_serial()
+        self.update_zone(domain, context)
+        self.update_conf(context)
+    
+    def update_zone(self, domain, context):
         context['zone'] = ';; %(banner)s\n' % context
         context['zone'] += domain.render_zone().replace("'", '"')
         self.append(textwrap.dedent("""\
@@ -37,7 +42,6 @@ class Bind9MasterDomainBackend(ServiceController):
             mv %(zone_path)s.tmp %(zone_path)s
             """) % context
         )
-        self.update_conf(context)
     
     def update_conf(self, context):
         self.append(textwrap.dedent("""\
@@ -88,7 +92,9 @@ class Bind9MasterDomainBackend(ServiceController):
         return servers
     
     def get_slaves(self, domain):
-        return self.get_servers(domain, Bind9SlaveDomainBackend)
+        return set(settings.DOMAINS_SLAVES).union(
+            set(self.get_servers(domain, Bind9SlaveDomainBackend))
+        )
     
     def get_context(self, domain):
         slaves = self.get_slaves(domain)
@@ -99,7 +105,7 @@ class Bind9MasterDomainBackend(ServiceController):
             'banner': self.get_banner(),
             'slaves': '; '.join(slaves) or 'none',
             'also_notify': '; '.join(slaves) + ';' if slaves else '',
-            'conf_path': settings.DOMAINS_MASTERS_PATH,
+            'conf_path': self.CONF_PATH,
         }
         context['conf'] = textwrap.dedent("""
             zone "%(name)s" {
@@ -118,6 +124,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     related_models = (
         ('domains.Domain', 'origin'),
     )
+    CONF_PATH = settings.DOMAINS_SLAVES_PATH
     
     def save(self, domain):
         context = self.get_context(domain)
@@ -132,7 +139,9 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
         self.append('if [[ $UPDATED == 1 ]]; then { sleep 1 && service bind9 reload; } & fi')
     
     def get_masters(self, domain):
-        return self.get_servers(domain, Bind9MasterDomainBackend)
+        return set(settings.DOMAINS_MASTERS).union(
+            set(self.get_servers(domain, Bind9MasterDomainBackend))
+        )
     
     def get_context(self, domain):
         context = {
@@ -140,7 +149,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
             'banner': self.get_banner(),
             'subdomains': domain.subdomains.all(),
             'masters': '; '.join(self.get_masters(domain)) or 'none',
-            'conf_path': settings.DOMAINS_SLAVES_PATH,
+            'conf_path': self.CONF_PATH,
         }
         context['conf'] = textwrap.dedent("""
             zone "%(name)s" {

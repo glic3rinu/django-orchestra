@@ -52,6 +52,7 @@ class BackendLog(models.Model):
     FAILURE = 'FAILURE'
     ERROR = 'ERROR'
     REVOKED = 'REVOKED'
+    ABORTED = 'ABORTED'
     # Special state for mocked backendlogs
     EXCEPTION = 'EXCEPTION'
     
@@ -62,6 +63,7 @@ class BackendLog(models.Model):
         (SUCCESS, SUCCESS),
         (FAILURE, FAILURE),
         (ERROR, ERROR),
+        (ABORTED, ABORTED),
         (REVOKED, REVOKED),
     )
     

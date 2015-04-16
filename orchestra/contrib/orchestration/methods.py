@@ -120,6 +120,9 @@ def SSH(backend, log, server, cmds, async=False):
         logger.debug(log.traceback)
         log.save()
     finally:
+        if log.state == log.STARTED:
+            log.state = log.ABORTED
+            log.save(update_fields=['state'])
         if channel is not None:
             channel.close()
         if ssh is not None:

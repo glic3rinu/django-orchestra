@@ -90,3 +90,15 @@ DOMAINS_FORBIDDEN = getattr(settings, 'DOMAINS_FORBIDDEN',
     # '%(site_dir)s/forbidden_domains.list')
     ''
 )
+
+
+DOMAINS_MASTERS = getattr(settings, 'DOMAINS_MASTERS',
+    # Additional master server ip addresses other than autodiscovered by router.get_servers()
+    ()
+)
+
+
+DOMAINS_SLAVES = getattr(settings, 'DOMAINS_SLAVES',
+    # Additional slave server ip addresses other than autodiscovered by router.get_servers()
+    ()
+)

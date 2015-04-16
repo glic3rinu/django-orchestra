@@ -1,9 +1,12 @@
 import sys
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models.loading import get_model
 
-from orchestra.contrib.orchestration import manager
+from orchestra.contrib.orchestration import manager, Operation
+from orchestra.contrib.orchestration.models import Server
+from orchestra.contrib.orchestration.backends import ServiceBackend
+from orchestra.utils.python import import_class
 
 
 class Command(BaseCommand):
@@ -18,13 +21,28 @@ class Command(BaseCommand):
             help='Tells Django to NOT prompt the user for input of any kind.')
         parser.add_argument('--action', action='store', dest='action',
             default='save', help='Executes action. Defaults to "save".')
+        parser.add_argument('--servers', action='store', dest='servers',
+            default='save', help='Overrides route server resolution with the provided server.')
+        parser.add_argument('--backends', action='store', dest='backends',
+            default='save', help='Overrides backend.')
+        parser.add_argument('--listbackends', action='store_true', dest='list_backends', default=False,
+            help='List available baclends.')
         parser.add_argument('--dry-run', action='store_true', dest='dry', default=False,
             help='Only prints scrtipt.')
     
     def handle(self, *args, **options):
+        list_backends = options.get('list_backends')
+        if list_backends:
+            for backend in ServiceBackend.get_backends():
+                print(str(backend).split("'")[1])
+            return
         model = get_model(*options['model'].split('.'))
         action = options.get('action')
         interactive = options.get('interactive')
+        servers = options.get('servers', '').split(',')
+        backends = options.get('backends', '').split(',')
+        if (servers and not backends) or (not servers and backends):
+            raise CommandError("--backends and --servers go in tandem.")
         dry = options.get('dry')
         kwargs = {}
         for comp in options.get('query', []):
@@ -34,8 +52,23 @@ class Command(BaseCommand):
         operations = []
         operations = set()
         route_cache = {}
-        for instance in model.objects.filter(**kwargs):
-            manager.collect(instance, action, operations=operations, route_cache=route_cache)
+        if servers:
+            server_objects = []
+            # Get and create missing Servers
+            for server in servers:
+                try:
+                    server = Server.objects.get(address=server)
+                except Server.DoesNotExist:
+                    server = Server.objects.create(name=server, address=server)
+                server_objects.append(server)
+            # Generate operations for the given backend
+            for instance in model.objects.filter(**kwargs):
+                for backend in backends:
+                    backend = import_class(backend)
+                    operations.add(Operation(backend, instance, action, servers=server_objects))
+        else:
+            for instance in model.objects.filter(**kwargs):
+                manager.collect(instance, action, operations=operations, route_cache=route_cache)
         scripts, block = manager.generate(operations)
         servers = []
         # Print scripts
@@ -64,7 +97,7 @@ class Command(BaseCommand):
         if not dry:
             logs = manager.execute(scripts, block=block)
             for log in logs:
-                print(log.stdout)
-                sys.stderr.write(log.stderr)
+                print(log.stdout.encode('utf8', errors='replace'))
+                sys.stderr.write(log.stderr.encode('utf8', errors='replace'))
             for log in logs:
                 print(log.backend, log.state)

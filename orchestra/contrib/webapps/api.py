@@ -16,7 +16,7 @@ class WebAppViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
     def metadata(self, request):
         ret = super(WebAppViewSet, self).metadata(request)
         names = [
-            'WEBAPPS_BASE_ROOT', 'WEBAPPS_TYPES', 'WEBAPPS_WEBAPP_OPTIONS',
+            'WEBAPPS_BASE_DIR', 'WEBAPPS_TYPES', 'WEBAPPS_WEBAPP_OPTIONS',
             'WEBAPPS_PHP_DISABLED_FUNCTIONS', 'WEBAPPS_DEFAULT_TYPE'
         ]
         ret['settings'] = {

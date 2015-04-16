@@ -23,13 +23,12 @@ STATE_COLORS = {
 }
 
 
-
 class RouteAdmin(admin.ModelAdmin):
-    list_display = [
+    list_display = (
         'backend', 'host', 'match', 'display_model', 'display_actions', 'is_active'
-    ]
-    list_editable = ['host', 'match', 'is_active']
-    list_filter = ['host', 'is_active', 'backend']
+    )
+    list_editable = ('host', 'match', 'is_active')
+    list_filter = ('host', 'is_active', 'backend')
     ordering = ('backend',)
     
     BACKEND_HELP_TEXT = {

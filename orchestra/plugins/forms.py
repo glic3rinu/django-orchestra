@@ -13,12 +13,20 @@ class PluginDataForm(forms.ModelForm):
             value = self.plugin.get_name()
             display = '%s <a href=".">change</a>' % force_text(self.plugin.verbose_name)
             self.fields[self.plugin_field].widget = ReadOnlyWidget(value, display)
-            self.fields[self.plugin_field].help_text = getattr(self.plugin, 'help_text', '')
+            help_text = self.fields[self.plugin_field].help_text
+            self.fields[self.plugin_field].help_text = getattr(self.plugin, 'help_text', help_text)
         if self.instance:
             for field in self.declared_fields:
                 initial = self.fields[field].initial
                 self.fields[field].initial = self.instance.data.get(field, initial)
             if self.instance.pk:
+                # Admin Readonly fields are not availeble in self.fields, so we use Meta
+                plugin = getattr(self.instance, '%s_class' % self.plugin_field)
+                plugin_help_text = getattr(plugin, 'help_text', '')
+                model_help_text = self.instance._meta.get_field_by_name(self.plugin_field)[0].help_text
+                self._meta.help_texts = {
+                    self.plugin_field: plugin_help_text or model_help_text
+                }
                 for field in self.plugin.get_change_readonly_fileds():
                     value = getattr(self.instance, field, None) or self.instance.data[field]
                     display = value

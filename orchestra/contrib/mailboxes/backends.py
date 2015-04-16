@@ -406,7 +406,7 @@ class PostfixMailscannerTraffic(ServiceMonitor):
                                     except KeyError:
                                         pass
                                     else:
-                                        targets[req_id] = (username, None)
+                                        targets[req_id] = (username, 0)
                                         reverse[username].add(req_id)
                                 # Look for the mail size and count the number of recipients of each email
                                 else:
@@ -438,7 +438,7 @@ class PostfixMailscannerTraffic(ServiceMonitor):
                     except IOError as e:
                         sys.stderr.write(e)
                     
-                for username, opts in users.items():
+                for username, opts in users.iteritems():
                     size = 0
                     for req_id in reverse[username]:
                         size += targets[req_id][1] * counter.get(req_id, 0)

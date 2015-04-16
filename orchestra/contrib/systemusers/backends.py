@@ -165,7 +165,7 @@ class Exim4Traffic(ServiceMonitor):
                     except IOError as e:
                         sys.stderr.write(e)
                 
-                for username, opts in users.items():
+                for username, opts in users.iteritems():
                     __, object_id, size = opts
                     print object_id, size
             """).format(**context)

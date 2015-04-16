@@ -144,7 +144,7 @@ class MailmanBackend(ServiceController):
             'address_domain': mail_list.address_domain,
             'address_regex': '\|'.join(self.addresses),
             'admin': mail_list.admin_email,
-            'mailman_root': settings.LISTS_MAILMAN_ROOT_PATH,
+            'mailman_root': settings.LISTS_MAILMAN_ROOT_DIR,
         })
         return replace(context, "'", '"')
 

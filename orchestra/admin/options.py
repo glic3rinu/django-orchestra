@@ -14,6 +14,8 @@ from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
 
+from ..utils.python import random_ascii
+
 from .forms import AdminPasswordChangeForm
 #from django.contrib.auth.forms import AdminPasswordChangeForm
 from .utils import set_url_query, action_to_view
@@ -243,6 +245,7 @@ class ChangePasswordAdminMixin(object):
             'original': user,
             'save_as': False,
             'show_save': True,
+            'password': random_ascii(10),
         }
         context.update(admin.site.each_context(request))
         return TemplateResponse(request,

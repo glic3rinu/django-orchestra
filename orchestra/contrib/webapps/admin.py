@@ -79,6 +79,11 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
         return webapp.type_instance.get_detail()
     display_detail.short_description = _("detail")
     
+#    def get_form(self, request, obj=None, **kwargs):
+#        form = super(WebAppAdmin, self).get_form(request, obj, **kwargs)
+#        if obj:
+#            
+
 #    def formfield_for_dbfield(self, db_field, **kwargs):
 #        """ Make value input widget bigger """
 #        if db_field.name == 'type':

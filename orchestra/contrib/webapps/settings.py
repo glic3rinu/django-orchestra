@@ -3,8 +3,8 @@ from django.conf import settings
 from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
-WEBAPPS_BASE_ROOT = getattr(settings, 'WEBAPPS_BASE_ROOT',
-    '%(home)s/webapps/%(app_name)s/'
+WEBAPPS_BASE_DIR = getattr(settings, 'WEBAPPS_BASE_DIR',
+    '%(home)s/webapps/%(app_name)s'
 )
 
 
@@ -13,13 +13,15 @@ WEBAPPS_FPM_LISTEN = getattr(settings, 'WEBAPPS_FPM_LISTEN',
     '/opt/php/5.4/socks/%(user)s-%(app_name)s.sock'
 )
 
+
 WEBAPPS_FPM_DEFAULT_MAX_CHILDREN = getattr(settings, 'WEBAPPS_FPM_DEFAULT_MAX_CHILDREN',
     3
 )
 
 
 WEBAPPS_PHPFPM_POOL_PATH = getattr(settings, 'WEBAPPS_PHPFPM_POOL_PATH',
-    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf')
+    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf'
+)
 
 
 WEBAPPS_FCGID_WRAPPER_PATH = getattr(settings, 'WEBAPPS_FCGID_WRAPPER_PATH',
@@ -59,6 +61,7 @@ WEBAPPS_TYPES = getattr(settings, 'WEBAPPS_TYPES', (
     'orchestra.contrib.webapps.types.misc.WebalizerApp',
     'orchestra.contrib.webapps.types.misc.SymbolicLinkApp',
     'orchestra.contrib.webapps.types.wordpress.WordPressApp',
+    'orchestra.contrib.webapps.types.python.PythonApp',
 ))
 
 
@@ -94,6 +97,36 @@ WEBAPPS_PHP_CGI_INI_SCAN_DIR = getattr(settings, 'WEBAPPS_PHP_CGI_INI_SCAN_DIR',
     '/etc/php%(php_version_number)s/cgi/conf.d'
 )
 
+
+WEBAPPS_PYTHON_VERSIONS = getattr(settings, 'WEBAPPS_PYTHON_VERSIONS', (
+    ('3.4-uwsgi', 'Python 3.4 uWSGI'),
+    ('2.7-uwsgi', 'Python 2.7 uWSGI'),
+))
+
+
+WEBAPPS_DEFAULT_PYTHON_VERSION = getattr(settings, 'WEBAPPS_DEFAULT_PYTHON_VERSION',
+    '3.4-uwsgi'
+)
+
+
+WEBAPPS_UWSGI_SOCKET = getattr(settings, 'WEBAPPS_UWSGI_SOCKET',
+    '/var/run/uwsgi/app/%(app_name)s/socket'
+)
+
+
+WEBAPPS_PYTHON_MAX_REQUESTS = getattr(settings, 'WEBAPPS_PYTHON_MAX_REQUESTS',
+    500
+)
+
+
+WEBAPPS_PYTHON_DEFAULT_MAX_WORKERS = getattr(settings, 'WEBAPPS_PYTHON_DEFAULT_MAX_WORKERS',
+    3
+)
+
+
+WEBAPPS_PYTHON_DEFAULT_TIMEOUT = getattr(settings, 'WEBAPPS_PYTHON_DEFAULT_TIMEOUT',
+    30
+)
 
 
 WEBAPPS_UNDER_CONSTRUCTION_PATH = getattr(settings, 'WEBAPPS_UNDER_CONSTRUCTION_PATH',

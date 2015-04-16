@@ -23,8 +23,8 @@ LISTS_MAILMAN_POST_LOG_PATH = getattr(settings, 'LISTS_MAILMAN_POST_LOG_PATH',
 )
 
 
-LISTS_MAILMAN_ROOT_PATH = getattr(settings, 'LISTS_MAILMAN_ROOT_PATH',
-    '/var/lib/mailman/'
+LISTS_MAILMAN_ROOT_DIR = getattr(settings, 'LISTS_MAILMAN_ROOT_DIR',
+    '/var/lib/mailman'
 )
 
 

@@ -7,7 +7,9 @@ class WordPressApp(CMSApp):
     name = 'wordpress-php'
     verbose_name = "WordPress"
     help_text = _(
-        "Visit http://&lt;domain.lan&gt;/wp-admin/install.php to finish the installation.<br>"
-        "A database and database user will automatically be created for this webapp."
+        "This installs the latest version of WordPress into the webapp directory.<br>"
+        "A database and database user will automatically be created for this webapp.<br>"
+        "This installer creates a user 'admin' with a randomly generated password.<br>"
+        "The password will be visible in the 'password' field after the installer has finished."
     )
     icon = 'orchestra/icons/apps/WordPress.png'

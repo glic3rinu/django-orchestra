@@ -22,16 +22,16 @@ help_message = _("Version of PHP used to execute this webapp. <br>"
 
 class PHPAppForm(PluginDataForm):
     php_version = forms.ChoiceField(label=_("PHP version"),
-            choices=settings.WEBAPPS_PHP_VERSIONS,
-            initial=settings.WEBAPPS_DEFAULT_PHP_VERSION,
-            help_text=help_message)
+        choices=settings.WEBAPPS_PHP_VERSIONS,
+        initial=settings.WEBAPPS_DEFAULT_PHP_VERSION,
+        help_text=help_message)
 
 
 class PHPAppSerializer(serializers.Serializer):
     php_version = serializers.ChoiceField(label=_("PHP version"),
-            choices=settings.WEBAPPS_PHP_VERSIONS,
-            default=settings.WEBAPPS_DEFAULT_PHP_VERSION,
-            help_text=help_message)
+        choices=settings.WEBAPPS_PHP_VERSIONS,
+        default=settings.WEBAPPS_DEFAULT_PHP_VERSION,
+        help_text=help_message)
 
 
 class PHPApp(AppType):

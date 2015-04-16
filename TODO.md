@@ -175,9 +175,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * allow empty metric pack for default rates? changes on rating algo
 # don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
 
-# DOMINI REGISTRE MIGRATION SCRIPTS
-# IMPORTANT delete domain  xina:  missing FROM-clause entry for table "t3" LINE 1: SELECT (CONCAT(T3.name, domains_domain.name)) AS "structured...
-
 # lines too long on invoice, double lines or cut, and make margin wider
 * PHP_TIMEOUT env variable in sync with fcgid idle timeout
     http://foaa.de/old-blog/2010/11/php-apache-and-fastcgi-a-comprehensive-overview/trackback/index.html#pni-top0
@@ -187,8 +184,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * TODO raise404, here and everywhere
 * update service orders on a celery task? because it take alot
-
-# billline quantity eval('10x100') instead of miningless description '(10*100)' line.verbose_quantity
 
 # FIXME do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
     * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
@@ -201,23 +196,14 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * write down insights
 
-# use english on services defs and so on, an translate them on render time
-    python3 manage.py dumpdata services.Service --indent 4 --natural
-
 * websites directives get_location() and use it on last change view validation stage to compare with contents.location and also on the backend ?
 
 * modeladmin Default filter + search isn't working, prepend filter when searching
 
 * create service help templates based on urlqwargs with the most basic services.
 
-# TDOO Base price: domini propi (all domains) + extra for other domains
-
-# IMPORTANT op.instance = copy.deepcopy(instance) ValueError: Cannot assign "<SaaS: blog@WordPressService>": "SaaS" instance isn't saved in the database.
-# Separate operation from models !! BackendOperation and Operation
-
 Translation
 -----------
-
 mkdir locale
 django-admin.py makemessages -l ca
 django-admin.py compilemessages -l ca
@@ -254,7 +240,7 @@ https://code.djangoproject.com/ticket/24576
 # FIXME what to do when deleting accounts? set fk null and fill a username charfield? issues, invoices.. we whant all this to go away?
 * implement delete All related services
 
-# FIXME address name change does not remove old one :P, readonly, perhaps we can regenerate all addresses using backend.prepare()?
+# FIXME address name change does not remove old one :P, readonly or perhaps we can regenerate all addresses using backend.prepare()?
 
 * read https://docs.djangoproject.com/en/dev/releases/1.8/ and fix deprecation warnings
 * remove admin object display_links , like contents webapps
@@ -281,7 +267,6 @@ https://code.djangoproject.com/ticket/24576
 * MultiCHoiceField proper serialization
 
 # Apache restart fails: detect if appache running, and execute start
-# Change crons, create cron for deleted webapps and users
 * UNIFY PHP FPM settings name
 # virtualhost name: name-account?
 * add a delay to changes on the webserver apache to no overwelm it with backend executions?
@@ -293,5 +278,6 @@ https://code.djangoproject.com/ticket/24576
 * rename resource.monitors to resource.backends ?
 * abstract model classes enabling overriding?
 
-# Ignore superusers & co on billing
+# Ignore superusers & co on billing: list filter doesn't work nor ignore detection
 # bill.totals make it 100% computed?
+* joomla: wget https://github.com/joomla/joomla-cms/releases/download/3.4.1/Joomla_3.4.1-Stable-Full_Package.tar.gz -O - | tar xvfz -

@@ -99,7 +99,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             if [[ $UPDATED_FPM -eq 1 ]]; then
                 service php5-fpm reload
             fi
-            # Coordinate apache restart with apache backend
+            # Coordinate apache restart with Apache2Backend
+            # FIXME race condition
             locked=1
             state="$(grep -v 'PHPBackend' /dev/shm/restart.apache2)" || locked=0
             echo -n "$state" > /dev/shm/restart.apache2

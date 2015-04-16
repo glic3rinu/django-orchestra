@@ -19,7 +19,8 @@ from .types import AppType
 
 class WebApp(models.Model):
     """ Represents a web application """
-    name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name])
+    name = models.CharField(_("name"), max_length=128, validators=[validators.validate_name],
+        help_text=_("The app will be installed in %s") % settings.WEBAPPS_BASE_DIR)
     type = models.CharField(_("type"), max_length=32, choices=AppType.get_choices())
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
         related_name='webapps')
@@ -76,7 +77,7 @@ class WebApp(models.Model):
             'home': self.get_user().get_home(),
             'app_name': self.name,
         }
-        path = settings.WEBAPPS_BASE_ROOT % context
+        path = settings.WEBAPPS_BASE_DIR % context
         public_root = self.options.filter(name='public-root').first()
         if public_root:
             path = os.path.join(path, public_root.value)

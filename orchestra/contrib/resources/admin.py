@@ -13,6 +13,7 @@ from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_
 from orchestra.contrib.orchestration.models import Route
 from orchestra.core import services
 from orchestra.utils import database_ready
+from orchestra.utils.functional import cached
 
 from .actions import run_monitor
 from .forms import ResourceForm
@@ -179,12 +180,13 @@ admin.site.register(MonitorData, MonitorDataAdmin)
 def resource_inline_factory(resources):
     class ResourceInlineFormSet(generic.BaseGenericInlineFormSet):
         def total_form_count(self, resources=resources):
-            return len(resources) 
+            return len(resources)
         
+        @cached
         def get_queryset(self):
             """ Filter disabled resources """
             queryset = super(ResourceInlineFormSet, self).get_queryset()
-            return queryset.filter(resource__is_active=True)
+            return queryset.filter(resource__is_active=True).select_related('resource')
         
         @cached_property
         def forms(self, resources=resources):

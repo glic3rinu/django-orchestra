@@ -105,9 +105,10 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     def get_ignore(self, instance):
         if self.ignore_superusers:
             account = getattr(instance, 'account', instance)
-            if (account.type in settings.SERVICES_IGNORE_ACCOUNT_TYPE or 
-                'superuser' in settings.SERVICES_IGNORE_ACCOUNT_TYPE):
-                    return True
+            if account.type in settings.SERVICES_IGNORE_ACCOUNT_TYPE:
+                return True
+            if 'superuser' in settings.SERVICES_IGNORE_ACCOUNT_TYPE and account.is_superuser:
+                return True
         return False
     
     def get_metric(self, instance):

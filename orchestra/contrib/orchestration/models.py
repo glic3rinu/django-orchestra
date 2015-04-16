@@ -149,24 +149,25 @@ class Route(models.Model):
     @classmethod
     def get_servers(cls, operation, **kwargs):
         cache = kwargs.get('cache', {})
+        if not cache:
+            for route in cls.objects.filter(is_active=True).select_related('host'):
+                for action in route.backend_class.get_actions():
+                    key = (route.backend, action)
+                    try:
+                        cache[key].append(route)
+                    except KeyError:
+                        cache[key] = [route]
         servers = []
         backend_cls = operation.backend
         key = (backend_cls.get_name(), operation.action)
         try:
             routes = cache[key]
         except KeyError:
-            cache[key] = []
-            for route in cls.objects.filter(is_active=True, backend=backend_cls.get_name()):
-                for action in backend_cls.get_actions():
-                    _key = (route.backend, action)
-                    try:
-                        cache[_key].append(route)
-                    except KeyError:
-                        cache[_key] = [route]
-            routes = cache[key]
-        for route in routes:
-            if route.matches(operation.instance):
-                servers.append(route.host)
+            pass
+        else:
+            for route in routes:
+                if route.matches(operation.instance):
+                    servers.append(route.host)
         return servers
     
     def clean(self):

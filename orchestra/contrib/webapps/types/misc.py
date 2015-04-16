@@ -53,5 +53,3 @@ class SymbolicLinkApp(PHPApp):
     serializer = SymbolicLinkSerializer
     icon = 'orchestra/icons/apps/SymbolicLink.png'
     change_readonly_fileds = ('path',)
-
-

@@ -216,6 +216,15 @@ class Apache2Backend(ServiceController):
             (context['location'], directives),
         ]
     
+    def get_uwsgi_directives(self, context, socket):
+        # requires apache2 mod_proxy_uwsgi
+        context['socket'] = socket
+        directives = "ProxyPass / unix:%(socket)s|uwsgi://" % context
+        directives += self.get_location_filesystem_map(context)
+        return [
+            (context['location'], directives),
+        ]
+    
     def get_ssl(self, directives):
         cert = directives.get('ssl-cert')
         key = directives.get('ssl-key')

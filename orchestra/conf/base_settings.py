@@ -35,6 +35,7 @@ MEDIA_URL = '/media/'
 
 ALLOWED_HOSTS = '*'
 
+
 # Set this to True to wrap each HTTP request in a transaction on this database.
 # ATOMIC REQUESTS do not wrap middlewares (orchestra.contrib.orchestration.middlewares.OperationsMiddleware)
 ATOMIC_REQUESTS = False
@@ -101,6 +102,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'passlib.ext.django',
+    'django_countries',
     
     # Django.contrib
     'django.contrib.auth',

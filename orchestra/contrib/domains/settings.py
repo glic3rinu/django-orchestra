@@ -69,6 +69,11 @@ DOMAINS_DEFAULT_A = getattr(settings, 'DOMAINS_DEFAULT_A',
 )
 
 
+DOMAINS_DEFAULT_AAAA = getattr(settings, 'DOMAINS_DEFAULT_AAAA',
+    ''
+)
+
+
 DOMAINS_DEFAULT_MX = getattr(settings, 'DOMAINS_DEFAULT_MX', (
     '10 mail.{}.'.format(ORCHESTRA_BASE_DOMAIN),
     '10 mail2.{}.'.format(ORCHESTRA_BASE_DOMAIN),

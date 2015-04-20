@@ -175,8 +175,12 @@ a:hover {
 }
 
 #lines .column-description {
-    width: 65%;
+    width: 45%;
     text-align: left;
+}
+
+#lines .column-period {
+    width: 20%;
 }
 
 #lines .column-quantity {

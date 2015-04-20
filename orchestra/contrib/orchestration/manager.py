@@ -6,7 +6,7 @@ from collections import OrderedDict
 from django import db
 from django.core.mail import mail_admins
 
-from orchestra.utils.python import import_class
+from orchestra.utils.python import import_class, OrderedSet
 
 from . import settings, Operation
 from .backends import ServiceBackend
@@ -138,7 +138,7 @@ def execute(scripts, block=False, async=False):
 
 def collect(instance, action, **kwargs):
     """ collect operations """
-    operations = kwargs.get('operations', set())
+    operations = kwargs.get('operations', OrderedSet())
     route_cache = kwargs.get('route_cache', {})
     for backend_cls in ServiceBackend.get_backends():
         # Check if there exists a related instance to be executed for this backend and action

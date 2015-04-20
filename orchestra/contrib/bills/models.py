@@ -1,3 +1,4 @@
+import datetime
 from dateutil.relativedelta import relativedelta
 
 from django.core.validators import ValidationError, RegexValidator
@@ -277,9 +278,8 @@ class BillLine(models.Model):
     verbose_quantity = models.CharField(_("Verbose quantity"), max_length=16)
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.DecimalField(_("tax"), max_digits=4, decimal_places=2)
-    # Undo
-#    initial = models.DateTimeField(null=True)
-#    end = models.DateTimeField(null=True)
+    start_on = models.DateField(_("start"))
+    end_on = models.DateField(_("end"), null=True)
     order = models.ForeignKey(settings.BILLS_ORDER_MODEL, null=True, blank=True,
         help_text=_("Informative link back to the order"), on_delete=models.SET_NULL)
     order_billed_on = models.DateField(_("order billed"), null=True, blank=True)
@@ -304,6 +304,15 @@ class BillLine(models.Model):
     
     def get_verbose_quantity(self):
         return self.verbose_quantity or self.quantity
+    
+    def get_verbose_period(self):
+        ini = self.start_on.strftime("%b, %Y")
+        if not self.end_on:
+            return ini
+        end = (self.end_on - datetime.timedelta(seconds=1)).strftime("%b, %Y")
+        if ini == end:
+            return ini
+        return _("{ini} to {end}").format(ini=ini, end=end)
     
     def undo(self):
         # TODO warn user that undoing bills with compensations lead to compensation lost

@@ -31,18 +31,15 @@ class BilledOrderListFilter(SimpleListFilter):
     
     def lookups(self, request, model_admin):
         return (
-            ('to_date', _("To date")),
-            ('full', _("Full period")),
-            ('not', _("Not billed")),
+            ('yes', _("Billed")),
+            ('no', _("Not billed")),
         )
     
     def queryset(self, request, queryset):
-        if self.value() == 'to_date':
+        if self.value() == 'yes':
             return queryset.filter(billed_until__isnull=False,
                     billed_until__gte=timezone.now())
-        elif self.value() == 'full':
-            raise NotImplementedError
-        elif self.value() == 'not':
+        elif self.value() == 'no':
             return queryset.filter(
                 Q(billed_until__isnull=True) |
                 Q(billed_until__lt=timezone.now())

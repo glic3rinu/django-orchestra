@@ -9,4 +9,4 @@ class Command(BaseCommand):
     
     def handle(self, *filenames, **options):
         flake = run('flake8 {%s,%s} | grep -v "W293\|E501"' % (get_orchestra_dir(), get_site_dir()))
-        print(flake.stdout)
+        self.stdout.write(flake.stdout)

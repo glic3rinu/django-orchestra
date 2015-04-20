@@ -28,8 +28,8 @@
     </div>
     <div class="contact">
         <p>{{ seller.address }}<br>
-        {{ seller.zipcode }} - {{ seller.city }}<br>
-        {{ seller.country }}<br>
+        {{ seller.zipcode }} - {% trans seller.city %}<br>
+        {% trans seller.get_country_display %}<br>
         </p>
         <p><a href="tel:93-803-21-32">{{ seller_info.phone }}</a><br>
         <a href="mailto:sales@pangea.org">{{ seller_info.email }}</a><br>
@@ -40,21 +40,21 @@
 
 {% block summary %}
 <div id="bill-number">
-        {{ bill.get_type_display.capitalize }}<br>
+        {% trans bill.get_type_display.capitalize %}<br>
         <span class="value">{{ bill.number }}</span><br>
 </div>
 <div id="bill-summary">
     <hr>
     <div id="due-date">
-        <span class="title">DUE DATE</span><br>
+        <span class="title">{% trans "DUE DATE" %}</span><br>
         <psan class="value">{{ bill.due_on | default:default_due_date | date }}</span>
     </div>
     <div id="total">
-        <span class="title">TOTAL</span><br>
+        <span class="title">{% trans "TOTAL" %}</span><br>
         <psan class="value">{{ bill.get_total }} &{{ currency.lower }};</span>
     </div>
     <div id="bill-date">
-        <span class="title">{{ bill.get_type_display.upper }} DATE</span><br>
+        <span class="title">{% blocktrans with bill_type=bill.get_type_display %}{{ bill_type|upper }} DATE {% endblocktrans %}</span><br>
         <psan class="value">{{ bill.closed_on | default:now | date }}</span>
     </div>
 </div>
@@ -62,8 +62,8 @@
     <span class="name">{{ buyer.get_name }}</span><br>
     {{ buyer.vat }}<br>
     {{ buyer.address }}<br>
-    {{ buyer.zipcode }} - {{ buyer.city }}<br>
-    {{ buyer.country }}<br>
+    {{ buyer.zipcode }} - {% trans buyer.city %}<br>
+    {% trans buyer.get_country_display %}<br>
 </div>
 {% endblock %}
 
@@ -71,6 +71,7 @@
 <div id="lines">
     <span class="title column-id">id</span>
     <span class="title column-description">{% trans "description" %}</span>
+    <span class="title column-period">{% trans "period" %}</span>
     <span class="title column-quantity">{% trans "hrs/qty" %}</span>
     <span class="title column-rate">{% trans "rate/price" %}</span>
     <span class="title column-subtotal">{% trans "subtotal" %}</span>
@@ -79,6 +80,7 @@
     {% with sublines=line.sublines.all %}
     <span class="{% if not sublines %}last {% endif %}column-id">{{ line.id }}</span>
     <span class="{% if not sublines %}last {% endif %}column-description">{{ line.description }}</span>
+    <span class="{% if not sublines %}last {% endif %}column-period">{{ line.get_verbose_period }}</span>
     <span class="{% if not sublines %}last {% endif %}column-quantity">{{ line.get_verbose_quantity|default:"&nbsp;"|safe }}</span>
     <span class="{% if not sublines %}last {% endif %}column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
     <span class="{% if not sublines %}last {% endif %}column-subtotal">{{ line.subtotal }} &{{ currency.lower }};</span>
@@ -86,6 +88,7 @@
         {% for subline in sublines %}
             <span class="{% if forloop.last %}last {% endif %}subline column-id">&nbsp;</span>
             <span class="{% if forloop.last %}last {% endif %}subline column-description">{{ subline.description }}</span>
+            <span class="{% if forloop.last %}last {% endif %}subline column-period">&nbsp;</span>
             <span class="{% if forloop.last %}last {% endif %}subline column-quantity">&nbsp;</span>
             <span class="{% if forloop.last %}last {% endif %}subline column-rate">&nbsp;</span>
             <span class="{% if forloop.last %}last {% endif %}subline column-subtotal">{{ subline.total }} &{{ currency.lower }};</span>
@@ -97,7 +100,7 @@
 <div id="totals">
     <br>&nbsp;<br>
     {% for tax, subtotal in bill.get_subtotals.items %}
-        <span class="subtotal column-title">subtotal {{ tax }}% {% trans "VAT" %}</span>
+        <span class="subtotal column-title">{% trans "subtotal" %} {{ tax }}% {% trans "VAT" %}</span>
         <span class="subtotal column-value">{{ subtotal | first }} &{{ currency.lower }};</span>
         <br>
         <span class="tax column-title">{% trans "taxes" %} {{ tax }}% {% trans "VAT" %}</span>
@@ -126,9 +129,9 @@
                 {% if payment.message %}
                     {{ payment.message | safe }}
                 {% else %}
-                    {% blocktrans with type=bill.get_type_display.lower %}
+                    {% blocktrans with type=bill.get_type_display %}
                     You can pay our {{ type }} by bank transfer. <br>
-                    Please make sure to state your name and the {{ bill.get_type_display.lower}} number.
+                    Please make sure to state your name and the {{ type }} number.
                     Our bank account number is <br>
                     {% endblocktrans %}
                     <strong>{{ seller_info.bank_account }}</strong>

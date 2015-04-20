@@ -11,7 +11,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import admin_date, insertattr
+from orchestra.admin.utils import admin_date, insertattr, admin_link
 from orchestra.contrib.accounts.admin import AccountAdminMixin, AccountAdmin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
@@ -29,8 +29,13 @@ PAYMENT_STATE_COLORS = {
 
 class BillLineInline(admin.TabularInline):
     model = BillLine
-    fields = ('description', 'rate', 'quantity', 'tax', 'subtotal', 'display_total')
-    readonly_fields = ('display_total',)
+    fields = (
+        'description', 'order_link', 'start_on', 'end_on', 'rate', 'quantity', 'tax',
+        'subtotal', 'display_total',
+    )
+    readonly_fields = ('display_total', 'order_link')
+    
+    order_link = admin_link('order', display='pk')
     
     def display_total(self, line):
         total = line.get_total()
@@ -46,9 +51,9 @@ class BillLineInline(admin.TabularInline):
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
         if db_field.name == 'description':
-            kwargs['widget'] = forms.TextInput(attrs={'size':'110'})
-        else:
-            kwargs['widget'] = forms.TextInput(attrs={'size':'13'})
+            kwargs['widget'] = forms.TextInput(attrs={'size':'50'})
+        elif db_field.name not in ('start_on', 'end_on'):
+            kwargs['widget'] = forms.TextInput(attrs={'size':'6'})
         return super(BillLineInline, self).formfield_for_dbfield(db_field, **kwargs)
     
     def get_queryset(self, request):
@@ -61,7 +66,8 @@ class ClosedBillLineInline(BillLineInline):
     #      https://code.djangoproject.com/ticket/9025
     
     fields = (
-        'display_description', 'rate', 'quantity', 'tax', 'display_subtotal', 'display_total'
+        'display_description', 'order_link', 'start_on', 'end_on', 'rate', 'quantity', 'tax',
+        'display_subtotal', 'display_total'
     )
     readonly_fields = fields
     
@@ -157,10 +163,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     num_lines.short_description = _("lines")
     
     def display_total(self, bill):
-        return "%s &%s;" % (round(bill.totals, 2), settings.BILLS_CURRENCY.lower())
+        return "%s &%s;" % (round(bill.computed_total or 0, 2), settings.BILLS_CURRENCY.lower())
     display_total.allow_tags = True
     display_total.short_description = _("total")
-    display_total.admin_order_field = 'totals'
+    display_total.admin_order_field = 'computed_total'
     
     def type_link(self, bill):
         bill_type = bill.type.lower()
@@ -235,7 +241,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         qs = super(BillAdmin, self).get_queryset(request)
         qs = qs.annotate(
             models.Count('lines'),
-            totals=Sum(
+            computed_total=Sum(
                 (F('lines__subtotal') + Coalesce(F('lines__sublines__total'), 0)) * (1+F('lines__tax')/100)
             ),
         )

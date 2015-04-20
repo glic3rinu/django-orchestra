@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.orchestration import Operation
+from orchestra.utils.python import OrderedSet
 
 from . import settings
 
@@ -92,9 +93,9 @@ class Bind9MasterDomainBackend(ServiceController):
         return servers
     
     def get_slaves(self, domain):
-        return set(settings.DOMAINS_SLAVES).union(
-            set(self.get_servers(domain, Bind9SlaveDomainBackend))
-        )
+        ips = list(settings.DOMAINS_SLAVES)
+        ips += self.get_servers(domain, Bind9SlaveDomainBackend)
+        return OrderedSet(ips)
     
     def get_context(self, domain):
         slaves = self.get_slaves(domain)
@@ -139,9 +140,9 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
         self.append('if [[ $UPDATED == 1 ]]; then { sleep 1 && service bind9 reload; } & fi')
     
     def get_masters(self, domain):
-        return set(settings.DOMAINS_MASTERS).union(
-            set(self.get_servers(domain, Bind9MasterDomainBackend))
-        )
+        ips = list(settings.DOMAINS_MASTERS)
+        ips += self.get_servers(domain, Bind9MasterDomainBackend)
+        return OrderedSet(ips)
     
     def get_context(self, domain):
         context = {

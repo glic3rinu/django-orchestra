@@ -12,6 +12,9 @@ class BillsBackend(object):
         create_new = options.get('new_open', False)
         proforma = options.get('proforma', False)
         for line in lines:
+            quantity = line.metric*line.size
+            if quantity == 0:
+                continue
             service = line.order.service
             # Create bill if needed
             if bill is None or service.is_fee:
@@ -33,36 +36,32 @@ class BillsBackend(object):
                             bill = Invoice.objects.create(account=account, is_open=True)
                 bills.append(bill)
             # Create bill line
-            quantity = line.metric*line.size
-            if quantity != 0:
-                billine = bill.lines.create(
-                    rate=service.nominal_price,
-                    quantity=line.metric*line.size,
-                    verbose_quantity=self.get_verbose_quantity(line),
-                    subtotal=line.subtotal,
-                    tax=service.tax,
-                    description=self.get_line_description(line),
-                    order=line.order,
-                    order_billed_on=line.order.old_billed_on,
-                    order_billed_until=line.order.old_billed_until
-                )
-                self.create_sublines(billine, line.discounts)
+            billine = bill.lines.create(
+                rate=service.nominal_price,
+                quantity=line.metric*line.size,
+                verbose_quantity=self.get_verbose_quantity(line),
+                subtotal=line.subtotal,
+                tax=service.tax,
+                description=self.get_line_description(line),
+                start_on=line.ini,
+                end_on=line.end if service.billing_period != service.NEVER else None,
+                order=line.order,
+                order_billed_on=line.order.old_billed_on,
+                order_billed_until=line.order.old_billed_until
+            )
+            self.create_sublines(billine, line.discounts)
         return bills
     
-    def format_period(self, ini, end):
-        ini = ini.strftime("%b, %Y")
-        end = (end-datetime.timedelta(seconds=1)).strftime("%b, %Y")
-        if ini == end:
-            return ini
-        return _("{ini} to {end}").format(ini=ini, end=end)
+#    def format_period(self, ini, end):
+#        ini = ini.strftime("%b, %Y")
+#        end = (end-datetime.timedelta(seconds=1)).strftime("%b, %Y")
+#        if ini == end:
+#            return ini
+#        return _("{ini} to {end}").format(ini=ini, end=end)
     
     def get_line_description(self, line):
         service = line.order.service
-        if service.is_fee:
-            return self.format_period(line.ini, line.end)
         description = line.order.description
-        if service.billing_period != service.NEVER:
-            description += " %s" % self.format_period(line.ini, line.end)
         return description
     
     def get_verbose_quantity(self, line):

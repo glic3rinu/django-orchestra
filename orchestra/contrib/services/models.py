@@ -91,7 +91,7 @@ class Service(models.Model):
         help_text=_(
             "Python <a href='https://docs.python.org/2/library/functions.html#eval'>expression</a> "
             "used for generating the description for the bill lines of this services.<br>"
-            "Defaults to <tt>'%s: %s' % (handler.description, instance)</tt>"
+            "Defaults to <tt>'%s: %s' % (ugettext(handler.description), instance)</tt>"
         ))
     ignore_period = models.CharField(_("ignore period"), max_length=16, blank=True,
         help_text=_("Period in which orders will be ignored if cancelled. "
@@ -180,6 +180,7 @@ class Service(models.Model):
                 'content_type': (self.handler.validate_content_type, self),
                 'match': (self.handler.validate_match, self),
                 'metric': (self.handler.validate_metric, self),
+                'order_description': (self.handler.validate_order_description, self),
             })
         
     def get_pricing_period(self):
@@ -238,7 +239,10 @@ class Service(models.Model):
         order_model = get_model(settings.SERVICES_ORDER_MODEL)
         related_model = self.content_type.model_class()
         updates = []
-        for instance in related_model.objects.select_related('account').all():
+        queryset = related_model.objects.all()
+        if related_model._meta.model_name != 'account':
+            queryset = queryset.select_related('account').all()
+        for instance in queryset:
             updates += order_model.update_orders(instance, service=self, commit=commit)
         return updates
 

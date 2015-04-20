@@ -107,10 +107,15 @@ def admin_link(*args, **kwargs):
     if not getattr(obj, 'pk', None):
         return '---'
     url = change_url(obj)
+    display = kwargs.get('display')
+    if display:
+        display = getattr(obj, display, 'merda')
+    else:
+        display = obj
     extra = ''
     if kwargs['popup']:
         extra = 'onclick="return showAddAnotherPopup(this);"'
-    return '<a href="%s" %s>%s</a>' % (url, extra, obj)
+    return '<a href="%s" %s>%s</a>' % (url, extra, display)
 
 
 @admin_field

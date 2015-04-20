@@ -44,6 +44,9 @@ class OrderQuerySet(models.QuerySet):
                 bills += bill_backend.create_bills(account, bill_lines, **options)
             else:
                 bills += [(account, bill_lines)]
+        # TODO remove if commit and always return unique elemenets (set()) when the other todo is fixed
+        if commit:
+            return list(set(bills))
         return bills
     
     def givers(self, ini, end):
@@ -173,6 +176,8 @@ class Order(models.Model):
     
     def update(self):
         instance = self.content_object
+        if instance is None:
+            return
         handler = self.service.handler
         metric = ''
         if handler.metric:

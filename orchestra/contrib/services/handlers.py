@@ -23,8 +23,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     
     Relax and enjoy the journey.
     """
-    _VOLUME = 'VOLUME'
-    _COMPENSATION = 'COMPENSATION'
+    _VOLUME = 'volume'
+    _COMPENSATION = 'compensation'
     
     model = None
     
@@ -42,29 +42,27 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     def validate_content_type(self, service):
         pass
     
-    def validate_match(self, service):
-        if not service.match:
-            service.match = 'True'
+    def validate_expression(self, service, method):
         try:
             obj = service.content_type.model_class().objects.all()[0]
         except IndexError:
             return
         try:
-            bool(self.matches(obj))
+            bool(getattr(self, method)(obj))
         except Exception as exception:
             name = type(exception).__name__
             raise ValidationError(': '.join((name, str(exception))))
     
+    def validate_match(self, service):
+        if not service.match:
+            service.match = 'True'
+        self.validate_expression(service, 'matches')
+    
     def validate_metric(self, service):
-        try:
-            obj = service.content_type.model_class().objects.all()[0]
-        except IndexError:
-            return
-        try:
-            bool(self.get_metric(obj))
-        except Exception as exception:
-            name = type(exception).__name__
-            raise ValidationError(': '.join((name, str(exception))))
+        self.validate_expression(service, 'get_metric')
+    
+    def validate_order_description(self, service):
+        self.validate_expression(service, 'get_order_description')
     
     def get_content_type(self):
         if not self.model:
@@ -72,15 +70,26 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         app_label, model = self.model.split('.')
         return ContentType.objects.get_by_natural_key(app_label, model.lower())
     
+    def get_expression_context(self, instance):
+        return {
+            'instance': instance,
+            'obj': instance,
+            'ugettext': ugettext,
+            'handler': self,
+            'service': self.service,
+            instance._meta.model_name: instance,
+            'math': math,
+            'logsteps': lambda n, size=1: \
+                round(n/(decimal.Decimal(size*10**int(math.log10(max(n, 1))))))*size*10**int(math.log10(max(n, 1))),
+            'log10': math.log10,
+            'Decimal': decimal.Decimal,
+        }
+    
     def matches(self, instance):
         if not self.match:
             # Blank expressions always evaluate True
             return True
-        safe_locals = {
-            'instance': instance,
-            'obj': instance,
-            instance._meta.model_name: instance,
-        }
+        safe_locals = self.get_expression_context(instance)
         return eval(self.match, safe_locals)
     
     def get_ignore_delta(self):
@@ -113,27 +122,14 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     
     def get_metric(self, instance):
         if self.metric:
-            safe_locals = {
-                instance._meta.model_name: instance,
-                'instance': instance,
-                'math': math,
-                'logsteps': lambda n, size=1: \
-                    round(n/(decimal.Decimal(size*10**int(math.log10(max(n, 1))))))*size*10**int(math.log10(max(n, 1))),
-                'log10': math.log10,
-                'Decimal': decimal.Decimal,
-            }
+            safe_locals = self.get_expression_context(instance)
             try:
                 return eval(self.metric, safe_locals)
             except Exception as error:
                 raise type(error)("%s on '%s'" %(error, self.service))
     
     def get_order_description(self, instance):
-        safe_locals = {
-            'instance': instance,
-            'obj': instance,
-            'ugettext': ugettext,
-            instance._meta.model_name: instance,
-        }
+        safe_locals = self.get_expression_context(instance)
         account = getattr(instance, 'account', instance)
         with translation.override(account.language):
             if not self.order_description:

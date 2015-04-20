@@ -1,3 +1,4 @@
+from datetime import timedelta
 from os import path
 
 from django.conf import settings
@@ -27,4 +28,9 @@ ORCHESTRATION_TEMP_SCRIPT_PATH = getattr(settings, 'ORCHESTRATION_TEMP_SCRIPT_PA
 
 ORCHESTRATION_DISABLE_EXECUTION = getattr(settings, 'ORCHESTRATION_DISABLE_EXECUTION',
     False
+)
+
+
+ORCHESTRATION_BACKEND_CLEANUP_DELTA = getattr(settings, 'ORCHESTRATION_BACKEND_CLEANUP_DELTA',
+    timedelta(days=40)
 )

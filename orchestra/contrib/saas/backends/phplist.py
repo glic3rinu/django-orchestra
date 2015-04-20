@@ -14,7 +14,7 @@ class PhpListSaaSBackend(ServiceController):
     
     def _save(self, saas, server):
         admin_link = 'http://%s/admin/' % saas.get_site_domain()
-        admin_content = requests.get(admin_link).content
+        admin_content = requests.get(admin_link).content.decode('utf8')
         if admin_content.startswith('Cannot connect to Database'):
             raise RuntimeError("Database is not yet configured")
         install = re.search(r'([^"]+firstinstall[^"]+)', admin_content)
@@ -30,7 +30,7 @@ class PhpListSaaSBackend(ServiceController):
                 'adminpassword': saas.password,
             }
             response = requests.post(install_link, data=post)
-            print(response.content)
+            print(response.content.decode('utf8'))
             if response.status_code != 200:
                 raise RuntimeError("Bad status code %i" % response.status_code)
         else:

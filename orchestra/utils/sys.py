@@ -45,15 +45,15 @@ def read_async(fd):
             return ''
 
 
-def runiterator(command, display=False, error_codes=[0], silent=False, stdin='', force_unicode=True):
+def runiterator(command, display=False, error_codes=[0], silent=False, stdin=''):
     """ Subprocess wrapper for running commands concurrently """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)
     
     p = subprocess.Popen(command, shell=True, executable='/bin/bash',
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     
-    p.stdin.write(bytes(stdin, 'utf-8'))
+    p.stdin.write(stdin)
     p.stdin.close()
     yield
     
@@ -62,16 +62,18 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
     
     # Async reading of stdout and sterr
     while True:
-        stdout = ''
-        stderr = ''
+        stdout = b''
+        stderr = b''
         # Get complete unicode chunks
         select.select([p.stdout, p.stderr], [], [])
         
         stdoutPiece = read_async(p.stdout)
         stderrPiece = read_async(p.stderr)
         
-        stdout += (stdoutPiece or b'').decode('utf8', errors='replace')
-        stderr += (stderrPiece or b'').decode('utf8', errors='replace')
+        stdout += (stdoutPiece or b'')
+        #.decode('ascii'), errors='replace')
+        stderr += (stderrPiece or b'')
+        #.decode('ascii'), errors='replace')
         
         if display and stdout:
             sys.stdout.write(stdout)
@@ -89,14 +91,14 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='',
             raise StopIteration
 
 
-def run(command, display=False, error_codes=[0], silent=False, stdin='', async=False, force_unicode=True):
-    iterator = runiterator(command, display, error_codes, silent, stdin, force_unicode)
+def run(command, display=False, error_codes=[0], silent=False, stdin='', async=False):
+    iterator = runiterator(command, display, error_codes, silent, stdin)
     next(iterator)
     if async:
         return iterator
     
-    stdout = ''
-    stderr = ''
+    stdout = b''
+    stderr = b''
     for state in iterator:
         stdout += state.stdout
         stderr += state.stderr

@@ -25,7 +25,7 @@ class GitLabSaaSBackend(ServiceController):
     def validate_response(self, response, *status_codes):
         if response.status_code not in status_codes:
             raise RuntimeError("[%i] %s" % (response.status_code, response.content))
-        return json.loads(response.content)
+        return json.loads(response.content.decode('utf8'))
     
     def authenticate(self):
         login_url = self.get_base_url() + '/session'
@@ -61,7 +61,7 @@ class GitLabSaaSBackend(ServiceController):
         user_url = self.get_user_url(saas)
         response = requests.get(user_url, headers=self.headers)
         user = self.validate_response(response, 200)
-        user = json.loads(response.content)
+        user = json.loads(response.content.decode('utf8'))
         user['password'] = saas.password
         response = requests.put(user_url, data=user, headers=self.headers)
         user = self.validate_response(response, 200)
@@ -92,7 +92,8 @@ class GitLabSaaSBackend(ServiceController):
         username = saas.name
         email = saas.data['email']
         users_url = self.get_base_url() + '/users/'
-        users = json.loads(requests.get(users_url, headers=self.headers).content)
+        response = requests.get(users_url, headers=self.headers)
+        users = json.loads(response.content.decode('utf8'))
         for user in users:
             if user['username'] == username:
                 print('ValidationError: user-exists')

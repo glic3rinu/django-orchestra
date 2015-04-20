@@ -6,7 +6,7 @@ from django.db.models.loading import get_model
 from orchestra.contrib.orchestration import manager, Operation
 from orchestra.contrib.orchestration.models import Server
 from orchestra.contrib.orchestration.backends import ServiceBackend
-from orchestra.utils.python import import_class
+from orchestra.utils.python import import_class, OrderedSet
 
 
 class Command(BaseCommand):
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         list_backends = options.get('list_backends')
         if list_backends:
             for backend in ServiceBackend.get_backends():
-                print(str(backend).split("'")[1])
+                self.stdout.write(str(backend).split("'")[1])
             return
         model = get_model(*options['model'].split('.'))
         action = options.get('action')
@@ -49,9 +49,9 @@ class Command(BaseCommand):
             comps = iter(comp.split('='))
             for arg in comps:
                 kwargs[arg] = next(comps).strip().rstrip(',')
-        operations = []
-        operations = set()
+        operations = OrderedSet()
         route_cache = {}
+        queryset = model.objects.filter(**kwargs).order_by('id')
         if servers:
             server_objects = []
             # Get and create missing Servers
@@ -62,12 +62,12 @@ class Command(BaseCommand):
                     server = Server.objects.create(name=server, address=server)
                 server_objects.append(server)
             # Generate operations for the given backend
-            for instance in model.objects.filter(**kwargs):
+            for instance in queryset:
                 for backend in backends:
                     backend = import_class(backend)
                     operations.add(Operation(backend, instance, action, servers=server_objects))
         else:
-            for instance in model.objects.filter(**kwargs):
+            for instance in queryset:
                 manager.collect(instance, action, operations=operations, route_cache=route_cache)
         scripts, block = manager.generate(operations)
         servers = []
@@ -76,11 +76,10 @@ class Command(BaseCommand):
             server, __ = key
             backend, operations = value
             servers.append(server.name)
-            sys.stdout.write('# Execute on %s\n' % server.name)
+            self.stdout.write('# Execute on %s' % server.name)
             for method, commands in backend.scripts:
-                script = '\n'.join(commands) + '\n'
-                script = script.encode('ascii', errors='replace')
-                sys.stdout.write(script.decode('ascii'))
+                script = '\n'.join(commands)
+                self.stdout.write(script)
         if interactive:
             context = {
                 'servers': ', '.join(servers),
@@ -97,7 +96,7 @@ class Command(BaseCommand):
         if not dry:
             logs = manager.execute(scripts, block=block)
             for log in logs:
-                print(log.stdout.encode('utf8', errors='replace'))
-                sys.stderr.write(log.stderr.encode('utf8', errors='replace'))
+                self.stdout.write(log.stdout)
+                self.stderr.write(log.stderr)
             for log in logs:
-                print(log.backend, log.state)
+                self.stdout.write(' '.join((log.backend, log.state)))

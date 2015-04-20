@@ -276,8 +276,14 @@ https://code.djangoproject.com/ticket/24576
 * force ignore slack billing period overridig when billing
 * fpm reload starts new pools?
 * rename resource.monitors to resource.backends ?
-* abstract model classes enabling overriding?
+* abstract model classes that enabling overriding, and ORCHESTRA_DATABASE_MODEL settings + orchestra.get_database_model() instead of explicitly importing from orchestra.contrib.databases.models import Database.. (Admin and REST API are fucked then?)
 
 # Ignore superusers & co on billing: list filter doesn't work nor ignore detection
 # bill.totals make it 100% computed?
 * joomla: wget https://github.com/joomla/joomla-cms/releases/download/3.4.1/Joomla_3.4.1-Stable-Full_Package.tar.gz -O - | tar xvfz -
+
+
+
+# Link related orders on bill line
+# Customize those service.descriptions that are 
+# replace multichoicefield and jsonfield by ArrayField, HStoreField

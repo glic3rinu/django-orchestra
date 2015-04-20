@@ -11,12 +11,12 @@ from .. import settings
 
 class GitLabForm(SoftwareServiceForm):
     email = forms.EmailField(label=_("Email"),
-            help_text=_("Initial email address, changes on the GitLab server are not reflected here."))
+        help_text=_("Initial email address, changes on the GitLab server are not reflected here."))
 
 
 class GitLaChangebForm(GitLabForm):
     user_id = forms.IntegerField(label=("User ID"), widget=widgets.ShowTextWidget,
-            help_text=_("ID of this user on the GitLab server, the only attribute that not changes."))
+        help_text=_("ID of this user on the GitLab server, the only attribute that not changes."))
 
 
 class GitLabSerializer(serializers.Serializer):

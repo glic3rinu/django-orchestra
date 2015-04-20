@@ -106,6 +106,8 @@ class SoftwareService(plugins.Plugin):
             except IndexError:
                 pass
             else:
+                if log.state != log.SUCCESS:
+                    raise ValidationError(_("Validate creation execution has failed."))
                 errors = {}
                 if 'user-exists' in log.stdout:
                     errors['name'] = _("User with this username already exists.")

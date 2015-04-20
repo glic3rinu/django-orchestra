@@ -31,7 +31,7 @@ class WordpressMuBackend(ServiceController):
     
     def validate_response(self, response):
         if response.status_code != 200:
-            errors = re.findall(r'<body id="error-page">\n\t<p>(.*)</p></body>', response.content)
+            errors = re.findall(r'<body id="error-page">\n\t<p>(.*)</p></body>', response.content.decode('utf8'))
             raise RuntimeError(errors[0] if errors else 'Unknown %i error' % response.status_code)
     
     def get_id(self, session, webapp):
@@ -41,7 +41,7 @@ class WordpressMuBackend(ServiceController):
             '<a href="http://[\.\-\w]+/wp-admin/network/site-info\.php\?id=([0-9]+)"\s+'
             'class="edit">%s</a>' % webapp.name
         )
-        content = session.get(search).content
+        content = session.get(search).content.decode('utf8')
         # Get id
         ids = regex.search(content)
         if not ids:
@@ -64,7 +64,7 @@ class WordpressMuBackend(ServiceController):
         except RuntimeError:
             url = self.get_base_url()
             url += '/wp-admin/network/site-new.php'
-            content = session.get(url).content
+            content = session.get(url).content.decode('utf8')
             
             wpnonce = re.compile('name="_wpnonce_add-blog"\s+value="([^"]*)"')
             wpnonce = wpnonce.search(content).groups()[0]
@@ -94,7 +94,7 @@ class WordpressMuBackend(ServiceController):
             delete += '/wp-admin/network/sites.php?action=confirm&action2=deleteblog'
             delete += '&id=%d&_wpnonce=%s' % (id, wpnonce)
             
-            content = session.get(delete).content
+            content = session.get(delete).content.decode('utf8')
             wpnonce = re.compile('name="_wpnonce"\s+value="([^"]*)"')
             wpnonce = wpnonce.search(content).groups()[0]
             data = {

@@ -100,11 +100,36 @@ class ClosedBillLineInline(BillLineInline):
 
 
 class BillLineAdmin(admin.ModelAdmin):
-    list_display = ('description', 'bill_link', 'rate', 'quantity', 'tax', 'subtotal')
+    list_display = (
+        'description', 'bill_link', 'rate', 'quantity', 'tax', 'subtotal', 'display_sublinetotal',
+        'display_total'
+    )
     actions = (actions.undo_billing, actions.move_lines, actions.copy_lines,)
+    list_filter = ('tax', ('bill', admin.RelatedOnlyFieldListFilter))
     list_select_related = ('bill',)
+    search_fields = ('description', 'bill__number')
     
     bill_link = admin_link('bill')
+    
+    def display_sublinetotal(self, instance):
+        return instance.subline_total or ''
+    display_sublinetotal.short_description = _("Subline")
+    display_sublinetotal.admin_order_field = 'subline_total'
+    
+    def display_total(self, instance):
+        return round(instance.computed_total or 0, 2)
+    display_total.short_description = _("Total")
+    display_total.admin_order_field = 'computed_total'
+    
+    def get_queryset(self, request):
+        qs = super(BillLineAdmin, self).get_queryset(request)
+        qs = qs.annotate(
+            subline_total=Sum('sublines__total'),
+            computed_total=Sum(
+                (F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100)
+            ),
+        )
+        return qs
 
 
 class BillLineManagerAdmin(BillLineAdmin):
@@ -119,7 +144,7 @@ class BillLineManagerAdmin(BillLineAdmin):
         bill_ids = GET.pop('ids', None)
         if bill_ids:
             request.GET = GET
-            bill_ids = list(map(int, bill_ids.split(',')))
+            bill_ids = list(map(int, bill_ids))
         self.bill_ids = bill_ids
         if bill_ids and len(bill_ids) == 1:
             bill_url = reverse('admin:bills_bill_change', args=(bill_ids[0],))

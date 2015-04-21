@@ -8,7 +8,6 @@ from django.utils.functional import cached_property
 from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date
 from orchestra.contrib.orchestration.models import Route
 from orchestra.core import services
@@ -27,7 +26,10 @@ class ResourceAdmin(ExtendedModelAdmin):
     )
     list_display_links = ('id', 'verbose_name')
     list_editable = ('default_allocation', 'crontab', 'is_active',)
-    list_filter = (UsedContentTypeFilter, 'aggregation', 'on_demand', 'disable_trigger')
+    list_filter = (
+        ('content_type', admin.RelatedOnlyFieldListFilter), 'aggregation', 'on_demand',
+        'disable_trigger'
+    )
     fieldsets = (
         (None, {
             'fields': ('verbose_name', 'name', 'content_type', 'aggregation'),

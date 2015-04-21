@@ -106,13 +106,13 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             echo -n "$state" > /dev/shm/restart.apache2
             if [[ $UPDATED_APACHE -eq 1 ]]; then
                 if [[ $locked == 0 ]]; then
-                    service apache2 reload
+                    service apache2 status && service apache2 reload || service apache2 start
                 else
                     echo "PHPBackend RESTART" >> /dev/shm/restart.apache2
                 fi
             elif [[ "$state" =~ .*RESTART$ ]]; then
                 rm /dev/shm/restart.apache2
-                service apache2 reload
+                service apache2 status && service apache2 reload || service apache2 start
             fi
             """)
         )

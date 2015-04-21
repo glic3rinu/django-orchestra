@@ -183,4 +183,5 @@ def copy_lines(modeladmin, request, queryset):
 
 
 def delete_lines(modeladmin, request, queryset):
+    # Call contrib.admin delete action if all lines in open bill
     pass

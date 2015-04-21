@@ -26,9 +26,9 @@ WEBSITES_DEFAULT_PROTOCOL = getattr(settings, 'WEBSITES_DEFAULT_PROTOCOL',
 )
 
 
-WEBSITES_DEFAULT_IP = getattr(settings, 'WEBSITES_DEFAULT_IP',
+WEBSITES_DEFAULT_IPS = getattr(settings, 'WEBSITES_DEFAULT_IPS', (
     '*'
-)
+))
 
 
 WEBSITES_DOMAIN_MODEL = getattr(settings, 'WEBSITES_DOMAIN_MODEL',

@@ -7,7 +7,6 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeViewActionsMixin
-from orchestra.admin.filters import UsedContentTypeFilter
 from orchestra.core import services
 
 from .actions import update_orders, view_help, clone
@@ -18,7 +17,9 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     list_display = (
         'description', 'content_type', 'handler_type', 'num_orders', 'is_active'
     )
-    list_filter = ('is_active', 'handler_type', UsedContentTypeFilter)
+    list_filter = (
+        'is_active', 'handler_type', ('content_type', admin.RelatedOnlyFieldListFilter),
+    )
     fieldsets = (
         (None, {
             'classes': ('wide',),

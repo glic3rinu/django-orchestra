@@ -40,7 +40,7 @@ class Apache2Backend(ServiceController):
         extra_conf = sorted(extra_conf, key=lambda a: len(a[0]), reverse=True)
         context['extra_conf'] = '\n'.join([conf for location, conf in extra_conf])
         return Template(textwrap.dedent("""\
-            <VirtualHost {{ ip }}:{{ port }}>
+            <VirtualHost {% for ip in ips %}{{ ip }}:{{ port }} {% endfor %}>
                 IncludeOptional /etc/apache2/site[s]-override/{{ site_unique_name }}.con[f]
                 ServerName {{ server_name }}\
             {% if server_alias %}
@@ -59,7 +59,7 @@ class Apache2Backend(ServiceController):
     def render_redirect_https(self, context):
         context['port'] = self.HTTP_PORT
         return Template(textwrap.dedent("""
-            <VirtualHost {{ ip }}:{{ port }}>
+            <VirtualHost {% for ip in ips %}{{ ip }}:{{ port }} {% endfor %}>
                 ServerName {{ server_name }}\
             {% if server_alias %}
                 ServerAlias {{ server_alias|join:' ' }}{% endif %}\
@@ -127,13 +127,13 @@ class Apache2Backend(ServiceController):
             echo -n "$state" > /dev/shm/restart.apache2
             if [[ $UPDATED == 1 ]]; then
                 if [[ $locked == 0 ]]; then
-                    service apache2 reload
+                    service apache2 satus && service apache2 reload || service apache2 start
                 else
                     echo "Apache2Backend RESTART" >> /dev/shm/restart.apache2
                 fi
             elif [[ "$state" =~ .*RESTART$ ]]; then
                 rm /dev/shm/restart.apache2
-                service apache2 reload
+                service apache2 satus && service apache2 reload || service apache2 start
             fi""")
         )
         super(Apache2Backend, self).commit()
@@ -332,7 +332,7 @@ class Apache2Backend(ServiceController):
         context = {
             'site': site,
             'site_name': site.name,
-            'ip': settings.WEBSITES_DEFAULT_IP,
+            'ips': settings.WEBSITES_DEFAULT_IPS,
             'site_unique_name': site.unique_name,
             'user': self.get_username(site),
             'group': self.get_groupname(site),
@@ -344,6 +344,8 @@ class Apache2Backend(ServiceController):
             'error_log': site.get_www_error_log_path(),
             'banner': self.get_banner(),
         }
+        if not context['ips']:
+            raise ValueError("WEBSITES_DEFAULT_IPS is empty.")
         return replace(context, "'", '"')
     
     def set_content_context(self, content, context):

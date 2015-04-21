@@ -10,7 +10,7 @@ from .models import Plan, ContractedPlan, Rate
 
 class RateInline(admin.TabularInline):
     model = Rate
-    ordering = ('plan', 'quantity')
+    ordering = ('service', 'plan', 'quantity')
 
 
 class PlanAdmin(ExtendedModelAdmin):

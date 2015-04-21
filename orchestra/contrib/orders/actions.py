@@ -89,7 +89,7 @@ class BillSelectedOrders(object):
                     url = change_url(bills[0])
                 else:
                     url = reverse('admin:bills_bill_changelist')
-                    ids = ','.join([str(bill.id) for bill in bills])
+                    ids = ','.join(map(str, bills))
                     url += '?id__in=%s' % ids
                 num = len(bills)
                 msg = ungettext(

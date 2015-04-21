@@ -290,17 +290,12 @@ class BillLine(models.Model):
             related_name='amendment_lines', null=True, blank=True)
     
     def __str__(self):
-        return "#%i" % self.number
-    
-    @cached_property
-    def number(self):
-        lines = type(self).objects.filter(bill=self.bill_id)
-        return lines.filter(id__lte=self.id).order_by('id').count()
+        return "#%i" % self.pk
     
     def get_total(self):
         """ Computes subline discounts """
         if self.pk:
-            return self.subtotal + sum(self.sublines.values_list('total', flat=True))
+            return self.subtotal + sum([sub.total for sub in self.sublines.all()])
     
     def get_verbose_quantity(self):
         return self.verbose_quantity or self.quantity

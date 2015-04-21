@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Prefetch
 from django.db.models.functions import Coalesce
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
@@ -17,7 +17,7 @@ from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
 from . import settings, actions
 from .filters import BillTypeListFilter, HasBillContactListFilter
-from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillContact
+from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillSubline, BillContact
 
 
 PAYMENT_STATE_COLORS = {
@@ -58,7 +58,7 @@ class BillLineInline(admin.TabularInline):
     
     def get_queryset(self, request):
         qs = super(BillLineInline, self).get_queryset(request)
-        return qs.prefetch_related('sublines')
+        return qs.prefetch_related('sublines').select_related('order')
 
 
 class ClosedBillLineInline(BillLineInline):
@@ -99,29 +99,35 @@ class ClosedBillLineInline(BillLineInline):
         return False
 
 
-class BillLineManagerAdmin(admin.ModelAdmin):
-    list_display = ('description', 'rate', 'quantity', 'tax', 'subtotal')
+class BillLineAdmin(admin.ModelAdmin):
+    list_display = ('description', 'bill_link', 'rate', 'quantity', 'tax', 'subtotal')
     actions = (actions.undo_billing, actions.move_lines, actions.copy_lines,)
+    list_select_related = ('bill',)
     
+    bill_link = admin_link('bill')
+
+
+class BillLineManagerAdmin(BillLineAdmin):
     def get_queryset(self, request):
         qset = super(BillLineManagerAdmin, self).get_queryset(request)
-        return qset.filter(bill_id__in=self.bill_ids)
+        if self.bill_ids:
+            return qset.filter(bill_id__in=self.bill_ids)
+        return qset
     
     def changelist_view(self, request, extra_context=None):
         GET = request.GET.copy()
-        bill_ids = GET.pop('bill_ids', ['0'])[0]
-        request.GET = GET
-        bill_ids = [int(id) for id in bill_ids.split(',')]
+        bill_ids = GET.pop('ids', None)
+        if bill_ids:
+            request.GET = GET
+            bill_ids = list(map(int, bill_ids.split(',')))
         self.bill_ids = bill_ids
-        if not bill_ids:
-            return
-        elif len(bill_ids) > 1:
-            title = _("Manage bill lines of multiple bills.")
-        else:
+        if bill_ids and len(bill_ids) == 1:
             bill_url = reverse('admin:bills_bill_change', args=(bill_ids[0],))
             bill = Bill.objects.get(pk=bill_ids[0])
-            bill_link = '<a href="%s">%s</a>' % (bill_url, bill.ident)
+            bill_link = '<a href="%s">%s</a>' % (bill_url, bill.number)
             title = mark_safe(_("Manage %s bill lines.") % bill_link)
+        else:
+            title = _("Manage bill lines of multiple bills.")
         context = {
             'title': title,
         }
@@ -147,8 +153,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         }),
     )
     change_view_actions = [
-        actions.view_bill, actions.download_bills, actions.send_bills, actions.close_bills
+        actions.manage_lines, actions.view_bill, actions.download_bills, actions.send_bills,
+        actions.close_bills
     ]
+    list_prefetch_related = ('transactions',)
     search_fields = ('number', 'account__username', 'comments')
     actions = [actions.download_bills, actions.close_bills, actions.send_bills]
     change_readonly_fields = ('account_link', 'type', 'is_open')
@@ -245,7 +253,6 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 (F('lines__subtotal') + Coalesce(F('lines__sublines__total'), 0)) * (1+F('lines__tax')/100)
             ),
         )
-        qs = qs.prefetch_related('transactions')
         return qs
     
     def change_view(self, request, object_id, **kwargs):
@@ -261,6 +268,7 @@ admin.site.register(AmendmentInvoice, BillAdmin)
 admin.site.register(Fee, BillAdmin)
 admin.site.register(AmendmentFee, BillAdmin)
 admin.site.register(ProForma, BillAdmin)
+admin.site.register(BillLine, BillLineAdmin)
 
 
 class BillContactInline(admin.StackedInline):

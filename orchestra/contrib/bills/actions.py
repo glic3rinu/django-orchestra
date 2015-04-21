@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 
@@ -76,7 +76,7 @@ def close_bills(modeladmin, request, queryset):
                     url = change_url(transactions[0])
                 else:
                     url = reverse('admin:transactions_transaction_changelist')
-                    url += 'id__in=%s' % ','.join([str(t.id) for t in transactions])
+                    url += 'id__in=%s' % ','.join(map(str, transactions))
                 message = ungettext(
                     _('<a href="%s">One related transaction</a> has been created') % url,
                     _('<a href="%s">%i related transactions</a> have been created') % (url, num),
@@ -114,6 +114,12 @@ send_bills.verbose_name = lambda bill: _("Resend" if getattr(bill, 'is_sent', Fa
 send_bills.url_name = 'send'
 
 
+def manage_lines(modeladmin, request, queryset):
+    url = reverse('admin:bills_bill_manage_lines')
+    url += '?ids=%s' % ','.join(map(str, queryset.values_list('id', flat=True)))
+    return redirect(url)
+
+
 def undo_billing(modeladmin, request, queryset):
     group = {}
     for line in queryset.select_related('order'):
@@ -125,7 +131,7 @@ def undo_billing(modeladmin, request, queryset):
     # TODO force incomplete info
     for order, lines in group.items():
         # Find path from ini to end
-        for attr in ['order_id', 'order_billed_on', 'order_billed_until']:
+        for attr in ('order_id', 'order_billed_on', 'order_billed_until'):
             if not getattr(self, attr):
                 raise ValidationError(_("Not enough information stored for undoing"))
         sorted(lines, key=lambda l: l.created_on)
@@ -144,8 +150,8 @@ def move_lines(modeladmin, request, queryset):
     account = None
     for line in queryset.select_related('bill'):
         bill = line.bill
-        if bill.state != bill.OPEN:
-            messages.error(request, _("Can not move lines which are not in open state."))
+        if not bill.is_open:
+            messages.error(request, _("Can not move lines from a closed bill."))
             return 
         elif not account:
             account = bill.account
@@ -155,6 +161,7 @@ def move_lines(modeladmin, request, queryset):
     target = request.GET.get('target')
     if not target:
         # select target
+        context = {}
         return render(request, 'admin/orchestra/generic_confirmation.html', context)
     target = Bill.objects.get(pk=int(pk))
     if target.account != account:

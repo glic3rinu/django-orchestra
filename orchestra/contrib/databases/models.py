@@ -15,7 +15,7 @@ class Database(models.Model):
     
     name = models.CharField(_("name"), max_length=64, # MySQL limit
             validators=[validators.validate_name])
-    users = models.ManyToManyField('databases.DatabaseUser',
+    users = models.ManyToManyField('databases.DatabaseUser', blank=True,
             verbose_name=_("users"),related_name='databases')
     type = models.CharField(_("type"), max_length=32,
             choices=settings.DATABASES_TYPE_CHOICES,
@@ -34,7 +34,10 @@ class Database(models.Model):
         """ database owner is the first user related to it """
         # Accessing intermediary model to get which is the first user
         users = Database.users.through.objects.filter(database_id=self.id)
-        return users.order_by('id').first().databaseuser
+        user = users.order_by('id').first()
+        if user is not None:
+            return user.databaseuser
+        return None
 
 
 Database.users.through._meta.unique_together = (

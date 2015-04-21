@@ -17,11 +17,11 @@ class MySQLBackend(ServiceController):
         if database.type != database.MYSQL:
             return
         context = self.get_context(database)
-        # Not available on delete()
-        context['owner'] = database.owner
         self.append(
             "mysql -e 'CREATE DATABASE `%(database)s`;' || true" % context
         )
+        # Not available on delete()
+        context['owner'] = database.owner
         # clean previous privileges
         self.append("""mysql mysql -e 'DELETE FROM db WHERE db = "%(database)s";'""" % context)
         for user in database.users.all():

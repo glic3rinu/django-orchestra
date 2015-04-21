@@ -28,10 +28,11 @@ class WebalizerBackend(ServiceController):
     
     def delete(self, content):
         context = self.get_context(content)
-        delete_webapp = type(content.webapp).objects.filter(pk=content.webapp.pk).exists()
+        delete_webapp = not type(content.webapp).objects.filter(pk=content.webapp.pk).exists()
         if delete_webapp:
-            self.append("rm -f %(webapp_path)s" % context)
-        if delete_webapp or not content.webapp.content_set.filter(website=content.website).exists():
+            self.append("rm -fr %(webapp_path)s" % context)
+        remounted = content.webapp.content_set.filter(website=content.website).exists()
+        if delete_webapp or not remounted:
             self.append("rm -fr %(webalizer_path)s" % context)
             self.append("rm -f %(webalizer_conf_path)s" % context)
     

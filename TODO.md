@@ -282,8 +282,7 @@ https://code.djangoproject.com/ticket/24576
 # bill.totals make it 100% computed?
 * joomla: wget https://github.com/joomla/joomla-cms/releases/download/3.4.1/Joomla_3.4.1-Stable-Full_Package.tar.gz -O - | tar xvfz -
 
-
-
-# Link related orders on bill line
-# Customize those service.descriptions that are 
 # replace multichoicefield and jsonfield by ArrayField, HStoreField
+# Amend lines???
+
+

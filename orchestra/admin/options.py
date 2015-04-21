@@ -5,11 +5,12 @@ from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import update_session_auth_hash
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.forms.models import BaseInlineFormSet
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
+from django.utils.encoding import force_text
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
@@ -164,6 +165,14 @@ class ExtendedModelAdmin(ChangeViewActionsMixin, ChangeAddFieldsMixin, admin.Mod
         if self.list_prefetch_related:
             qs = qs.prefetch_related(*self.list_prefetch_related)
         return qs
+    
+    def get_object(self, request, object_id, from_field=None):
+        obj = super(ExtendedModelAdmin, self).get_object(request, object_id, from_field)
+        if obj is None:
+            opts = self.model._meta
+            raise Http404(_('%(name)s object with primary key %(key)r does not exist.') % {
+                'name': force_text(opts.verbose_name), 'key': escape(object_id)})
+        return obj
 
 
 class ChangePasswordAdminMixin(object):

@@ -45,7 +45,7 @@ def read_async(fd):
             return ''
 
 
-def runiterator(command, display=False, error_codes=[0], silent=False, stdin=''):
+def runiterator(command, display=False, error_codes=[0], silent=False, stdin=b''):
     """ Subprocess wrapper for running commands concurrently """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)
@@ -91,7 +91,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin='')
             raise StopIteration
 
 
-def run(command, display=False, error_codes=[0], silent=False, stdin='', async=False):
+def run(command, display=False, error_codes=[0], silent=False, stdin=b'', async=False):
     iterator = runiterator(command, display, error_codes, silent, stdin)
     next(iterator)
     if async:

@@ -21,7 +21,7 @@ class RecordSerializer(serializers.ModelSerializer):
 
 class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     """ Validates if this zone generates a correct zone file """
-    records = RecordSerializer(required=False, many=True, allow_add_remove=True)
+    records = RecordSerializer(required=False, many=True) #allow_add_remove=True)
     
     class Meta:
         model = Domain

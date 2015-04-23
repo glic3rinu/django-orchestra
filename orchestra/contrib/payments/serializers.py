@@ -28,6 +28,7 @@ class PaymentSourceSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
             return serializer_class().to_native(obj.data)
         return obj.data
     
+    # TODO
     def metadata(self):
         meta = super(PaymentSourceSerializer, self).metadata()
         meta['data'] = {

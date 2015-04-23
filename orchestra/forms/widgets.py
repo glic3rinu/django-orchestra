@@ -59,8 +59,8 @@ def paddingCheckboxSelectMultiple(padding):
     old_render = widget.render
     def render(self, *args, **kwargs):
         value = old_render(self, *args, **kwargs)
-        value = re.sub(r'^<ul id=(.*)>',
-                r'<ul id=\1 style="padding-left:%ipx">' % padding, value, 1)
+        value = re.sub(r'^<ul id=([^>]+)>',
+            r'<ul id=\1 style="padding-left:%ipx">' % padding, value, 1)
         return mark_safe(value)
     widget.render = render
     return widget

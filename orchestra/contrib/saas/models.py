@@ -11,6 +11,17 @@ from .fields import VirtualDatabaseRelation
 from .services import SoftwareService
 
 
+class SaaSQuerySet(models.QuerySet):
+    def create(self, **kwargs):
+        """ Sets password if provided, all within a single DB operation """
+        password = kwargs.pop('password')
+        saas = SaaS(**kwargs)
+        if password:
+            saas.set_password(password)
+        saas.save()
+        return saas
+
+
 class SaaS(models.Model):
     service = models.CharField(_("service"), max_length=32,
         choices=SoftwareService.get_choices())
@@ -27,6 +38,7 @@ class SaaS(models.Model):
     
     # Some SaaS sites may need a database, with this virtual field we tell the ORM to delete them
     databases = VirtualDatabaseRelation('databases.Database')
+    objects = SaaSQuerySet.as_manager()
     
     class Meta:
         verbose_name = "SaaS"

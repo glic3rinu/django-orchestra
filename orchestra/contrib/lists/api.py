@@ -8,7 +8,7 @@ from .serializers import ListSerializer
 
 
 class ListViewSet(LogApiMixin, AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
-    model = List
+    queryset = List.objects.all()
     serializer_class = ListSerializer
     filter_fields = ('name',)
 

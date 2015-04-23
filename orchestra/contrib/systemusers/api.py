@@ -9,7 +9,7 @@ from .serializers import SystemUserSerializer
 
 
 class SystemUserViewSet(LogApiMixin, AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
-    model = SystemUser
+    queryset = SystemUser.objects.all()
     serializer_class = SystemUserSerializer
     filter_fields = ('username',)
     

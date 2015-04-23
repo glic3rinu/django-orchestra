@@ -19,6 +19,7 @@ class SoftwareServiceForm(PluginDataForm):
     password = forms.CharField(label=_("Password"), required=False,
         widget=widgets.ReadOnlyWidget('<strong>Unknown password</strong>'),
         validators=[
+            validators.validate_password,
             RegexValidator(r'^[^"\'\\]+$',
                            _('Enter a valid password. '
                              'This value may contain any ascii character except for '

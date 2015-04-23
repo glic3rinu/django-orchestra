@@ -12,37 +12,42 @@ from .helpers import insert_links
 
 
 class LogApiMixin(object):
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         from django.contrib.admin.models import ADDITION
-        response = super(LogApiMixin, self).post(request, *args, **kwargs)
+        response = super(LogApiMixin, self).create(request, *args, **kwargs)
         message = _('Added.')
-        self.log_addition(request, message, ADDITION)
+        self.log(request, message, ADDITION, instance=self.serializer.instance)
         return response
     
-    def put(self, request, *args, **kwargs):
+    def perform_create(self, serializer):
+        """ stores serializer for accessing instance on create() """
+        super(LogApiMixin, self).perform_create(serializer)
+        self.serializer = serializer
+    
+    def update(self, request, *args, **kwargs):
         from django.contrib.admin.models import CHANGE
-        response = super(LogApiMixin, self).put(request, *args, **kwargs)
-        message = _('Changed')
+        response = super(LogApiMixin, self).update(request, *args, **kwargs)
+        message = _('Changed data')
         self.log(request, message, CHANGE)
         return response
     
-    def patch(self, request, *args, **kwargs):
+    def partial_update(self, request, *args, **kwargs):
         from django.contrib.admin.models import CHANGE
-        response = super(LogApiMixin, self).put(request, *args, **kwargs)
+        response = super(LogApiMixin, self).partial_update(request, *args, **kwargs)
         message = _('Changed %s') % str(response.data)
         self.log(request, message, CHANGE)
         return response
     
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         from django.contrib.admin.models import DELETION
         message = _('Deleted')
         self.log(request, message, DELETION)
-        response = super(LogApiMixin, self).put(request, *args, **kwargs)
+        response = super(LogApiMixin, self).destroy(request, *args, **kwargs)
         return response
     
-    def log(self, request, message, action):
+    def log(self, request, message, action, instance=None):
         from django.contrib.admin.models import LogEntry
-        instance = self.get_object()
+        instance = instance or self.get_object()
         LogEntry.objects.log_action(
             user_id=request.user.pk,
             content_type_id=get_content_type_for_model(instance).pk,
@@ -69,7 +74,7 @@ class LinkHeaderRouter(DefaultRouter):
     
     def get_viewset(self, prefix_or_model):
         for _prefix, viewset, __ in self.registry:
-            if _prefix == prefix_or_model or viewset.model == prefix_or_model:
+            if _prefix == prefix_or_model or viewset.queryset.model == prefix_or_model:
                 return viewset
         msg = "%s does not have a regiestered viewset" % prefix_or_model
         raise KeyError(msg)
@@ -80,7 +85,7 @@ class LinkHeaderRouter(DefaultRouter):
 #        setattr(viewset, 'inserted', getattr(viewset, 'inserted', []))
         if viewset.serializer_class is None:
             viewset.serializer_class = viewset().get_serializer_class()
-        viewset.serializer_class.base_fields.update({name: field(**kwargs)})
+        viewset.serializer_class._declared_fields.update({name: field(**kwargs)})
 #        if not name in viewset.inserted:
         viewset.serializer_class.Meta.fields += (name,)
 #            viewset.inserted.append(name)

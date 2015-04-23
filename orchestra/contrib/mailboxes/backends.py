@@ -54,7 +54,7 @@ class UNIXUserMaildirBackend(ServiceController):
     
     def delete(self, mailbox):
         context = self.get_context(mailbox)
-        self.append('mv %(home)s %(home)s.deleted' % context)
+        self.append('mv %(home)s %(home)s.deleted || exit_code=1' % context)
         self.append(textwrap.dedent("""
             { sleep 2 && killall -u %(user)s -s KILL; } &
             killall -u %(user)s || true

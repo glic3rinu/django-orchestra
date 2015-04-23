@@ -3,7 +3,7 @@ from rest_framework.reverse import reverse
 
 
 def link_wrap(view, view_names):
-    def wrapper(self, request, view=view, *args, **kwargs):
+    def wrapper(self, request, *args, **kwargs):
         """ wrapper function that inserts HTTP links on view """
         links = []
         for name in view_names:

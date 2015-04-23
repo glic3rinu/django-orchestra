@@ -9,7 +9,7 @@ class EmailUsageListFilter(SimpleListFilter):
     parameter_name = 'email_usages'
     
     def lookups(self, request, model_admin):
-        return Contact.email_usage.field.choices
+        return Contact.EMAIL_USAGES
     
     def queryset(self, request, queryset):
         value = self.value()

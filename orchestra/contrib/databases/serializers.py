@@ -3,9 +3,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.api.serializers import HyperlinkedModelSerializer
+from orchestra.api.serializers import HyperlinkedModelSerializer, SetPasswordHyperlinkedSerializer
 from orchestra.contrib.accounts.serializers import AccountSerializerMixin
-from orchestra.core.validators import validate_password
 
 from .models import Database, DatabaseUser
 
@@ -21,7 +20,7 @@ class RelatedDatabaseUserSerializer(AccountSerializerMixin, serializers.Hyperlin
 
 
 class DatabaseSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
-    users = RelatedDatabaseUserSerializer(many=True, allow_add_remove=True)
+    users = RelatedDatabaseUserSerializer(many=True) #allow_add_remove=True
     
     class Meta:
         model = Database
@@ -29,6 +28,7 @@ class DatabaseSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         postonly_fields = ('name', 'type')
     
     def validate(self, attrs):
+        attrs = super(DatabaseSerializer, self).validate(attrs)
         for user in attrs['users']:
             if user.type != attrs['type']:
                 raise serializers.ValidationError("User type must be" % attrs['type'])
@@ -45,25 +45,17 @@ class RelatedDatabaseSerializer(AccountSerializerMixin, serializers.HyperlinkedM
         return get_object_or_404(queryset, name=data['name'])
 
 
-class DatabaseUserSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
-    password = serializers.CharField(max_length=128, label=_('Password'),
-            validators=[validate_password], write_only=True,
-            widget=widgets.PasswordInput)
-    databases = RelatedDatabaseSerializer(many=True, allow_add_remove=True, required=False)
-        
+class DatabaseUserSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):
+    databases = RelatedDatabaseSerializer(many=True, required=False) # allow_add_remove=True
+    
     class Meta:
         model = DatabaseUser
         fields = ('url', 'username', 'password', 'type', 'databases')
-        postonly_fields = ('username', 'type')
+        postonly_fields = ('username', 'type', 'password')
     
     def validate(self, attrs):
+        attrs = super(DatabaseUserSerializer, self).validate(attrs)
         for database in attrs.get('databases', []):
             if database.type != attrs['type']:
                 raise serializers.ValidationError("Database type must be" % attrs['type'])
         return attrs
-    
-    def save_object(self, obj, **kwargs):
-        # FIXME this method will be called when saving nested serializers :(
-        if not obj.pk:
-            obj.set_password(obj.password)
-        super(DatabaseUserSerializer, self).save_object(obj, **kwargs)

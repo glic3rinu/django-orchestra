@@ -14,7 +14,7 @@ class AccountApiMixin(object):
 
 
 class AccountViewSet(LogApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
-    model = Account
+    queryset = Account.objects.all()
     serializer_class = AccountSerializer
     singleton_pk = lambda _,request: request.user.pk
     

@@ -38,7 +38,7 @@ class APIRoot(views.APIView):
                     kwargs = {}
                 url = reverse(url_name, request=request, format=format, kwargs=kwargs)
                 links.append('<%s>; rel="%s"' % (url, url_name))
-                model = viewset.model
+                model = viewset.queryset.model
                 group = None
                 if model in services:
                     group = 'services'
@@ -61,10 +61,10 @@ class APIRoot(views.APIView):
         })
         return Response(body, headers=headers)
     
-    def metadata(self, request):
-        ret = super(APIRoot, self).metadata(request)
-        ret['settings'] = {
+    def options(self, request):
+        metadata = super(APIRoot, self).options(request)
+        metadata.data['settings'] = {
             name.lower(): getattr(settings, name, None)
             for name in self.names
         }
-        return ret
+        return metadata

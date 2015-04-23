@@ -20,6 +20,6 @@ class AccountSerializerMixin(object):
         if request:
             self.account = request.user
     
-    def save_object(self, obj, **kwargs):
-        obj.account = self.account
-        super(AccountSerializerMixin, self).save_object(obj, **kwargs)
+    def create(self, validated_data):
+        validated_data['account'] = self.account
+        return super(AccountSerializerMixin, self).create(validated_data)

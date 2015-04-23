@@ -1,12 +1,12 @@
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
 from .serializers import SetPasswordSerializer
 
 
 class SetPasswordApiMixin(object):
-    @action(serializer_class=SetPasswordSerializer)
+    @detail_route(serializer_class=SetPasswordSerializer)
     def set_password(self, request, pk):
         obj = self.get_object()
         data = request.DATA

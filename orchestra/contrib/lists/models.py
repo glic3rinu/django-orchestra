@@ -8,6 +8,17 @@ from orchestra.core.validators import validate_name
 from . import settings
 
 
+class ListQuerySet(models.QuerySet):
+    def create(self, **kwargs):
+        """ Sets password if provided, all within a single DB operation """
+        password = kwargs.pop('password')
+        instance = self.model(**kwargs)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
+
 # TODO address and domain, perhaps allow only domain?
 
 class List(models.Model):
@@ -26,6 +37,8 @@ class List(models.Model):
         help_text=_("Designates whether this account should be treated as active. "
                     "Unselect this instead of deleting accounts."))
     password = None
+    
+    objects = ListQuerySet.as_manager()
     
     class Meta:
         unique_together = ('address_name', 'address_domain')

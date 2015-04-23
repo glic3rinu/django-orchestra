@@ -27,7 +27,7 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
 class TicketSerializer(serializers.HyperlinkedModelSerializer):
     """ Validates if this zone generates a correct zone file """
     messages = MessageSerializer(required=False, many=True)
-    is_read = serializers.SerializerMethodField('get_is_read')
+    is_read = serializers.SerializerMethodField()
     
     class Meta:
         model = Ticket

@@ -8,7 +8,7 @@ from .serializers import ContactSerializer
 
 
 class ContactViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    model = Contact
+    queryset = Contact.objects.all()
     serializer_class = ContactSerializer
 
 

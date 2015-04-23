@@ -16,6 +16,7 @@ from .models import BackendLog
 @receiver(post_save, dispatch_uid='orchestration.post_save_collector')
 def post_save_collector(sender, *args, **kwargs):
     if sender not in [BackendLog, Operation]:
+        instance = kwargs.get('instance')
         OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
 

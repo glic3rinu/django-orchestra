@@ -12,7 +12,7 @@ from .serializers import BillSerializer
 
 
 class BillViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    model = Bill
+    queryset = Bill.objects.all()
     serializer_class = BillSerializer
     
     @detail_route(methods=['get'])

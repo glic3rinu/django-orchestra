@@ -8,6 +8,9 @@ from .. import settings
 
 class WebAppServiceMixin(object):
     model = 'webapps.WebApp'
+    related_models = (
+        ('webapps.WebAppOption', 'webapp'),
+    )
     directive = None
     
     def create_webapp_dir(self, context):

@@ -2,11 +2,10 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from orchestra.api.fields import OptionField
 from orchestra.api.serializers import HyperlinkedModelSerializer
 from orchestra.contrib.accounts.serializers import AccountSerializerMixin
 
-from .models import Website, Content
+from .models import Website, Content, WebsiteDirective
 from .validators import validate_domain_protocol
 
 
@@ -22,7 +21,7 @@ class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
 
 class RelatedWebAppSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
-#        model = Content.webapp.field.rel.to
+        model = Content.webapp.field.rel.to
         fields = ('url', 'name', 'type')
     
     def from_native(self, data, files=None):
@@ -41,11 +40,23 @@ class ContentSerializer(serializers.HyperlinkedModelSerializer):
         return '%s-%s' % (data.get('website'), data.get('path'))
 
 
+class DirectiveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebsiteDirective
+        fields = ('name', 'value')
+    
+    def to_representation(self, instance):
+        return {prop.name: prop.value for prop in instance.all()}
+    
+    def to_internal_value(self, data):
+        return data
+
+
 class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
-    domains = RelatedDomainSerializer(many=True, allow_add_remove=True, required=False)
-    contents = ContentSerializer(required=False, many=True, allow_add_remove=True,
+    domains = RelatedDomainSerializer(many=True, required=False) #allow_add_remove=True
+    contents = ContentSerializer(required=False, many=True, #allow_add_remove=True,
             source='content_set')
-    directives = OptionField(required=False)
+    directives = DirectiveSerializer(required=False)
     
     class Meta:
         model = Website
@@ -61,4 +72,31 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
                 # TODO not sure about this one
                 self.add_error(None, e)
         return instance
-
+    
+    def create(self, validated_data):
+        options_data = validated_data.pop('options')
+        webapp = super(WebsiteSerializer, self).create(validated_data)
+        for key, value in options_data.items():
+            WebAppOption.objects.create(webapp=webapp, name=key, value=value)
+        return webap
+    
+    def update(self, instance, validated_data):
+        options_data = validated_data.pop('options')
+        instance = super(WebsiteSerializer, self).update(validated_data)
+        existing = {}
+        for obj in instance.options.all():
+            existing[obj.name] = obj
+        posted = set()
+        for key, value in options_data.items():
+            posted.add(key)
+            try:
+                option = existing[key]
+            except KeyError:
+                option = instance.options.create(name=key, value=value)
+            else:
+                if option.value != value:
+                    option.value = value
+                    option.save(update_fields=('value',))
+        for to_delete in set(existing.keys())-posted:
+            existing[to_delete].delete()
+        return instance

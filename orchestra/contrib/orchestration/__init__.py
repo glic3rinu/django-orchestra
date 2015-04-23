@@ -25,7 +25,9 @@ class Operation():
         self.backend = backend
         # instance should maintain any dynamic attribute until backend execution
         # deep copy is prefered over copy otherwise objects will share same atributes (queryset cache)
+        print('aa', getattr(instance, 'password', 'NOOOO'), id(instance))
         self.instance = copy.deepcopy(instance)
+        print('aa', getattr(self.instance, 'password', 'NOOOO'), id(self.instance))
         self.action = action
         self.servers = servers
     

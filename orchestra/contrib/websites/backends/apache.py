@@ -127,13 +127,13 @@ class Apache2Backend(ServiceController):
             echo -n "$state" > /dev/shm/restart.apache2
             if [[ $UPDATED == 1 ]]; then
                 if [[ $locked == 0 ]]; then
-                    service apache2 satus && service apache2 reload || service apache2 start
+                    service apache2 status && service apache2 reload || service apache2 start
                 else
                     echo "Apache2Backend RESTART" >> /dev/shm/restart.apache2
                 fi
             elif [[ "$state" =~ .*RESTART$ ]]; then
                 rm /dev/shm/restart.apache2
-                service apache2 satus && service apache2 reload || service apache2 start
+                service apache2 status && service apache2 reload || service apache2 start
             fi""")
         )
         super(Apache2Backend, self).commit()

@@ -24,12 +24,14 @@ def orchestra_version():
 def rest_to_admin_url(context):
     """ returns the admin equivelent url of the current REST API view """
     view = context['view']
-    model = getattr(view, 'model', None)
+    queryset = getattr(view, 'queryset', None)
+    model = queryset.model if queryset else None
     url = 'admin:index'
     args = []
     if model:
-        url = 'admin:%s_%s' % (model._meta.app_label, model._meta.module_name)
-        pk = view.kwargs.get(view.pk_url_kwarg)
+        opts = model._meta
+        url = 'admin:%s_%s' % (opts.app_label, opts.model_name)
+        pk = view.kwargs.get(view.lookup_field)
         if pk:
             url += '_change'
             args = [pk]

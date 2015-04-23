@@ -8,7 +8,8 @@ from .serializers import OrderSerializer
 
 
 class OrderViewSet(AccountApiMixin, viewsets.ModelViewSet):
-    model = Order
+    queryset = Order.objects.all()
     serializer_class = OrderSerializer
+
 
 router.register(r'orders', OrderViewSet)

@@ -3,9 +3,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.api.serializers import HyperlinkedModelSerializer
+from orchestra.api.serializers import SetPasswordHyperlinkedSerializer
 from orchestra.contrib.accounts.serializers import AccountSerializerMixin
-from orchestra.core.validators import validate_password
 
 from .models import Mailbox, Address
 
@@ -32,10 +31,7 @@ class RelatedAddressSerializer(AccountSerializerMixin, serializers.HyperlinkedMo
         return get_object_or_404(queryset, name=data['name'])
 
 
-class MailboxSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
-    password = serializers.CharField(max_length=128, label=_('Password'),
-            validators=[validate_password], write_only=True, required=False,
-            widget=widgets.PasswordInput)
+class MailboxSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):
     addresses = RelatedAddressSerializer(many=True, read_only=True)
     
     class Meta:
@@ -43,22 +39,7 @@ class MailboxSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         fields = (
             'url', 'name', 'password', 'filtering', 'custom_filtering', 'addresses', 'is_active'
         )
-        postonly_fields = ('name',)
-    
-    def validate_password(self, attrs, source):
-        """ POST only password """
-        if self.object:
-            if 'password' in attrs:
-                raise serializers.ValidationError(_("Can not set password"))
-        elif 'password' not in attrs:
-            raise serializers.ValidationError(_("Password required"))
-        return attrs
-    
-    def save_object(self, obj, **kwargs):
-        # FIXME this method will be called when saving nested serializers :(
-        if not obj.pk:
-            obj.set_password(obj.password)
-        super(MailboxSerializer, self).save_object(obj, **kwargs)
+        postonly_fields = ('name', 'password')
 
 
 class RelatedMailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
@@ -73,13 +54,14 @@ class RelatedMailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedMo
 
 class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     domain = RelatedDomainSerializer()
-    mailboxes = RelatedMailboxSerializer(many=True, allow_add_remove=True, required=False)
+    mailboxes = RelatedMailboxSerializer(many=True, required=False) #allow_add_remove=True
     
     class Meta:
         model = Address
         fields = ('url', 'name', 'domain', 'mailboxes', 'forward')
     
     def validate(self, attrs):
+        attrs = super(AddressSerializer, self).validate(attrs)
         if not attrs['mailboxes'] and not attrs['forward']:
             raise serializers.ValidationError("A mailbox or forward address should be provided.")
         return attrs

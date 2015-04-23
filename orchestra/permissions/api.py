@@ -6,11 +6,12 @@ class OrchestraPermissionBackend(DjangoModelPermissions):
     """ Permissions according to each user """
     
     def has_permission(self, request, view):
-        model_cls = getattr(view, 'model', None)
-        if not model_cls:
+        queryset = getattr(view, 'queryset', None)
+        if queryset is None:
             name = resolve(request.path).url_name
             return name == 'api-root'
         
+        model_cls = queryset.model
         perms = self.get_required_permissions(request.method, model_cls)
         if (request.user and
             request.user.is_authenticated() and

@@ -285,4 +285,4 @@ https://code.djangoproject.com/ticket/24576
 # replace multichoicefield and jsonfield by ArrayField, HStoreField
 # Amend lines???
 
-
+# Add icon on select contact view

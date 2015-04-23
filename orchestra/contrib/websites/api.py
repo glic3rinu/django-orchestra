@@ -9,17 +9,17 @@ from .serializers import WebsiteSerializer
 
 
 class WebsiteViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    model = Website
+    queryset = Website.objects.all()
     serializer_class = WebsiteSerializer
     filter_fields = ('name',)
     
-    def metadata(self, request):
-        ret = super(WebsiteViewSet, self).metadata(request)
+    def options(self, request):
+        metadata = super(WebsiteViewSet, self).options(request)
         names = ['WEBSITES_OPTIONS', 'WEBSITES_PORT_CHOICES']
-        ret['settings'] = {
+        metadata.data['settings'] = {
             name.lower(): getattr(settings, name, None) for name in names
         }
-        return ret
+        return metadata
 
 
 router.register(r'websites', WebsiteViewSet)

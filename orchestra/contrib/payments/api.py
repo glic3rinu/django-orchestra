@@ -8,13 +8,13 @@ from .serializers import PaymentSourceSerializer, TransactionSerializer
 
 
 class PaymentSourceViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    model = PaymentSource
     serializer_class = PaymentSourceSerializer
+    queryset = PaymentSource.objects.all()
 
 
 class TransactionViewSet(LogApiMixin, viewsets.ModelViewSet):
-    model = Transaction
     serializer_class = TransactionSerializer
+    queryset = Transaction.objects.all()
 
 
 router.register(r'payment-sources', PaymentSourceViewSet)

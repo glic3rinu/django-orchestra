@@ -7,8 +7,8 @@ from .models import Resource, ResourceData
 
 
 class ResourceSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField('get_name')
-    unit = serializers.Field()
+    name = serializers.SerializerMethodField()
+    unit = serializers.ReadOnlyField()
     
     class Meta:
         model = ResourceData
@@ -72,19 +72,19 @@ def insert_resource_serializers():
         viewset = router.get_viewset(model)
         viewset.serializer_class.validate_resources = validate_resources
         
-        old_metadata = viewset.metadata
-        def metadata(self, request, resources=resources):
+        old_options = viewset.options
+        def options(self, request, resources=resources):
             """ Provides available resources description """
-            ret = old_metadata(self, request)
-            ret['available_resources'] = [
+            metadata = old_options(self, request)
+            metadata.data['available_resources'] = [
                 {
                     'name': resource.name,
                     'on_demand': resource.on_demand,
                     'default_allocation': resource.default_allocation
                 } for resource in resources
             ]
-            return ret
-        viewset.metadata = metadata
+            return metadata
+        viewset.options = options
 
 if database_ready():
     insert_resource_serializers()

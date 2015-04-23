@@ -40,7 +40,7 @@ class Apache2Backend(ServiceController):
         extra_conf = sorted(extra_conf, key=lambda a: len(a[0]), reverse=True)
         context['extra_conf'] = '\n'.join([conf for location, conf in extra_conf])
         return Template(textwrap.dedent("""\
-            <VirtualHost {% for ip in ips %}{{ ip }}:{{ port }} {% endfor %}>
+            <VirtualHost{% for ip in ips %} {{ ip }}:{{ port }}{% endfor %}>
                 IncludeOptional /etc/apache2/site[s]-override/{{ site_unique_name }}.con[f]
                 ServerName {{ server_name }}\
             {% if server_alias %}
@@ -59,7 +59,7 @@ class Apache2Backend(ServiceController):
     def render_redirect_https(self, context):
         context['port'] = self.HTTP_PORT
         return Template(textwrap.dedent("""
-            <VirtualHost {% for ip in ips %}{{ ip }}:{{ port }} {% endfor %}>
+            <VirtualHost{% for ip in ips %} {{ ip }}:{{ port }}{% endfor %}>
                 ServerName {{ server_name }}\
             {% if server_alias %}
                 ServerAlias {{ server_alias|join:' ' }}{% endif %}\

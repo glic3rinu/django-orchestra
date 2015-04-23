@@ -286,3 +286,6 @@ https://code.djangoproject.com/ticket/24576
 # Amend lines???
 
 # Add icon on select contact view
+
+# Determine the difference between data serializer used for validation and used for the rest API!
+# Make PluginApiView that fills metadata and other stuff like modeladmin plugin support

@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 class UNIXUserMaildirBackend(ServiceController):
+    """
+    Assumes that all system users on this servers all mail accounts.
+    If you want to have system users AND mailboxes on the same server you should consider using virtual mailboxes
+    """
     verbose_name = _("UNIX maildir user")
     model = 'mailboxes.Mailbox'
     
@@ -74,6 +78,9 @@ class UNIXUserMaildirBackend(ServiceController):
 
 
 class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
+    """
+    WARNING: This backends is not fully implemented
+    """
     verbose_name = _("Dovecot-Postfix virtualuser")
     model = 'mailboxes.Mailbox'
     # TODO related_models = ('resources__content_type') ?? needed for updating disk usage from resource.data
@@ -176,6 +183,17 @@ class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
 
 
 class PostfixAddressBackend(ServiceController):
+    """
+    Addresses based on Postfix virtual alias domains.
+    <tt>MAILBOXES_LOCAL_DOMAIN = '%s'
+    MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH = '%s'
+    MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH = '%s'</tt>
+    """
+    format_docstring = (
+        settings.MAILBOXES_LOCAL_DOMAIN,
+        settings.MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH,
+        settings.MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH,
+    )
     verbose_name = _("Postfix address")
     model = 'mailboxes.Address'
     related_models = (
@@ -267,6 +285,9 @@ class PostfixAddressBackend(ServiceController):
 
 
 class AutoresponseBackend(ServiceController):
+    """
+    WARNING: not implemented
+    """
     verbose_name = _("Mail autoresponse")
     model = 'mailboxes.Autoresponse'
 
@@ -274,9 +295,13 @@ class AutoresponseBackend(ServiceController):
 class DovecotMaildirDisk(ServiceMonitor):
     """
     Maildir disk usage based on Dovecot maildirsize file
-    
     http://wiki2.dovecot.org/Quota/Maildir
+    
+    MAILBOXES_MAILDIRSIZE_PATH = '%s'
     """
+    format_docstring = (
+        settings.MAILBOXES_MAILDIRSIZE_PATH,
+    )
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.DISK
     verbose_name = _("Dovecot Maildir size")
@@ -304,9 +329,13 @@ class DovecotMaildirDisk(ServiceMonitor):
 
 class PostfixMailscannerTraffic(ServiceMonitor):
     """
-    A high-performance log parser
-    Reads the mail.log file only once, for all users
+    A high-performance log parser.
+    Reads the mail.log file only once, for all users.
+    MAILBOXES_MAIL_LOG_PATH = '%s'
     """
+    format_docstring = (
+        settings.MAILBOXES_MAIL_LOG_PATH,
+    )
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Postfix-Mailscanner traffic")
@@ -460,8 +489,3 @@ class PostfixMailscannerTraffic(ServiceMonitor):
             'last_date': self.get_last_date(mailbox.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
         return replace(context, "'", '"')
-
-
-
-
-

@@ -8,13 +8,12 @@ from .serializers import AddressSerializer, MailboxSerializer
 
 
 class AddressViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    queryset = Address.objects.all()
+    queryset = Address.objects.select_related('domain').prefetch_related('mailboxes').all()
     serializer_class = AddressSerializer
 
 
-
 class MailboxViewSet(LogApiMixin, SetPasswordApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    queryset = Mailbox.objects.all()
+    queryset = Mailbox.objects.prefetch_related('addresses__domain').all()
     serializer_class = MailboxSerializer
 
 

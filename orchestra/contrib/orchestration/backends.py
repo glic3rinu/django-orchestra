@@ -45,6 +45,7 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
     default_route_match = 'True'
     # Force the backend manager to block in multiple backend executions executing them synchronously
     block = False
+    format_docstring = ()
     
     def __str__(self):
         return type(self).__name__

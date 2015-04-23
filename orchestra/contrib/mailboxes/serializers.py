@@ -25,10 +25,10 @@ class RelatedAddressSerializer(AccountSerializerMixin, serializers.HyperlinkedMo
     class Meta:
         model = Address
         fields = ('url', 'name', 'domain', 'forward')
-    
-    def from_native(self, data, files=None):
-        queryset = self.opts.model.objects.filter(account=self.account)
-        return get_object_or_404(queryset, name=data['name'])
+#    
+#    def from_native(self, data, files=None):
+#        queryset = self.opts.model.objects.filter(account=self.account)
+#        return get_object_or_404(queryset, name=data['name'])
 
 
 class MailboxSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):

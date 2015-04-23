@@ -10,6 +10,19 @@ from .models import List
 
 
 class MailmanBackend(ServiceController):
+    """
+    Mailman backend based on `newlist`, it handles custom domains.
+    LISTS_VIRTUAL_ALIAS_PATH = '%s'
+    LISTS_VIRTUAL_ALIAS_DOMAINS_PATH = '%s'
+    LISTS_DEFAULT_DOMAIN = '%s'
+    LISTS_MAILMAN_ROOT_DIR = '%s'
+    """
+    format_docstring = (
+        settings.LISTS_VIRTUAL_ALIAS_PATH,
+        settings.LISTS_VIRTUAL_ALIAS_DOMAINS_PATH,
+        settings.LISTS_DEFAULT_DOMAIN,
+        settings.LISTS_MAILMAN_ROOT_DIR,
+    )
     verbose_name = "Mailman"
     model = 'lists.List'
     addresses = [
@@ -149,75 +162,15 @@ class MailmanBackend(ServiceController):
         return replace(context, "'", '"')
 
 
-class MailmanTrafficBash(ServiceMonitor):
-    model = 'lists.List'
-    resource = ServiceMonitor.TRAFFIC
-    verbose_name = _("Mailman traffic (Bash)")
-    
-    def prepare(self):
-        super(MailmanTraffic, self).prepare()
-        context = {
-            'mailman_log': '%s{,.1}' % settings.LISTS_MAILMAN_POST_LOG_PATH,
-            'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
-        }
-        self.append(textwrap.dedent("""\
-            function monitor () {
-                OBJECT_ID=$1
-                # Dates convertions are done server-side because of timezone discrepancies
-                INI_DATE=$(date "+%%Y%%m%%d%%H%%M%%S" -d "$2")
-                END_DATE=$(date '+%%Y%%m%%d%%H%%M%%S' -d '%(current_date)s')
-                LIST_NAME="$3"
-                MAILMAN_LOG=%(mailman_log)s
-                
-                SUBSCRIBERS=$(list_members ${LIST_NAME} | wc -l)
-                {
-                    { grep " post to ${LIST_NAME} " ${MAILMAN_LOG} || echo '\\r'; } \\
-                        | awk -v ini="${INI_DATE}" -v end="${END_DATE}" -v subs="${SUBSCRIBERS}" '
-                            BEGIN {
-                                sum = 0
-                                months["Jan"] = "01"
-                                months["Feb"] = "02"
-                                months["Mar"] = "03"
-                                months["Apr"] = "04"
-                                months["May"] = "05"
-                                months["Jun"] = "06"
-                                months["Jul"] = "07"
-                                months["Aug"] = "08"
-                                months["Sep"] = "09"
-                                months["Oct"] = "10"
-                                months["Nov"] = "11"
-                                months["Dec"] = "12"
-                            } {
-                                # Mar 01 08:29:02 2015
-                                month = months[$1]
-                                day = $2
-                                year = $4
-                                split($3, time, ":")
-                                line_date = year month day time[1] time[2] time[3]
-                                if ( line_date > ini && line_date < end)
-                                    sum += substr($11, 6, length($11)-6)
-                            } END {
-                                print sum * subs
-                            }' || [[ $? == 1 ]] && true
-                } | xargs echo ${OBJECT_ID}
-            }""") % context)
-    
-    def monitor(self, mail_list):
-        context = self.get_context(mail_list)
-        self.append(
-            'monitor %(object_id)i "%(last_date)s" "%(list_name)s"' % context
-        )
-    
-    def get_context(self, mail_list):
-        context = {
-            'list_name': mail_list.name,
-            'object_id': mail_list.pk,
-            'last_date': self.get_last_date(mail_list.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
-        }
-        return replace(context, "'", '"')
-
 
 class MailmanTraffic(ServiceMonitor):
+    """
+    Parses mailman log file looking for email size and multiples it by `list_members` count.
+    LISTS_MAILMAN_POST_LOG_PATH = '%s'
+    """
+    format_docstring = (
+        settings.LISTS_MAILMAN_POST_LOG_PATH,
+    )
     model = 'lists.List'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Mailman traffic")
@@ -235,13 +188,13 @@ class MailmanTraffic(ServiceMonitor):
             import sys
             from datetime import datetime
             from dateutil import tz
-
+            
             def to_local_timezone(date, tzlocal=tz.tzlocal()):
                 date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %Z')
                 date = date.replace(tzinfo=tz.tzutc())
                 date = date.astimezone(tzlocal)
                 return date
-
+            
             postlogs = {postlogs}
             # Use local timezone
             end_date = to_local_timezone('{current_date}')
@@ -261,13 +214,13 @@ class MailmanTraffic(ServiceMonitor):
                 'Nov': '11',
                 'Dec': '12',
             }}
-
+            
             def prepare(object_id, list_name, ini_date):
                 global lists
                 ini_date = to_local_timezone(ini_date)
                 ini_date = int(ini_date.strftime('%Y%m%d%H%M%S'))
                 lists[list_name] = [ini_date, object_id, 0]
-
+            
             def monitor(lists, end_date, months, postlogs):
                 for postlog in postlogs:
                     try:
@@ -318,6 +271,9 @@ class MailmanTraffic(ServiceMonitor):
 
 
 class MailmanSubscribers(ServiceMonitor):
+    """
+    Monitors number of list subscribers via `list_members`
+    """
     model = 'lists.List'
     verbose_name = _("Mailman subscribers")
     

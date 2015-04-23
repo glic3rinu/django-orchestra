@@ -9,7 +9,7 @@ from .serializers import WebsiteSerializer
 
 
 class WebsiteViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    queryset = Website.objects.all()
+    queryset = Website.objects.prefetch_related('domains', 'content_set__webapp', 'directives').all()
     serializer_class = WebsiteSerializer
     filter_fields = ('name',)
     

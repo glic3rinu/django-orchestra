@@ -114,6 +114,11 @@ WEBAPPS_UWSGI_SOCKET = getattr(settings, 'WEBAPPS_UWSGI_SOCKET',
 )
 
 
+WEBAPPS_UWSGI_BASE_DIR = getattr(settings, 'WEBAPPS_UWSGI_BASE_DIR',
+    '/etc/uwsgi/'
+)
+
+
 WEBAPPS_PYTHON_MAX_REQUESTS = getattr(settings, 'WEBAPPS_PYTHON_MAX_REQUESTS',
     500
 )

@@ -7,7 +7,9 @@ from . import WebAppServiceMixin
 
 # TODO DEPRECATE
 class WebalizerAppBackend(WebAppServiceMixin, ServiceController):
-    """ Needed for cleaning up webalizer main folder when webapp deleteion withou related contents """
+    """
+    Needed for cleaning up webalizer main folder when webapp deleteion withou related contents
+    """
     verbose_name = _("Webalizer App")
     default_route_match = "webapp.type == 'webalizer'"
     

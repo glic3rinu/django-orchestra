@@ -35,7 +35,7 @@ class WebAppSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     
     def update(self, instance, validated_data):
         options_data = validated_data.pop('options')
-        instance = super(WebAppSerializer, self).update(validated_data)
+        instance = super(WebAppSerializer, self).update(instance, validated_data)
         existing = {}
         for obj in instance.options.all():
             existing[obj.name] = obj

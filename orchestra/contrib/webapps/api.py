@@ -5,11 +5,13 @@ from orchestra.contrib.accounts.api import AccountApiMixin
 
 from . import settings
 from .models import WebApp
+from .options import AppOption
 from .serializers import WebAppSerializer
+from .types import AppType
 
 
 class WebAppViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
-    queryset = WebApp.objects.all()
+    queryset = WebApp.objects.prefetch_related('options').all()
     serializer_class = WebAppSerializer
     filter_fields = ('name',)
     
@@ -22,6 +24,31 @@ class WebAppViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
         metadata.data['settings'] = {
             name.lower(): getattr(settings, name, None) for name in names
         }
+        # AppTypes
+        meta = self.metadata_class()
+        app_types = {}
+        for app_type in AppType.get_plugins():
+            if app_type.serializer:
+                data = meta.get_serializer_info(app_type.serializer())
+            else:
+                data = {}
+            options = []
+            for group, option in app_type.get_options():
+                options += [opt.name for opt in option]
+            app_types[app_type.get_name()] = {
+                'data': data,
+                'options': options,
+            }
+        metadata.data['actions']['types'] = app_types
+        # Options
+        options = {}
+        for option in AppOption.get_plugins():
+            options[option.get_name()] = {
+                'verbose_name': option.get_verbose_name(),
+                'help_text': option.help_text,
+                'group': option.group,
+            }
+        metadata.data['actions']['options'] = options
         return metadata
 
 

@@ -9,6 +9,12 @@ from . import settings
 
 
 class MySQLBackend(ServiceController):
+    """
+    Simple backend for creating MySQL databases using `CREATE DATABASE` statement.
+    DATABASES_DEFAULT_HOST = %s
+    """
+    format_docstring = (settings.DATABASES_DEFAULT_HOST,)
+    
     verbose_name = "MySQL database"
     model = 'databases.Database'
     default_route_match = "database.type == 'mysql'"
@@ -54,6 +60,11 @@ class MySQLBackend(ServiceController):
 
 
 class MySQLUserBackend(ServiceController):
+    """
+    Simple backend for creating MySQL users using `CREATE USER` statement.
+    DATABASES_DEFAULT_HOST = %s
+    """ % settings.DATABASES_DEFAULT_HOST
+    
     verbose_name = "MySQL user"
     model = 'databases.DatabaseUser'
     default_route_match = "databaseuser.type == 'mysql'"
@@ -93,6 +104,10 @@ class MySQLUserBackend(ServiceController):
 
 
 class MysqlDisk(ServiceMonitor):
+    """
+    du -bs <database_path>
+    Implements triggers for resource limit exceeded and recovery, disabling insert and create privileges.
+    """
     model = 'databases.Database'
     verbose_name = _("MySQL disk")
     

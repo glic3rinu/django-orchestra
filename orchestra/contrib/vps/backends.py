@@ -3,6 +3,9 @@ from orchestra.contrib.resources import ServiceMonitor
 
 
 class OpenVZTraffic(ServiceMonitor):
+    """
+    WARNING: Not fully implemeted
+    """
     model = 'vps.VPS'
     resource = ServiceMonitor.TRAFFIC
     

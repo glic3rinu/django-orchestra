@@ -10,6 +10,16 @@ from . import settings
 
 
 class UNIXUserBackend(ServiceController):
+    """
+    Basic UNIX system user/group support based on `useradd`, `usermod`, `userdel` and `groupdel`.
+    <tt>SYSTEMUSERS_DEFAULT_GROUP_MEMBERS = '%s'
+    SYSTEMUSERS_MOVE_ON_DELETE_PATH = '%s'</tt>
+    """
+    format_docstring = (
+        settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS,
+        settings.SYSTEMUSERS_MOVE_ON_DELETE_PATH,
+    )
+    
     verbose_name = _("UNIX user")
     model = 'systemusers.SystemUser'
     actions = ('save', 'delete', 'grant_permission')
@@ -84,6 +94,9 @@ class UNIXUserBackend(ServiceController):
 
 
 class UNIXUserDisk(ServiceMonitor):
+    """
+    `du -bs <home>`
+    """
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.DISK
     verbose_name = _('UNIX user disk')
@@ -109,6 +122,14 @@ class UNIXUserDisk(ServiceMonitor):
 
 
 class Exim4Traffic(ServiceMonitor):
+    """
+    Exim4 mainlog parser for mails sent on the webserver by system users (e.g. via PHP mail())
+    SYSTEMUSERS_MAIL_LOG_PATH = '%s'
+    """
+    format_docstring = (
+        settings.SYSTEMUSERS_MAIL_LOG_PATH,
+    )
+    
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Exim4 traffic")
@@ -188,6 +209,13 @@ class Exim4Traffic(ServiceMonitor):
 
 
 class VsFTPdTraffic(ServiceMonitor):
+    """
+    vsFTPd log parser.
+    SYSTEMUSERS_FTP_LOG_PATH = '%s'
+    """
+    format_docstring = (
+        settings.SYSTEMUSERS_FTP_LOG_PATH,
+    )
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _('VsFTPd traffic')
@@ -279,4 +307,3 @@ class VsFTPdTraffic(ServiceMonitor):
             'username': user.username,
         }
         return replace(context, "'", '"')
-

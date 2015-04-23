@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin.html import monospace_format
 from orchestra.admin.utils import admin_link, admin_date, admin_colored
 
-from . import settings
+from . import settings, helpers
 from .backends import ServiceBackend
 from .models import Server, Route, BackendLog, BackendOperation
 from .widgets import RouteBackendSelect
@@ -31,10 +31,7 @@ class RouteAdmin(admin.ModelAdmin):
     list_filter = ('host', 'is_active', 'backend')
     ordering = ('backend',)
     
-    BACKEND_HELP_TEXT = {
-        backend: "This backend operates over '%s'" % ServiceBackend.get_backend(backend).model
-            for backend, __ in ServiceBackend.get_choices()
-    }
+    BACKEND_HELP_TEXT = helpers.get_backends_help_text(ServiceBackend.get_backends())
     DEFAULT_MATCH = {
         backend.get_name(): backend.default_route_match for backend in ServiceBackend.get_backends()
     }

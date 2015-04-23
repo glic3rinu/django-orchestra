@@ -1,6 +1,9 @@
+import copy
+
 from django.forms import widgets
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
+from rest_framework.utils import model_meta
 
 from ..core.validators import validate_password
 
@@ -10,32 +13,47 @@ class SetPasswordSerializer(serializers.Serializer):
         style={'widget': widgets.PasswordInput}, validators=[validate_password])
 
 
-#class HyperlinkedModelSerializerOptions(serializers.HyperlinkedModelSerializerOptions):
-#    def __init__(self, meta):
-#        super(HyperlinkedModelSerializerOptions, self).__init__(meta)
-#        self.postonly_fields = getattr(meta, 'postonly_fields', ())
-
-
 class HyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
     """ support for postonly_fields, fields whose value can only be set on post """
-#    _options_class = HyperlinkedModelSerializerOptions
     
     def validate(self, attrs):
         """ calls model.clean() """
         attrs = super(HyperlinkedModelSerializer, self).validate(attrs)
-        instance = self.Meta.model(**attrs)
+        validated_data = dict(attrs)
+        ModelClass = self.Meta.model
+        # Remove many-to-many relationships from validated_data.
+        info = model_meta.get_field_info(ModelClass)
+        for field_name, relation_info in info.relations.items():
+            if relation_info.to_many and (field_name in validated_data):
+                validated_data.pop(field_name)
+        if self.instance:
+            # on update: Merge provided fields with instance field
+            instance = copy.deepcopy(self.instance)
+            for key, value in validated_data.items():
+                setattr(instance, key, value)
+        else:
+            instance = ModelClass(**validated_data)
         instance.clean()
         return attrs
     
-    # TODO raise validationError instead of silently removing fields
-    def update(self, instance, validated_data):
-        """ removes postonly_fields from attrs when not posting """
+    def post_only_cleanning(self, instance, validated_data):
+        """ removes postonly_fields from attrs """
         model_attrs = dict(**validated_data)
         if instance is not None:
             for attr, value in validated_data.items():
                 if attr in self.Meta.postonly_fields:
                     model_attrs.pop(attr)
+        return model_attrs
+    
+    def update(self, instance, validated_data):
+        """ removes postonly_fields from attrs when not posting """
+        model_attrs = self.post_only_cleanning(instance, validated_data)
         return super(HyperlinkedModelSerializer, self).update(instance, model_attrs)
+    
+    def partial_update(self, instance, validated_data):
+        """ removes postonly_fields from attrs when not posting """
+        model_attrs = self.post_only_cleanning(instance, validated_data)
+        return super(HyperlinkedModelSerializer, self).partial_update(instance, model_attrs)
 
 
 class SetPasswordHyperlinkedSerializer(HyperlinkedModelSerializer):

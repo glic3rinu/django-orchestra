@@ -9,6 +9,9 @@ from .. import settings
 
 
 class WebalizerBackend(ServiceController):
+    """
+    Creates webalizer conf file for each time a webalizer webapp is mounted on a website.
+    """
     verbose_name = _("Webalizer Content")
     model = 'websites.Content'
     default_route_match = "content.webapp.type == 'webalizer'"

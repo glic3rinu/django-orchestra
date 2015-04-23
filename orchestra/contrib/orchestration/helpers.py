@@ -1,9 +1,41 @@
+import textwrap
+
 from django.contrib import messages
 from django.core.mail import mail_admins
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
+
+
+def get_backends_help_text(backends):
+    help_texts = {}
+    for backend in backends:
+        context = {
+            'model': backend.model,
+            'related_models': str(backend.related_models),
+            'script_executable': backend.script_executable,
+            'script_method': str(backend.script_method),
+            'function_method': str(backend.script_method),
+            'actions': ', '.join(backend.actions),
+        }
+        help_text = textwrap.dedent("""
+            - Model: '%(model)s'<br>
+            - Related models: %(related_models)s<br>
+            - Script executable: %(script_executable)s<br>
+            - Script method: %(script_method)s<br>
+            - Function method: %(function_method)s<br>
+            - Actions: %(actions)s<br>"""
+        ) % context
+        docstring = backend.__doc__
+        if docstring:
+            try:
+                docstring = (docstring % backend.format_docstring).strip().splitlines()
+            except TypeError as e:
+                raise TypeError(str(backend) + str(e))
+            help_text += '<br>' + '<br>'.join(docstring)
+        help_texts[backend.get_name()] = help_text
+    return help_texts
 
 
 def send_report(method, args, log):

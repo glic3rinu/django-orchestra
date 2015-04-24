@@ -74,29 +74,29 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         return instance
     
     def create(self, validated_data):
-        options_data = validated_data.pop('options')
+        directives_data = validated_data.pop('directives')
         webapp = super(WebsiteSerializer, self).create(validated_data)
-        for key, value in options_data.items():
-            WebAppOption.objects.create(webapp=webapp, name=key, value=value)
+        for key, value in directives_data.items():
+            WebsiteDirective.objects.create(webapp=webapp, name=key, value=value)
         return webap
     
     def update(self, instance, validated_data):
-        options_data = validated_data.pop('options')
+        directives_data = validated_data.pop('directives')
         instance = super(WebsiteSerializer, self).update(instance, validated_data)
         existing = {}
-        for obj in instance.options.all():
+        for obj in instance.directives.all():
             existing[obj.name] = obj
         posted = set()
-        for key, value in options_data.items():
+        for key, value in directives_data.items():
             posted.add(key)
             try:
-                option = existing[key]
+                directive = existing[key]
             except KeyError:
-                option = instance.options.create(name=key, value=value)
+                directive = instance.directives.create(name=key, value=value)
             else:
-                if option.value != value:
-                    option.value = value
-                    option.save(update_fields=('value',))
+                if directive.value != value:
+                    directive.value = value
+                    directive.save(update_fields=('value',))
         for to_delete in set(existing.keys())-posted:
             existing[to_delete].delete()
         return instance

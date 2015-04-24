@@ -1,6 +1,10 @@
+import re
+
 from django import template
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.forms import CheckboxInput
+from django.template.base import Node
 
 from orchestra import get_version
 from orchestra.admin.utils import change_url
@@ -43,6 +47,22 @@ def rest_to_admin_url(context):
         return reverse('admin:index')
 
 
+class OneLinerNode(Node):
+    def __init__(self, nodelist):
+        self.nodelist = nodelist
+    
+    def render(self, context):
+        line = self.nodelist.render(context).replace('\n', ' ')
+        return re.sub(r'\s\s+', '', line)
+
+
+@register.tag
+def oneliner(parser, token):
+    nodelist = parser.parse(('endoneliner',))
+    parser.delete_first_token()
+    return OneLinerNode(nodelist)
+
+
 @register.filter
 def size(value, length):
     value = str(value)[:int(length)]
@@ -56,6 +76,12 @@ def is_checkbox(field):
 
 
 @register.filter
+def content_type_id(label):
+    app_label, model = label.split('.')
+    return ContentType.objects.filter(app_label=app_label, model=model).values_list('id', flat=True)[0]
+
+
+@register.filter
 def admin_url(obj):
     return change_url(obj)
 
@@ -63,3 +89,4 @@ def admin_url(obj):
 @register.filter
 def isactive(obj):
     return getattr(obj, 'is_active', True)
+

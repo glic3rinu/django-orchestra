@@ -32,13 +32,8 @@ class WebAppViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
                 data = meta.get_serializer_info(app_type.serializer())
             else:
                 data = {}
-            options = []
-            for group, option in app_type.get_options():
-                options += [opt.name for opt in option]
-            app_types[app_type.get_name()] = {
-                'data': data,
-                'options': options,
-            }
+            data['option_groups'] = app_type.option_groups
+            app_types[app_type.get_name()] = data
         metadata.data['actions']['types'] = app_types
         # Options
         options = {}

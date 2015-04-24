@@ -120,7 +120,8 @@ def step_price(rates, metric):
         minimal = min(minimal, (value, result), key=lambda v: v[0])
     return minimal[1]
 step_price.verbose_name = _("Step price")
-step_price.help_text = _("All price rates with a lower metric are applied.")
+step_price.help_text = _("All rates with a quantity lower than the metric are applied. "
+                         "Nominal price will be used when initial block is missing.")
 
 
 def match_price(rates, metric):
@@ -149,4 +150,5 @@ def match_price(rates, metric):
         })]
     return None
 match_price.verbose_name = _("Match price")
-match_price.help_text = _("Only the rate with inmediate inferior metric is applied.")
+match_price.help_text = _("Only <b>the rate</b> with a) inmediate inferior metric and b) lower price is applied. "
+                          "Nominal price will be used when initial block is missing.")

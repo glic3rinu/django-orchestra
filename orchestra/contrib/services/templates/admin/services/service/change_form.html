@@ -1,5 +1,5 @@
 {% extends "orchestra/admin/change_form.html" %}
-{% load i18n admin_urls admin_static admin_modify %}
+{% load i18n admin_urls admin_static admin_modify utils %}
 
 
 {% block object-tools %}
@@ -7,8 +7,9 @@
 <ul class="object-tools">
 <li><select name="forma" onchange="location = this.options[this.selectedIndex].value;" style="margin: -3px 0 0 0;">
      <option selected disabled>{% trans "Templates" %}</option>
+     {% oneliner %}
      <option value="./?description=Mailbox&
-                        content_type=10&
+                        content_type={{ 'mailboxes.mailbox'|content_type_id }}&
                         match=mailbox.active&
                         handler_type=&
                         is_active=True&
@@ -22,9 +23,27 @@
                         nominal_price=28.10&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=MATCH_PRICE&
+                        rate_algorithm=STEP_PRICE&
                         on_cancel=COMPENSATE&
                         payment_style=PREPAY">Mailbox</option>
+    <option value="./?description=Mailbox%20allocated%20disk&
+                        content_type=10&
+                        match=mailbox.active&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=ANUAL&
+                        billing_point=ON_FIXED_DATE&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=TEN_DAYS&
+                        metric=max(logsteps(mailbox.resources.disk.allocated%20or%200)%20-2,%200)&
+                        nominal_price=20.00&
+                        tax=21&
+                        pricing_period=&
+                        rate_algorithm=MATCH_PRICE&
+                        on_cancel=DISCOUNT&
+                        payment_style=PREPAY">Mailbox allocated disk</option>
     <option value="./?description=Database&
                         content_type=19&
                         match=database.account.is_active&handler_type=&
@@ -42,6 +61,115 @@
                         rate_algorithm=STEP_PRICE&
                         on_cancel=COMPENSATE&
                         payment_style=PREPAY">Database</option>
+    <option value="./?description=Basic%20domain&
+                        content_type=34&
+                        match=miscellaneous.active%20and%20miscellaneous.service.name%20==%20%27domain-registration%27&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=ANUAL&
+                        billing_point=ON_REGISTER&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=&
+                        metric=&
+                        nominal_price=19.01&
+                        tax=21&
+                        pricing_period=BILLING_PERIOD&
+                        rate_algorithm=STEP_PRICE&
+                        on_cancel=NOTHING&
+                        payment_style=PREPAY">Basic domain</option>
+    <option value="./?description=Domain%20.cat%20extra&
+                        content_type=34&
+                        match=miscellaneous.active%20and%20miscellaneous.service.name%20==%20%27domain-registration%27%20and%20miscellaneous.identifier.endswith(%27.cat%27)&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=ANUAL&
+                        billing_point=ON_REGISTER&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=&
+                        metric=&
+                        nominal_price=26.59&
+                        tax=21&
+                        pricing_period=BILLING_PERIOD&
+                        rate_algorithm=STEP_PRICE&
+                        on_cancel=NOTHING&
+                        payment_style=PREPAY">Domain .cat extra</option>
+    <option value="./?description=FTP%20account&
+                        content_type=9&
+                        match=systemuser.active%20and%20not%20systemuser.is_main&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=ANUAL&
+                        billing_point=ON_FIXED_DATE&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=TEN_DAYS&
+                        metric=&
+                        nominal_price=28.10&
+                        tax=21&
+                        pricing_period=BILLING_PERIOD&
+                        rate_algorithm=STEP_PRICE&
+                        on_cancel=COMPENSATE&
+                        payment_style=PREPAY">FTP account</option>
+    <option value="./?description=Traffic&
+                        content_type=1&
+                        match=True&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=MONTHLY&
+                        billing_point=ON_FIXED_DATE&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=TEN_DAYS&
+                        metric=logsteps(max((account.resources.traffic.used%20or%200)%20-%20getattr(account.miscellaneous.filter(is_active=True,%20service__name=%27traffic-prepay%27).last(),%20%27amount%27,%200),%200),%20size=0.05)&
+                        nominal_price=4.50&
+                        tax=21&
+                        pricing_period=BILLING_PERIOD&
+                        rate_algorithm=MATCH_PRICE&
+                        on_cancel=NOTHING&
+                        payment_style=POSTPAY">Traffic</option>
+    <option value="./?description=Traffic%20prepay&
+                        content_type=34&
+                        match=miscellaneous.active%20and%20miscellaneous.service.name%20==%20%27traffic-prepay%27&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=ANUAL&
+                        billing_point=ON_FIXED_DATE&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=TEN_DAYS&
+                        metric=miscellaneous.amount&
+                        nominal_price=3.00&
+                        tax=21&
+                        pricing_period=MONTHLY&
+                        rate_algorithm=MATCH_PRICE&
+                        on_cancel=REFUND&
+                        payment_style=PREPAY">Traffic prepay</option>
+    <option value="./?description=Development&
+                        content_type=34&
+                        match=miscellaneous.active%20and%20miscellaneous.service.name%20==%20%27development%27&
+                        handler_type=&
+                        is_active=True&
+                        ignore_superusers=True&
+                        billing_period=&
+                        billing_point=ON_FIXED_DATE&
+                        is_fee=&
+                        order_description=&
+                        ignore_period=TEN_DAYS&
+                        metric=miscellaneous.amount&
+                        nominal_price=40.00&
+                        tax=21&
+                        pricing_period=BILLING_PERIOD&
+                        rate_algorithm=STEP_PRICE&
+                        on_cancel=NOTHING&
+                        payment_style=PREPAY">Develompent</option>
+    {% endoneliner %}
 </select></li>
     <li>
         <a href="./help/" class="historylink">{% trans "Help" %}</a>

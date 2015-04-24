@@ -112,9 +112,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     fields = ('account_link', 'email_link', 'mailboxes', 'forward')
     add_fields = ('account_link', ('name', 'domain'), 'mailboxes', 'forward')
     inlines = [AutoresponseInline]
-    search_fields = (
-        'name', 'domain__name', 'forward', 'mailboxes__name', 'account__username', 'computed_email'
-    )
+    search_fields = ('forward', 'mailboxes__name', 'account__username', 'computed_email')
     readonly_fields = ('account_link', 'domain_link', 'email_link')
     filter_by_account_fields = ('domain', 'mailboxes')
     filter_horizontal = ['mailboxes']
@@ -148,6 +146,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         return '<br>'.join(values)
     display_forward.short_description = _("Forward")
     display_forward.allow_tags = True
+    display_forward.admin_order_field = 'forward'
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'forward':

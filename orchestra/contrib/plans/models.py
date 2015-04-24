@@ -78,7 +78,8 @@ class Rate(models.Model):
     service = models.ForeignKey('services.Service', verbose_name=_("service"),
         related_name='rates')
     plan = models.ForeignKey(Plan, verbose_name=_("plan"), related_name='rates')
-    quantity = models.PositiveIntegerField(_("quantity"), null=True, blank=True)
+    quantity = models.PositiveIntegerField(_("quantity"), null=True, blank=True,
+        help_text=_("See rate algorihm help text."))
     price = models.DecimalField(_("price"), max_digits=12, decimal_places=2)
     
     objects = RateQuerySet.as_manager()

@@ -11,7 +11,6 @@ class SymbolicLinkBackend(PHPBackend, ServiceController):
     """
     Same as PHPBackend but allows you to have the webapps on a directory diferent than the webapps dir.
     """
-    format_docstring = ()
     verbose_name = _("Symbolic link webapp")
     model = 'webapps.WebApp'
     default_route_match = "webapp.type == 'symbolic-link'"

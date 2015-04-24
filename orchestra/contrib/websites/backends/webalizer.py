@@ -15,6 +15,9 @@ class WebalizerBackend(ServiceController):
     verbose_name = _("Webalizer Content")
     model = 'websites.Content'
     default_route_match = "content.webapp.type == 'webalizer'"
+    doc_settings = (settings,
+        ('WEBSITES_WEBALIZER_PATH',)
+    )
     
     def save(self, content):
         context = self.get_context(content)

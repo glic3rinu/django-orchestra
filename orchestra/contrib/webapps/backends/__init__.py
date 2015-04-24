@@ -12,6 +12,9 @@ class WebAppServiceMixin(object):
         ('webapps.WebAppOption', 'webapp'),
     )
     directive = None
+    doc_settings = (settings,
+        ('WEBAPPS_UNDER_CONSTRUCTION_PATH', 'WEBAPPS_MOVE_ON_DELETE_PATH',)
+    )
     
     def create_webapp_dir(self, context):
         self.append(textwrap.dedent("""\
@@ -45,7 +48,7 @@ class WebAppServiceMixin(object):
             'type': webapp.type,
             'app_path': webapp.get_path(),
             'banner': self.get_banner(),
-            'under_construction_path': settings.settings.WEBAPPS_UNDER_CONSTRUCTION_PATH,
+            'under_construction_path': settings.WEBAPPS_UNDER_CONSTRUCTION_PATH,
             'is_mounted': webapp.content_set.exists(),
         }
         context['deleted_app_path'] = settings.WEBAPPS_MOVE_ON_DELETE_PATH % context

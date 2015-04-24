@@ -14,29 +14,21 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     """
     PHP support for apache-mod-fcgid and php-fpm.
     It handles switching between these two PHP process management systemes.
-    WEBAPPS_MERGE_PHP_WEBAPPS = %s
-    WEBAPPS_FPM_DEFAULT_MAX_CHILDREN = %s
-    WEBAPPS_PHP_CGI_BINARY_PATH = '%s'
-    WEBAPPS_PHP_CGI_RC_DIR = '%s'
-    WEBAPPS_PHP_CGI_INI_SCAN_DIR = '%s'
-    WEBAPPS_FCGID_CMD_OPTIONS_PATH = '%s'
-    WEBAPPS_PHPFPM_POOL_PATH = '%s'
-    WEBAPPS_PHP_MAX_REQUESTS = %s
     """
-    format_docstring = (
-        settings.WEBAPPS_MERGE_PHP_WEBAPPS,
-        settings.WEBAPPS_FPM_DEFAULT_MAX_CHILDREN,
-        settings.WEBAPPS_PHP_CGI_BINARY_PATH,
-        settings.WEBAPPS_PHP_CGI_RC_DIR,
-        settings.WEBAPPS_PHP_CGI_INI_SCAN_DIR,
-        settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH,
-        settings.WEBAPPS_PHPFPM_POOL_PATH,
-        settings.WEBAPPS_PHP_MAX_REQUESTS,
-    )
+    MERGE = settings.WEBAPPS_MERGE_PHP_WEBAPPS
     
     verbose_name = _("PHP FPM/FCGID")
     default_route_match = "webapp.type.endswith('php')"
-    MERGE = settings.WEBAPPS_MERGE_PHP_WEBAPPS
+    doc_settings = (settings, (
+        'WEBAPPS_MERGE_PHP_WEBAPPS',
+        'WEBAPPS_FPM_DEFAULT_MAX_CHILDREN',
+        'WEBAPPS_PHP_CGI_BINARY_PATH',
+        'WEBAPPS_PHP_CGI_RC_DIR',
+        'WEBAPPS_PHP_CGI_INI_SCAN_DIR',
+        'WEBAPPS_FCGID_CMD_OPTIONS_PATH',
+        'WEBAPPS_PHPFPM_POOL_PATH',
+        'WEBAPPS_PHP_MAX_REQUESTS',
+    ))
     
     def save(self, webapp):
         context = self.get_context(webapp)

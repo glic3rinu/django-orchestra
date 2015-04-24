@@ -8,8 +8,14 @@ from .. import settings
 
 
 class DokuWikiMuBackend(ServiceController):
+    """
+    Creates a DokuWiki site on a DokuWiki multisite installation.
+    """
     verbose_name = _("DokuWiki multisite")
     model = 'webapps.WebApp'
+    doc_settings = (settings,
+        ('SAAS_DOKUWIKI_TEMPLATE_PATH', 'SAAS_DOKUWIKI_FARM_PATH')
+    )
     
     def save(self, webapp):
         context = self.get_context(webapp)
@@ -25,7 +31,7 @@ class DokuWikiMuBackend(ServiceController):
     def get_context(self, webapp):
         context = super(DokuWikiMuBackend, self).get_context(webapp)
         context.update({
-            'template': settings.WEBAPPS_DOKUWIKIMU_TEMPLATE_PATH,
-            'app_path': os.path.join(settings.WEBAPPS_DOKUWIKIMU_FARM_PATH, webapp.name)
+            'template': settings.SAAS_DOKUWIKI_TEMPLATE_PATH,
+            'app_path': os.path.join(settings.SAAS_DOKUWIKI_FARM_PATH, webapp.name)
         })
         return replace(context, "'", '"')

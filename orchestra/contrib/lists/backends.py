@@ -11,18 +11,8 @@ from .models import List
 
 class MailmanBackend(ServiceController):
     """
-    Mailman backend based on `newlist`, it handles custom domains.
-    LISTS_VIRTUAL_ALIAS_PATH = '%s'
-    LISTS_VIRTUAL_ALIAS_DOMAINS_PATH = '%s'
-    LISTS_DEFAULT_DOMAIN = '%s'
-    LISTS_MAILMAN_ROOT_DIR = '%s'
+    Mailman 2 backend based on <tt>newlist</tt>, it handles custom domains.
     """
-    format_docstring = (
-        settings.LISTS_VIRTUAL_ALIAS_PATH,
-        settings.LISTS_VIRTUAL_ALIAS_DOMAINS_PATH,
-        settings.LISTS_DEFAULT_DOMAIN,
-        settings.LISTS_MAILMAN_ROOT_DIR,
-    )
     verbose_name = "Mailman"
     model = 'lists.List'
     addresses = [
@@ -37,6 +27,12 @@ class MailmanBackend(ServiceController):
         '-subscribe',
         '-unsubscribe'
     ]
+    doc_settings = (settings, (
+        'LISTS_VIRTUAL_ALIAS_PATH',
+        'LISTS_VIRTUAL_ALIAS_DOMAINS_PATH',
+        'LISTS_DEFAULT_DOMAIN',
+        'LISTS_MAILMAN_ROOT_DIR'
+    ))
     
     def include_virtual_alias_domain(self, context):
         if context['address_domain']:
@@ -165,16 +161,15 @@ class MailmanBackend(ServiceController):
 
 class MailmanTraffic(ServiceMonitor):
     """
-    Parses mailman log file looking for email size and multiples it by `list_members` count.
-    LISTS_MAILMAN_POST_LOG_PATH = '%s'
+    Parses mailman log file looking for email size and multiples it by <tt>list_members</tt> count.
     """
-    format_docstring = (
-        settings.LISTS_MAILMAN_POST_LOG_PATH,
-    )
     model = 'lists.List'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Mailman traffic")
     script_executable = '/usr/bin/python'
+    doc_settings = (settings,
+        ('LISTS_MAILMAN_POST_LOG_PATH',)
+    )
     
     def prepare(self):
         postlog = settings.LISTS_MAILMAN_POST_LOG_PATH
@@ -272,7 +267,7 @@ class MailmanTraffic(ServiceMonitor):
 
 class MailmanSubscribers(ServiceMonitor):
     """
-    Monitors number of list subscribers via `list_members`
+    Monitors number of list subscribers via <tt>list_members</tt>
     """
     model = 'lists.List'
     verbose_name = _("Mailman subscribers")

@@ -7,6 +7,14 @@ from orchestra.contrib.orchestration import ServiceController
 
 
 class PhpListSaaSBackend(ServiceController):
+    """
+    Creates a new phplist instance on a phpList multisite installation.
+    The site is created by means of creating a new database per phpList site, but all sites share the same code.
+    
+    <tt>// config/config.php
+    $site = array_shift((explode(".",$_SERVER['HTTP_HOST'])));
+    $database_name = "phplist_mu_{$site}";</tt>
+    """
     verbose_name = _("phpList SaaS")
     model = 'saas.SaaS'
     default_route_match = "saas.service == 'phplist'"

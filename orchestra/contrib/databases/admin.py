@@ -14,7 +14,7 @@ from .models import Database, DatabaseUser
 class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_users', 'account_link')
     list_filter = ('type',)
-    search_fields = ['name']
+    search_fields = ('name', 'account__username')
     change_readonly_fields = ('name', 'type')
     extra = 1
     fieldsets = (
@@ -71,7 +71,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
 class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'type', 'display_databases', 'account_link')
     list_filter = ('type',)
-    search_fields = ['username']
+    search_fields = ('username', 'account__username')
     form = DatabaseUserChangeForm
     add_form = DatabaseUserCreationForm
     change_readonly_fields = ('username', 'type')

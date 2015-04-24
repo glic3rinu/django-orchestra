@@ -9,9 +9,15 @@ from .. import settings
 
 
 class DrupalMuBackend(ServiceController):
+    """
+    Creates a Drupal site on a Drupal multisite installation
+    """
     verbose_name = _("Drupal multisite")
     model = 'webapps.WebApp'
-
+    doc_settings = (settings,
+        ('SAAS_DRUPAL_SITES_PATH',)
+    )
+    
     def save(self, webapp):
         context = self.get_context(webapp)
         self.append(textwrap.dedent("""\
@@ -32,6 +38,6 @@ class DrupalMuBackend(ServiceController):
     
     def get_context(self, webapp):
         context = super(DrupalMuBackend, self).get_context(webapp)
-        context['drupal_path'] = settings.WEBAPPS_DRUPAL_SITES_PATH % context
+        context['drupal_path'] = settings.SAAS_DRUPAL_SITES_PATH % context
         context['drupal_settings'] = os.path.join(context['drupal_path'], 'settings.php')
         return replace(context, "'", '"')

@@ -266,7 +266,6 @@ https://code.djangoproject.com/ticket/24576
 
 * MultiCHoiceField proper serialization
 
-# Apache restart fails: detect if appache running, and execute start
 * UNIFY PHP FPM settings name
 # virtualhost name: name-account?
 * add a delay to changes on the webserver apache to no overwelm it with backend executions?
@@ -278,14 +277,13 @@ https://code.djangoproject.com/ticket/24576
 * rename resource.monitors to resource.backends ?
 * abstract model classes that enabling overriding, and ORCHESTRA_DATABASE_MODEL settings + orchestra.get_database_model() instead of explicitly importing from orchestra.contrib.databases.models import Database.. (Admin and REST API are fucked then?)
 
+# billing order list filter detect metrics that are greater from those of billing_date
 # Ignore superusers & co on billing: list filter doesn't work nor ignore detection
 # bill.totals make it 100% computed?
 * joomla: wget https://github.com/joomla/joomla-cms/releases/download/3.4.1/Joomla_3.4.1-Stable-Full_Package.tar.gz -O - | tar xvfz -
 
 # replace multichoicefield and jsonfield by ArrayField, HStoreField
 # Amend lines???
-
-# Add icon on select contact view
 
 # Determine the difference between data serializer used for validation and used for the rest API!
 # Make PluginApiView that fills metadata and other stuff like modeladmin plugin support

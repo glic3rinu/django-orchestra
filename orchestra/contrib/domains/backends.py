@@ -14,14 +14,8 @@ class Bind9MasterDomainBackend(ServiceController):
     """
     Bind9 zone and config generation.
     It auto-discovers slave Bind9 servers based on your routing configuration or you can use DOMAINS_SLAVES to explicitly configure the slaves.
-    DOMAINS_SLAVES = %s
-    DOMAINS_MASTERS_PATH = '%s'
     """
-    
-    format_docstring = (
-        str(settings.DOMAINS_SLAVES),
-        settings.DOMAINS_MASTERS_PATH,
-    )
+    CONF_PATH = settings.DOMAINS_MASTERS_PATH
     
     verbose_name = _("Bind9 master domain")
     model = 'domains.Domain'
@@ -30,7 +24,9 @@ class Bind9MasterDomainBackend(ServiceController):
         ('domains.Domain', 'origin'),
     )
     ignore_fields = ['serial']
-    CONF_PATH = settings.DOMAINS_MASTERS_PATH
+    doc_settings = (settings,
+        ('DOMAINS_SLAVES', 'DOMAINS_MASTERS_PATH')
+    )
     
     @classmethod
     def is_main(cls, obj):
@@ -136,15 +132,16 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     """
     Generate the configuartion for slave servers
     It auto-discover the master server based on your routing configuration or you can use DOMAINS_MASTERS to explicitly configure the master.
-    DOMAINS_MASTERS = %s
-    """ % str(settings.DOMAINS_MASTERS)
+    """
+    CONF_PATH = settings.DOMAINS_SLAVES_PATH
     
     verbose_name = _("Bind9 slave domain")
     related_models = (
         ('domains.Domain', 'origin'),
     )
-    CONF_PATH = settings.DOMAINS_SLAVES_PATH
-    
+    doc_settings = (settings,
+        ('DOMAINS_MASTERS', 'DOMAINS_SLAVES_PATH')
+    )
     def save(self, domain):
         context = self.get_context(domain)
         self.update_conf(context)

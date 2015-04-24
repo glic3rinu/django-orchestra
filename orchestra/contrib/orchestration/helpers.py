@@ -11,30 +11,36 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 def get_backends_help_text(backends):
     help_texts = {}
     for backend in backends:
+        help_text = backend.__doc__ or ''
         context = {
             'model': backend.model,
             'related_models': str(backend.related_models),
             'script_executable': backend.script_executable,
-            'script_method': str(backend.script_method),
-            'function_method': str(backend.script_method),
-            'actions': ', '.join(backend.actions),
+            'script_method': '.'.join((backend.script_method.__module__, backend.script_method.__name__)),
+            'function_method': '.'.join((backend.function_method.__module__, backend.function_method.__name__)),
+            'actions': str(backend.actions),
         }
-        help_text = textwrap.dedent("""
-            - Model: '%(model)s'<br>
-            - Related models: %(related_models)s<br>
-            - Script executable: %(script_executable)s<br>
-            - Script method: %(script_method)s<br>
-            - Function method: %(function_method)s<br>
-            - Actions: %(actions)s<br>"""
+        help_text += textwrap.dedent("""
+            - Model: <tt>'%(model)s'</tt>
+            - Related models: <tt>%(related_models)s</tt>
+            - Script executable: <tt>%(script_executable)s</tt>
+            - Script method: <tt>%(script_method)s</tt>
+            - Function method: <tt>%(function_method)s</tt>
+            - Actions: <tt>%(actions)s</tt>
+            """
         ) % context
-        docstring = backend.__doc__
-        if docstring:
-            try:
-                docstring = (docstring % backend.format_docstring).strip().splitlines()
-            except TypeError as e:
-                raise TypeError(str(backend) + str(e))
-            help_text += '<br>' + '<br>'.join(docstring)
-        help_texts[backend.get_name()] = help_text
+        help_text = help_text.lstrip().splitlines()
+        help_settings = ['']
+        if backend.doc_settings:
+            module, names = backend.doc_settings
+            for name in names:
+                value = getattr(module, name)
+                if isinstance(value, str):
+                    help_settings.append("<tt>%s = '%s'</tt>" % (name, value))
+                else:
+                    help_settings.append("<tt>%s = %s</tt>" % (name, str(value)))
+        help_text += help_settings
+        help_texts[backend.get_name()] = '<br>'.join(help_text)
     return help_texts
 
 

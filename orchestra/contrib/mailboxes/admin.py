@@ -3,6 +3,8 @@ from urllib.parse import parse_qs
 
 from django import forms
 from django.contrib import admin
+from django.db.models import F, Value as V
+from django.db.models.functions import Concat
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
@@ -104,13 +106,15 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
 
 class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'email', 'account_link', 'domain_link', 'display_mailboxes', 'display_forward',
+        'display_email', 'account_link', 'domain_link', 'display_mailboxes', 'display_forward',
     )
     list_filter = (HasMailboxListFilter, HasForwardListFilter)
     fields = ('account_link', 'email_link', 'mailboxes', 'forward')
     add_fields = ('account_link', ('name', 'domain'), 'mailboxes', 'forward')
     inlines = [AutoresponseInline]
-    search_fields = ('name', 'domain__name', 'forward', 'mailboxes__name', 'account__username')
+    search_fields = (
+        'name', 'domain__name', 'forward', 'mailboxes__name', 'account__username', 'computed_email'
+    )
     readonly_fields = ('account_link', 'domain_link', 'email_link')
     filter_by_account_fields = ('domain', 'mailboxes')
     filter_horizontal = ['mailboxes']
@@ -118,6 +122,11 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_prefetch_related = ('mailboxes', 'domain')
     
     domain_link = admin_link('domain', order='domain__name')
+    
+    def display_email(self, address):
+        return address.computed_email
+    display_email.short_description = _("Email")
+    display_email.admin_order_field = 'computed_email'
     
     def email_link(self, address):
         link = self.domain_link(address)
@@ -153,6 +162,10 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
             fields = list(fields)
             fields.remove('mailboxes')
         return fields
+    
+    def get_queryset(self, request):
+        qs = super(AddressAdmin, self).get_queryset(request)
+        return qs.annotate(computed_email=Concat(F('name'), V('@'), F('domain__name')))
 
 
 admin.site.register(Mailbox, MailboxAdmin)

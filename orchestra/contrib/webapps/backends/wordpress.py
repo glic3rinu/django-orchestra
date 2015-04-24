@@ -14,15 +14,14 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
     """
     Installs the latest version of WordPress available on www.wordpress.org
     It fully configures the wp-config.php (keys included) and sets up the database with initial admin password.
-    WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = '%s'
     """
-    format_docstring = (
-        settings.WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST,
-    )
     verbose_name = _("Wordpress")
     model = 'webapps.WebApp'
     default_route_match = "webapp.type == 'wordpress-php'"
     script_executable = '/usr/bin/php'
+    doc_settings = (settings,
+        ('WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST',)
+    )
     
     def prepare(self):
         self.append(textwrap.dedent("""\

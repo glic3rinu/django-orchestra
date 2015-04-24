@@ -185,21 +185,15 @@ class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
 class PostfixAddressBackend(ServiceController):
     """
     Addresses based on Postfix virtual alias domains.
-    <tt>MAILBOXES_LOCAL_DOMAIN = '%s'
-    MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH = '%s'
-    MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH = '%s'</tt>
     """
-    format_docstring = (
-        settings.MAILBOXES_LOCAL_DOMAIN,
-        settings.MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH,
-        settings.MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH,
-    )
     verbose_name = _("Postfix address")
     model = 'mailboxes.Address'
     related_models = (
         ('mailboxes.Mailbox', 'addresses'),
     )
-    
+    doc_settings = (settings,
+        ('MAILBOXES_LOCAL_DOMAIN', 'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH', 'MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH',)
+    )
     def include_virtual_alias_domain(self, context):
         if context['domain'] != context['local_domain']:
             self.append(textwrap.dedent("""
@@ -296,15 +290,13 @@ class DovecotMaildirDisk(ServiceMonitor):
     """
     Maildir disk usage based on Dovecot maildirsize file
     http://wiki2.dovecot.org/Quota/Maildir
-    
-    MAILBOXES_MAILDIRSIZE_PATH = '%s'
     """
-    format_docstring = (
-        settings.MAILBOXES_MAILDIRSIZE_PATH,
-    )
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.DISK
     verbose_name = _("Dovecot Maildir size")
+    doc_settings = (settings,
+        ('MAILBOXES_MAILDIRSIZE_PATH',)
+    )
     
     def prepare(self):
         super(DovecotMaildirDisk, self).prepare()
@@ -331,15 +323,14 @@ class PostfixMailscannerTraffic(ServiceMonitor):
     """
     A high-performance log parser.
     Reads the mail.log file only once, for all users.
-    MAILBOXES_MAIL_LOG_PATH = '%s'
     """
-    format_docstring = (
-        settings.MAILBOXES_MAIL_LOG_PATH,
-    )
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Postfix-Mailscanner traffic")
     script_executable = '/usr/bin/python'
+    doc_settings = (settings,
+        ('MAILBOXES_MAIL_LOG_PATH',)
+    )
     
     def prepare(self):
         mail_log = settings.MAILBOXES_MAIL_LOG_PATH

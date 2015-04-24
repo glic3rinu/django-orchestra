@@ -14,6 +14,9 @@ class GitLabSaaSBackend(ServiceController):
     default_route_match = "saas.service == 'gitlab'"
     block = True
     actions = ('save', 'delete', 'validate_creation')
+    doc_settings = (settings,
+        ('SAAS_GITLAB_DOMAIN', 'SAAS_GITLAB_ROOT_PASSWORD'),
+    )
     
     def get_base_url(self):
         return 'https://%s/api/v3' %  settings.SAAS_GITLAB_DOMAIN

@@ -12,22 +12,16 @@ from .. import settings
 
 class uWSGIPythonBackend(WebAppServiceMixin, ServiceController):
     """
-    Emperor mode
-    http://uwsgi-docs.readthedocs.org/en/latest/Emperor.html
-    WEBAPPS_UWSGI_BASE_DIR = '%s'
-    WEBAPPS_PYTHON_MAX_REQUESTS = %s
-    WEBAPPS_PYTHON_DEFAULT_MAX_WORKERS = %s
-    WEBAPPS_PYTHON_DEFAULT_TIMEOUT = %s
+    <a href="http://uwsgi-docs.readthedocs.org/en/latest/Emperor.html">Emperor mode</a>
     """
-    format_docstring = (
-        settings.WEBAPPS_UWSGI_BASE_DIR,
-        settings.WEBAPPS_PYTHON_MAX_REQUESTS,
-        settings.WEBAPPS_PYTHON_DEFAULT_MAX_WORKERS,
-        settings.WEBAPPS_PYTHON_DEFAULT_TIMEOUT,
-    )
-    
     verbose_name = _("Python uWSGI")
     default_route_match = "webapp.type.endswith('python')"
+    doc_settings = (settings, (
+        'WEBAPPS_UWSGI_BASE_DIR',
+        'WEBAPPS_PYTHON_MAX_REQUESTS',
+        'WEBAPPS_PYTHON_DEFAULT_MAX_WORKERS',
+        'WEBAPPS_PYTHON_DEFAULT_TIMEOUT',
+    ))
     
     def save(self, webapp):
         context = self.get_context(webapp)

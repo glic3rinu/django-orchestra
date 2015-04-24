@@ -122,12 +122,13 @@ class AccountListAdmin(AccountAdmin):
         # TODO get query string from request.META['QUERY_STRING'] to preserve filters
         context = {
             'url': '../?account=' + str(instance.pk),
-            'name': instance.username
+            'name': instance.username,
+            'plus': '<strong style="color:green; font-size:12px">+</strong>',
         }
-        return '<a href="%(url)s">%(name)s</a>' % context
+        return _('<a href="%(url)s">%(plus)s Add to %(name)s</a>') % context
     select_account.short_description = _("account")
     select_account.allow_tags = True
-    select_account.order_admin_field = 'username'
+    select_account.admin_order_field = 'username'
     
     def changelist_view(self, request, extra_context=None):
         original_app_label = request.META['PATH_INFO'].split('/')[-5]

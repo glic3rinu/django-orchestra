@@ -10,14 +10,14 @@ from . import settings
 
 class MySQLBackend(ServiceController):
     """
-    Simple backend for creating MySQL databases using `CREATE DATABASE` statement.
-    DATABASES_DEFAULT_HOST = %s
+    Simple backend for creating MySQL databases using <tt>CREATE DATABASE</tt> statement.
     """
-    format_docstring = (settings.DATABASES_DEFAULT_HOST,)
-    
     verbose_name = "MySQL database"
     model = 'databases.Database'
     default_route_match = "database.type == 'mysql'"
+    doc_settings = (settings,
+        ('DATABASES_DEFAULT_HOST',)
+    )
     
     def save(self, database):
         if database.type != database.MYSQL:
@@ -61,13 +61,14 @@ class MySQLBackend(ServiceController):
 
 class MySQLUserBackend(ServiceController):
     """
-    Simple backend for creating MySQL users using `CREATE USER` statement.
-    DATABASES_DEFAULT_HOST = %s
-    """ % settings.DATABASES_DEFAULT_HOST
-    
+    Simple backend for creating MySQL users using <tt>CREATE USER</tt> statement.
+    """
     verbose_name = "MySQL user"
     model = 'databases.DatabaseUser'
     default_route_match = "databaseuser.type == 'mysql'"
+    doc_settings = (settings,
+        ('DATABASES_DEFAULT_HOST',)
+    )
     
     def save(self, user):
         if user.type != user.MYSQL:
@@ -105,7 +106,7 @@ class MySQLUserBackend(ServiceController):
 
 class MysqlDisk(ServiceMonitor):
     """
-    du -bs <database_path>
+    <tt>du -bs &lt;database_path&gt;</tt>
     Implements triggers for resource limit exceeded and recovery, disabling insert and create privileges.
     """
     model = 'databases.Database'

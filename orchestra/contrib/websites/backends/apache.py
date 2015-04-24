@@ -13,6 +13,11 @@ from ..utils import normurlpath
 
 
 class Apache2Backend(ServiceController):
+    """
+    Apache 2.4 backend with support for the following directives:
+        <tt>static</tt>, <tt>location</tt>, <tt>fpm</tt>, <tt>fcgid</tt>, <tt>uwsgi</tt>, \
+        <tt>ssl</tt>, <tt>security</tt>, <tt>redirects</tt>, <tt>proxies</tt>, <tt>saas</tt>
+    """
     HTTP_PORT = 80
     HTTPS_PORT = 443
     
@@ -22,6 +27,15 @@ class Apache2Backend(ServiceController):
         ('webapps.WebApp', 'website_set'),
     )
     verbose_name = _("Apache 2")
+    doc_settings = (settings, (
+        'WEBSITES_VHOST_EXTRA_DIRECTIVES',
+        'WEBSITES_DEFAULT_SSL_CERT',
+        'WEBSITES_DEFAULT_SSL_KEY',
+        'WEBSITES_DEFAULT_SSL_CA',
+        'WEBSITES_BASE_APACHE_CONF',
+        'WEBSITES_DEFAULT_IPS',
+        'WEBSITES_SAAS_DIRECTIVES',
+    ))
     
     def render_virtual_host(self, site, context, ssl=False):
         context['port'] = self.HTTPS_PORT if ssl else self.HTTP_PORT
@@ -362,12 +376,14 @@ class Apache2Backend(ServiceController):
 class Apache2Traffic(ServiceMonitor):
     """
     Parses apache logs,
-    looking for the size of each request on the last word of the log line
+    looking for the size of each request on the last word of the log line.
     """
     model = 'websites.Website'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Apache 2 Traffic")
-    
+    doc_settings = (settings,
+        ('WEBSITES_TRAFFIC_IGNORE_HOSTS',)
+    )
     def prepare(self):
         super(Apache2Traffic, self).prepare()
         ignore_hosts = '\\|'.join(settings.WEBSITES_TRAFFIC_IGNORE_HOSTS)

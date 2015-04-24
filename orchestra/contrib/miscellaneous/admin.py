@@ -58,7 +58,7 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
     )
     list_filter = ('service__name', 'is_active')
     list_select_related = ('service', 'account')
-    search_fields = ('identifier', 'description')
+    search_fields = ('identifier', 'description', 'account__username')
     plugin_field = 'service'
     plugin = MiscServicePlugin
     

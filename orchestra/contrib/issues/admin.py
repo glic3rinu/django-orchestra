@@ -42,8 +42,8 @@ class MessageReadOnlyInline(admin.TabularInline):
     model = Message
     extra = 0
     can_delete = False
-    fields = ['content_html']
-    readonly_fields = ['content_html']
+    fields = ('content_html',)
+    readonly_fields = ('content_html',)
     
     class Media:
         css = {
@@ -79,7 +79,7 @@ class MessageInline(admin.TabularInline):
     max_num = 1
     form = MessageInlineForm
     can_delete = False
-    fields = ['content']
+    fields = ('content',)
     
     def get_formset(self, request, obj=None, **kwargs):
         """ hook request.user on the inline form """
@@ -93,14 +93,14 @@ class MessageInline(admin.TabularInline):
 
 
 class TicketInline(admin.TabularInline):
-    fields = [
+    fields = (
         'ticket_id', 'subject', 'creator_link', 'owner_link', 'colored_state',
         'colored_priority', 'created', 'updated'
-    ]
-    readonly_fields =  [
+    )
+    readonly_fields = (
         'ticket_id', 'subject', 'creator_link', 'owner_link', 'colored_state',
         'colored_priority', 'created', 'updated'
-    ]
+    )
     model = Ticket
     extra = 0
     max_num = 0
@@ -119,35 +119,35 @@ class TicketInline(admin.TabularInline):
 
 
 class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
-    list_display = [
+    list_display = (
         'unbold_id', 'bold_subject', 'display_creator', 'display_owner',
         'display_queue', 'display_priority', 'display_state', 'updated'
-    ]
+    )
     list_display_links = ('unbold_id', 'bold_subject')
-    list_filter = [
+    list_filter = (
         MyTicketsListFilter, 'queue__name', 'priority', TicketStateListFilter,
-    ]
+    )
     default_changelist_filters = (
         ('my_tickets', lambda r: 'True' if not r.user.is_superuser else 'False'),
         ('state', 'OPEN')
     )
     date_hierarchy = 'created_at'
-    search_fields = [
+    search_fields = (
         'id', 'subject', 'creator__username', 'creator__email', 'queue__name',
         'owner__username'
-    ]
-    actions = [
+    )
+    actions = (
         mark_as_unread, mark_as_read, 'delete_selected', reject_tickets,
         resolve_tickets, close_tickets, take_tickets
-    ]
-    sudo_actions = ['delete_selected']
-    change_view_actions = [
+    )
+    sudo_actions = ('delete_selected',)
+    change_view_actions = (
         resolve_tickets, close_tickets, reject_tickets, take_tickets
-    ]
+    )
 #    change_form_template = "admin/orchestra/change_form.html"
     form = TicketForm
-    add_inlines = []
-    inlines = [ MessageReadOnlyInline, MessageInline ]
+    add_inlines = ()
+    inlines = (MessageReadOnlyInline, MessageInline)
     readonly_fields = (
         'display_summary', 'display_queue', 'display_owner', 'display_state',
         'display_priority'
@@ -286,10 +286,10 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
 
 
 class QueueAdmin(admin.ModelAdmin):
-    list_display = ['name', 'default', 'num_tickets']
-    actions = [set_default_queue]
-    inlines = [TicketInline]
-    ordering = ['name']
+    list_display = ('name', 'default', 'num_tickets')
+    actions = (set_default_queue,)
+    inlines = (TicketInline,)
+    ordering = ('name',)
     
     class Media:
         css = {

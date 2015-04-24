@@ -308,7 +308,7 @@ class PHPSuhosinExecutorIncludeWhitelist(PHPAppOption):
 
 class PHPUploadMaxFileSize(PHPAppOption):
     name = 'upload_max_filesize'
-    verbose_name = _("Upload max filezise")
+    verbose_name = _("Upload max filesize")
     help_text = _("Value between 0M and 999M.")
     regex = r'^[0-9]{1,3}M$'
 

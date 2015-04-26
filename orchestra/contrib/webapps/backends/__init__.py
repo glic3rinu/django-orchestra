@@ -36,7 +36,7 @@ class WebAppServiceMixin(object):
     
     def delete_webapp_dir(self, context):
         if context['deleted_app_path']:
-            self.append("mv %(app_path)s %(deleted_app_path)s || exit_code=1" % context)
+            self.append("mv %(app_path)s %(deleted_app_path)s || exit_code=$?" % context)
         else:
             self.append("rm -fr %(app_path)s" % context)
     

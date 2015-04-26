@@ -82,6 +82,12 @@ def content_type_id(label):
 
 
 @register.filter
+def split(value, sep=' '):
+    parts = value.split(sep)
+    return (parts[0], sep.join(parts[1:]))
+
+
+@register.filter
 def admin_url(obj):
     return change_url(obj)
 

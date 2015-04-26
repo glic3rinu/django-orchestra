@@ -59,6 +59,9 @@ def get_accounts():
 
 def get_administration_items():
     childrens = []
+    if isinstalled('orchestra.contrib.settings'):
+        url = reverse('admin:settings_edit_settings')
+        childrens.append(items.MenuItem(_("Settings"), url))
     if isinstalled('orchestra.contrib.services'):
         url = reverse('admin:services_service_changelist')
         childrens.append(items.MenuItem(_("Services"), url))

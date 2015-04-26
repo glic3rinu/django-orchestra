@@ -1,10 +1,10 @@
-from django.conf import settings
+from orchestra.settings import Setting
 
 
-ISSUES_SUPPORT_EMAILS = getattr(settings, 'ISSUES_SUPPORT_EMAILS', [
+ISSUES_SUPPORT_EMAILS = Setting('ISSUES_SUPPORT_EMAILS', [
 ])
 
 
-ISSUES_NOTIFY_SUPERUSERS = getattr(settings, 'ISSUES_NOTIFY_SUPERUSERS',
+ISSUES_NOTIFY_SUPERUSERS = Setting('ISSUES_NOTIFY_SUPERUSERS',
     True
 )

@@ -257,8 +257,6 @@ https://code.djangoproject.com/ticket/24576
 + Query Expressions, Conditional Expressions, and Database Functions¶
 * forms: You can now pass a callable that returns an iterable of choices when instantiating a ChoiceField.
 
-* migrate to DRF3.x
-
 * move all tests to django-orchestra/tests
 * *natural keys: those fields that uniquely identify a service, list.name, website.name, webapp.name+account, make sure rest api can not edit thos things
 
@@ -287,3 +285,24 @@ https://code.djangoproject.com/ticket/24576
 
 # Determine the difference between data serializer used for validation and used for the rest API!
 # Make PluginApiView that fills metadata and other stuff like modeladmin plugin support
+
+# @classmethods do not need to be called with type(object)!
+
+# Deprectae widgets.showtext and readonlyField by ReadOnlyFormMixin
+
+# custom validation for settings
+# TODO orchestra related services code reload: celery/uwsgi reloading find aonther way without root and implement reload
+# insert settings on dashboard dynamically
+
+# rename "edit settings" -> change settings
+
+# View settings file
+contrib/orders/models.py:        if type(instance) in services:
+contrib/orders/models.py:        if type(instance) in services:
+contrib/orders/helpers.py:            if type(node) in services:
+contrib/bills/admin.py:            return [inline for inline in inlines if type(inline) is not BillLineInline]
+contrib/bills/admin.py:        return [inline for inline in inlines if type(inline) is not ClosedBillLineInline]
+contrib/accounts/actions.py.save:                if type(service) in registered_services:
+contrib/accounts/actions.py:                if type(service) in registered_services:
+permissions/options.py:        for func in inspect.getmembers(type(self), predicate=inspect.ismethod):
+

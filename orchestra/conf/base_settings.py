@@ -114,6 +114,8 @@ INSTALLED_APPS = (
     
     # Last to load
     'orchestra.contrib.resources',
+    'orchestra.contrib.settings',
+
 )
 
 
@@ -139,7 +141,7 @@ ADMIN_TOOLS_MENU = 'orchestra.admin.menu.OrchestraMenu'
 
 # Fluent dashboard
 # TODO subclass like in admin_tools_menu
-ADMIN_TOOLS_INDEX_DASHBOARD = 'fluent_dashboard.dashboard.FluentIndexDashboard'
+ADMIN_TOOLS_INDEX_DASHBOARD = 'orchestra.admin.dashboard.OrchestraIndexDashboard'
 FLUENT_DASHBOARD_ICON_THEME = '../orchestra/icons'
 
 FLUENT_DASHBOARD_APP_GROUPS = (
@@ -204,6 +206,7 @@ FLUENT_DASHBOARD_APP_ICONS = {
     'issues/ticket': 'Ticket_star.png',
     'miscellaneous/miscservice': 'Misc-Misc-Box-icon.png',
     # Administration
+    'settings/setting': 'preferences.png',
     'djcelery/taskstate': 'taskstate.png',
     'orchestration/server': 'vps.png',
     'orchestration/route': 'hal.png',

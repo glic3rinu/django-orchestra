@@ -1,0 +1,86 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "orchestra/css/hide-inline-id.css" %}" />
+{% endblock %}
+
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+{% if diff %} &rsaquo; <a href=".">Settings</a> &rsaquo; Confirm changes{% else %} &rsaquo; Settings{% endif %}
+</div>
+{% endblock %}
+
+
+{% block content %}
+    <div>
+        <form method="post" action="">{% csrf_token %}
+    {% if diff %}
+        {% blocktrans %}
+        <p>The following changes will be performed to <tt>{{ settings_file }}</tt> file.</p>
+        {% endblocktrans %}
+        <PRE>{{ diff }}</PRE>
+        {{ form.management_form }}
+        <table style="display:none">
+            {% for form in form %}
+            {{ form }}
+            {% endfor %}
+        </table>
+        <input type="hidden" name="confirmation" value="True" />
+        <div class="submit-row"><input type="submit" value="Confirm changes" class="default" name="_diff"></div>
+    {% else %}
+        {% blocktrans %}
+        <p><tt>{{ settings_file }}</tt> file will be automatically updated and Orchestra restarted according to your changes.
+        {% endblocktrans %}
+        {% if form.errors %}
+        <p class="errornote">
+        {% trans "Please correct the errors below." %}
+        </p>
+        {{ form.non_form_errors.as_ul }}
+        {% endif %}
+        {{ form.management_form }}
+        {% regroup form.forms by app as formlist %}
+        {% for app in formlist %}
+            <fieldset class="module">
+            <h2>{{ app.grouper|lower|capfirst }}</h2>
+            <table id="formset" class="form" style="width:100%">
+            {% for form in app.list %}
+                  {{ form.non_field_errors }}
+                  {% if forloop.first %}
+                  <thead><tr>
+                    {% for field in form.visible_fields %}
+                    <th style="width:{% if forloop.first %}30{% else %}35{% endif %}%">{{ field.label|capfirst }}</th>
+                    {% endfor %}
+                  </tr></thead>
+                  {% endif %}
+                  <tr class="{% cycle row1,row2 %}">
+                  {% for field in form.visible_fields %}
+                    <td>
+                    {# Include the hidden fields in the form #}
+                    {% if forloop.first %}
+                      {% for hidden in form.hidden_fields %}
+                      {{ hidden }}
+                      {% endfor %}
+                    {% endif %}
+                      {{ field.errors.as_ul }}
+                      <div style="font-family:monospace">{{ field }}{% if forloop.last %}{% if form.changed %}<div style="float:right" title="Changed">&#8224;</div>{% endif %}{% endif %}</div>
+                      <p class="help" style="max-width:100px; white-space:nowrap;">{{ field.help_text }}</p>
+                    </td>
+                  {% endfor %}
+                  </tr>
+                {% endfor %}
+                </table>
+                </fieldset>
+            {% endfor %}
+        <div class="submit-row"><input type="submit" value="Diff changes" class="default" name="_diff"></div>
+    {% endif %}
+        </form>
+{% endblock %}
+
+

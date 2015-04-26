@@ -6,6 +6,9 @@ from orchestra.utils.python import random_ascii
 
 from ..core.validators import validate_password
 
+from .fields import SpanField
+from .widgets import SpanWidget
+
 
 class UserCreationForm(forms.ModelForm):
     """
@@ -65,3 +68,24 @@ class UserChangeForm(forms.ModelForm):
         # This is done here, rather than on the field, because the
         # field does not have access to the initial value
         return self.initial["password"]
+
+
+class ReadOnlyFormMixin(object):
+    """
+    Mixin class for ModelForm or Form that provides support for SpanField on readonly fields
+    Meta:
+        readonly_fileds = (ro_field1, ro_field2)
+    """
+    def __init__(self, *args, **kwargs):
+        super(ReadOnlyFormMixin, self).__init__(*args, **kwargs)
+        for name in self.Meta.readonly_fields:
+            field = self.fields[name]
+            if not isinstance(field, SpanField):
+                field.widget = SpanWidget()
+                if hasattr(self, 'instance'):
+                    # Model form
+                    original_value = str(getattr(self.instance, name))
+                else:
+                    original_value = str(self.initial.get(name))
+                field.widget.original_value = original_value
+

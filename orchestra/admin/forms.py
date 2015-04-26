@@ -47,8 +47,7 @@ class AdminFormSet(BaseModelFormSet):
 
 
 def adminmodelformset_factory(modeladmin, form, formset=AdminFormSet, **kwargs):
-    formset = modelformset_factory(modeladmin.model, form=form, formset=formset,
-            **kwargs)
+    formset = modelformset_factory(modeladmin.model, form=form, formset=formset, **kwargs)
     formset.modeladmin = modeladmin
     return formset
 

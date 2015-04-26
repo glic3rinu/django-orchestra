@@ -19,7 +19,7 @@ def run_tuple(services, action, options, optional=False):
 
 
 def flatten(nested, depth=0):
-    if hasattr(nested, '__iter__'):
+    if isinstance(nested, (list, tuple)):
         for sublist in nested:
             for element in flatten(sublist, depth+1):
                 yield element

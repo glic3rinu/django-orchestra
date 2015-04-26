@@ -58,7 +58,7 @@ class UNIXUserMaildirBackend(ServiceController):
     
     def delete(self, mailbox):
         context = self.get_context(mailbox)
-        self.append('mv %(home)s %(home)s.deleted || exit_code=1' % context)
+        self.append('mv %(home)s %(home)s.deleted || exit_code=$?' % context)
         self.append(textwrap.dedent("""
             { sleep 2 && killall -u %(user)s -s KILL; } &
             killall -u %(user)s || true
@@ -133,7 +133,7 @@ class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
             UPDATED_VIRTUAL_MAILBOX_MAPS=1""") % context
         )
         if context['deleted_home']:
-            self.append("mv %(home)s %(deleted_home)s || exit_code=1" % context)
+            self.append("mv %(home)s %(deleted_home)s || exit_code=$?" % context)
         else:
             self.append("rm -fr %(home)s" % context)
     

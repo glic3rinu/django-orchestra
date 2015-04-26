@@ -76,9 +76,9 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin=b''
         #.decode('ascii'), errors='replace')
         
         if display and stdout:
-            sys.stdout.write(stdout)
+            sys.stdout.write(stdout.decode('utf8'))
         if display and stderr:
-            sys.stderr.write(stderr)
+            sys.stderr.write(stderr.decode('utf8'))
         
         state = _Attribute(stdout)
         state.stderr = stderr

@@ -14,7 +14,7 @@ from ..utils import normurlpath
 
 class Apache2Backend(ServiceController):
     """
-    Apache 2.4 backend with support for the following directives:
+    Apache &ge;2.4 backend with support for the following directives:
         <tt>static</tt>, <tt>location</tt>, <tt>fpm</tt>, <tt>fcgid</tt>, <tt>uwsgi</tt>, \
         <tt>ssl</tt>, <tt>security</tt>, <tt>redirects</tt>, <tt>proxies</tt>, <tt>saas</tt>
     """
@@ -24,6 +24,7 @@ class Apache2Backend(ServiceController):
     model = 'websites.Website'
     related_models = (
         ('websites.Content', 'website'),
+        ('websites.WebsiteDirective', 'directives'),
         ('webapps.WebApp', 'website_set'),
     )
     verbose_name = _("Apache 2")

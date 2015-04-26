@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.settings import ORCHESTRA_BASE_DOMAIN
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 
 
-ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
+ACCOUNTS_TYPES = Setting('ACCOUNTS_TYPES', (
     ('INDIVIDUAL', _("Individual")),
     ('ASSOCIATION', _("Association")),
     ('CUSTOMER', _("Customer")),
@@ -15,32 +15,26 @@ ACCOUNTS_TYPES = getattr(settings, 'ACCOUNTS_TYPES', (
 ))
 
 
-ACCOUNTS_DEFAULT_TYPE = getattr(settings, 'ACCOUNTS_DEFAULT_TYPE',
-    'INDIVIDUAL'
-)
+ACCOUNTS_DEFAULT_TYPE = Setting('ACCOUNTS_DEFAULT_TYPE', 'INDIVIDUAL', choices=ACCOUNTS_TYPES)
 
 
-ACCOUNTS_LANGUAGES = getattr(settings, 'ACCOUNTS_LANGUAGES', (
+ACCOUNTS_LANGUAGES = Setting('ACCOUNTS_LANGUAGES', (
     ('EN', _('English')),
 ))
 
 
-ACCOUNTS_SYSTEMUSER_MODEL = getattr(settings, 'ACCOUNTS_SYSTEMUSER_MODEL',
+ACCOUNTS_DEFAULT_LANGUAGE = Setting('ACCOUNTS_DEFAULT_LANGUAGE', 'EN', choices=ACCOUNTS_LANGUAGES)
+
+
+ACCOUNTS_SYSTEMUSER_MODEL = Setting('ACCOUNTS_SYSTEMUSER_MODEL',
     'systemusers.SystemUser'
 )
 
 
-ACCOUNTS_DEFAULT_LANGUAGE = getattr(settings, 'ACCOUNTS_DEFAULT_LANGUAGE',
-    'EN'
-)
+ACCOUNTS_MAIN_PK = Setting('ACCOUNTS_MAIN_PK', 1)
 
 
-ACCOUNTS_MAIN_PK = getattr(settings, 'ACCOUNTS_MAIN_PK',
-    1
-)
-
-
-ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
+ACCOUNTS_CREATE_RELATED = Setting('ACCOUNTS_CREATE_RELATED', (
     # <model>, <key field>, <kwargs>, <help_text>
     ('mailboxes.Mailbox',
         'name',
@@ -60,6 +54,6 @@ ACCOUNTS_CREATE_RELATED = getattr(settings, 'ACCOUNTS_CREATE_RELATED', (
 ))
 
 
-ACCOUNTS_SERVICE_REPORT_TEMPLATE = getattr(settings, 'ACCOUNTS_SERVICE_REPORT_TEMPLATE',
+ACCOUNTS_SERVICE_REPORT_TEMPLATE = Setting('ACCOUNTS_SERVICE_REPORT_TEMPLATE',
     'admin/accounts/account/service_report.html'
 )

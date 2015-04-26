@@ -1,39 +1,40 @@
-from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.settings import Setting
 
-SERVICES_SERVICE_TAXES = getattr(settings, 'SERVICES_SERVICE_TAXES', (
+
+SERVICES_SERVICE_TAXES = Setting('SERVICES_SERVICE_TAXES', (
     (0, _("Duty free")),
     (21, "21%"),
 ))
 
 
-SERVICES_SERVICE_DEFAULT_TAX = getattr(settings, 'SERVICES_SERVICE_DEFAULT_TAX',
-    0
+SERVICES_SERVICE_DEFAULT_TAX = Setting('SERVICES_SERVICE_DEFAULT_TAX', 0,
+    choices=SERVICES_SERVICE_TAXES
 )
 
 
-SERVICES_SERVICE_ANUAL_BILLING_MONTH = getattr(settings, 'SERVICES_SERVICE_ANUAL_BILLING_MONTH',
-    1
+SERVICES_SERVICE_ANUAL_BILLING_MONTH = Setting('SERVICES_SERVICE_ANUAL_BILLING_MONTH', 1,
+    choices=tuple((n, n) for n in range(1, 13))
 )
 
 
-SERVICES_ORDER_MODEL = getattr(settings, 'SERVICES_ORDER_MODEL',
+SERVICES_ORDER_MODEL = Setting('SERVICES_ORDER_MODEL',
     'orders.Order'
 )
 
 
-SERVICES_RATE_CLASS = getattr(settings, 'SERVICES_RATE_CLASS',
+SERVICES_RATE_CLASS = Setting('SERVICES_RATE_CLASS',
     'orchestra.contrib.plans.models.Rate'
 )
 
 
-SERVICES_DEFAULT_IGNORE_PERIOD = getattr(settings, 'SERVICES_DEFAULT_IGNORE_PERIOD',
+SERVICES_DEFAULT_IGNORE_PERIOD = Setting('SERVICES_DEFAULT_IGNORE_PERIOD',
     'TEN_DAYS'
 )
 
 
-SERVICES_IGNORE_ACCOUNT_TYPE = getattr(settings, 'SERVICES_IGNORE_ACCOUNT_TYPE', (
+SERVICES_IGNORE_ACCOUNT_TYPE = Setting('SERVICES_IGNORE_ACCOUNT_TYPE', (
     'superuser',
     'STAFF',
     'FRIEND',

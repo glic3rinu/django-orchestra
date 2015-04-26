@@ -55,6 +55,10 @@ class Plugin(object):
     def get_change_readonly_fileds(cls):
         return cls.change_readonly_fileds
     
+    @classmethod
+    def get_class_path(cls):
+        return '.'.join((cls.__module__, cls.__name__))
+    
     def clean_data(self):
         """ model clean, uses cls.serizlier by default """
         if self.serializer:

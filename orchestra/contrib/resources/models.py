@@ -124,7 +124,7 @@ class Resource(models.Model):
         self.sync_periodic_task()
         # This only work on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
-        run('sleep 2 && touch %s/wsgi.py' % get_project_dir(), async=True)
+        run('{ sleep 2 && touch %s/wsgi.py; } &' % get_project_dir(), async=True)
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)

@@ -56,12 +56,12 @@ class UNIXUserBackend(ServiceController):
         self.append(textwrap.dedent("""\
             { sleep 2 && killall -u %(user)s -s KILL; } &
             killall -u %(user)s || true
-            userdel %(user)s || exit_code=1
-            groupdel %(group)s || exit_code=1
+            userdel %(user)s || exit_code=$?
+            groupdel %(group)s || exit_code=$?
             """) % context
         )
         if context['deleted_home']:
-            self.append("mv %(base_home)s %(deleted_home)s || exit_code=1" % context)
+            self.append("mv %(base_home)s %(deleted_home)s || exit_code=$?" % context)
         else:
             self.append("rm -fr %(base_home)s" % context)
     

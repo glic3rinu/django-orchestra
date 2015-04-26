@@ -5,10 +5,40 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_text
 
+from django.contrib.admin.templatetags.admin_static import static
+
+# TODO rename readonlywidget
+class SpanWidget(forms.Widget):
+    """
+    Renders a value wrapped in a <span> tag.
+    Requires use of specific form support. (see ReadonlyForm or ReadonlyModelForm)
+    """
+    
+    def __init__(self, *args, **kwargs):
+        self.tag = kwargs.pop('tag', '<span>')
+        super(SpanWidget, self).__init__(*args, **kwargs)
+    
+    def render(self, name, value, attrs=None):
+        final_attrs = self.build_attrs(attrs, name=name)
+        original_value = self.original_value
+        # Display icon
+        if original_value in ('True', 'False') or isinstance(original_value, bool):
+            icon = static('admin/img/icon-%s.gif' % 'yes' if original_value else 'no')
+            return mark_safe('<img src="%s" alt="%s">' % (icon, str(original_value)))
+        tag = self.tag[:-1]
+        endtag = '/'.join((self.tag[0], self.tag[1:]))
+        return mark_safe('%s%s >%s%s' % (tag, forms.util.flatatt(final_attrs), original_value, endtag))
+    
+    def value_from_datadict(self, data, files, name):
+        return self.original_value
+    
+    def _has_changed(self, initial, data):
+        return False
+
 
 class ShowTextWidget(forms.Widget):
     def __init__(self, *args, **kwargs):
-        for kwarg in ['bold', 'warning', 'hidden']:
+        for kwarg in ['tag', 'warning', 'hidden']:
             setattr(self, kwarg, kwargs.pop(kwarg, False))
         super(ShowTextWidget, self).__init__(*args, **kwargs)
     
@@ -18,8 +48,9 @@ class ShowTextWidget(forms.Widget):
             return ''
         if hasattr(self, 'initial'):
             value = self.initial
-        if self.bold: 
-            final_value = '<b>%s</b>' % (value)
+        if self.tag:
+            endtag = '/'.join((self.tag[0], self.tag[1:]))
+            final_value = ''.join((self.tag, value, endtag))
         else:
             final_value = '<br/>'.join(value.split('\n'))
         if self.warning:

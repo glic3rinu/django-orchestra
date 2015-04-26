@@ -6,7 +6,7 @@ from orchestra.forms.widgets import ShowTextWidget, ReadOnlyWidget
 
 class ResourceForm(forms.ModelForm):
     verbose_name = forms.CharField(label=_("Name"), required=False,
-        widget=ShowTextWidget(bold=True))
+        widget=ShowTextWidget(tag='<b>'))
     allocated = forms.DecimalField(label=_("Allocated"))
     unit = forms.CharField(label=_("Unit"), widget=ShowTextWidget(), required=False)
     

@@ -14,7 +14,7 @@ SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES', (
         'orchestra.contrib.saas.services.seafile.SeaFileService',
     ),
     # lazy loading
-    choices=lambda : ((s.get_class_path(), s.get_class_path()) for s in saas.services.SoftwareService.get_plugins()),
+    choices=lambda: ((s.get_class_path(), s.get_class_path()) for s in saas.services.SoftwareService.get_plugins()),
     multiple=True,
 )
 
@@ -25,7 +25,7 @@ SAAS_WORDPRESS_ADMIN_PASSWORD = Setting('SAAS_WORDPRESSMU_ADMIN_PASSWORD',
 
 
 SAAS_WORDPRESS_BASE_URL = Setting('SAAS_WORDPRESS_BASE_URL',
-    'http://blogs.{}/'.format(ORCHESTRA_BASE_DOMAIN)
+    'https://blogs.{}/'.format(ORCHESTRA_BASE_DOMAIN)
 )
 
 

@@ -17,8 +17,15 @@
 </div>
 {% endblock %}
 
-
 {% block content %}
+  <ul class="object-tools">
+    {% block object-tools-items %}
+    <li>
+        <a href="./view/" class="historylink">{% trans "View file" %}</a>
+    </li>
+    {% endblock %}
+  </ul>
+
     <div>
         <form method="post" action="">{% csrf_token %}
     {% if diff %}
@@ -69,7 +76,7 @@
                       {% endfor %}
                     {% endif %}
                       {{ field.errors.as_ul }}
-                      <div style="font-family:monospace">{{ field }}{% if forloop.last %}{% if form.changed %}<div style="float:right" title="Changed">&#8224;</div>{% endif %}{% endif %}</div>
+                      <div style="font-family:monospace">{{ field }}{% if forloop.last %}{% if form.changed %}<div style="float:right" title="Changed">*</div>{% endif %}{% endif %}</div>
                       <p class="help" style="max-width:100px; white-space:nowrap;">{{ field.help_text }}</p>
                     </td>
                   {% endfor %}
@@ -82,5 +89,3 @@
     {% endif %}
         </form>
 {% endblock %}
-
-

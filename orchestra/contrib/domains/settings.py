@@ -87,10 +87,10 @@ DOMAINS_DEFAULT_NS = Setting('DOMAINS_DEFAULT_NS', (
 
 DOMAINS_FORBIDDEN = Setting('DOMAINS_FORBIDDEN', '',
     help_text=(
-        "This setting prevents users from providing random domain names, i.e. google.com"
-        "You can generate a 5K forbidden domains list from Alexa's top 1M"
-        "wget http://s3.amazonaws.com/alexa-static/top-1m.csv.zip -O /tmp/top-1m.csv.zip"
-        "unzip -p /tmp/top-1m.csv.zip | head -n 5000 | sed 's/^.*,//' > forbidden_domains.list"
+        "This setting prevents users from providing random domain names, i.e. google.com<br>"
+        "You can generate a 5K forbidden domains list from Alexa's top 1M:<br>"
+        "<tt>  wget http://s3.amazonaws.com/alexa-static/top-1m.csv.zip -O /tmp/top-1m.csv.zip && "
+        "unzip -p /tmp/top-1m.csv.zip | head -n 5000 | sed 's/^.*,//' > forbidden_domains.list</tt><br>"
         "'%(site_dir)s/forbidden_domains.list')"
    )
 )

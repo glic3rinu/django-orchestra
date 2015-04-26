@@ -1,7 +1,10 @@
 from collections import OrderedDict
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
+
+from .core import validators
 
 
 class Setting(object):
@@ -20,11 +23,12 @@ class Setting(object):
         value = ("'%s'" if isinstance(value, str) else '%s') % value
         return '<%s: %s>' % (self.name, value)
     
-    def __new__(cls, name, default, help_text="", choices=None, editable=True, multiple=False, call_init=False):
+    def __new__(cls, name, default, help_text="", choices=None, editable=True, multiple=False,
+                validators=[], types=[], call_init=False):
         if call_init:
             return super(Setting, cls).__new__(cls)
         cls.settings[name] = cls(name, default, help_text=help_text, choices=choices,
-            editable=editable, multiple=multiple, call_init=True)
+            editable=editable, multiple=multiple, validators=validators, types=types, call_init=True)
         return cls.get_value(name, default)
     
     def __init__(self, *args, **kwargs):
@@ -32,14 +36,23 @@ class Setting(object):
         for name, value in kwargs.items():
             setattr(self, name, value)
         self.value = self.get_value(self.name, self.default)
+        self.validate_value(self.value)
         self.settings[name] = self
+   
+    def validate_value(self, value):
+        validators.all_valid(value, self.validators)
+        valid_types = list(self.types)
+        if isinstance(self.default, (list, tuple)):
+            valid_types.extend([list, tuple])
+        valid_types.append(type(self.default))
+        if not isinstance(value, tuple(valid_types)):
+            raise ValidationError("%s is not a valid type (%s)." %
+                (type(value).__name__, ', '.join(t.__name__ for t in valid_types))
+            )
     
     @classmethod
     def get_value(cls, name, default):
         return getattr(cls.conf_settings, name, default)
-
-    
-    # TODO validation, defaults to same type
 
 
 ORCHESTRA_BASE_DOMAIN = Setting('ORCHESTRA_BASE_DOMAIN',
@@ -47,7 +60,7 @@ ORCHESTRA_BASE_DOMAIN = Setting('ORCHESTRA_BASE_DOMAIN',
 )
 
 
-ORCHESTRA_SITE_URL = Setting('ORCHESTRA_SITE_URL', 'http://orchestra.%s' % ORCHESTRA_BASE_DOMAIN,
+ORCHESTRA_SITE_URL = Setting('ORCHESTRA_SITE_URL', 'https://orchestra.%s' % ORCHESTRA_BASE_DOMAIN,
     help_text=_("Domain name used when it will not be possible to infere the domain from a request."
                 "For example in periodic tasks.")
 )

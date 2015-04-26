@@ -294,15 +294,3 @@ https://code.djangoproject.com/ticket/24576
 # TODO orchestra related services code reload: celery/uwsgi reloading find aonther way without root and implement reload
 # insert settings on dashboard dynamically
 
-# rename "edit settings" -> change settings
-
-# View settings file
-contrib/orders/models.py:        if type(instance) in services:
-contrib/orders/models.py:        if type(instance) in services:
-contrib/orders/helpers.py:            if type(node) in services:
-contrib/bills/admin.py:            return [inline for inline in inlines if type(inline) is not BillLineInline]
-contrib/bills/admin.py:        return [inline for inline in inlines if type(inline) is not ClosedBillLineInline]
-contrib/accounts/actions.py.save:                if type(service) in registered_services:
-contrib/accounts/actions.py:                if type(service) in registered_services:
-permissions/options.py:        for func in inspect.getmembers(type(self), predicate=inspect.ismethod):
-

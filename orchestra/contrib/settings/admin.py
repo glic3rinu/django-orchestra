@@ -3,7 +3,7 @@ from functools import partial
 from django.contrib import admin, messages
 from django.db import models
 
-from django.views.generic.edit import FormView
+from django.views import generic
 from django.utils.translation import ngettext, ugettext_lazy as _
 
 from orchestra.settings import Setting
@@ -13,7 +13,7 @@ from . import parser
 from .forms import SettingFormSet
 
 
-class SettingView(FormView):
+class SettingView(generic.edit.FormView):
     template_name = 'admin/settings/change_form.html'
     form_class = SettingFormSet
     success_url = '.'
@@ -38,10 +38,8 @@ class SettingView(FormView):
                 'default': setting.default,
                 'type': type(setting.default),
                 'value': setting.value,
-                'choices': setting.choices,
+                'setting': setting,
                 'app': app,
-                'editable': setting.editable,
-                'multiple': setting.multiple,
             }
             if app == 'ORCHESTRA':
                 initial_data.insert(account, initial)
@@ -79,11 +77,28 @@ class SettingView(FormView):
                 _("%s changes successfully applied, the orchestra is going to be restarted...") % n,
                 n)
             )
-            # TODO find aonther way without root and implement reload
-#            sys.run('echo { sleep 2 && python3 %s/manage.py reload; } &' % paths.get_site_dir(), async=True)
+            sys.run('{ sleep 2 && touch %s/wsgi.py; } &' % paths.get_project_dir(), async=True)
         else:
             messages.success(self.request, _("No changes have been detected."))
         return super(SettingView, self).form_valid(form)
 
 
-admin.site.register_url(r'^settings/setting/$', SettingView.as_view(), 'settings_edit_settings')
+class SettingFileView(generic.TemplateView):
+    template_name = 'admin/settings/view.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(SettingFileView, self).get_context_data(**kwargs)
+        settings_file = parser.get_settings_file()
+        with open(settings_file, 'r') as handler:
+            content = handler.read()
+        context.update({
+            'title': _("Settings file content"),
+            'settings_file': settings_file,
+            'content': content,
+        })
+        return context
+
+
+admin.site.register_url(r'^settings/setting/view/$', SettingFileView.as_view(), 'settings_setting_view')
+admin.site.register_url(r'^settings/setting/$', SettingView.as_view(), 'settings_setting_change')
+

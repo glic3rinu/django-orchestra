@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "orchestra/css/hide-inline-id.css" %}" />
+{% endblock %}
+
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="../">Settings</a>
+&rsaquo; View file content
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div>
+    {% blocktrans %}
+    <p>Current <tt>{{ settings_file }}</tt> content.</p>
+    {% endblocktrans %}
+    <PRE>{{ content }}</PRE>
+</div>
+{% endblock %}

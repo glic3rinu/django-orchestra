@@ -259,8 +259,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def get_inline_instances(self, request, obj=None):
         inlines = super(BillAdmin, self).get_inline_instances(request, obj)
         if obj and not obj.is_open:
-            return [inline for inline in inlines if type(inline) is not BillLineInline]
-        return [inline for inline in inlines if type(inline) is not ClosedBillLineInline]
+            return [inline for inline in inlines if not isinstance(inline, BillLineInline)]
+        return [inline for inline in inlines if not isinstance(inline, ClosedBillLineInline)]
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """

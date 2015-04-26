@@ -48,14 +48,16 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
         initial = kwargs.get('initial')
         if initial:
             self.setting_type = initial['type']
+            self.setting = initial['setting']
+            setting = self.setting
             serialized_value = parser.serialize(initial['value'])
             serialized_default = parser.serialize(initial['default'])
-            if not initial['editable'] or isinstance(serialized_value, parser.NotSupported):
+            if not setting.editable or isinstance(serialized_value, parser.NotSupported):
                 field = self.NON_EDITABLE
             else:
-                choices = initial.get('choices')
+                choices = setting.choices
                 field = forms.ChoiceField
-                multiple = initial['multiple']
+                multiple = setting.multiple
                 if multiple:
                     field = partial(forms.MultipleChoiceField, widget=forms.CheckboxSelectMultiple)
                 if choices:
@@ -68,26 +70,25 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
                 else:
                     field = self.FORMFIELD_FOR_SETTING_TYPE.get(self.setting_type, self.NON_EDITABLE)
                     field = deepcopy(field)
-            value = initial['value']
-            default = initial['default']
             real_field = field
             while isinstance(real_field, partial):
                 real_field = real_field.func
             # Do not serialize following form types
+            value = initial['value']
+            default = initial['default']
+            self.changed = bool(value != default)
             if real_field not in (forms.MultipleChoiceField, forms.BooleanField):
                 value = serialized_value
-            if real_field is not forms.BooleanField:
                 default = serialized_default
             initial['value'] = value
             initial['default'] = default
         super(SettingForm, self).__init__(*args, **kwargs)
         if initial:
-            self.changed = bool(value != default)
             self.fields['value'] = field(label=_("value"))
             if isinstance(self.fields['value'].widget, forms.Textarea):
                 rows = math.ceil(len(value)/65)
                 self.fields['value'].widget.attrs['rows'] = rows
-            self.fields['name'].help_text = initial['help_text']
+            self.fields['name'].help_text = mark_safe(setting.help_text)
             self.fields['name'].widget.attrs['readonly'] = True
             self.app = initial['app']
         
@@ -101,11 +102,10 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
             value = eval(value, parser.get_eval_context())
         except Exception as exc:
             raise ValidationError(str(exc))
+        self.setting.validate_value(value)
         if not isinstance(value, self.setting_type):
             if self.setting_type in (tuple, list) and isinstance(value, (tuple, list)):
                 value = self.setting_type(value)
-            else:
-                raise ValidationError("Please provide a %s." % self.setting_type.__name__)
         return value
 
 

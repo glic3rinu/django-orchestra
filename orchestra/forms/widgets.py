@@ -13,7 +13,6 @@ class SpanWidget(forms.Widget):
     Renders a value wrapped in a <span> tag.
     Requires use of specific form support. (see ReadonlyForm or ReadonlyModelForm)
     """
-    
     def __init__(self, *args, **kwargs):
         self.tag = kwargs.pop('tag', '<span>')
         super(SpanWidget, self).__init__(*args, **kwargs)
@@ -22,8 +21,8 @@ class SpanWidget(forms.Widget):
         final_attrs = self.build_attrs(attrs, name=name)
         original_value = self.original_value
         # Display icon
-        if original_value in ('True', 'False') or isinstance(original_value, bool):
-            icon = static('admin/img/icon-%s.gif' % 'yes' if original_value else 'no')
+        if isinstance(original_value, bool):
+            icon = static('admin/img/icon-%s.gif' % ('yes' if original_value else 'no',))
             return mark_safe('<img src="%s" alt="%s">' % (icon, str(original_value)))
         tag = self.tag[:-1]
         endtag = '/'.join((self.tag[0], self.tag[1:]))

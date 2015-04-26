@@ -84,8 +84,8 @@ class ReadOnlyFormMixin(object):
                 field.widget = SpanWidget()
                 if hasattr(self, 'instance'):
                     # Model form
-                    original_value = str(getattr(self.instance, name))
+                    original_value = getattr(self.instance, name)
                 else:
-                    original_value = str(self.initial.get(name))
+                    original_value = self.initial.get(name)
                 field.widget.original_value = original_value
 

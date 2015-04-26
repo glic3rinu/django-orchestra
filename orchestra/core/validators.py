@@ -11,14 +11,26 @@ from IPy import IP
 from ..utils.python import import_class
 
 
-def all_valid(kwargs):
+def all_valid(*args):
     """ helper function to merge multiple validators at once """
-    errors = {}
-    for field, validator in kwargs.items():
-        try:
-            validator[0](*validator[1:])
-        except ValidationError as error:
-            errors[field] = error
+    if len(args) == 1:
+        # Dict
+        errors = {}
+        kwargs = args
+        for field, validator in kwargs.items():
+            try:
+                validator[0](*validator[1:])
+            except ValidationError as error:
+                errors[field] = error
+    else:
+        # List
+        errors = []
+        value, validators = args
+        for validator in validators:
+            try:
+                validator(value)
+            except ValidationError as error:
+                errors.append(error)
     if errors:
         raise ValidationError(errors)
 

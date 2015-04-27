@@ -3,14 +3,23 @@ from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 from .. import webapps
 
 
+_names = ('home', 'user', 'group', 'app_type', 'app_name', 'app_type', 'app_id')
+_php_names = _names + ('php_version', 'php_version_number',)
+_python_names = _names + ('python_version', 'python_version_number',)
+
+
 WEBAPPS_BASE_DIR = Setting('WEBAPPS_BASE_DIR',
-    '%(home)s/webapps/%(app_name)s'
+    '%(home)s/webapps/%(app_name)s',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),
+    validators=[Setting.string_format_validator(_names)],
 )
 
 
 WEBAPPS_FPM_LISTEN = Setting('WEBAPPS_FPM_LISTEN',
-    # '127.0.0.1:9%(app_id)03d
-    '/opt/php/5.4/socks/%(user)s-%(app_name)s.sock'
+    '/opt/php/5.4/socks/%(user)s-%(app_name)s.sock',
+    help_text=("TCP socket example: <tt>127.0.0.1:9%(app_id)03d</tt><br>"
+               "Available fromat names: <tt>{}</tt>").format(', '.join(_php_names)),
+    validators=[Setting.string_format_validator(_php_names)],
 )
 
 
@@ -20,20 +29,25 @@ WEBAPPS_FPM_DEFAULT_MAX_CHILDREN = Setting('WEBAPPS_FPM_DEFAULT_MAX_CHILDREN',
 
 
 WEBAPPS_PHPFPM_POOL_PATH = Setting('WEBAPPS_PHPFPM_POOL_PATH',
-    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf'
+    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_php_names),
+    validators=[Setting.string_format_validator(_php_names)],
 )
 
 
 WEBAPPS_FCGID_WRAPPER_PATH = Setting('WEBAPPS_FCGID_WRAPPER_PATH',
     '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper',
+    validators=[Setting.string_format_validator(_php_names)],
     help_text=("Inside SuExec Document root.<br>"
-               "Make sure all account wrappers are in the same DIR.")
+               "Make sure all account wrappers are in the same DIR.<br>"
+               "Available fromat names: <tt>%s</tt>") % ', '.join(_php_names),
 )
 
 
 WEBAPPS_FCGID_CMD_OPTIONS_PATH = Setting('WEBAPPS_FCGID_CMD_OPTIONS_PATH',
     '/etc/apache2/fcgid-conf/%(user)s-%(app_name)s.conf',
-    help_text="Loaded by Apache."
+    validators=[Setting.string_format_validator(_php_names)],
+    help_text="Loaded by Apache. Available fromat names: <tt>%s</tt>" % ', '.join(_php_names),
 )
 
 
@@ -43,7 +57,9 @@ WEBAPPS_PHP_MAX_REQUESTS = Setting('WEBAPPS_PHP_MAX_REQUESTS',
 )
 
 
-WEBAPPS_PHP_ERROR_LOG_PATH = Setting('WEBAPPS_PHP_ERROR_LOG_PATH', '')
+WEBAPPS_PHP_ERROR_LOG_PATH = Setting('WEBAPPS_PHP_ERROR_LOG_PATH',
+    ''
+)
 
 
 WEBAPPS_MERGE_PHP_WEBAPPS = Setting('WEBAPPS_MERGE_PHP_WEBAPPS',
@@ -78,27 +94,35 @@ WEBAPPS_PHP_VERSIONS = Setting('WEBAPPS_PHP_VERSIONS', (
 )
 
 
-WEBAPPS_DEFAULT_PHP_VERSION = Setting('WEBAPPS_DEFAULT_PHP_VERSION', '5.4-cgi',
+WEBAPPS_DEFAULT_PHP_VERSION = Setting('WEBAPPS_DEFAULT_PHP_VERSION',
+    '5.4-cgi',
     choices=WEBAPPS_PHP_VERSIONS
 )
 
 
-WEBAPPS_PHP_CGI_BINARY_PATH = Setting('WEBAPPS_PHP_CGI_BINARY_PATH', '/usr/bin/php%(php_version_number)s-cgi',
-    help_text="Path of the cgi binary used by fcgid."
+WEBAPPS_PHP_CGI_BINARY_PATH = Setting('WEBAPPS_PHP_CGI_BINARY_PATH',
+    '/usr/bin/php%(php_version_number)s-cgi',
+    help_text="Path of the cgi binary used by fcgid. Available fromat names: <tt>%s</tt>" % ', '.join(_php_names),
+    validators=[Setting.string_format_validator(_php_names)],
 )
 
 
-WEBAPPS_PHP_CGI_RC_DIR = Setting('WEBAPPS_PHP_CGI_RC_DIR', '/etc/php%(php_version_number)s/cgi/',
-    help_text="Path to php.ini."
+WEBAPPS_PHP_CGI_RC_DIR = Setting('WEBAPPS_PHP_CGI_RC_DIR',
+    '/etc/php%(php_version_number)s/cgi/',
+    help_text="Path to php.ini. Available fromat names: <tt>%s</tt>" % ', '.join(_php_names),
+    validators=[Setting.string_format_validator(_php_names)],
 )
 
 
 WEBAPPS_PHP_CGI_INI_SCAN_DIR = Setting('WEBAPPS_PHP_CGI_INI_SCAN_DIR',
-    '/etc/php%(php_version_number)s/cgi/conf.d'
+    '/etc/php%(php_version_number)s/cgi/conf.d',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_php_names),
+    validators=[Setting.string_format_validator(_php_names)],
 )
 
 
-WEBAPPS_PYTHON_VERSIONS = Setting('WEBAPPS_PYTHON_VERSIONS', (
+WEBAPPS_PYTHON_VERSIONS = Setting('WEBAPPS_PYTHON_VERSIONS',
+    (
         ('3.4-uwsgi', 'Python 3.4 uWSGI'),
         ('2.7-uwsgi', 'Python 2.7 uWSGI'),
     ),
@@ -106,13 +130,17 @@ WEBAPPS_PYTHON_VERSIONS = Setting('WEBAPPS_PYTHON_VERSIONS', (
 )
 
 
-WEBAPPS_DEFAULT_PYTHON_VERSION = Setting('WEBAPPS_DEFAULT_PYTHON_VERSION', '3.4-uwsgi',
+WEBAPPS_DEFAULT_PYTHON_VERSION = Setting('WEBAPPS_DEFAULT_PYTHON_VERSION',
+    '3.4-uwsgi',
     choices=WEBAPPS_PYTHON_VERSIONS
+
 )
 
 
 WEBAPPS_UWSGI_SOCKET = Setting('WEBAPPS_UWSGI_SOCKET',
-    '/var/run/uwsgi/app/%(app_name)s/socket'
+    '/var/run/uwsgi/app/%(app_name)s/socket',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_python_names),
+    validators=[Setting.string_format_validator(_python_names)],
 )
 
 
@@ -218,7 +246,8 @@ WEBAPPS_ENABLED_OPTIONS = Setting('WEBAPPS_ENABLED_OPTIONS', (
 
 
 WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = Setting('WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST',
-    'mysql.{}'.format(ORCHESTRA_BASE_DOMAIN)
+    'mysql.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
 

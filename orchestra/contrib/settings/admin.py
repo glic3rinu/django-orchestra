@@ -2,7 +2,7 @@ from functools import partial
 
 from django.contrib import admin, messages
 from django.db import models
-
+from django.shortcuts import render_to_response
 from django.views import generic
 from django.utils.translation import ngettext, ugettext_lazy as _
 
@@ -15,6 +15,7 @@ from .forms import SettingFormSet
 
 class SettingView(generic.edit.FormView):
     template_name = 'admin/settings/change_form.html'
+    reload_template_name = 'admin/settings/reload.html'
     form_class = SettingFormSet
     success_url = '.'
     
@@ -71,13 +72,15 @@ class SettingView(generic.edit.FormView):
             
             # Save changes
             parser.save(changes)
-            n = len(changes)
-            messages.success(self.request, ngettext(
-                _("One change successfully applied, the orchestra is going to be restarted..."),
-                _("%s changes successfully applied, the orchestra is going to be restarted...") % n,
-                n)
-            )
             sys.run('{ sleep 2 && touch %s/wsgi.py; } &' % paths.get_project_dir(), async=True)
+            n = len(changes)
+            context = {
+                'message': ngettext(
+                    _("One change successfully applied, orchestra is being restarted."),
+                    _("%s changes successfully applied, orchestra is being restarted.") % n,
+                    n),
+            }
+            return render_to_response(self.reload_template_name, context)
         else:
             messages.success(self.request, _("No changes have been detected."))
         return super(SettingView, self).form_valid(form)

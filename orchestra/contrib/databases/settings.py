@@ -1,7 +1,10 @@
+from orchestra.core.validators import validate_hostname
+
 from orchestra.settings import Setting
 
 
-DATABASES_TYPE_CHOICES = Setting('DATABASES_TYPE_CHOICES', (
+DATABASES_TYPE_CHOICES = Setting('DATABASES_TYPE_CHOICES',
+    (
         ('mysql', 'MySQL'),
         ('postgres', 'PostgreSQL'),
     ),
@@ -9,7 +12,13 @@ DATABASES_TYPE_CHOICES = Setting('DATABASES_TYPE_CHOICES', (
 )
 
 
-DATABASES_DEFAULT_TYPE = Setting('DATABASES_DEFAULT_TYPE', 'mysql', choices=DATABASES_TYPE_CHOICES)
+DATABASES_DEFAULT_TYPE = Setting('DATABASES_DEFAULT_TYPE',
+    'mysql',
+    choices=DATABASES_TYPE_CHOICES,
+)
 
 
-DATABASES_DEFAULT_HOST = Setting('DATABASES_DEFAULT_HOST', 'localhost')
+DATABASES_DEFAULT_HOST = Setting('DATABASES_DEFAULT_HOST',
+    'localhost',
+    validators=[validate_hostname],
+)

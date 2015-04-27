@@ -8,14 +8,14 @@ from orchestra.core.validators import validate_hostname
 from orchestra.utils import paths
 from orchestra.utils.sys import run
 
-from . import settings
+from .. import domains
 
 
 def validate_allowed_domain(value):
     context = {
         'site_dir': paths.get_site_dir()
     }
-    fname = settings.DOMAINS_FORBIDDEN
+    fname = domains.settings.DOMAINS_FORBIDDEN
     if fname:
         fname = fname % context
         with open(fname, 'r') as forbidden:
@@ -108,8 +108,8 @@ def validate_soa_record(value):
 def validate_zone(zone):
     """ Ultimate zone file validation using named-checkzone """
     zone_name = zone.split()[0][:-1]
-    zone_path = os.path.join(settings.DOMAINS_ZONE_VALIDATION_TMP_DIR, zone_name)
-    checkzone = settings.DOMAINS_CHECKZONE_BIN_PATH
+    zone_path = os.path.join(domains.settings.DOMAINS_ZONE_VALIDATION_TMP_DIR, zone_name)
+    checkzone = domains.settings.DOMAINS_CHECKZONE_BIN_PATH
     try:
         with open(zone_path, 'wb') as f:
             f.write(zone.encode('ascii'))

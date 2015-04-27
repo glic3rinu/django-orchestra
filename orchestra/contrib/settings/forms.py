@@ -33,6 +33,7 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
     FORMFIELD_FOR_SETTING_TYPE = {
             bool: partial(forms.BooleanField, required=False),
             int: forms.IntegerField,
+            float: forms.FloatField,
             tuple: TEXTAREA,
             list: TEXTAREA,
             dict: TEXTAREA,

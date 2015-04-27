@@ -283,6 +283,7 @@ https://code.djangoproject.com/ticket/24576
 
 # bill confirmation: show total
 # Amend lines???
+# orders currency setting
 
 # Determine the difference between data serializer used for validation and used for the rest API!
 # Make PluginApiView that fills metadata and other stuff like modeladmin plugin support

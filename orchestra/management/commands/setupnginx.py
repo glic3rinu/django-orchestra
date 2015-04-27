@@ -1,10 +1,11 @@
+import textwrap
 from optparse import make_option
 from os.path import expanduser
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from orchestra.utils.paths import get_project_dir, get_site_dir, get_project_name
+from orchestra.utils import paths
 from orchestra.utils.sys import run, check_root, get_default_celeryd_username
 
 
@@ -32,44 +33,49 @@ class Command(BaseCommand):
         interactive = options.get('interactive')
         
         context = {
-            'project_name': get_project_name(),
-            'project_dir': get_project_dir(),
-            'site_dir': get_site_dir(),
+            'project_name': paths.get_project_name(),
+            'project_dir': paths.get_project_dir(),
+            'site_dir': paths.get_site_dir(),
             'static_root': settings.STATIC_ROOT,
             'user': options.get('user'),
             'group': options.get('group') or options.get('user'),
             'home': expanduser("~%s" % options.get('user')),
             'processes': int(options.get('processes')),}
         
-        nginx_conf = (
-            'server {\n'
-            '    listen 80;\n'
-            '    listen [::]:80 ipv6only=on;\n'
-            '    rewrite ^/$ /admin/;\n'
-            '    client_max_body_size 500m;\n'
-            '    location / {\n'
-            '        uwsgi_pass unix:///var/run/uwsgi/app/%(project_name)s/socket;\n'
-            '        include uwsgi_params;\n'
-            '    }\n'
-            '    location /static {\n'
-            '        alias %(static_root)s;\n'
-            '        expires 30d;\n'
-            '    }\n'
-            '}\n') % context
+        nginx_conf = textwrap.dedent("""\
+            server {
+                listen 80;
+                listen [::]:80 ipv6only=on;
+                rewrite ^/$ /admin/;
+                client_max_body_size 500m;
+                location / {
+                    uwsgi_pass unix:///var/run/uwsgi/app/%(project_name)s/socket;
+                    include uwsgi_params;
+                }
+                location /static {
+                    alias %(static_root)s;
+                    expires 30d;
+                }
+            }
+            """
+        ) % context
         
-        uwsgi_conf = (
-            '[uwsgi]\n'
-            'plugins      = python\n'
-            'chdir        = %(site_dir)s\n'
-            'module       = %(project_name)s.wsgi\n'
-            'master       = true\n'
-            'processes    = %(processes)d\n'
-            'chmod-socket = 664\n'
-            'stats        = /run/uwsgi/%%(deb-confnamespace)/%%(deb-confname)/statsocket\n'
-            'vacuum       = true\n'
-            'uid          = %(user)s\n'
-            'gid          = %(group)s\n'
-            'env          = HOME=%(home)s\n') % context
+        uwsgi_conf = textwrap.dedent("""\
+            [uwsgi]
+            plugins      = python
+            chdir        = %(site_dir)s
+            module       = %(project_name)s.wsgi
+            master       = true
+            processes    = %(processes)d
+            chmod-socket = 664
+            stats        = /run/uwsgi/%%(deb-confnamespace)/%%(deb-confname)/statsocket
+            vacuum       = true
+            uid          = %(user)s
+            gid          = %(group)s
+            env          = HOME=%(home)s
+            touch-reload = %(project_dir)s/wsgi.py
+            """
+        ) % context
         
         nginx = {
             'file': '/etc/nginx/conf.d/%(project_name)s.conf' % context,
@@ -108,20 +114,21 @@ class Command(BaseCommand):
         current = "\$local_fs \$remote_fs \$network \$syslog"
         run('sed -i "s/  %s$/  %s \$named/g" /etc/init.d/nginx' % (current, current))
         
-        rotate = (
-            '/var/log/nginx/*.log {\n'
-            '    daily\n'
-            '    missingok\n'
-            '    rotate 30\n'
-            '    compress\n'
-            '    delaycompress\n'
-            '    notifempty\n'
-            '    create 640 root adm\n'
-            '    sharedscripts\n'
-            '    postrotate\n'
-            '        [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`\n'
-            '    endscript\n'
-            '}\n')
+        rotate = textwrap.dedent("""\
+            /var/log/nginx/*.log {
+                daily
+                missingok
+                rotate 30
+                compress
+                delaycompress
+                notifempty
+                create 640 root adm
+                sharedscripts
+                postrotate
+                    [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`
+                endscript
+            }"""
+        )
         run("echo '%s' > /etc/logrotate.d/nginx" % rotate)
         
         # Allow nginx to write to uwsgi socket

@@ -5,8 +5,14 @@ from orchestra.settings import Setting
 from .. import websites
 
 
+_names = ('id', 'pk', 'home', 'user', 'group', 'site_name', 'protocol')
+_log_names = _names + ('unique_name',)
+
+
 WEBSITES_UNIQUE_NAME_FORMAT = Setting('WEBSITES_UNIQUE_NAME_FORMAT',
-    default='%(user)s-%(site_name)s'
+    default='%(user)s-%(site_name)s',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),
+    validators=[Setting.string_format_validator(_names)],
 )
 
 
@@ -69,12 +75,16 @@ WEBSITES_WEBALIZER_PATH = Setting('WEBSITES_WEBALIZER_PATH',
 
 
 WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH = Setting('WEBSITES_WEBSITE_WWW_ACCESS_LOG_PATH',
-    '/var/log/apache2/virtual/%(unique_name)s.log'
+    '/var/log/apache2/virtual/%(unique_name)s.log',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_log_names),
+    validators=[Setting.string_format_validator(_log_names)],
 )
 
 
 WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH = Setting('WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH',
-    ''
+    '',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_log_names),
+    validators=[Setting.string_format_validator(_log_names)],
 )
 
 
@@ -93,11 +103,13 @@ WEBSITES_TRAFFIC_IGNORE_HOSTS = Setting('WEBSITES_TRAFFIC_IGNORE_HOSTS',
 #    '')
 
 
-WEBSITES_SAAS_DIRECTIVES = Setting('WEBSITES_SAAS_DIRECTIVES', {
-    'wordpress-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock', '/home/httpd/wordpress-mu/'),
-    'drupal-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock','/home/httpd/drupal-mu/'),
-    'dokuwiki-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock','/home/httpd/moodle-mu/'),
-})
+WEBSITES_SAAS_DIRECTIVES = Setting('WEBSITES_SAAS_DIRECTIVES',
+    {
+        'wordpress-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock', '/home/httpd/wordpress-mu/'),
+        'drupal-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock','/home/httpd/drupal-mu/'),
+        'dokuwiki-saas': ('fpm', '/opt/php/5.4/socks/pangea.sock','/home/httpd/moodle-mu/'),
+    },
+)
 
 
 WEBSITES_DEFAULT_SSL_CERT = Setting('WEBSITES_DEFAULT_SSL_CERT',
@@ -112,7 +124,8 @@ WEBSITES_DEFAULT_SSL_CA = Setting('WEBSITES_DEFAULT_SSL_CA',
     ''
 )
 
-WEBSITES_VHOST_EXTRA_DIRECTIVES = Setting('WEBSITES_VHOST_EXTRA_DIRECTIVES', (),
+WEBSITES_VHOST_EXTRA_DIRECTIVES = Setting('WEBSITES_VHOST_EXTRA_DIRECTIVES',
+    (),
     help_text=(
         "(<location>, <directive>), <br>"
         "i.e. ('/cgi-bin/', 'ScriptAlias /cgi-bin/ %(home)s/cgi-bin/')"

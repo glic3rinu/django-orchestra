@@ -3,7 +3,8 @@ from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 from .. import saas
 
 
-SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES', (
+SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES',
+    (
         'orchestra.contrib.saas.services.moodle.MoodleService',
         'orchestra.contrib.saas.services.bscw.BSCWService',
         'orchestra.contrib.saas.services.gitlab.GitLabService',
@@ -19,11 +20,14 @@ SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES', (
 )
 
 
-SAAS_WORDPRESS_ADMIN_PASSWORD = Setting('SAAS_WORDPRESSMU_ADMIN_PASSWORD', 'secret')
+SAAS_WORDPRESS_ADMIN_PASSWORD = Setting('SAAS_WORDPRESSMU_ADMIN_PASSWORD',
+    'secret'
+)
 
 
 SAAS_WORDPRESS_BASE_URL = Setting('SAAS_WORDPRESS_BASE_URL',
-    'https://blogs.{}/'.format(ORCHESTRA_BASE_DOMAIN)
+    'https://blogs.{}/'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
 
@@ -38,22 +42,25 @@ SAAS_DOKUWIKI_FARM_PATH = Setting('WEBSITES_DOKUWIKI_FARM_PATH',
 
 
 SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
-    '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s'
+    '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s',
+    
 )
 
 
 SAAS_PHPLIST_DB_NAME = Setting('SAAS_PHPLIST_DB_NAME',
-    'phplist_mu'
+    'phplist_mu',
 )
 
 
 SAAS_PHPLIST_BASE_DOMAIN = Setting('SAAS_PHPLIST_BASE_DOMAIN',
-    'lists.{}'.format(ORCHESTRA_BASE_DOMAIN)
+    'lists.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
 
 SAAS_SEAFILE_DOMAIN = Setting('SAAS_SEAFILE_DOMAIN',
-    'seafile.{}'.format(ORCHESTRA_BASE_DOMAIN)
+    'seafile.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
 
@@ -63,13 +70,15 @@ SAAS_SEAFILE_DEFAULT_QUOTA = Setting('SAAS_SEAFILE_DEFAULT_QUOTA',
 
 
 SAAS_BSCW_DOMAIN = Setting('SAAS_BSCW_DOMAIN',
-    'bscw.{}'.format(ORCHESTRA_BASE_DOMAIN)
+    'bscw.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
 
 SAAS_BSCW_DEFAULT_QUOTA = Setting('SAAS_BSCW_DEFAULT_QUOTA',
-    50
+    50,
 )
+
 
 SAAS_BSCW_BSADMIN_PATH = Setting('SAAS_BSCW_BSADMIN_PATH', 
     '/home/httpd/bscw/bin/bsadmin',
@@ -77,10 +86,11 @@ SAAS_BSCW_BSADMIN_PATH = Setting('SAAS_BSCW_BSADMIN_PATH',
 
 
 SAAS_GITLAB_ROOT_PASSWORD = Setting('SAAS_GITLAB_ROOT_PASSWORD',
-    'secret'
+    'secret',
 )
 
 
 SAAS_GITLAB_DOMAIN = Setting('SAAS_GITLAB_DOMAIN',
-    'gitlab.{}'.format(ORCHESTRA_BASE_DOMAIN)
+    'gitlab.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )

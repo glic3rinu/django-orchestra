@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from django.conf import settings
 from django.core.exceptions import ValidationError, AppRegistryNotReady
+from django.core.validators import validate_email
 from django.db.models import get_model
 from django.utils.functional import Promise
 from django.utils.translation import ugettext_lazy as _
@@ -127,7 +128,8 @@ ORCHESTRA_BASE_DOMAIN = Setting('ORCHESTRA_BASE_DOMAIN',
 ORCHESTRA_SITE_URL = Setting('ORCHESTRA_SITE_URL',
     'https://orchestra.%s' % ORCHESTRA_BASE_DOMAIN,
     help_text=_("Domain name used when it will not be possible to infere the domain from a request."
-                "For example in periodic tasks.")
+                "For example in periodic tasks.<br>"
+                "Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.")
 )
 
 
@@ -137,7 +139,8 @@ ORCHESTRA_SITE_NAME = Setting('ORCHESTRA_SITE_NAME',
 
 
 ORCHESTRA_SITE_VERBOSE_NAME = Setting('ORCHESTRA_SITE_VERBOSE_NAME',
-    _("%s Hosting Management" % ORCHESTRA_SITE_NAME.capitalize()),
+    "%s Hosting Management" % ORCHESTRA_SITE_NAME.capitalize(),
+    help_text="Uses <tt>ORCHESTRA_SITE_NAME</tt> by default."
 )
 
 
@@ -180,7 +183,9 @@ ORCHESTRA_API_ROOT_VIEW = Setting('ORCHESTRA_API_ROOT_VIEW',
 
 
 ORCHESTRA_DEFAULT_SUPPORT_FROM_EMAIL = Setting('ORCHESTRA_DEFAULT_SUPPORT_FROM_EMAIL',
-    'support@{}'.format(ORCHESTRA_BASE_DOMAIN)
+    'support@{}'.format(ORCHESTRA_BASE_DOMAIN),
+    validators=[validate_email],
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default."
 )
 
 

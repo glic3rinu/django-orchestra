@@ -79,7 +79,7 @@ def serialize(obj, init=True):
                 return nested
             _obj.append(nested)
         _obj = type(obj)(_obj)
-    elif isinstance(obj, (str, bool, int)):
+    elif isinstance(obj, (str, bool, int, float)):
         _obj = obj
     else:
         _obj = NotSupported()
@@ -131,8 +131,8 @@ def apply(changes, settings_file=get_settings_file()):
                 if num == lastend:
                     content.extend(comments)
                     inside = False
-
-    # insert new variables
+    
+    # insert new variables at the end of file
     for name, value in changes.items():
         content.append(_format_setting(name, value))
     return '\n'.join(content)

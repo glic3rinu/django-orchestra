@@ -3,7 +3,12 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.settings import Setting
 
 
-SYSTEMUSERS_SHELLS = Setting('SYSTEMUSERS_SHELLS', (
+_names = ('user', 'username')
+_backend_names = _names + ('group', 'shell', 'mainuser', 'home', 'base_home')
+
+
+SYSTEMUSERS_SHELLS = Setting('SYSTEMUSERS_SHELLS',
+    (
         ('/dev/null', _("No shell, FTP only")),
         ('/bin/rssh', _("No shell, SFTP/RSYNC only")),
         ('/bin/bash', "/bin/bash"),
@@ -13,7 +18,8 @@ SYSTEMUSERS_SHELLS = Setting('SYSTEMUSERS_SHELLS', (
 )
 
 
-SYSTEMUSERS_DEFAULT_SHELL = Setting('SYSTEMUSERS_DEFAULT_SHELL', '/dev/null',
+SYSTEMUSERS_DEFAULT_SHELL = Setting('SYSTEMUSERS_DEFAULT_SHELL',
+    '/dev/null',
     choices=SYSTEMUSERS_SHELLS
 )
 
@@ -27,7 +33,9 @@ SYSTEMUSERS_DISABLED_SHELLS = Setting('SYSTEMUSERS_DISABLED_SHELLS',
 
 
 SYSTEMUSERS_HOME = Setting('SYSTEMUSERS_HOME',
-    '/home/%(user)s'
+    '/home/%(user)s',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),
+    validators=[Setting.string_format_validator(_names)],
 )
 
 
@@ -46,5 +54,7 @@ SYSTEMUSERS_DEFAULT_GROUP_MEMBERS = Setting('SYSTEMUSERS_DEFAULT_GROUP_MEMBERS',
 
 
 SYSTEMUSERS_MOVE_ON_DELETE_PATH = Setting('SYSTEMUSERS_MOVE_ON_DELETE_PATH',
-    ''
+    '',
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_backend_names),
+    validators=[Setting.string_format_validator(_backend_names)],
 )

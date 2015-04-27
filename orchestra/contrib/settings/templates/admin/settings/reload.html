@@ -1,0 +1,54 @@
+{% load staticfiles %}
+
+<html>
+    <head>
+        <style>
+            .alert-box {
+                color:#555;
+                border-radius:10px;
+                font-family:Tahoma,Geneva,Arial,sans-serif;font-size:13px;
+                padding:10px 10px 10px 36px;
+                width: 500px;
+                height: 35px;
+                position: absolute;
+                top:0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: auto;
+                margin-top: 100px;
+                        }
+            .alert-box span {
+                font-weight:bold;
+                text-transform:uppercase;
+            }
+            .warning {
+                background:#fff8c4 url('images/warning.png') no-repeat 10px 50%;
+                border:1px solid #f2c779;
+            }
+    </style>
+        <script src="{% static "admin/js/jquery.js" %}" type="text/javascript"></script>
+        <script>
+            function endCountdown() {
+                window.location.reload();
+            }
+            function handleTimer() {
+              if(count === 0) {
+                clearInterval(timer);
+                endCountdown();
+              } else {
+                $('#count_num').html(count);
+                count--;
+              }
+            }
+            var count = 4;
+            var timer = setInterval(function() { handleTimer(count); }, 1000);
+        </script>
+    </head>
+    <body>
+        <meta http-equiv="refresh" content="6">
+        <div>
+        <div class="alert-box warning"><span>notice: </span>{{ message }}<br> Refreshing in <span id="count_num">5</span></span>.</div>
+        </div>
+    </body>
+</html>

@@ -10,6 +10,7 @@ from orchestra.admin.utils import admin_link
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.plugins import PluginModelAdapter
 from orchestra.plugins.admin import SelectPluginAdminMixin
+from orchestra.utils.python import import_class
 
 from . import settings
 from .models import MiscService, Miscellaneous
@@ -92,7 +93,8 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
         service = self.get_service(obj)
         def clean_identifier(self, service=service):
             identifier = self.cleaned_data['identifier']
-            validator = settings.MISCELLANEOUS_IDENTIFIER_VALIDATORS.get(service.name, None)
+            validator_path = settings.MISCELLANEOUS_IDENTIFIER_VALIDATORS.get(service.name, None)
+            validator = import_class(validator_path)
             if validator:
                 validator(identifier)
             return identifier

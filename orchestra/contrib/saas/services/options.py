@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra import plugins
 from orchestra.contrib.orchestration import Operation
 from orchestra.core import validators
-from orchestra.forms import widgets
+from orchestra.forms.widgets import SpanWidget
 from orchestra.plugins.forms import PluginDataForm
 from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class, random_ascii
@@ -15,9 +15,9 @@ from .. import settings
 
 
 class SoftwareServiceForm(PluginDataForm):
-    site_url = forms.CharField(label=_("Site URL"), widget=widgets.ShowTextWidget, required=False)
+    site_url = forms.CharField(label=_("Site URL"), widget=SpanWidget(), required=False)
     password = forms.CharField(label=_("Password"), required=False,
-        widget=widgets.ReadOnlyWidget('<strong>Unknown password</strong>'),
+        widget=SpanWidget(display='<strong>Unknown password</strong>'),
         validators=[
             validators.validate_password,
             RegexValidator(r'^[^"\'\\]+$',
@@ -36,6 +36,7 @@ class SoftwareServiceForm(PluginDataForm):
     
     class Meta:
         exclude = ('database',)
+        readonly_fields = ('site_url',)
     
     def __init__(self, *args, **kwargs):
         super(SoftwareServiceForm, self).__init__(*args, **kwargs)
@@ -54,7 +55,7 @@ class SoftwareServiceForm(PluginDataForm):
             site_link = '<a href="http://%s">%s</a>' % (site_domain, site_domain)
         else:
             site_link = '&lt;site_name&gt;.%s' % self.plugin.site_base_domain
-        self.fields['site_url'].initial = site_link
+        self.fields['site_url'].widget.display = site_link
         self.fields['name'].label = _("Username")
     
     def clean_password2(self):

@@ -81,11 +81,10 @@ class ReadOnlyFormMixin(object):
         for name in self.Meta.readonly_fields:
             field = self.fields[name]
             if not isinstance(field, SpanField):
-                field.widget = SpanWidget()
+                if not isinstance(field.widget, SpanWidget):
+                    field.widget = SpanWidget()
+                original = self.initial.get(name)
                 if hasattr(self, 'instance'):
-                    # Model form
-                    original_value = getattr(self.instance, name)
-                else:
-                    original_value = self.initial.get(name)
-                field.widget.original_value = original_value
+                    original = getattr(self.instance, name, original)
+                field.widget.original = original
 

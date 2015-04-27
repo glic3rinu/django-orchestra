@@ -16,7 +16,7 @@ def all_valid(*args):
     if len(args) == 1:
         # Dict
         errors = {}
-        kwargs = args
+        kwargs = args[0]
         for field, validator in kwargs.items():
             try:
                 validator[0](*validator[1:])
@@ -36,7 +36,7 @@ def all_valid(*args):
 
 
 def validate_ipv4_address(value):
-    msg = _("%s is not a valid IPv4 address") % value
+    msg = _("Not a valid IPv4 address")
     try:
         ip = IP(value)
     except:
@@ -46,7 +46,7 @@ def validate_ipv4_address(value):
 
 
 def validate_ipv6_address(value):
-    msg = _("%s is not a valid IPv6 address") % value
+    msg = _("Not a valid IPv6 address")
     try:
         ip = IP(value)
     except:
@@ -56,7 +56,7 @@ def validate_ipv6_address(value):
 
 
 def validate_ip_address(value):
-    msg = _("%s is not a valid IP address") % value
+    msg = _("Not a valid IP address")
     try:
         IP(value)
     except:

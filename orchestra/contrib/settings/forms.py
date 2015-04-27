@@ -5,9 +5,11 @@ from functools import partial
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.formsets import formset_factory
+from django.utils.functional import Promise
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.forms import ReadOnlyFormMixin, widgets
+from orchestra.utils.python import format_exception
 
 from . import parser
 
@@ -20,21 +22,21 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
         widget=forms.Textarea(attrs={
             'cols': 65,
             'rows': 2,
-            'style': 'font-family:monospace'
+            'style': 'font-family: monospace',
         }))
     CHARFIELD = partial(forms.CharField,
-                widget=forms.TextInput(attrs={
-                    'size': 65,
-                    'style': 'font-family:monospace'
-                }))
-    NON_EDITABLE = partial(forms.CharField, widget=widgets.ShowTextWidget(), required=False)
+        widget=forms.TextInput(attrs={
+            'size': 65,
+            'style': 'font-family: monospace',
+        }))
+    NON_EDITABLE = partial(forms.CharField, widget=widgets.SpanWidget, required=False)
     FORMFIELD_FOR_SETTING_TYPE = {
             bool: partial(forms.BooleanField, required=False),
             int: forms.IntegerField,
             tuple: TEXTAREA,
             list: TEXTAREA,
             dict: TEXTAREA,
-            type(_()): CHARFIELD,
+            Promise: CHARFIELD,
             str: CHARFIELD,
         }
     
@@ -50,8 +52,12 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
             self.setting_type = initial['type']
             self.setting = initial['setting']
             setting = self.setting
-            serialized_value = parser.serialize(initial['value'])
-            serialized_default = parser.serialize(initial['default'])
+            if setting.serializable:
+                serialized_value = parser.serialize(initial['value'])
+                serialized_default = parser.serialize(initial['default'])
+            else:
+                serialized_value = parser.NotSupported()
+                serialized_default = parser.NotSupported()
             if not setting.editable or isinstance(serialized_value, parser.NotSupported):
                 field = self.NON_EDITABLE
             else:
@@ -101,7 +107,7 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
         try:
             value = eval(value, parser.get_eval_context())
         except Exception as exc:
-            raise ValidationError(str(exc))
+            raise ValidationError(format_exception(exc))
         self.setting.validate_value(value)
         if not isinstance(value, self.setting_type):
             if self.setting_type in (tuple, list) and isinstance(value, (tuple, list)):

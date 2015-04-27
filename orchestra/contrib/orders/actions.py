@@ -91,7 +91,6 @@ class BillSelectedOrders(object):
                     url = reverse('admin:bills_bill_changelist')
                     ids = ','.join(map(str, bills))
                     url += '?id__in=%s' % ids
-                num = len(bills)
                 msg = ungettext(
                     '<a href="{url}">One bill</a> has been created.',
                     '<a href="{url}">{num} bills</a> have been created.',
@@ -100,11 +99,18 @@ class BillSelectedOrders(object):
                 self.modeladmin.message_user(request, msg, messages.INFO)
             return
         bills = self.queryset.bill(commit=False, **self.options)
+        bills_with_total = []
+        for account, lines in bills:
+            total = 0
+            for line in lines:
+                discount = sum([discount.total for discount in line.discounts])
+                total += line.subtotal + discount
+            bills_with_total.append((account, total, lines))
         self.context.update({
             'title': _("Confirmation for billing selected orders"),
             'step': 3,
             'form': form,
-            'bills': bills,
+            'bills': bills_with_total,
         })
         return render(request, self.template, self.context)
 

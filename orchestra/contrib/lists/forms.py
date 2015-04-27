@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_password
-from orchestra.forms.widgets import ReadOnlyWidget
+from orchestra.forms.widgets import SpanWidget
 
 
 class CleanAddressMixin(object):
@@ -32,8 +32,8 @@ class ListCreationForm(CleanAddressMixin, forms.ModelForm):
     
 
 class ListChangeForm(CleanAddressMixin, forms.ModelForm):
-    password = forms.CharField(label=_("Password"),
-        widget=ReadOnlyWidget('<strong>Unknown password</strong>'),
+    password = forms.CharField(label=_("Password"), required=False,
+        widget=SpanWidget(display='<strong>Unknown password</strong>'),
         help_text=_("List passwords are not stored, so there is no way to see this "
                     "list's password, but you can change the password using "
                     "<a href=\"password/\">this form</a>."))

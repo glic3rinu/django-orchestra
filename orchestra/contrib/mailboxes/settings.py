@@ -3,17 +3,16 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.core.validators import validate_name
 from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 
 
-MAILBOXES_DOMAIN_MODEL = Setting('MAILBOXES_DOMAIN_MODEL',
-    'domains.Domain'
+MAILBOXES_DOMAIN_MODEL = Setting('MAILBOXES_DOMAIN_MODEL', 'domains.Domain',
+    validators=[Setting.validate_model_label]
 )
 
 
-MAILBOXES_HOME = Setting('MAILBOXES_HOME',
-    '/home/%(name)s/'
-)
+MAILBOXES_HOME = Setting('MAILBOXES_HOME', '/home/%(name)s/')
 
 
 MAILBOXES_SIEVE_PATH = Setting('MAILBOXES_SIEVE_PATH',
@@ -21,13 +20,11 @@ MAILBOXES_SIEVE_PATH = Setting('MAILBOXES_SIEVE_PATH',
 )
 
 
-MAILBOXES_SIEVETEST_PATH = Setting('MAILBOXES_SIEVETEST_PATH',
-    '/dev/shm'
-)
+MAILBOXES_SIEVETEST_PATH = Setting('MAILBOXES_SIEVETEST_PATH', '/dev/shm')
 
 
-MAILBOXES_SIEVETEST_BIN_PATH = Setting('MAILBOXES_SIEVETEST_BIN_PATH',
-    '%(orchestra_root)s/bin/sieve-test'
+MAILBOXES_SIEVETEST_BIN_PATH = Setting('MAILBOXES_SIEVETEST_BIN_PATH', '%(orchestra_root)s/bin/sieve-test',
+    validators=[Setting.string_format_validator(('orchestra_root',))]
 )
 
 
@@ -46,14 +43,12 @@ MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH = Setting('MAILBOXES_VIRTUAL_ALIAS_DOMAINS_
 )
 
 
-MAILBOXES_LOCAL_DOMAIN = Setting('MAILBOXES_LOCAL_DOMAIN', 
-    ORCHESTRA_BASE_DOMAIN
+MAILBOXES_LOCAL_DOMAIN = Setting('MAILBOXES_LOCAL_DOMAIN', ORCHESTRA_BASE_DOMAIN,
+    validators=[validate_name]
 )
 
 
-MAILBOXES_PASSWD_PATH = Setting('MAILBOXES_PASSWD_PATH',
-    '/etc/dovecot/passwd'
-)
+MAILBOXES_PASSWD_PATH = Setting('MAILBOXES_PASSWD_PATH', '/etc/dovecot/passwd')
 
 
 MAILBOXES_MAILBOX_FILTERINGS = Setting('MAILBOXES_MAILBOX_FILTERINGS', {
@@ -80,21 +75,15 @@ MAILBOXES_MAILBOX_DEFAULT_FILTERING = Setting('MAILBOXES_MAILBOX_DEFAULT_FILTERI
 )
 
 
-MAILBOXES_MAILDIRSIZE_PATH = Setting('MAILBOXES_MAILDIRSIZE_PATH',
-    '%(home)s/Maildir/maildirsize'
+MAILBOXES_MAILDIRSIZE_PATH = Setting('MAILBOXES_MAILDIRSIZE_PATH', '%(home)s/Maildir/maildirsize')
+
+
+MAILBOXES_LOCAL_ADDRESS_DOMAIN = Setting('MAILBOXES_LOCAL_ADDRESS_DOMAIN', ORCHESTRA_BASE_DOMAIN,
+    validators=[validate_name]
 )
 
 
-MAILBOXES_LOCAL_ADDRESS_DOMAIN = Setting('MAILBOXES_LOCAL_ADDRESS_DOMAIN',
-    ORCHESTRA_BASE_DOMAIN
-)
+MAILBOXES_MAIL_LOG_PATH = Setting('MAILBOXES_MAIL_LOG_PATH', '/var/log/mail.log')
 
 
-MAILBOXES_MAIL_LOG_PATH = Setting('MAILBOXES_MAIL_LOG_PATH',
-    '/var/log/mail.log'
-)
-
-
-MAILBOXES_MOVE_ON_DELETE_PATH = Setting('MAILBOXES_MOVE_ON_DELETE_PATH',
-    ''
-)
+MAILBOXES_MOVE_ON_DELETE_PATH = Setting('MAILBOXES_MOVE_ON_DELETE_PATH', '')

@@ -5,29 +5,33 @@ from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 
 
 ACCOUNTS_TYPES = Setting('ACCOUNTS_TYPES', (
-    ('INDIVIDUAL', _("Individual")),
-    ('ASSOCIATION', _("Association")),
-    ('CUSTOMER', _("Customer")),
-    ('COMPANY', _("Company")),
-    ('PUBLICBODY', _("Public body")),
-    ('STAFF', _("Staff")),
-    ('FRIEND', _("Friend")),
-))
+        ('INDIVIDUAL', _("Individual")),
+        ('ASSOCIATION', _("Association")),
+        ('CUSTOMER', _("Customer")),
+        ('COMPANY', _("Company")),
+        ('PUBLICBODY', _("Public body")),
+        ('STAFF', _("Staff")),
+        ('FRIEND', _("Friend")),
+    ),
+    validators=[Setting.validate_choices]
+)
 
 
 ACCOUNTS_DEFAULT_TYPE = Setting('ACCOUNTS_DEFAULT_TYPE', 'INDIVIDUAL', choices=ACCOUNTS_TYPES)
 
 
 ACCOUNTS_LANGUAGES = Setting('ACCOUNTS_LANGUAGES', (
-    ('EN', _('English')),
-))
+        ('EN', _('English')),
+    ),
+    validators=[Setting.validate_choices]
+)
 
 
 ACCOUNTS_DEFAULT_LANGUAGE = Setting('ACCOUNTS_DEFAULT_LANGUAGE', 'EN', choices=ACCOUNTS_LANGUAGES)
 
 
-ACCOUNTS_SYSTEMUSER_MODEL = Setting('ACCOUNTS_SYSTEMUSER_MODEL',
-    'systemusers.SystemUser'
+ACCOUNTS_SYSTEMUSER_MODEL = Setting('ACCOUNTS_SYSTEMUSER_MODEL', 'systemusers.SystemUser',
+    validators=[Setting.validate_model_label],
 )
 
 

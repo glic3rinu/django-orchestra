@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.databases.models import Database, DatabaseUser
-from orchestra.forms import widgets
+from orchestra.forms.widgets import SpanWidget
 
 from .. import settings
 from .options import SoftwareService, SoftwareServiceForm
@@ -13,7 +13,7 @@ from .options import SoftwareService, SoftwareServiceForm
 
 class PHPListForm(SoftwareServiceForm):
     admin_username = forms.CharField(label=_("Admin username"), required=False,
-            widget=widgets.ReadOnlyWidget('admin'))
+            widget=SpanWidget(display='admin'))
     
     def __init__(self, *args, **kwargs):
         super(PHPListForm, self).__init__(*args, **kwargs)
@@ -37,7 +37,7 @@ class PHPListChangeForm(PHPListForm):
         db = self.instance.database
         db_url = reverse('admin:databases_database_change', args=(db.pk,))
         db_link = mark_safe('<a href="%s">%s</a>' % (db_url, db.name))
-        self.fields['database'].widget = widgets.ReadOnlyWidget(db.name, db_link)
+        self.fields['database'].widget = SpanWidget(original=db.name, display=db_link)
 
 
 class PHPListService(SoftwareService):
@@ -57,7 +57,7 @@ class PHPListService(SoftwareService):
         return settings.SAAS_PHPLIST_DB_NAME
     
     def get_account(self):
-        return type(self.instance.account).get_main()
+        return self.instance.account.get_main()
     
     def validate(self):
         super(PHPListService, self).validate()

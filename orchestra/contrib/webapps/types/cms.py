@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from orchestra.contrib.databases.models import Database, DatabaseUser
-from orchestra.forms import widgets
+from orchestra.forms.widgets import SpanWidget
 from orchestra.utils.python import random_ascii
 
 from .php import PHPApp, PHPAppForm, PHPAppSerializer
@@ -30,13 +30,13 @@ class CMSAppForm(PHPAppForm):
             db_id = data.get('db_id')
             db_url = reverse('admin:databases_database_change', args=(db_id,))
             db_link = mark_safe('<a href="%s">%s</a>' % (db_url, db_name))
-            self.fields['db_name'].widget = widgets.ReadOnlyWidget(db_name, db_link)
+            self.fields['db_name'].widget = SpanWidget(original=db_name, display=db_link)
             # DB user link
             db_user = data.get('db_user')
             db_user_id = data.get('db_user_id')
             db_user_url = reverse('admin:databases_databaseuser_change', args=(db_user_id,))
             db_user_link = mark_safe('<a href="%s">%s</a>' % (db_user_url, db_user))
-            self.fields['db_user'].widget = widgets.ReadOnlyWidget(db_user, db_user_link)
+            self.fields['db_user'].widget = SpanWidget(original=db_user, display=db_user_link)
 
 
 class CMSAppSerializer(PHPAppSerializer):

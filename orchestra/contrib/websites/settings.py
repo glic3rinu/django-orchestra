@@ -6,40 +6,40 @@ from .. import websites
 
 
 WEBSITES_UNIQUE_NAME_FORMAT = Setting('WEBSITES_UNIQUE_NAME_FORMAT',
-    '%(user)s-%(site_name)s'
+    default='%(user)s-%(site_name)s'
 )
 
 
-# TODO 'http', 'https', 'https-only', 'http and https' and rename to PROTOCOL
-#WEBSITES_PORT_CHOICES = getattr(settings, 'WEBSITES_PORT_CHOICES', (
-#    (80, 'HTTP'),
-#    (443, 'HTTPS'),
-#))
+WEBSITES_PROTOCOL_CHOICES = Setting('WEBSITES_PROTOCOL_CHOICES',
+    default=(
+        ('http', "HTTP"),
+        ('https', "HTTPS"),
+        ('http/https', _("HTTP and HTTPS")),
+        ('https-only', _("HTTPS only")),
+    ),
+    validators=[Setting.validate_choices]
+)
 
 
-WEBSITES_PROTOCOL_CHOICES = Setting('WEBSITES_PROTOCOL_CHOICES', (
-    ('http', "HTTP"),
-    ('https', "HTTPS"),
-    ('http/https', _("HTTP and HTTPS")),
-    ('https-only', _("HTTPS only")),
-))
-
-WEBSITES_DEFAULT_PROTOCOL = Setting('WEBSITES_DEFAULT_PROTOCOL', 'http',
+WEBSITES_DEFAULT_PROTOCOL = Setting('WEBSITES_DEFAULT_PROTOCOL',
+    default='http',
     choices=WEBSITES_PROTOCOL_CHOICES
 )
 
 
-WEBSITES_DEFAULT_IPS = Setting('WEBSITES_DEFAULT_IPS', (
-    '*',
-))
-
-
-WEBSITES_DOMAIN_MODEL = Setting('WEBSITES_DOMAIN_MODEL',
-    'domains.Domain'
+WEBSITES_DEFAULT_IPS = Setting('WEBSITES_DEFAULT_IPS',
+    default=('*',)
 )
 
 
-WEBSITES_ENABLED_DIRECTIVES = Setting('WEBSITES_ENABLED_DIRECTIVES', (
+WEBSITES_DOMAIN_MODEL = Setting('WEBSITES_DOMAIN_MODEL',
+    'domains.Domain',
+    validators=[Setting.validate_model_label]
+)
+
+
+WEBSITES_ENABLED_DIRECTIVES = Setting('WEBSITES_ENABLED_DIRECTIVES',
+    (
         'orchestra.contrib.websites.directives.Redirect',
         'orchestra.contrib.websites.directives.Proxy',
         'orchestra.contrib.websites.directives.ErrorDocument',

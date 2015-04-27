@@ -3,6 +3,7 @@ import os
 import re
 
 from django.utils.translation import ugettext_lazy as _
+from django.utils.functional import Promise
 
 from orchestra.utils.paths import get_project_dir
 
@@ -60,7 +61,7 @@ def get_eval_context():
 def serialize(obj, init=True):
     if isinstance(obj, NotSupported):
         return obj
-    elif isinstance(obj, type(_())):
+    elif isinstance(obj, Promise):
         _obj = LazyUgettextRepr(obj)
     elif isinstance(obj, dict):
         _obj = {}

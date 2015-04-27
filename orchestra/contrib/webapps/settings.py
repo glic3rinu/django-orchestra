@@ -25,35 +25,32 @@ WEBAPPS_PHPFPM_POOL_PATH = Setting('WEBAPPS_PHPFPM_POOL_PATH',
 
 
 WEBAPPS_FCGID_WRAPPER_PATH = Setting('WEBAPPS_FCGID_WRAPPER_PATH',
-    # Inside SuExec Document root
-    # Make sure all account wrappers are in the same DIR
-    '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper'
+    '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper',
+    help_text=("Inside SuExec Document root.<br>"
+               "Make sure all account wrappers are in the same DIR.")
 )
 
 
 WEBAPPS_FCGID_CMD_OPTIONS_PATH = Setting('WEBAPPS_FCGID_CMD_OPTIONS_PATH',
-    # Loaded by Apache
-    '/etc/apache2/fcgid-conf/%(user)s-%(app_name)s.conf'
+    '/etc/apache2/fcgid-conf/%(user)s-%(app_name)s.conf',
+    help_text="Loaded by Apache."
 )
 
 
-# Greater or equal to your FcgidMaxRequestsPerProcess
-# http://httpd.apache.org/mod_fcgid/mod/mod_fcgid.html#examples
 WEBAPPS_PHP_MAX_REQUESTS = Setting('WEBAPPS_PHP_MAX_REQUESTS',
-    400
+    400,
+    help_text='Greater or equal to your <a href="http://httpd.apache.org/mod_fcgid/mod/mod_fcgid.html#examples">FcgidMaxRequestsPerProcess</a>'
 )
 
 
-WEBAPPS_PHP_ERROR_LOG_PATH = Setting('WEBAPPS_PHP_ERROR_LOG_PATH',
-    ''
-)
+WEBAPPS_PHP_ERROR_LOG_PATH = Setting('WEBAPPS_PHP_ERROR_LOG_PATH', '')
 
 
 WEBAPPS_MERGE_PHP_WEBAPPS = Setting('WEBAPPS_MERGE_PHP_WEBAPPS',
-    # Combine all fcgid-wrappers/fpm-pools into one per account-php_version
-    # to better control num processes per account and save memory
-    False)
-
+    False,
+    help_text=("Combine all fcgid-wrappers/fpm-pools into one per account-php_version "
+               "to better control num processes per account and save memory")
+)
 
 WEBAPPS_TYPES = Setting('WEBAPPS_TYPES', (
         'orchestra.contrib.webapps.types.php.PHPApp',
@@ -70,13 +67,15 @@ WEBAPPS_TYPES = Setting('WEBAPPS_TYPES', (
 
 
 WEBAPPS_PHP_VERSIONS = Setting('WEBAPPS_PHP_VERSIONS', (
-    # Execution modle choose by ending -fpm or -cgi
-    ('5.4-fpm', 'PHP 5.4 FPM'),
-    ('5.4-cgi', 'PHP 5.4 FCGID'),
-    ('5.3-cgi', 'PHP 5.3 FCGID'),
-    ('5.2-cgi', 'PHP 5.2 FCGID'),
-    ('4-cgi', 'PHP 4 FCGID'),
-))
+        ('5.4-fpm', 'PHP 5.4 FPM'),
+        ('5.4-cgi', 'PHP 5.4 FCGID'),
+        ('5.3-cgi', 'PHP 5.3 FCGID'),
+        ('5.2-cgi', 'PHP 5.2 FCGID'),
+        ('4-cgi', 'PHP 4 FCGID'),
+    ),
+    help_text="Execution modle choose by ending -fpm or -cgi.",
+    validators=[Setting.validate_choices]
+)
 
 
 WEBAPPS_DEFAULT_PHP_VERSION = Setting('WEBAPPS_DEFAULT_PHP_VERSION', '5.4-cgi',
@@ -84,28 +83,27 @@ WEBAPPS_DEFAULT_PHP_VERSION = Setting('WEBAPPS_DEFAULT_PHP_VERSION', '5.4-cgi',
 )
 
 
-WEBAPPS_PHP_CGI_BINARY_PATH = Setting('WEBAPPS_PHP_CGI_BINARY_PATH',
-    # Path of the cgi binary used by fcgid
-    '/usr/bin/php%(php_version_number)s-cgi'
+WEBAPPS_PHP_CGI_BINARY_PATH = Setting('WEBAPPS_PHP_CGI_BINARY_PATH', '/usr/bin/php%(php_version_number)s-cgi',
+    help_text="Path of the cgi binary used by fcgid."
 )
 
 
-WEBAPPS_PHP_CGI_RC_DIR = Setting('WEBAPPS_PHP_CGI_RC_DIR',
-    # Path to php.ini
-    '/etc/php%(php_version_number)s/cgi/'
+WEBAPPS_PHP_CGI_RC_DIR = Setting('WEBAPPS_PHP_CGI_RC_DIR', '/etc/php%(php_version_number)s/cgi/',
+    help_text="Path to php.ini."
 )
 
 
 WEBAPPS_PHP_CGI_INI_SCAN_DIR = Setting('WEBAPPS_PHP_CGI_INI_SCAN_DIR',
-    # Path to php.ini
     '/etc/php%(php_version_number)s/cgi/conf.d'
 )
 
 
 WEBAPPS_PYTHON_VERSIONS = Setting('WEBAPPS_PYTHON_VERSIONS', (
-    ('3.4-uwsgi', 'Python 3.4 uWSGI'),
-    ('2.7-uwsgi', 'Python 2.7 uWSGI'),
-))
+        ('3.4-uwsgi', 'Python 3.4 uWSGI'),
+        ('2.7-uwsgi', 'Python 2.7 uWSGI'),
+    ),
+    validators=[Setting.validate_choices]
+)
 
 
 WEBAPPS_DEFAULT_PYTHON_VERSION = Setting('WEBAPPS_DEFAULT_PYTHON_VERSION', '3.4-uwsgi',
@@ -153,7 +151,7 @@ WEBAPPS_UNDER_CONSTRUCTION_PATH = Setting('WEBAPPS_UNDER_CONSTRUCTION_PATH', '',
 
 
 
-WEBAPPS_PHP_DISABLED_FUNCTIONS = Setting('WEBAPPS_PHP_DISABLED_FUNCTION', [
+WEBAPPS_PHP_DISABLED_FUNCTIONS = Setting('WEBAPPS_PHP_DISABLED_FUNCTION', (
     'exec',
     'passthru',
     'shell_exec',
@@ -174,7 +172,7 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = Setting('WEBAPPS_PHP_DISABLED_FUNCTION', [
     'escapeshellcmd',
     'escapeshellarg',
     'dl'
-])
+))
 
 
 WEBAPPS_ENABLED_OPTIONS = Setting('WEBAPPS_ENABLED_OPTIONS', (

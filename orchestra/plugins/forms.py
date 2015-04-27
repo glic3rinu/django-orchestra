@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.encoding import force_text
 
-from orchestra.forms.widgets import ReadOnlyWidget
+from orchestra.forms.widgets import SpanWidget
 
 
 class PluginDataForm(forms.ModelForm):
@@ -12,7 +12,7 @@ class PluginDataForm(forms.ModelForm):
         if self.plugin_field in self.fields:
             value = self.plugin.get_name()
             display = '%s <a href=".">change</a>' % force_text(self.plugin.verbose_name)
-            self.fields[self.plugin_field].widget = ReadOnlyWidget(value, display)
+            self.fields[self.plugin_field].widget = SpanWidget(original=value, display=display)
             help_text = self.fields[self.plugin_field].help_text
             self.fields[self.plugin_field].help_text = getattr(self.plugin, 'help_text', help_text)
         if self.instance:
@@ -34,7 +34,7 @@ class PluginDataForm(forms.ModelForm):
                     if foo_display:
                         display = foo_display()
                     self.fields[field].required = False
-                    self.fields[field].widget = ReadOnlyWidget(value, display)
+                    self.fields[field].widget = SpanWidget(original=value, display=display)
     
     def clean(self):
         super(PluginDataForm, self).clean()

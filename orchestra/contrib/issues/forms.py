@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
-from orchestra.forms.widgets import ReadOnlyWidget
+from orchestra.forms.widgets import SpanWidget
 
 from .models import Queue, Ticket
 
@@ -40,7 +40,7 @@ class MessageInlineForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(MessageInlineForm, self).__init__(*args, **kwargs)
-        self.fields['created_on'].widget = ReadOnlyWidget('')
+        self.fields['created_on'].widget = SpanWidget(display='')
         
     def clean_content(self):
         """ clean HTML tags """
@@ -98,7 +98,7 @@ class TicketForm(forms.ModelForm):
             description = description.replace('\n', '<br>')
             description = description.replace('#Ha9G9-?8', '>\n')
             description = '<div style="padding-left: 95px;">%s</div>' % description
-            widget = ReadOnlyWidget(description, description)
+            widget = SpanWidget(display=description)
             self.fields['display_description'].widget = widget
     
     def clean_description(self):

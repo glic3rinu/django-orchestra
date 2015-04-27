@@ -56,7 +56,7 @@ def close_bills(modeladmin, request, queryset):
     for bill in queryset:
         if not validate_contact(request, bill):
             return
-    SelectSourceFormSet = adminmodelformset_factory(SelectSourceForm, modeladmin, extra=0)
+    SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm, extra=0)
     formset = SelectSourceFormSet(queryset=queryset)
     if request.POST.get('post') == 'generic_confirmation':
         formset = SelectSourceFormSet(request.POST, request.FILES, queryset=queryset)

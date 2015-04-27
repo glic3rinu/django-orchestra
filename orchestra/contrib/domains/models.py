@@ -94,7 +94,7 @@ class Domain(models.Model):
         return self.origin.subdomain_set.all().prefetch_related('records')
     
     def get_parent(self, top=False):
-        return type(self).get_parent_domain(self.name, top=top)
+        return self.get_parent_domain(self.name, top=top)
     
     def render_zone(self):
         origin = self.origin

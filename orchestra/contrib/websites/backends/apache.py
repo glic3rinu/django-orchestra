@@ -24,7 +24,7 @@ class Apache2Backend(ServiceController):
     model = 'websites.Website'
     related_models = (
         ('websites.Content', 'website'),
-        ('websites.WebsiteDirective', 'directives'),
+        ('websites.WebsiteDirective', 'website'),
         ('webapps.WebApp', 'website_set'),
     )
     verbose_name = _("Apache 2")

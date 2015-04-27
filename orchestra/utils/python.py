@@ -16,6 +16,11 @@ def random_ascii(length):
     return ''.join([random.SystemRandom().choice(string.hexdigits) for i in range(0, length)]).lower()
 
 
+def format_exception(exception):
+    name = type(exception).__name__
+    return ': '.join((name, str(exception)))
+
+
 class OrderedSet(collections.MutableSet):
     def __init__(self, iterable=None):
         self.end = end = [] 

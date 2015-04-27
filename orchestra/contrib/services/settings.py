@@ -4,9 +4,11 @@ from orchestra.settings import Setting
 
 
 SERVICES_SERVICE_TAXES = Setting('SERVICES_SERVICE_TAXES', (
-    (0, _("Duty free")),
-    (21, "21%"),
-))
+        (0, _("Duty free")),
+        (21, "21%"),
+    ),
+    validators=[Setting.validate_choices]
+)
 
 
 SERVICES_SERVICE_DEFAULT_TAX = Setting('SERVICES_SERVICE_DEFAULT_TAX', 0,
@@ -19,19 +21,17 @@ SERVICES_SERVICE_ANUAL_BILLING_MONTH = Setting('SERVICES_SERVICE_ANUAL_BILLING_M
 )
 
 
-SERVICES_ORDER_MODEL = Setting('SERVICES_ORDER_MODEL',
-    'orders.Order'
+SERVICES_ORDER_MODEL = Setting('SERVICES_ORDER_MODEL', 'orders.Order',
+    validators=[Setting.validate_model_label]
 )
 
 
-SERVICES_RATE_CLASS = Setting('SERVICES_RATE_CLASS',
-    'orchestra.contrib.plans.models.Rate'
+SERVICES_RATE_CLASS = Setting('SERVICES_RATE_CLASS', 'orchestra.contrib.plans.models.Rate',
+    validators=[Setting.validate_import_class]
 )
 
 
-SERVICES_DEFAULT_IGNORE_PERIOD = Setting('SERVICES_DEFAULT_IGNORE_PERIOD',
-    'TEN_DAYS'
-)
+SERVICES_DEFAULT_IGNORE_PERIOD = Setting('SERVICES_DEFAULT_IGNORE_PERIOD', 'TEN_DAYS')
 
 
 SERVICES_IGNORE_ACCOUNT_TYPE = Setting('SERVICES_IGNORE_ACCOUNT_TYPE', (

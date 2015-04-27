@@ -280,17 +280,15 @@ https://code.djangoproject.com/ticket/24576
 # bill.totals make it 100% computed?
 * joomla: wget https://github.com/joomla/joomla-cms/releases/download/3.4.1/Joomla_3.4.1-Stable-Full_Package.tar.gz -O - | tar xvfz -
 
-# replace multichoicefield and jsonfield by ArrayField, HStoreField
+
+# bill confirmation: show total
 # Amend lines???
 
 # Determine the difference between data serializer used for validation and used for the rest API!
 # Make PluginApiView that fills metadata and other stuff like modeladmin plugin support
 
-# @classmethods do not need to be called with type(object)!
-
-# Deprectae widgets.showtext and readonlyField by ReadOnlyFormMixin
-
 # custom validation for settings
 # TODO orchestra related services code reload: celery/uwsgi reloading find aonther way without root and implement reload
 # insert settings on dashboard dynamically
 
+# convert all complex settings to string

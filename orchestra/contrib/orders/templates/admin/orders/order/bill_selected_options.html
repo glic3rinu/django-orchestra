@@ -28,11 +28,11 @@
     <div>
     <div style="margin:20px;">
         {% if bills %}
-            {% for account, lines in bills %}
+            {% for account, total, lines in bills %}
             <div class="inline-group" id="rates-group">
              <div class="tabular inline-related last-related">
             <fieldset class="module">
-            <h2><a href="{% url 'admin:accounts_account_change' account.pk %}">{{ account }}</a></h2>
+            <h2><a href="{% url 'admin:accounts_account_change' account.pk %}">{{ account }}</a><span style="float:right">{{ total | floatformat:"-2" }} &euro;</span></h2>
             <table>
             <thead>
                 <tr><th style="width:30%;">Description</th> <th style="width:30%;">Period</th> <th style="width:10%;">Quantity</th> <th style="width:10%;">Price</th></tr>

@@ -67,14 +67,15 @@ class MailmanBackend(ServiceController):
             context['aliases'] = self.get_virtual_aliases(context)
             # Preserve indentation
             self.append(textwrap.dedent("""\
+                aliases='%(aliases)s'
                 if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
-                    echo '%(aliases)s' >> %(virtual_alias)s
+                    echo "${aliases}" >> %(virtual_alias)s
                     UPDATED_VIRTUAL_ALIAS=1
                 else
                     if [[ ! $(grep '^\s*%(address_name)s@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
                         sed -i -e '/^.*\s%(name)s\(%(address_regex)s\)\s*$/d' \\
                                -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s
-                        echo '%(aliases)s' >> %(virtual_alias)s
+                        echo "${aliases}" >> %(virtual_alias)s
                         UPDATED_VIRTUAL_ALIAS=1
                     fi
                 fi""") % context

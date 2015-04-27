@@ -7,7 +7,7 @@ from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.forms.widgets import ShowTextWidget, ReadOnlyWidget
+from orchestra.forms.widgets import SpanWidget
 
 from ..core.validators import validate_password
 
@@ -71,10 +71,10 @@ class AdminPasswordChangeForm(forms.Form):
         self.user = user
         super(AdminPasswordChangeForm, self).__init__(*args, **kwargs)
         for ix, rel in enumerate(self.related):
-            self.fields['password1_%i' % ix] = forms.CharField(
-                    label=_("Password"), widget=forms.PasswordInput, required=False)
-            self.fields['password2_%i' % ix] = forms.CharField(
-                    label=_("Password (again)"), widget=forms.PasswordInput, required=False)
+            self.fields['password1_%i' % ix] = forms.CharField(label=_("Password"),
+                widget=forms.PasswordInput, required=False)
+            self.fields['password2_%i' % ix] = forms.CharField(label=_("Password (again)"),
+                widget=forms.PasswordInput, required=False)
             setattr(self, 'clean_password2_%i' % ix, partial(self.clean_password2, ix=ix))
     
     def clean_password2(self, ix=''):
@@ -138,21 +138,20 @@ class AdminPasswordChangeForm(forms.Form):
 
 class SendEmailForm(forms.Form):
     email_from = forms.EmailField(label=_("From"),
-            widget=forms.TextInput(attrs={'size': '118'}))
-    to = forms.CharField(label="To", required=False,
-            widget=ShowTextWidget())
+        widget=forms.TextInput(attrs={'size': '118'}))
+    to = forms.CharField(label="To", required=False)
     extra_to = forms.CharField(label="To (extra)", required=False,
-            widget=forms.TextInput(attrs={'size': '118'}))
+        widget=forms.TextInput(attrs={'size': '118'}))
     subject = forms.CharField(label=_("Subject"),
-            widget=forms.TextInput(attrs={'size': '118'}))
+        widget=forms.TextInput(attrs={'size': '118'}))
     message = forms.CharField(label=_("Message"),
-            widget=forms.Textarea(attrs={'cols': 118, 'rows': 15}))
+        widget=forms.Textarea(attrs={'cols': 118, 'rows': 15}))
     
     def __init__(self, *args, **kwargs):
         super(SendEmailForm, self).__init__(*args, **kwargs)
         initial = kwargs.get('initial')
         if 'to' in initial:
-            self.fields['to'].widget = ReadOnlyWidget(initial['to'])
+            self.fields['to'].widget = SpanWidget(original=initial['to'])
         else:
             self.fields.pop('to')
     

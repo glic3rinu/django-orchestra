@@ -1,5 +1,4 @@
-from django.conf import settings
-
+from orchestra.core.validators import validate_ipv4_address, validate_ipv6_address
 from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 
 
@@ -58,18 +57,19 @@ DOMAINS_CHECKZONE_BIN_PATH = Setting('DOMAINS_CHECKZONE_BIN_PATH',
 )
 
 
-DOMAINS_ZONE_VALIDATION_TMP_DIR = Setting('DOMAINS_ZONE_VALIDATION_TMP_DIR', '/dev/shm',
+DOMAINS_ZONE_VALIDATION_TMP_DIR = Setting('DOMAINS_ZONE_VALIDATION_TMP_DIR',
+    '/dev/shm',
     help_text="Used for creating temporary zone files used for validation."
 )
 
 
-DOMAINS_DEFAULT_A = Setting('DOMAINS_DEFAULT_A',
-    '10.0.3.13'
+DOMAINS_DEFAULT_A = Setting('DOMAINS_DEFAULT_A', '10.0.3.13',
+    validators=[validate_ipv4_address]
 )
 
 
-DOMAINS_DEFAULT_AAAA = Setting('DOMAINS_DEFAULT_AAAA',
-    ''
+DOMAINS_DEFAULT_AAAA = Setting('DOMAINS_DEFAULT_AAAA', '',
+    validators=[validate_ipv6_address]
 )
 
 
@@ -96,11 +96,13 @@ DOMAINS_FORBIDDEN = Setting('DOMAINS_FORBIDDEN', '',
 )
 
 
-DOMAINS_MASTERS = Setting('DOMAINS_MASTERS', (),
+DOMAINS_MASTERS = Setting('DOMAINS_MASTERS',
+    (),
     help_text="Additional master server ip addresses other than autodiscovered by router.get_servers()."
 )
 
 
-DOMAINS_SLAVES = Setting('DOMAINS_SLAVES', (),
+DOMAINS_SLAVES = Setting('DOMAINS_SLAVES',
+    (),
     help_text="Additional slave server ip addresses other than autodiscovered by router.get_servers()."
 )

@@ -94,7 +94,7 @@ class OperationsMiddleware(object):
     def process_response(self, request, response):
         """ Processes pending backend operations """
         if not isinstance(response, HttpResponseServerError):
-            operations = type(self).get_pending_operations()
+            operations = self.get_pending_operations()
             if operations:
                 try:
                     scripts, block = manager.generate(operations)

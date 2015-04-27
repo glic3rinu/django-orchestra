@@ -4,11 +4,13 @@ from orchestra.settings import Setting
 
 
 SYSTEMUSERS_SHELLS = Setting('SYSTEMUSERS_SHELLS', (
-    ('/dev/null', _("No shell, FTP only")),
-    ('/bin/rssh', _("No shell, SFTP/RSYNC only")),
-    ('/bin/bash', "/bin/bash"),
-    ('/bin/sh', "/bin/sh"),
-))
+        ('/dev/null', _("No shell, FTP only")),
+        ('/bin/rssh', _("No shell, SFTP/RSYNC only")),
+        ('/bin/bash', "/bin/bash"),
+        ('/bin/sh', "/bin/sh"),
+    ),
+    validators=[Setting.validate_choices]
+)
 
 
 SYSTEMUSERS_DEFAULT_SHELL = Setting('SYSTEMUSERS_DEFAULT_SHELL', '/dev/null',
@@ -16,10 +18,12 @@ SYSTEMUSERS_DEFAULT_SHELL = Setting('SYSTEMUSERS_DEFAULT_SHELL', '/dev/null',
 )
 
 
-SYSTEMUSERS_DISABLED_SHELLS = Setting('SYSTEMUSERS_DISABLED_SHELLS', (
-    '/dev/null',
-    '/bin/rssh',
-))
+SYSTEMUSERS_DISABLED_SHELLS = Setting('SYSTEMUSERS_DISABLED_SHELLS',
+    default=(
+        '/dev/null',
+        '/bin/rssh',
+    ),
+)
 
 
 SYSTEMUSERS_HOME = Setting('SYSTEMUSERS_HOME',

@@ -17,14 +17,14 @@ MAILBOXES_DOMAIN_MODEL = Setting('MAILBOXES_DOMAIN_MODEL', 'domains.Domain',
 
 
 MAILBOXES_HOME = Setting('MAILBOXES_HOME',
-    '/home/%(name)s/',
+    '/home/%(name)s',
     help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),
     validators=[Setting.string_format_validator(_names)],
 )
 
 
 MAILBOXES_SIEVE_PATH = Setting('MAILBOXES_SIEVE_PATH',
-    os.path.join(MAILBOXES_HOME, 'Maildir/sieve/orchestra.sieve'),
+    os.path.join('%(home)s/Maildir/sieve/orchestra.sieve'),
     help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),
     validators=[Setting.string_format_validator(_backend_names)],
 )

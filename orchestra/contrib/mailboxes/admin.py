@@ -17,6 +17,7 @@ from .actions import SendMailboxEmail
 from .filters import HasMailboxListFilter, HasForwardListFilter, HasAddressListFilter
 from .forms import MailboxCreationForm, MailboxChangeForm, AddressForm
 from .models import Mailbox, Address, Autoresponse
+from .widgets import OpenCustomFilteringOnSelect
 
 
 class AutoresponseInline(admin.StackedInline):
@@ -81,12 +82,17 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
             self.actions = ()
         return super(MailboxAdmin, self).get_actions(request)
     
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.name == 'filtering':
+            kwargs['widget'] = OpenCustomFilteringOnSelect()
+        return super(MailboxAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+    
     def get_fieldsets(self, request, obj=None):
         fieldsets = super(MailboxAdmin, self).get_fieldsets(request, obj)
         if obj and obj.filtering == obj.CUSTOM:
             # not collapsed filtering when exists
             fieldsets = copy.deepcopy(fieldsets)
-            fieldsets[1][1]['classes'] = fieldsets[0][1]['fields'] + ('open',)
+            fieldsets[1][1]['classes'] = fieldsets[0][1]['fields'] + ('collapse', 'open',)
         elif '_to_field' in parse_qs(request.META['QUERY_STRING']):
             # remove address from popup
             fieldsets = list(copy.deepcopy(fieldsets))

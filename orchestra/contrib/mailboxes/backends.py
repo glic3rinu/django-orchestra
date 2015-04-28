@@ -1,4 +1,5 @@
 import logging
+import re
 import textwrap
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -19,11 +20,13 @@ from .models import Address
 logger = logging.getLogger(__name__)
 
 
-class FilteringMixin(object):
+class SieveFilteringMixin(object):
     def generate_filter(self, mailbox, context):
         name, content = mailbox.get_filtering()
-        if name == 'REDIRECT':
-            self.append("doveadm mailbox create -u %(user)s Spam" % context)
+        for box in re.findall(r'fileinto\s+"([^"]+)"', content):
+            context['box'] = box
+            # TODO create mailbox without doveadm (not always installed)
+            self.append("doveadm mailbox create -u %(user)s %(box)s" % context)
         context['filtering_path'] = settings.MAILBOXES_SIEVE_PATH % context
         if content:
             context['filtering'] = ('# %(banner)s\n' + filtering) % context
@@ -33,7 +36,7 @@ class FilteringMixin(object):
             self.append("echo '' > %(filtering_path)s" % context)
 
 
-class UNIXUserMaildirBackend(FilteringMixin, ServiceController):
+class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
     """
     Assumes that all system users on this servers all mail accounts.
     If you want to have system users AND mailboxes on the same server you should consider using virtual mailboxes
@@ -94,7 +97,7 @@ class UNIXUserMaildirBackend(FilteringMixin, ServiceController):
         return replace(context, "'", '"')
 
 
-class DovecotPostfixPasswdVirtualUserBackend(FilteringMixin, ServiceController):
+class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceController):
     """
     WARNING: This backends is not fully implemented
     """

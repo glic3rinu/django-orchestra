@@ -87,4 +87,3 @@ class ReadOnlyFormMixin(object):
                 if hasattr(self, 'instance'):
                     original = getattr(self.instance, name, original)
                 field.widget.original = original
-

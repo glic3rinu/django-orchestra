@@ -170,6 +170,9 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
         else:
             self.cmd_section[-1][1].append(cmd)
     
+    def get_context(self, obj):
+        return {}
+    
     def prepare(self):
         """
         hook for executing something at the beging

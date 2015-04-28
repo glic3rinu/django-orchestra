@@ -19,14 +19,18 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
     def get_identity(self, data):
         return data.get('id')
     
-    def save_object(self, obj, **kwargs):
-        obj.author = self.context['request'].user
-        super(MessageSerializer, self).save_object(obj, **kwargs)
+    def create(self, validated_data):
+        validated_data['account'] = self.account
+        return super(AccountSerializerMixin, self).create(validated_data)
+    
+    def create(self, validated_data):
+        validated_data['author'] = self.context['request'].user
+        super(MessageSerializer, self).create(validated_data)
 
 
 class TicketSerializer(serializers.HyperlinkedModelSerializer):
     """ Validates if this zone generates a correct zone file """
-    messages = MessageSerializer(required=False, many=True)
+    messages = MessageSerializer(required=False, many=True, read_only=True)
     is_read = serializers.SerializerMethodField()
     
     class Meta:
@@ -40,6 +44,6 @@ class TicketSerializer(serializers.HyperlinkedModelSerializer):
     def get_is_read(self, obj):
         return obj.is_read_by(self.context['request'].user)
     
-    def save_object(self, obj, **kwargs):
-        obj.creator = self.context['request'].user
-        super(TicketSerializer, self).save_object(obj, **kwargs)
+    def create(self, validated_data):
+        validated_data['creator'] = self.context['request'].user
+        return super(TicketSerializer, self).create(validated_data)

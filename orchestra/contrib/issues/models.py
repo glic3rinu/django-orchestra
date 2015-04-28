@@ -86,7 +86,7 @@ class Ticket(models.Model):
         emails.append(self.creator.email)
         if self.owner:
             emails.append(self.owner.email)
-        for contact in self.creator.account.contacts.all():
+        for contact in self.creator.contacts.all():
             if self.queue and set(contact.email_usage).union(set(self.queue.notify)):
                 emails.append(contact.email)
         for message in self.messages.distinct('author'):

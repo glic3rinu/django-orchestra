@@ -293,3 +293,6 @@ https://code.djangoproject.com/ticket/24576
 # insert settings on dashboard dynamically
 
 # convert all complex settings to string
+# @ something database names
+# password validation cracklib on change password form=?????
+# reset setting buton 

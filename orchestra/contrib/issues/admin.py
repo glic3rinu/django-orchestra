@@ -190,7 +190,7 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
     display_creator = admin_link('creator')
     display_queue = admin_link('queue')
     display_owner = admin_link('owner')
-    updated = admin_date('updated')
+    updated = admin_date('updated_at')
     display_state = admin_colored('state', colors=STATE_COLORS, bold=False)
     display_priority = admin_colored('priority', colors=PRIORITY_COLORS, bold=False)
     
@@ -270,8 +270,8 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
         ticket.mark_as_read_by(request.user)
         context = {'title': "Issue #%i - %s" % (ticket.id, ticket.subject)}
         context.update(extra_context or {})
-        return super(TicketAdmin, self).change_view(
-            request, object_id, form_url, extra_context=context)
+        return super(TicketAdmin, self).change_view(request, object_id, form_url=form_url,
+            extra_context=context)
     
     def changelist_view(self, request, extra_context=None):
         # Hook user for bold_subject

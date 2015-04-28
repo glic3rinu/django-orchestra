@@ -80,29 +80,36 @@ class PHPApp(AppType):
             for webapp in webapps:
                 if webapp.type_instance.get_php_version() == php_version:
                     options += list(webapp.options.all())
-        php_options = [option.name for option in self.get_php_options()]
-        enabled_functions = set()
-        for opt in options:
-            if opt.name in php_options:
-                if opt.name == 'enable_functions':
-                    enabled_functions = enabled_functions.union(set(opt.value.split(',')))
-                else:
-                    init_vars[opt.name] = opt.value
+        init_vars = OrderedDict((opt.name, opt.value) for opt in options)
+        # Enabled functions
+        enabled_functions = init_vars.pop('enabled_functions', None)
         if enabled_functions:
+            enabled_functions = set(enabled_functions.split(','))
             disabled_functions = []
             for function in self.PHP_DISABLED_FUNCTIONS:
                 if function not in enabled_functions:
                     disabled_functions.append(function)
             init_vars['disable_functions'] = ','.join(disabled_functions)
+        # process timeout
         timeout = self.instance.options.filter(name='timeout').first()
         if timeout:
             # Give a little slack here
             timeout = str(int(timeout.value)-2)
             init_vars['max_execution_time'] = timeout
+        # Custom error log
         if self.PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:
             context = self.get_directive_context()
             error_log_path = os.path.normpath(self.PHP_ERROR_LOG_PATH % context)
             init_vars['error_log'] = error_log_path
+        # auto update max_post_size
+        if 'upload_max_filesize' in init_vars:
+            upload_max_filesize = init_vars['upload_max_filesize']
+            post_max_size = init_vars.get('post_max_size', '0')
+            upload_max_filesize_value = eval(upload_max_filesize.replace('M', '*1024'))
+            post_max_size_value = eval(post_max_size.replace('M', '*1024'))
+            init_vars['post_max_size'] = post_max_size
+            if upload_max_filesize_value > post_max_size_value:
+                init_vars['post_max_size'] = upload_max_filesize
         return init_vars
     
     def get_directive_context(self):

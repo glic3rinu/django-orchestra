@@ -51,7 +51,7 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'id', 'service_link', 'account_link', 'content_object_link',
         'display_registered_on', 'display_billed_until', 'display_cancelled_on', 'display_metric'
     )
-    list_filter = (ActiveOrderListFilter, BilledOrderListFilter, IgnoreOrderListFilter, 'service',)
+    list_filter = (ActiveOrderListFilter, IgnoreOrderListFilter, 'service', BilledOrderListFilter)
     default_changelist_filters = (
         ('ignore', '0'),
     )
@@ -92,6 +92,22 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
             return ''
         return metric.value
     display_metric.short_description = _("Metric")
+
+#    def get_changelist(self, request, **kwargs):
+#        ChangeList = super(OrderAdmin, self).get_changelist(request, **kwargs)
+#        class OrderFilterChangeList(ChangeList):
+#            def get_filters(self, request):
+#                filters = super(OrderFilterChangeList, self).get_filters(request)
+#                tail = []
+#                filters_copy = []
+#                for list_filter in filters[0]:
+#                    if getattr(list_filter, 'apply_last', False):
+#                        tail.append(list_filter)
+#                    else:
+#                        filters_copy.append(list_filter)
+#                filters = ((filters_copy+tail),) + filters[1:]
+#                return filters
+#        return OrderFilterChangeList
 
 
 class MetricStorageAdmin(admin.ModelAdmin):

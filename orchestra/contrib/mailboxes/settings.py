@@ -7,8 +7,8 @@ from orchestra.core.validators import validate_name
 from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 
 
-_names = ('name', 'username')
-_backend_names = _names + ('group', 'home')
+_names = ('name', 'username',)
+_backend_names = _names + ('user', 'group', 'home')
 
 
 MAILBOXES_DOMAIN_MODEL = Setting('MAILBOXES_DOMAIN_MODEL', 'domains.Domain',
@@ -24,7 +24,9 @@ MAILBOXES_HOME = Setting('MAILBOXES_HOME',
 
 
 MAILBOXES_SIEVE_PATH = Setting('MAILBOXES_SIEVE_PATH',
-    os.path.join(MAILBOXES_HOME, 'Maildir/sieve/orchestra.sieve')
+    os.path.join(MAILBOXES_HOME, 'Maildir/sieve/orchestra.sieve'),
+    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),
+    validators=[Setting.string_format_validator(_backend_names)],
 )
 
 

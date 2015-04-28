@@ -59,10 +59,10 @@ class Mailbox(models.Model):
             self.custom_filtering = ''
     
     def get_filtering(self):
-        __, filtering = settings.MAILBOXES_MAILBOX_FILTERINGS[self.filtering]
-        if isinstance(filtering, str):
-            return filtering
-        return filtering(self)
+        name, content = settings.MAILBOXES_MAILBOX_FILTERINGS[self.filtering]
+        if callable(content):
+            return content(self)
+        return (name, content)
     
     def delete(self, *args, **kwargs):
         super(Mailbox, self).delete(*args, **kwargs)

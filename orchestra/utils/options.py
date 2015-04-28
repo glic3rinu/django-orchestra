@@ -22,7 +22,7 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
     
     if not 'site' in context:
         from orchestra import settings
-        url = urlparse.urlparse(settings.ORCHESTRA_SITE_URL)
+        url = urlparse(settings.ORCHESTRA_SITE_URL)
         context['site'] = {
             'name': settings.ORCHESTRA_SITE_NAME,
             'scheme': url.scheme,

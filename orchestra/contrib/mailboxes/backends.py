@@ -19,7 +19,21 @@ from .models import Address
 logger = logging.getLogger(__name__)
 
 
-class UNIXUserMaildirBackend(ServiceController):
+class FilteringMixin(object):
+    def generate_filter(self, mailbox, context):
+        name, content = mailbox.get_filtering()
+        if name == 'REDIRECT':
+            self.append("doveadm mailbox create -u %(user)s Spam" % context)
+        context['filtering_path'] = settings.MAILBOXES_SIEVE_PATH % context
+        if content:
+            context['filtering'] = ('# %(banner)s\n' + filtering) % context
+            self.append("mkdir -p $(dirname '%(filtering_path)s')" % context)
+            self.append("echo '%(filtering)s' > %(filtering_path)s" % context)
+        else:
+            self.append("echo '' > %(filtering_path)s" % context)
+
+
+class UNIXUserMaildirBackend(FilteringMixin, ServiceController):
     """
     Assumes that all system users on this servers all mail accounts.
     If you want to have system users AND mailboxes on the same server you should consider using virtual mailboxes
@@ -41,6 +55,7 @@ class UNIXUserMaildirBackend(ServiceController):
         )
         if hasattr(mailbox, 'resources') and hasattr(mailbox.resources, 'disk'):
             self.set_quota(mailbox, context)
+        self.generate_filter(mailbox, context)
     
     def set_quota(self, mailbox, context):
         context['quota'] = mailbox.resources.disk.allocated * mailbox.resources.disk.resource.get_scale()
@@ -70,22 +85,24 @@ class UNIXUserMaildirBackend(ServiceController):
         context = {
             'user': mailbox.name,
             'group': mailbox.name,
+            'name': mailbox.name,
             'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
             'home': mailbox.get_home(),
             'initial_shell': '/dev/null',
+            'banner': self.get_banner(),
         }
         return replace(context, "'", '"')
 
 
-class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
+class DovecotPostfixPasswdVirtualUserBackend(FilteringMixin, ServiceController):
     """
     WARNING: This backends is not fully implemented
     """
+    DEFAULT_GROUP = 'postfix'
+    
     verbose_name = _("Dovecot-Postfix virtualuser")
     model = 'mailboxes.Mailbox'
     # TODO related_models = ('resources__content_type') ?? needed for updating disk usage from resource.data
-    
-    DEFAULT_GROUP = 'postfix'
     
     def set_user(self, context):
         self.append(textwrap.dedent("""
@@ -105,17 +122,6 @@ class DovecotPostfixPasswdVirtualUserBackend(ServiceController):
                 UPDATED_VIRTUAL_MAILBOX_MAPS=1
             fi""") % context
         )
-    
-    def generate_filter(self, mailbox, context):
-        self.append("doveadm mailbox create -u %(user)s Spam" % context)
-        context['filtering_path'] = settings.MAILBOXES_SIEVE_PATH % context
-        filtering = mailbox.get_filtering()
-        if filtering:
-            context['filtering'] = '# %(banner)s\n' + filtering
-            self.append("mkdir -p $(dirname '%(filtering_path)s')" % context)
-            self.append("echo '%(filtering)s' > %(filtering_path)s" % context)
-        else:
-            self.append("rm -f %(filtering_path)s" % context)
     
     def save(self, mailbox):
         context = self.get_context(mailbox)

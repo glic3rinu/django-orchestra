@@ -67,7 +67,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     form = WebsiteAdminForm
     filter_by_account_fields = ['domains']
     list_prefetch_related = ('domains', 'content_set__webapp')
-    search_fields = ('name', 'account__username', 'domains__name')
+    search_fields = ('name', 'account__username', 'domains__name', 'content__webapp__name')
     
     def display_domains(self, website):
         domains = []
@@ -84,7 +84,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         for content in website.content_set.all():
             webapp = content.webapp
             url = change_url(webapp)
-            name = "%s on %s" % (webapp.get_type_display(), content.path or '/')
+            name = "%s on %s" % (webapp.name, content.path or '/')
             webapps.append('<a href="%s">%s</a>' % (url, name))
         return '<br>'.join(webapps)
     display_webapps.allow_tags = True

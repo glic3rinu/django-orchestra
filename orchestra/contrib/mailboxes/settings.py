@@ -75,13 +75,13 @@ MAILBOXES_MAILBOX_FILTERINGS = Setting('MAILBOXES_MAILBOX_FILTERINGS',
     {
         # value: (verbose_name, filter)
         'DISABLE': (_("Disable"), ''),
-        'REJECT': (mark_safe_lazy(_("Reject spam (X-Spam-Score&ge;9)")), textwrap.dedent("""
+        'REJECT': (mark_safe_lazy(_("Reject spam (Score&ge;9)")), textwrap.dedent("""
              require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
              if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
                 discard;
                 stop;
             }""")),
-        'REDIRECT': (mark_safe_lazy(_("Archive spam (X-Spam-Score&ge;9)")), textwrap.dedent("""
+        'REDIRECT': (mark_safe_lazy(_("Archive spam (Score&ge;9)")), textwrap.dedent("""
             require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
             if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
                 fileinto "Spam";

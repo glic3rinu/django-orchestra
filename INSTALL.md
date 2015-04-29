@@ -39,10 +39,9 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 5. Create and configure a Postgres database
     ```bash
     sudo python3 manage.py setuppostgres --db_password <password>
-    python3 manage.py migrate auth
+    # admin_tools needs accounts and does not have migrations
     python3 manage.py migrate accounts
     python3 manage.py migrate
-    python3 manage.py syncdb
     ```
 
 7. Configure celeryd

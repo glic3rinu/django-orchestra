@@ -296,3 +296,5 @@ https://code.djangoproject.com/ticket/24576
 
 # admin edit relevant djanog settings
 # django SITE_NAME vs ORCHESTRA_SITE_NAME ?
+
+# accounts.migrations link to last auth migration instead of first

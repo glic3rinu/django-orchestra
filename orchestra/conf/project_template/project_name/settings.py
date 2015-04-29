@@ -70,4 +70,3 @@ LOCALE_PATHS = (
 
 
 ORCHESTRA_SITE_NAME = '{{ project_name }}'
-

@@ -32,7 +32,7 @@ class AutoresponseInline(admin.StackedInline):
 
 class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'name', 'account_link', 'filtering', 'display_addresses', 'display_active',
+        'name', 'account_link', 'display_filtering', 'display_addresses', 'display_active',
     )
     list_filter = (IsActiveListFilter, HasAddressListFilter, 'filtering')
     search_fields = ('account__username', 'account__short_name', 'account__full_name', 'name')
@@ -74,6 +74,13 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         return '<br>'.join(addresses)
     display_addresses.short_description = _("Addresses")
     display_addresses.allow_tags = True
+    
+    def display_filtering(self, mailbox):
+        """ becacuse of allow_tags = True """
+        return mailbox.get_filtering_display()
+    display_filtering.short_description = _("Filtering")
+    display_filtering.admin_order_field = 'filtering'
+    display_filtering.allow_tags = True
     
     def get_actions(self, request):
         if settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:

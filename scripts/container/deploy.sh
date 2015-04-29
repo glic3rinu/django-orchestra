@@ -4,8 +4,7 @@
 
 # This script is safe to run several times, for example in order to upgrade your deployment
 
-set -u
-set -e
+set -ue
 
 bold=$(tput bold)
 normal=$(tput sgr0)
@@ -46,10 +45,18 @@ CURRENT_VERSION=$($PYTHON_BIN -c "from orchestra import get_version; print(get_v
 if [[ ! $CURRENT_VERSION ]]; then
     # First Orchestra installation
     run "apt-get -y install git python3-pip"
-    surun "git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra" || surun "export GIT_DIR=~/django-orchestra/.git; git pull"
+    surun "git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra" || {
+        # Finishing partial installation
+        surun "export GIT_DIR=~/django-orchestra/.git; git pull"
+    }
     PYTHON_PATH=$($PYTHON_BIN -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][0]);")
     echo $HOME/django-orchestra/ | sudo tee "$PYTHON_PATH/orchestra.pth"
     run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
+else
+    # Upgrade and relay on postguprade for finishing up the installation
+    export GIT_DIR=~/django-orchestra/.git; git pull
+    $PYTHON_BIN $MANAGE migrate postupgradeorchestra --from $CURRENT_VERSION
+    exit
 fi
 
 sudo orchestra-admin install_requirements --testing
@@ -58,6 +65,8 @@ if [[ ! -e $BASE_DIR ]]; then
     cd $HOME
     surun "orchestra-admin startproject $PROJECT_NAME"
     cd -
+else
+    echo "$BASE_DIT already existis, doing nothing."
 fi
 
 MANAGE="$BASE_DIR/manage.py"
@@ -78,24 +87,23 @@ if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$
     sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
 fi
 
-run "$PYTHON_BIN $MANAGE migrate --noinput auth"
+# admin_tools needs accounts and does not have migrations
 run "$PYTHON_BIN $MANAGE migrate --noinput accounts"
 run "$PYTHON_BIN $MANAGE migrate --noinput"
-run "$PYTHON_BIN $MANAGE syncdb --noinput"
 
 sudo $PYTHON_BIN $MANAGE setupcelery --username $USER --processes 2
 
-# Install and configure Nginx web server
+# Install and configure Nginx+uwsgi web services
 surun "mkdir -p $BASE_DIR/static"
 surun "$PYTHON_BIN $MANAGE collectstatic --noinput"
 run "apt-get install -y nginx uwsgi uwsgi-plugin-python3"
 run "$PYTHON_BIN $MANAGE setupnginx"
 run "service nginx start"
 
-# Apply changes
+# Apply changes on related services
 run "$PYTHON_BIN $MANAGE restartservices"
 
-# Create a orchestra user
+# Create orchestra superuser
 cat <<- EOF | $PYTHON_BIN $MANAGE shell
 from orchestra.contrib.accounts.models import Account
 if not Account.objects.filter(username="$USER").exists():

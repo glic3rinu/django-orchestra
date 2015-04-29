@@ -10,8 +10,8 @@ import django.contrib.auth.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '__first__'),
-        ('contenttypes', '__first__'),
+        # Permissions and contenttypes
+        ('auth', '0006_require_contenttypes_0002'),
         ('systemusers', '0001_initial'),
     ]
 

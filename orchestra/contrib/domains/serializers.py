@@ -31,8 +31,8 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     def clean_name(self, attrs, source):
         """ prevent users creating subdomains of other users domains """
         name = attrs[source]
-        top = Domain.get_parent_domain(name)
-        if top and top.account != self.account:
+        parent = Domain.get_parent_domain(name)
+        if parent and parent.account != self.account:
             raise ValidationError(_("Can not create subdomains of other users domains"))
         return attrs
     

@@ -17,21 +17,21 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Domain',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(validators=[orchestra.contrib.domains.validators.validate_domain_name, orchestra.contrib.domains.validators.validate_allowed_domain], max_length=256, help_text='Domain or subdomain name.', unique=True, verbose_name='name')),
-                ('serial', models.IntegerField(default=orchestra.contrib.domains.utils.generate_zone_serial, help_text='Serial number', verbose_name='serial')),
-                ('account', models.ForeignKey(to=settings.AUTH_USER_MODEL, verbose_name='Account', blank=True, help_text='Automatically selected for subdomains.', related_name='domains')),
-                ('top', models.ForeignKey(to='domains.Domain', null=True, editable=False, related_name='subdomain_set')),
+                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
+                ('name', models.CharField(unique=True, max_length=256, validators=[orchestra.contrib.domains.validators.validate_domain_name, orchestra.contrib.domains.validators.validate_allowed_domain], verbose_name='name', help_text='Domain or subdomain name.')),
+                ('serial', models.IntegerField(default=orchestra.contrib.domains.utils.generate_zone_serial, verbose_name='serial', help_text='Serial number')),
+                ('account', models.ForeignKey(related_name='domains', help_text='Automatically selected for subdomains.', to=settings.AUTH_USER_MODEL, verbose_name='Account', blank=True)),
+                ('top', models.ForeignKey(null=True, to='domains.Domain', editable=False, related_name='subdomain_set')),
             ],
         ),
         migrations.CreateModel(
             name='Record',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ttl', models.CharField(validators=[orchestra.contrib.domains.validators.validate_zone_interval], max_length=8, help_text='Record TTL, defaults to 1h', blank=True, verbose_name='TTL')),
-                ('type', models.CharField(max_length=32, choices=[('MX', 'MX'), ('NS', 'NS'), ('CNAME', 'CNAME'), ('A', 'A (IPv4 address)'), ('AAAA', 'AAAA (IPv6 address)'), ('SRV', 'SRV'), ('TXT', 'TXT'), ('SOA', 'SOA')], verbose_name='type')),
+                ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
+                ('ttl', models.CharField(help_text='Record TTL, defaults to 1h', max_length=8, validators=[orchestra.contrib.domains.validators.validate_zone_interval], verbose_name='TTL', blank=True)),
+                ('type', models.CharField(max_length=32, verbose_name='type', choices=[('MX', 'MX'), ('NS', 'NS'), ('CNAME', 'CNAME'), ('A', 'A (IPv4 address)'), ('AAAA', 'AAAA (IPv6 address)'), ('SRV', 'SRV'), ('TXT', 'TXT'), ('SOA', 'SOA')])),
                 ('value', models.CharField(max_length=256, verbose_name='value')),
-                ('domain', models.ForeignKey(to='domains.Domain', verbose_name='domain', related_name='records')),
+                ('domain', models.ForeignKey(related_name='records', to='domains.Domain', verbose_name='domain')),
             ],
         ),
     ]

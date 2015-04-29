@@ -16,20 +16,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Database',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('name', models.CharField(validators=[orchestra.core.validators.validate_name], verbose_name='name', max_length=64)),
-                ('type', models.CharField(max_length=32, verbose_name='type', choices=[('mysql', 'MySQL')], default='mysql')),
-                ('account', models.ForeignKey(to=settings.AUTH_USER_MODEL, verbose_name='Account', related_name='databases')),
+                ('id', models.AutoField(serialize=False, primary_key=True, verbose_name='ID', auto_created=True)),
+                ('name', models.CharField(verbose_name='name', max_length=64, validators=[orchestra.core.validators.validate_name])),
+                ('type', models.CharField(default='mysql', choices=[('mysql', 'MySQL'), ('postgres', 'PostgreSQL')], verbose_name='type', max_length=32)),
+                ('account', models.ForeignKey(related_name='databases', verbose_name='Account', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='DatabaseUser',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('username', models.CharField(validators=[orchestra.core.validators.validate_name], verbose_name='username', max_length=16)),
+                ('id', models.AutoField(serialize=False, primary_key=True, verbose_name='ID', auto_created=True)),
+                ('username', models.CharField(verbose_name='username', max_length=16, validators=[orchestra.core.validators.validate_name])),
                 ('password', models.CharField(verbose_name='password', max_length=256)),
-                ('type', models.CharField(max_length=32, verbose_name='type', choices=[('mysql', 'MySQL')], default='mysql')),
-                ('account', models.ForeignKey(to=settings.AUTH_USER_MODEL, verbose_name='Account', related_name='databaseusers')),
+                ('type', models.CharField(default='mysql', choices=[('mysql', 'MySQL'), ('postgres', 'PostgreSQL')], verbose_name='type', max_length=32)),
+                ('account', models.ForeignKey(related_name='databaseusers', verbose_name='Account', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'verbose_name_plural': 'DB users',
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='database',
             name='users',
-            field=models.ManyToManyField(to='databases.DatabaseUser', verbose_name='users', blank=True, related_name='databases'),
+            field=models.ManyToManyField(related_name='databases', to='databases.DatabaseUser', verbose_name='users', blank=True),
         ),
         migrations.AlterUniqueTogether(
             name='databaseuser',

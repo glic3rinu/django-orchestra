@@ -16,16 +16,16 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VPS',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
-                ('hostname', models.CharField(unique=True, max_length=256, validators=[orchestra.core.validators.validate_hostname], verbose_name='hostname')),
-                ('type', models.CharField(max_length=64, choices=[('openvz', 'OpenVZ container')], verbose_name='type', default='openvz')),
-                ('template', models.CharField(max_length=64, choices=[('debian7', 'Debian 7 - Wheezy')], verbose_name='template', default='debian7')),
-                ('password', models.CharField(max_length=128, help_text='<TT>root</TT> password of this virtual machine', verbose_name='password')),
-                ('account', models.ForeignKey(related_name='vpss', to=settings.AUTH_USER_MODEL, verbose_name='Account')),
+                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('hostname', models.CharField(unique=True, verbose_name='hostname', validators=[orchestra.core.validators.validate_hostname], max_length=256)),
+                ('type', models.CharField(choices=[('openvz', 'OpenVZ container')], verbose_name='type', default='openvz', max_length=64)),
+                ('template', models.CharField(choices=[('debian7', 'Debian 7 - Wheezy')], verbose_name='template', default='debian7', max_length=64)),
+                ('password', models.CharField(verbose_name='password', help_text='<TT>root</TT> password of this virtual machine', max_length=128)),
+                ('account', models.ForeignKey(verbose_name='Account', related_name='vpss', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'verbose_name_plural': 'VPSs',
                 'verbose_name': 'VPS',
+                'verbose_name_plural': 'VPSs',
             },
         ),
     ]

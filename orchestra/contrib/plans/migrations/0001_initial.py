@@ -2,14 +2,14 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-from django.conf import settings
 import orchestra.core.validators
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('services', '__first__'),
+        ('services', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -17,8 +17,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ContractedPlan',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
-                ('account', models.ForeignKey(to=settings.AUTH_USER_MODEL, verbose_name='account', related_name='plans')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('account', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='plans', verbose_name='account')),
             ],
             options={
                 'verbose_name_plural': 'plans',
@@ -27,29 +27,29 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Plan',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
-                ('name', models.CharField(validators=[orchestra.core.validators.validate_name], unique=True, max_length=32, verbose_name='name')),
-                ('verbose_name', models.CharField(max_length=128, verbose_name='verbose_name', blank=True)),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this account should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
-                ('is_default', models.BooleanField(default=False, help_text='Designates whether this plan is used by default or not.', verbose_name='default')),
-                ('is_combinable', models.BooleanField(default=True, help_text='Designates whether this plan can be combined with other plans or not.', verbose_name='combinable')),
-                ('allow_multiple', models.BooleanField(default=False, help_text='Designates whether this plan allow for multiple contractions.', verbose_name='allow multiple')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(validators=[orchestra.core.validators.validate_name], verbose_name='name', unique=True, max_length=32)),
+                ('verbose_name', models.CharField(blank=True, verbose_name='verbose_name', max_length=128)),
+                ('is_active', models.BooleanField(help_text='Designates whether this account should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active', default=True)),
+                ('is_default', models.BooleanField(help_text='Designates whether this plan is used by default or not.', verbose_name='default', default=False)),
+                ('is_combinable', models.BooleanField(help_text='Designates whether this plan can be combined with other plans or not.', verbose_name='combinable', default=True)),
+                ('allow_multiple', models.BooleanField(help_text='Designates whether this plan allow for multiple contractions.', verbose_name='allow multiple', default=False)),
             ],
         ),
         migrations.CreateModel(
             name='Rate',
             fields=[
-                ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
-                ('quantity', models.PositiveIntegerField(null=True, help_text='See rate algorihm help text.', verbose_name='quantity', blank=True)),
-                ('price', models.DecimalField(max_digits=12, verbose_name='price', decimal_places=2)),
-                ('plan', models.ForeignKey(to='plans.Plan', verbose_name='plan', related_name='rates')),
-                ('service', models.ForeignKey(to='services.Service', verbose_name='service', related_name='rates')),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('quantity', models.PositiveIntegerField(help_text='See rate algorihm help text.', blank=True, verbose_name='quantity', null=True)),
+                ('price', models.DecimalField(decimal_places=2, max_digits=12, verbose_name='price')),
+                ('plan', models.ForeignKey(to='plans.Plan', related_name='rates', verbose_name='plan')),
+                ('service', models.ForeignKey(to='services.Service', related_name='rates', verbose_name='service')),
             ],
         ),
         migrations.AddField(
             model_name='contractedplan',
             name='plan',
-            field=models.ForeignKey(to='plans.Plan', verbose_name='plan', related_name='contracts'),
+            field=models.ForeignKey(to='plans.Plan', related_name='contracts', verbose_name='plan'),
         ),
         migrations.AlterUniqueTogether(
             name='rate',

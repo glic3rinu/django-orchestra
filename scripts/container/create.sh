@@ -9,7 +9,7 @@ set -u
 NAME=${1:-orchestra}
 CONTAINER="/var/lib/lxc/$NAME/rootfs"
 PASSWORD=$NAME
-export SUITE="wheezy"
+export SUITE="jessie"
 
 
 [ $(whoami) != 'root' ] && {

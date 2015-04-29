@@ -2,25 +2,25 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django.utils.timezone
 from django.conf import settings
+import django.utils.timezone
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('services', '0001_initial'),
+        ('contenttypes', '0002_remove_content_type_name'),
+        ('services', '__first__'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='MetricStorage',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
-                ('value', models.DecimalField(verbose_name='value', decimal_places=2, max_digits=16)),
-                ('created_on', models.DateField(verbose_name='created', auto_now_add=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('value', models.DecimalField(max_digits=16, decimal_places=2, verbose_name='value')),
+                ('created_on', models.DateField(auto_now_add=True, verbose_name='created')),
                 ('updated_on', models.DateTimeField(verbose_name='updated')),
             ],
             options={
@@ -30,17 +30,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Order',
             fields=[
-                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('object_id', models.PositiveIntegerField(null=True)),
-                ('registered_on', models.DateField(verbose_name='registered', default=django.utils.timezone.now)),
-                ('cancelled_on', models.DateField(blank=True, verbose_name='cancelled', null=True)),
-                ('billed_on', models.DateField(blank=True, verbose_name='billed', null=True)),
-                ('billed_until', models.DateField(blank=True, verbose_name='billed until', null=True)),
-                ('ignore', models.BooleanField(verbose_name='ignore', default=False)),
+                ('registered_on', models.DateField(default=django.utils.timezone.now, verbose_name='registered')),
+                ('cancelled_on', models.DateField(blank=True, null=True, verbose_name='cancelled')),
+                ('billed_on', models.DateField(blank=True, null=True, verbose_name='billed')),
+                ('billed_until', models.DateField(blank=True, null=True, verbose_name='billed until')),
+                ('ignore', models.BooleanField(default=False, verbose_name='ignore')),
                 ('description', models.TextField(blank=True, verbose_name='description')),
-                ('account', models.ForeignKey(related_name='orders', verbose_name='account', to=settings.AUTH_USER_MODEL)),
+                ('account', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='orders', verbose_name='account')),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('service', models.ForeignKey(related_name='orders', verbose_name='service', to='services.Service')),
+                ('service', models.ForeignKey(to='services.Service', related_name='orders', verbose_name='service')),
             ],
             options={
                 'get_latest_by': 'id',
@@ -49,6 +49,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='metricstorage',
             name='order',
-            field=models.ForeignKey(related_name='metrics', verbose_name='order', to='orders.Order'),
+            field=models.ForeignKey(to='orders.Order', related_name='metrics', verbose_name='order'),
         ),
     ]

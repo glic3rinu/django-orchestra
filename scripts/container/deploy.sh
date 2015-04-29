@@ -54,7 +54,7 @@ if [[ ! $CURRENT_VERSION ]]; then
     run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
 else
     # Upgrade and relay on postguprade for finishing up the installation
-    export GIT_DIR=~/django-orchestra/.git; git pull
+    surun "export GIT_DIR=~/django-orchestra/.git && git checkout master && git pull origin"
     $PYTHON_BIN $MANAGE migrate postupgradeorchestra --from $CURRENT_VERSION
     exit
 fi

@@ -22,19 +22,26 @@ lxc-create -h &> /dev/null || {
     exit 1
 }
 
+lxc-ls | grep -E "(^|\s)$NAME($|\s)" && {
+    echo -e "\nErr. Container with name $NAME already exists."
+    echo -e "     You can destroy it by: sudo lxc-destroy -n $NAME\n" >&2
+    exit 1
+}
+
 
 lxc-create -n $NAME -t debian
 
+trap "umount $CONTAINER/{dev,sys}; exit 1;" INT TERM EXIT
 mount --bind /dev $CONTAINER/dev
 mount -t sysfs none $CONTAINER/sys
-trap "umount $CONTAINER/{dev,sys}; exit 1;"INT TERM EXIT
+
 
 
 sed -i "s/\tlocalhost$/\tlocalhost $NAME/" $CONTAINER/etc/hosts
 sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" $CONTAINER/etc/locale.gen
 chroot $CONTAINER locale-gen
 
-
+chroot $CONTAINER apt-get update
 chroot $CONTAINER apt-get install -y --force-yes \
     nano git screen sudo iputils-ping python3 python3-pip wget curl dnsutils rsyslog
 

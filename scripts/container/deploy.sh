@@ -4,8 +4,9 @@
 
 # This script is safe to run several times, for example in order to upgrade your deployment
 
-
 set -u
+set -e
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 
@@ -20,7 +21,7 @@ PASSWORD='orchestra'
 HOME="/home/$USER"
 PROJECT_NAME='panel'
 BASE_DIR="$HOME/$PROJECT_NAME"
-
+PYTHON_BIN="python3"
 
 surun () {
     echo " ${bold}\$ su $USER -c \"${@}\"${normal}"
@@ -34,20 +35,20 @@ run () {
 
 
 # Create a system user for running Orchestra
-useradd orchestra -s "/bin/bash"
+useradd $USER -s "/bin/bash" || true
 echo "$USER:$PASSWORD" | chpasswd
-mkdir $HOME
+mkdir -p $HOME
 chown $USER.$USER $HOME
-run adduser $USER sudo
+groups $USER | grep -E "(^|\s)$USER($|\s)" > /dev/null || run adduser $USER sudo
 
 
-CURRENT_VERSION=$(python3 -c "from orchestra import get_version; print get_version();" 2> /dev/null || false)
-
+CURRENT_VERSION=$($PYTHON_BIN -c "from orchestra import get_version; print(get_version());" 2> /dev/null || false) || true
 if [[ ! $CURRENT_VERSION ]]; then
     # First Orchestra installation
     run "apt-get -y install git python3-pip"
-    surun "git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra"
-    echo $HOME/django-orchestra/ | sudo tee /usr/local/lib/python3*/dist-packages/orchestra.pth
+    surun "git clone https://github.com/glic3rinu/django-orchestra.git ~/django-orchestra" || surun "export GIT_DIR=~/django-orchestra/.git; git pull"
+    PYTHON_PATH=$($PYTHON_BIN -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][0]);")
+    echo $HOME/django-orchestra/ | sudo tee "$PYTHON_PATH/orchestra.pth"
     run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
 fi
 
@@ -64,40 +65,36 @@ MANAGE="$BASE_DIR/manage.py"
 if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$') ]]; then
     # orchestra database does not esists
     # Speeding up tests, don't do this in production!
-    POSTGRES_VERSION=$(psql --version | head -n1 | awk {'print $3'} | sed -r "s/(^[0-9\.]*).*/\1/")
+    . /usr/share/postgresql-common/init.d-functions
+    POSTGRES_VERSION=$(psql --version | head -n1 | sed -r "s/^.*\s([0-9]+\.[0-9]+).*/\1/")
     sed -i "s/^#fsync =\s*.*/fsync = off/" \
             /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
     sed -i "s/^#full_page_writes =\s*.*/full_page_writes = off/" \
             /etc/postgresql/${POSTGRES_VERSION}/main/postgresql.conf
     
     run "service postgresql restart"
-    run "python3 $MANAGE setuppostgres --db_name orchestra --db_user orchestra --db_password orchestra"
+    run "$PYTHON_BIN $MANAGE setuppostgres --db_name orchestra --db_user orchestra --db_password orchestra"
     # Create database permissions are needed for running tests
     sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
 fi
 
-if [[ $CURRENT_VERSION ]]; then
-    # Per version upgrade specific operations
-    run "python3 $MANAGE postupgradeorchestra --no-restart --from $CURRENT_VERSION"
-else
-    run "python3 $MANAGE syncdb --noinput"
-    run "python3 $MANAGE migrate --noinput"
-fi
+run "$PYTHON_BIN $MANAGE syncdb --noinput"
+run "$PYTHON_BIN $MANAGE migrate --noinput"
 
 sudo python $MANAGE setupcelery --username $USER --processes 2
 
 # Install and configure Nginx web server
-surun "mkdir $BASE_DIR/static"
-surun "python3 $MANAGE collectstatic --noinput"
+surun "mkdir -p $BASE_DIR/static"
+surun "$PYTHON_BIN $MANAGE collectstatic --noinput"
 run "apt-get install -y nginx uwsgi uwsgi-plugin-python3"
-run "python3 $MANAGE setupnginx"
+run "$PYTHON_BIN $MANAGE setupnginx"
 run "service nginx start"
 
 # Apply changes
-run "python3 $MANAGE restartservices"
+run "$PYTHON_BIN $MANAGE restartservices"
 
 # Create a orchestra user
-cat <<- EOF | python3 $MANAGE shell
+cat <<- EOF | $PYTHON_BIN $MANAGE shell
 from orchestra.apps.accounts.models import Account
 if not Account.objects.filter(username="$USER").exists():
     print 'Creating orchestra superuser'

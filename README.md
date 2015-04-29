@@ -40,10 +40,14 @@ If you are planing to do some development or perhaps just checking out this proj
            https://raw.github.com/glic3rinu/django-orchestra/master/scripts/container/create.sh
     sudo bash /tmp/create.sh
     sudo lxc-start -n orchestra
+    # root/root
     ```
 
-2. Deploy Django-orchestra development environment inside the container
+2. Deploy Django-orchestra development environment **inside the container**
     ```bash
+    # Make sure your container is connected to the Internet
+    # Probably you will have to configure the NAT first:
+    #   sudo iptables -t nat -A POSTROUTING -s `container_ip` -j MASQUERADE
     wget -O /tmp/deploy.sh \
            https://raw.github.com/glic3rinu/django-orchestra/master/scripts/container/deploy.sh
     cd /tmp/ # Moving away from /root before running deploy.sh

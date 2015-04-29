@@ -78,10 +78,12 @@ if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$
     sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
 fi
 
-run "$PYTHON_BIN $MANAGE syncdb --noinput"
+run "$PYTHON_BIN $MANAGE migrate --noinput auth"
+run "$PYTHON_BIN $MANAGE migrate --noinput accounts"
 run "$PYTHON_BIN $MANAGE migrate --noinput"
+run "$PYTHON_BIN $MANAGE syncdb --noinput"
 
-sudo python $MANAGE setupcelery --username $USER --processes 2
+sudo $PYTHON_BIN $MANAGE setupcelery --username $USER --processes 2
 
 # Install and configure Nginx web server
 surun "mkdir -p $BASE_DIR/static"
@@ -95,10 +97,10 @@ run "$PYTHON_BIN $MANAGE restartservices"
 
 # Create a orchestra user
 cat <<- EOF | $PYTHON_BIN $MANAGE shell
-from orchestra.apps.accounts.models import Account
+from orchestra.contrib.accounts.models import Account
 if not Account.objects.filter(username="$USER").exists():
-    print 'Creating orchestra superuser'
-    __ = Account.objects.create_superuser("$USER", "$USER@localhost", "$PASSWORD")
+    print('Creating orchestra superuser')
+    Account.objects.create_superuser("$USER", "$USER@localhost", "$PASSWORD")
 
 EOF
 

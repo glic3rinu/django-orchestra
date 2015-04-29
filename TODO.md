@@ -256,6 +256,7 @@ https://code.djangoproject.com/ticket/24576
 
 # migrations accounts, bill, orders, auth -> migrate the rest (contacts lambda error)
 
+
 * MultiCHoiceField proper serialization
 
 * UNIFY PHP FPM settings name

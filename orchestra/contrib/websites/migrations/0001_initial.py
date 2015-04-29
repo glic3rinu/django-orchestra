@@ -9,9 +9,9 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('webapps', '0001_initial'),
         ('domains', '0001_initial'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [

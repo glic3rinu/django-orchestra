@@ -10,8 +10,8 @@ import django.core.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orders', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('orders', '0001_initial'),
     ]
 
     operations = [

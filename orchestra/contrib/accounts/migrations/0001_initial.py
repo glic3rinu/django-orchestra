@@ -9,9 +9,9 @@ import django.contrib.auth.models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('systemusers', '__first__'),
-    ]
+#    dependencies = [
+#        ('systemusers', '__first__'),
+#    ]
 
     operations = [
         migrations.CreateModel(

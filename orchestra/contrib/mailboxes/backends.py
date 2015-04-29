@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import textwrap
 
@@ -24,14 +25,25 @@ class SieveFilteringMixin(object):
     def generate_filter(self, mailbox, context):
         name, content = mailbox.get_filtering()
         for box in re.findall(r'fileinto\s+"([^"]+)"', content):
+            # create mailboxes if fileinfo is provided witout ':create' option
             context['box'] = box
-            # TODO create mailbox without doveadm (not always installed)
-            self.append("doveadm mailbox create -u %(user)s %(box)s" % context)
+            self.append(textwrap.dedent("""\
+                mkdir -p %(maildir)s/.%(box)s
+                chown %(user)s:%(group)s %(maildir)s/.%(box)s
+                if [[ ! $(grep '%(box)s' %(maildir)s/subscriptions) ]]; then
+                    echo '%(box)s' >> %(maildir)s/subscriptions
+                fi
+                """) % context
+            )
         context['filtering_path'] = settings.MAILBOXES_SIEVE_PATH % context
         if content:
-            context['filtering'] = ('# %(banner)s\n' + filtering) % context
-            self.append("mkdir -p $(dirname '%(filtering_path)s')" % context)
-            self.append("echo '%(filtering)s' > %(filtering_path)s" % context)
+            context['filtering'] = ('# %(banner)s\n' + content) % context
+            self.append(textwrap.dedent("""\
+                mkdir -p $(dirname '%(filtering_path)s')
+                echo '%(filtering)s' > %(filtering_path)s
+                chown %(user)s:%(group)s %(filtering_path)s
+                """) % context
+            )
         else:
             self.append("echo '' > %(filtering_path)s" % context)
 
@@ -41,6 +53,8 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
     Assumes that all system users on this servers all mail accounts.
     If you want to have system users AND mailboxes on the same server you should consider using virtual mailboxes
     """
+    SHELL = '/dev/null'
+    
     verbose_name = _("UNIX maildir user")
     model = 'mailboxes.Mailbox'
     
@@ -64,13 +78,13 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         context['quota'] = mailbox.resources.disk.allocated * mailbox.resources.disk.resource.get_scale()
         #unit_to_bytes(mailbox.resources.disk.unit)
         self.append(textwrap.dedent("""
-            mkdir -p %(home)s/Maildir
-            chown %(user)s:%(group)s %(home)s/Maildir
-            if [[ ! -f %(home)s/Maildir/maildirsize ]]; then
-                echo "%(quota)iS" > %(home)s/Maildir/maildirsize
-                chown %(user)s:%(group)s %(home)s/Maildir/maildirsize
+            mkdir -p %(maildir)s
+            chown %(user)s:%(group)s %(maildir)s
+            if [[ ! -f %(maildir)s/maildirsize ]]; then
+                echo "%(quota)iS" > %(maildir)s/maildirsize
+                chown %(user)s:%(group)s %(maildir)s/maildirsize
             else
-                sed -i '1s/.*/%(quota)iS/' %(home)s/Maildir/maildirsize
+                sed -i '1s/.*/%(quota)iS/' %(maildir)s/maildirsize
             fi""") % context
         )
     
@@ -91,7 +105,8 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
             'name': mailbox.name,
             'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
             'home': mailbox.get_home(),
-            'initial_shell': '/dev/null',
+            'maildir': os.path.join(mailbox.get_home(), 'Maildir'),
+            'initial_shell': self.SHELL,
             'banner': self.get_banner(),
         }
         return replace(context, "'", '"')
@@ -363,20 +378,8 @@ class PostfixMailscannerTraffic(ServiceMonitor):
             maillogs = {mail_logs}
             end_datetime = to_local_timezone('{current_date}')
             end_date = int(end_datetime.strftime('%Y%m%d%H%M%S'))
-            months = {{
-                "Jan": "01",
-                "Feb": "02",
-                "Mar": "03",
-                "Apr": "04",
-                "May": "05",
-                "Jun": "06",
-                "Jul": "07",
-                "Aug": "08",
-                "Sep": "09",
-                "Oct": "10",
-                "Nov": "11",
-                "Dec": "12",
-            }}
+            months = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+            months = dict((m, '%02d' % n) for n, m in enumerate(months, 1))
             
             def inside_period(month, day, time, ini_date):
                 global months

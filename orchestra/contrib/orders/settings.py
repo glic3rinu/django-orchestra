@@ -32,7 +32,7 @@ ORDERS_EXCLUDED_APPS = Setting('ORDERS_EXCLUDED_APPS',
 
 
 ORDERS_METRIC_ERROR = Setting('ORDERS_METRIC_ERROR',
-    0.01,
+    0.05,
     help_text=("Only account for significative changes.<br>"
                "metric_storage new value: <tt>lastvalue*(1+threshold) > currentvalue or lastvalue*threshold < currentvalue</tt>."),
 )

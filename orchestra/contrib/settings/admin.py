@@ -6,6 +6,7 @@ from django.shortcuts import render_to_response
 from django.views import generic
 from django.utils.translation import ngettext, ugettext_lazy as _
 
+from orchestra.admin.dashboard import OrchestraIndexDashboard
 from orchestra.settings import Setting
 from orchestra.utils import sys, paths
 
@@ -104,4 +105,5 @@ class SettingFileView(generic.TemplateView):
 
 admin.site.register_url(r'^settings/setting/view/$', SettingFileView.as_view(), 'settings_setting_view')
 admin.site.register_url(r'^settings/setting/$', SettingView.as_view(), 'settings_setting_change')
+OrchestraIndexDashboard.register_link('Administration', 'settings_setting_change', _("Settings"))
 

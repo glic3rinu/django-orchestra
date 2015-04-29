@@ -20,7 +20,8 @@ SERVICES_SERVICE_DEFAULT_TAX = Setting('SERVICES_SERVICE_DEFAULT_TAX',
 
 SERVICES_SERVICE_ANUAL_BILLING_MONTH = Setting('SERVICES_SERVICE_ANUAL_BILLING_MONTH',
     1,
-    choices=tuple((n, n) for n in range(1, 13))
+    choices=tuple(enumerate(
+        ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'), 1))
 )
 
 

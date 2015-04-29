@@ -61,7 +61,7 @@ class Mailbox(models.Model):
     def get_filtering(self):
         name, content = settings.MAILBOXES_MAILBOX_FILTERINGS[self.filtering]
         if callable(content):
-            return content(self)
+            content = content(self)
         return (name, content)
     
     def delete(self, *args, **kwargs):

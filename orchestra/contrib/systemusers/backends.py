@@ -237,20 +237,8 @@ class VsFTPdTraffic(ServiceMonitor):
             end_date = to_local_timezone('{current_date}')
             end_date = int(end_date.strftime('%Y%m%d%H%M%S'))
             users = {{}}
-            months = {{
-                'Jan': '01',
-                'Feb': '02',
-                'Mar': '03',
-                'Apr': '04',
-                'May': '05',
-                'Jun': '06',
-                'Jul': '07',
-                'Aug': '08',
-                'Sep': '09',
-                'Oct': '10',
-                'Nov': '11',
-                'Dec': '12',
-            }}
+            months = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+            months = dict((m, '%02d' % n) for n, m in enumerate(months, 1))
             
             def prepare(object_id, username, ini_date):
                 global users

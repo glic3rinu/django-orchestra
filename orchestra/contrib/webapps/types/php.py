@@ -81,15 +81,15 @@ class PHPApp(AppType):
                 if webapp.type_instance.get_php_version() == php_version:
                     options += list(webapp.options.all())
         init_vars = OrderedDict((opt.name, opt.value) for opt in options)
-        # Enabled functions
-        enabled_functions = init_vars.pop('enabled_functions', None)
-        if enabled_functions:
-            enabled_functions = set(enabled_functions.split(','))
-            disabled_functions = []
+        # Enable functions
+        enable_functions = init_vars.pop('enable_functions', None)
+        if enable_functions:
+            enable_functions = set(enable_functions.split(','))
+            disable_functions = []
             for function in self.PHP_DISABLED_FUNCTIONS:
-                if function not in enabled_functions:
-                    disabled_functions.append(function)
-            init_vars['disable_functions'] = ','.join(disabled_functions)
+                if function not in enable_functions:
+                    disable_functions.append(function)
+            init_vars['disable_functions'] = ','.join(disable_functions)
         # process timeout
         timeout = self.instance.options.filter(name='timeout').first()
         if timeout:

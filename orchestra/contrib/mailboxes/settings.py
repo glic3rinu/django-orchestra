@@ -1,6 +1,8 @@
 import os
 import textwrap
 
+from django.utils.functional import lazy
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_name
@@ -9,6 +11,7 @@ from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
 
 _names = ('name', 'username',)
 _backend_names = _names + ('user', 'group', 'home')
+mark_safe_lazy = lazy(mark_safe, str)
 
 
 MAILBOXES_DOMAIN_MODEL = Setting('MAILBOXES_DOMAIN_MODEL', 'domains.Domain',
@@ -72,15 +75,15 @@ MAILBOXES_MAILBOX_FILTERINGS = Setting('MAILBOXES_MAILBOX_FILTERINGS',
     {
         # value: (verbose_name, filter)
         'DISABLE': (_("Disable"), ''),
-        'REJECT': (_("Reject spam"), textwrap.dedent("""
+        'REJECT': (mark_safe_lazy(_("Reject spam (X-Spam-Score&ge;9)")), textwrap.dedent("""
              require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-             if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "5" {
+             if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
                 discard;
                 stop;
             }""")),
-        'REDIRECT': (_("Archive spam"), textwrap.dedent("""
+        'REDIRECT': (mark_safe_lazy(_("Archive spam (X-Spam-Score&ge;9)")), textwrap.dedent("""
             require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "5" {
+            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
                 fileinto "Spam";
                 stop;
             }""")),

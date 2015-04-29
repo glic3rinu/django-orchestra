@@ -170,14 +170,11 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
     * budgets: no undo feature
 
 * Autocomplete admin fields like <site_name>.phplist... with js
-* autoexpand mailbox.filter according to filtering options (js)
 
 * allow empty metric pack for default rates? changes on rating algo
 # don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
 
 # lines too long on invoice, double lines or cut, and make margin wider
-* PHP_TIMEOUT env variable in sync with fcgid idle timeout
-    http://foaa.de/old-blog/2010/11/php-apache-and-fastcgi-a-comprehensive-overview/trackback/index.html#pni-top0
 
 * payment methods icons
 * use server.name | server.address on python backends, like gitlab instead of settings?
@@ -243,13 +240,10 @@ https://code.djangoproject.com/ticket/24576
 # FIXME address name change does not remove old one :P, readonly or perhaps we can regenerate all addresses using backend.prepare()?
 
 * read https://docs.djangoproject.com/en/dev/releases/1.8/ and fix deprecation warnings
-* remove admin object display_links , like contents webapps
 
-* SaaS and WebApp types and services fieldsets, and helptexts !
+* create nice fieldsets for SaaS, WebApp types and services, and helptexts too!
 
 * replace make_option in management commands
-
-* welcome, pangea linke doesnt work
 
 # FIXME model contact info and account info (email, name, etc) correctly/unredundant/dry
 
@@ -296,3 +290,8 @@ https://code.djangoproject.com/ticket/24576
 # @ something database names
 # password validation cracklib on change password form=?????
 # reset setting buton 
+
+# periodic cleaning of spam mailboxes
+
+# admin edit relevant djanog settings
+# django SITE_NAME vs ORCHESTRA_SITE_NAME ?

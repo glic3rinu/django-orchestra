@@ -92,10 +92,10 @@ class CMSApp(PHPApp):
             user.set_password(password)
             user.save()
             db.users.add(user)
-            self.instance.data = {
+            self.instance.data.update({
                 'db_name': db_name,
                 'db_user': db_user,
                 'password': password,
                 'db_id': db.id,
                 'db_user_id': user.id,
-            }
+            })

@@ -135,6 +135,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def get_options(self, webapp):
         kwargs = {}
+        print(webapp.data)
         if self.MERGE:
             kwargs = {
                 'webapp__account': webapp.account,

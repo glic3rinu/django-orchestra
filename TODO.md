@@ -298,3 +298,32 @@ https://code.djangoproject.com/ticket/24576
 # django SITE_NAME vs ORCHESTRA_SITE_NAME ?
 
 # accounts.migrations link to last auth migration instead of first
+
+
+
+Replace celery by a custom solution?
+    * No more jumbo dependencies and wierd bugs
+    1) Periodic Monitoring:
+        * runtask management command + crontab scheduling or high performance beat crontab (not loading bloated django system)
+        class Command(BaseCommand):
+            def add_arguments(self, parser):
+                parser.add_argument('method', help='')
+                parser.add_argument('args', nargs='*', help='')
+            def handle(self, *args, **options):
+                method = import_class(options['method'])
+                kwargs = {}
+                arguments = []
+                for arg in args:
+                    if '=' in args:
+                        name, value = arg.split('=')
+                        kwargs[name] = value
+                    else:
+                        arguments.append(arg)
+                args = arguments
+                method(*args, **kwargs)
+    2) Single time shot:
+        sys.run("python3 manage.py runtas 'task' args")
+    3) Emails:
+        Custom backend that distinguishes between priority and bulk mail
+            priority: custom Thread backend
+            bulk: wrapper arround django-mailer to avoid loading django system

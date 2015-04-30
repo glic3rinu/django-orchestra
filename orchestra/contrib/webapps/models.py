@@ -54,6 +54,7 @@ class WebApp(models.Model):
     def clean(self):
         apptype = self.type_instance
         apptype.validate()
+        a = apptype.clean_data()
         self.data = apptype.clean_data()
     
     @cached

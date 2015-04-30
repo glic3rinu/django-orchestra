@@ -6,7 +6,7 @@ from .serializers import SetPasswordSerializer
 
 
 class SetPasswordApiMixin(object):
-    @detail_route(serializer_class=SetPasswordSerializer)
+    @detail_route(methods=['post'], serializer_class=SetPasswordSerializer)
     def set_password(self, request, pk):
         obj = self.get_object()
         data = request.DATA

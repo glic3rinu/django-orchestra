@@ -14,7 +14,7 @@ from .models import List
 class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = List.address_domain.field.rel.to
-        fields = ('url', 'name')
+        fields = ('url', 'id', 'name')
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -36,7 +36,7 @@ class ListSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):
     
     class Meta:
         model = List
-        fields = ('url', 'name', 'password', 'address_name', 'address_domain', 'admin_email')
+        fields = ('url', 'id', 'name', 'password', 'address_name', 'address_domain', 'admin_email')
         postonly_fields = ('name', 'password')
     
     def validate_address_domain(self, attrs, source):

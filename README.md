@@ -70,9 +70,8 @@ If you are planing to do some development or perhaps just checking out this proj
     sshfs orchestra@<container-ip>: ~<user>/orchestra
     ```
 
-5. To upgrade to current master just
+5. To upgrade to current master just re-run the deploy script
     ```bash
-    cd ~orchestra/django-orchestra/
     sudo ~orchestra/django-orchestra/scripts/container/deploy.sh
     ```
 

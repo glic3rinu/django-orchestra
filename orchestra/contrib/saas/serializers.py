@@ -25,5 +25,5 @@ class SaaSSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):
     
     class Meta:
         model = SaaS
-        fields = ('url', 'name', 'service', 'is_active', 'data', 'password')
+        fields = ('url', 'id', 'name', 'service', 'is_active', 'data', 'password')
         postonly_fields = ('name', 'service', 'password')

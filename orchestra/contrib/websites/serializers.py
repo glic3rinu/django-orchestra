@@ -12,7 +12,7 @@ from .validators import validate_domain_protocol
 class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Website.domains.field.rel.to
-        fields = ('url', 'name')
+        fields = ('url', 'id', 'name')
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -22,7 +22,7 @@ class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
 class RelatedWebAppSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Content.webapp.field.rel.to
-        fields = ('url', 'name', 'type')
+        fields = ('url', 'id', 'name', 'type')
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -60,7 +60,7 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     
     class Meta:
         model = Website
-        fields = ('url', 'name', 'protocol', 'domains', 'is_active', 'contents', 'directives')
+        fields = ('url', 'id', 'name', 'protocol', 'domains', 'is_active', 'contents', 'directives')
         postonly_fileds = ('name',)
     
     def full_clean(self, instance):

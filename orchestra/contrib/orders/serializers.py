@@ -9,6 +9,6 @@ class OrderSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerial
     class Meta:
         model = Order
         fields = (
-            'url', 'registered_on', 'cancelled_on', 'billed_on', 'billed_until',
+            'url', 'id', 'registered_on', 'cancelled_on', 'billed_on', 'billed_until',
             'description'
         )

@@ -7,7 +7,7 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Account
         fields = (
-            'url', 'username', 'type', 'language', 'short_name', 'full_name', 'date_joined',
+            'url', 'id', 'username', 'type', 'language', 'short_name', 'full_name', 'date_joined',
             'is_active'
         )
 

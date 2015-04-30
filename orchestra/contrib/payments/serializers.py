@@ -9,7 +9,7 @@ from .models import PaymentSource, Transaction
 class PaymentSourceSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = PaymentSource
-        fields = ('url', 'method', 'data', 'is_active')
+        fields = ('url', 'id', 'method', 'data', 'is_active')
     
     def validate_data(self, attrs, source):
         plugin = PaymentMethod.get(attrs['method'])

@@ -55,6 +55,8 @@ if [[ ! $CURRENT_VERSION ]]; then
 else
     # Upgrade and relay on postguprade for finishing up the installation
     surun "export GIT_DIR=~/django-orchestra/.git && git checkout master && git pull origin"
+    # TODO pass testing to postupgrade instead of running his here
+    sudo orchestra-admin install_requirements --testing
     $PYTHON_BIN $MANAGE migrate postupgradeorchestra --from $CURRENT_VERSION
     exit
 fi

@@ -13,7 +13,7 @@ from .validators import validate_home
 class GroupSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = SystemUser
-        fields = ('url', 'username',)
+        fields = ('url', 'id', 'username',)
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -26,7 +26,7 @@ class SystemUserSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSeriali
     class Meta:
         model = SystemUser
         fields = (
-            'url', 'username', 'password', 'home', 'directory', 'shell', 'groups', 'is_active',
+            'url', 'id', 'username', 'password', 'home', 'directory', 'shell', 'groups', 'is_active',
         )
         postonly_fields = ('username', 'password')
     

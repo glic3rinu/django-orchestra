@@ -12,7 +12,7 @@ from .models import Mailbox, Address
 class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Address.domain.field.rel.to
-        fields = ('url', 'name')
+        fields = ('url', 'id', 'name')
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -24,7 +24,7 @@ class RelatedAddressSerializer(AccountSerializerMixin, serializers.HyperlinkedMo
     
     class Meta:
         model = Address
-        fields = ('url', 'name', 'domain', 'forward')
+        fields = ('url', 'id', 'name', 'domain', 'forward')
 #    
 #    def from_native(self, data, files=None):
 #        queryset = self.opts.model.objects.filter(account=self.account)
@@ -37,7 +37,7 @@ class MailboxSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer
     class Meta:
         model = Mailbox
         fields = (
-            'url', 'name', 'password', 'filtering', 'custom_filtering', 'addresses', 'is_active'
+            'url', 'id', 'name', 'password', 'filtering', 'custom_filtering', 'addresses', 'is_active'
         )
         postonly_fields = ('name', 'password')
 
@@ -45,7 +45,7 @@ class MailboxSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer
 class RelatedMailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Mailbox
-        fields = ('url', 'name')
+        fields = ('url', 'id', 'name')
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -58,7 +58,7 @@ class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
     
     class Meta:
         model = Address
-        fields = ('url', 'name', 'domain', 'mailboxes', 'forward')
+        fields = ('url', 'id', 'name', 'domain', 'mailboxes', 'forward')
     
     def validate(self, attrs):
         attrs = super(AddressSerializer, self).validate(attrs)

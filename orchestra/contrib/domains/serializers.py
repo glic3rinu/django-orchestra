@@ -25,7 +25,7 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     
     class Meta:
         model = Domain
-        fields = ('url', 'name', 'records')
+        fields = ('url', 'id', 'name', 'records')
         postonly_fields = ('name',)
     
     def clean_name(self, attrs, source):

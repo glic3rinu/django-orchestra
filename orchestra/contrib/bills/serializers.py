@@ -19,7 +19,7 @@ class BillSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeriali
     class Meta:
         model = Bill
         fields = (
-            'url', 'number', 'type', 'total', 'is_sent', 'created_on', 'due_on',
+            'url', 'id', 'number', 'type', 'total', 'is_sent', 'created_on', 'due_on',
             'comments',
 #             'lines'
         )

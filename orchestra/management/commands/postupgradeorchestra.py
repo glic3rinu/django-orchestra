@@ -68,7 +68,7 @@ class Command(BaseCommand):
             
             manage_path = os.path.join(get_site_dir(), 'manage.py')
             run("python %s collectstatic --noinput" % manage_path)
-            run("python %s syncdb --noinput" % manage_path)
+            run("python %s migrate --noinput accounts" % manage_path)
             run("python %s migrate --noinput" % manage_path)
             if options.get('restart'):
                 run("python %s restartservices" % manage_path)

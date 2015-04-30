@@ -12,7 +12,7 @@ from .models import Database, DatabaseUser
 class RelatedDatabaseUserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = DatabaseUser
-        fields = ('url', 'username')
+        fields = ('url', 'id', 'username')
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -24,7 +24,7 @@ class DatabaseSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     
     class Meta:
         model = Database
-        fields = ('url', 'name', 'type', 'users')
+        fields = ('url', 'id', 'name', 'type', 'users')
         postonly_fields = ('name', 'type')
     
     def validate(self, attrs):
@@ -38,7 +38,7 @@ class DatabaseSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
 class RelatedDatabaseSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Database
-        fields = ('url', 'name',)
+        fields = ('url', 'id', 'name',)
     
     def from_native(self, data, files=None):
         queryset = self.opts.model.objects.filter(account=self.account)
@@ -50,7 +50,7 @@ class DatabaseUserSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSeria
     
     class Meta:
         model = DatabaseUser
-        fields = ('url', 'username', 'password', 'type', 'databases')
+        fields = ('url', 'id', 'username', 'password', 'type', 'databases')
         postonly_fields = ('username', 'type', 'password')
     
     def validate(self, attrs):

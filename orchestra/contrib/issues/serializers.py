@@ -6,14 +6,14 @@ from .models import Ticket, Message, Queue
 class QueueSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Queue
-        fields = ('url', 'name', 'default', 'notify')
+        fields = ('url', 'id', 'name', 'default', 'notify')
         read_only_fields = ('name', 'default', 'notify')
 
 
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Message
-        fields = ('id', 'author', 'author_name', 'content', 'created_on')
+        fields = ('url', 'id', 'author', 'author_name', 'content', 'created_on')
         read_only_fields = ('author', 'author_name', 'created_on')
     
     def get_identity(self, data):

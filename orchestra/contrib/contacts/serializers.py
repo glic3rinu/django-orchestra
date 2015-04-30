@@ -12,6 +12,6 @@ class ContactSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSeri
     class Meta:
         model = Contact
         fields = (
-            'url', 'short_name', 'full_name', 'email', 'email_usage', 'phone',
+            'url', 'id', 'short_name', 'full_name', 'email', 'email_usage', 'phone',
             'phone2', 'address', 'city', 'zipcode', 'country'
         )

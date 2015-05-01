@@ -104,7 +104,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'passlib.ext.django',
     'django_countries',
-    'django_mailer',
+#    'django_mailer',
     
     # Django.contrib
     'django.contrib.auth',

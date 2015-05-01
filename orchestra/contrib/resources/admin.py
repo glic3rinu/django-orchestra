@@ -180,7 +180,7 @@ admin.site.register(MonitorData, MonitorDataAdmin)
 # Mokey-patching
 
 def resource_inline_factory(resources):
-    class ResourceInlineFormSet(contenttype.forms.BaseGenericInlineFormSet):
+    class ResourceInlineFormSet(contenttypes.forms.BaseGenericInlineFormSet):
         def total_form_count(self, resources=resources):
             return len(resources)
         
@@ -220,7 +220,7 @@ def resource_inline_factory(resources):
                 forms.append(self._construct_form(i, resource=resource))
             return forms
     
-    class ResourceInline(contenttype.admin.GenericTabularInline):
+    class ResourceInline(contenttypes.admin.GenericTabularInline):
         model = ResourceData
         verbose_name_plural = _("resources")
         form = ResourceForm

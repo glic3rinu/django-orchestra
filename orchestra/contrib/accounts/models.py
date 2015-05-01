@@ -1,7 +1,7 @@
 from django.contrib.auth import models as auth
 from django.core import validators
 from django.db import models
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -146,7 +146,7 @@ class Account(auth.AbstractBaseUser):
         for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
             if 'password' not in related_kwargs:
                 continue
-            model = get_model(model)
+            model = apps.get_model(model)
             kwargs = {
                 key: eval(related_kwargs[key], {'account': self})
             }

@@ -5,7 +5,7 @@ from urllib.parse import parse_qsl
 from django import forms
 from django.conf.urls import patterns, url
 from django.contrib import admin, messages
-from django.contrib.admin.util import unquote
+from django.contrib.admin.utils import unquote
 from django.contrib.auth import admin as auth
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe

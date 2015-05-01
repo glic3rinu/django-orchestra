@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.forms import UserCreationForm
@@ -19,7 +19,7 @@ def create_account_creation_form():
                         "Notice that a related system user will be always created."))
     })
     for model, __, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
-        model = get_model(model)
+        model = apps.get_model(model)
         field_name = 'create_%s' % model._meta.model_name
         label = _("Create %s") % model._meta.verbose_name
         fields[field_name] = forms.BooleanField(initial=True, required=False, label=label,
@@ -41,7 +41,7 @@ def create_account_creation_form():
         if systemuser_model.objects.filter(username=account.username).exists():
             errors['username'] = _("A system user with this name already exists.")
         for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
-            model = get_model(model)
+            model = apps.get_model(model)
             kwargs = {
                 key: eval(related_kwargs[key], {'account': account})
             }
@@ -59,7 +59,7 @@ def create_account_creation_form():
     
     def save_related(self, account):
         for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
-            model = get_model(model)
+            model = apps.get_model(model)
             field_name = 'create_%s' % model._meta.model_name
             if self.cleaned_data[field_name]:
                 kwargs = {

@@ -1,7 +1,7 @@
 import sys
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db.models.loading import get_model
+from django.apps import apps
 
 from orchestra.contrib.orchestration import manager, Operation
 from orchestra.contrib.orchestration.models import Server
@@ -36,7 +36,7 @@ class Command(BaseCommand):
             for backend in ServiceBackend.get_backends():
                 self.stdout.write(str(backend).split("'")[1])
             return
-        model = get_model(*options['model'].split('.'))
+        model = apps.get_model(*options['model'].split('.'))
         action = options.get('action')
         interactive = options.get('interactive')
         servers = options.get('servers')

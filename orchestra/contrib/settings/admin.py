@@ -91,16 +91,6 @@ class SettingFileView(generic.TemplateView):
     template_name = 'admin/settings/view.html'
     
     def get_context_data(self, **kwargs):
-        from orchestra.contrib.tasks import shared_task
-        import time
-        @shared_task(name='rata')
-        def counter(num, log):
-            for i in range(1, num):
-                with open(log, 'a') as handler:
-                    handler.write(str(i))
-                time.sleep(1)
-        counter.apply_async(10, '/tmp/kakas')
-        
         context = super(SettingFileView, self).get_context_data(**kwargs)
         settings_file = parser.get_settings_file()
         with open(settings_file, 'r') as handler:

@@ -77,19 +77,20 @@ If you are planing to do some development or perhaps just checking out this proj
 
 Fast Deployment Setup
 ---------------------
-To only run the python interface follow this steps:
+To only run the Python interface follow these steps:
 
-1. `python3 -menv env-django-orchestra`
-2. `source env-django-orchestra/bin/activate`
-3. `echo $HOME/django-orchestra/ | sudo tee env-django-orchestra/lib/python3*/site-packages/orchestra.pth`
-4. `pip3 install -r $HOME/django-orchestra/requirements.txt`
-5. `django-admin.py startproject panel --template="$HOME/django-orchestra/orchestra/conf/project_template"`
-6. `python3 panel/manage.py migrate accounts`
-7. `python3 panel/manage.py migrate`
-8. `python3 panel/manage.py runserver`
-9. open http://localhost:8000/admin`
+```bash
+python3 -menv env-django-orchestra
+source env-django-orchestra/bin/activate
+echo $HOME/django-orchestra/ | sudo tee env-django-orchestra/lib/python3*/site-packages/orchestra.pth
+pip3 install -r $HOME/django-orchestra/requirements.txt
+django-admin.py startproject panel --template="$HOME/django-orchestra/orchestra/conf/project_template"
+python3 panel/manage.py migrate accounts
+python3 panel/manage.py migrate
+python3 panel/manage.py runserver
+```
 
-None of the services will work but you can see the web interface
+None of the services will work but you can see the web interface on http://localhost:8000/admin
 
 License
 -------

@@ -75,6 +75,30 @@ If you are planing to do some development or perhaps just checking out this proj
     sudo ~orchestra/django-orchestra/scripts/container/deploy.sh
     ```
 
+Fast Deployment Setup
+---------------------
+To only run the python interface follow this steps:
+
+1. python3 -menv env-django-orchestra
+2. source env-django-orchestra/bin/activate
+3. echo $HOME/django-orchestra/ | sudo tee env-django-orchestra/lib/python*/site-packages/orchestra.pth
+4. pip3 install -r $HOME/django-orchestra/requirements.txt
+5. django-admin.py startproject panel --template="$HOME/django-orchestra/orchestra/conf/project_template"
+6. python3 panel/manage.py migrate accounts
+7. python3 panel/manage.py migrate
+8. # Create orchestra superuser
+
+cat <<- EOF | python3 panel/manage.py shell
+from orchestra.contrib.accounts.models import Account
+if not Account.objects.filter(username="admin").exists():
+print('Creating orchestra superuser')
+Account.objects.create_superuser("admin", "admin@localhost", "orchestra")
+EOF
+
+9. python3 panel/manage.py runserver
+10. open http://localhost:8000/admin
+
+None of the services will work but you can see the web interface
 
 License
 -------

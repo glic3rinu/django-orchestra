@@ -89,6 +89,7 @@ INSTALLED_APPS = (
     'orchestra.contrib.miscellaneous',
     'orchestra.contrib.bills',
     'orchestra.contrib.payments',
+    'orchestra.contrib.tasks',
     
     # Third-party apps
     'django_extensions',
@@ -103,6 +104,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'passlib.ext.django',
     'django_countries',
+    'django_mailer',
     
     # Django.contrib
     'django.contrib.auth',

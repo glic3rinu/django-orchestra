@@ -3,8 +3,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin.html import monospace_format
-from orchestra.admin.utils import admin_link, admin_date, admin_colored
+from orchestra.admin.utils import admin_link, admin_date, admin_colored, display_mono
 
 from . import settings, helpers
 from .backends import ServiceBackend
@@ -109,13 +108,6 @@ class BackendOperationInline(admin.TabularInline):
         return queryset.prefetch_related('instance')
 
 
-def display_mono(field):
-    def display(self, log):
-        return monospace_format(escape(getattr(log, field)))
-    display.short_description = _(field)
-    return display
-
-
 class BackendLogAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'backend', 'server_link', 'display_state', 'exit_code',
@@ -123,12 +115,12 @@ class BackendLogAdmin(admin.ModelAdmin):
     )
     list_display_links = ('id', 'backend')
     list_filter = ('state', 'backend')
-    inlines = [BackendOperationInline]
-    fields = [
+    inlines = (BackendOperationInline,)
+    fields = (
         'backend', 'server_link', 'state', 'mono_script', 'mono_stdout',
         'mono_stderr', 'mono_traceback', 'exit_code', 'task_id', 'display_created',
         'execution_time'
-    ]
+    )
     readonly_fields = fields
     
     server_link = admin_link('server')

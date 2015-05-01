@@ -121,10 +121,3 @@ DOMAINS_MASTERS = Setting('DOMAINS_MASTERS',
     validators=[lambda masters: map(validate_ip_address, masters)],
     help_text="Additional master server ip addresses other than autodiscovered by router.get_servers()."
 )
-
-
-DOMAINS_SLAVES = Setting('DOMAINS_SLAVES',
-    (),
-    validators=[lambda slaves: map(validate_ip_address, slaves)],
-    help_text="Additional slave server ip addresses other than autodiscovered by router.get_servers()."
-)

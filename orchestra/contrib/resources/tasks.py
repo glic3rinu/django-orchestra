@@ -30,6 +30,7 @@ def monitor(resource_id, ids=None, async=True):
             op = Operation(backend, obj, Operation.MONITOR)
             monitorings.append(op)
         # TODO async=True only when running with celery
+        # monitor.request.id
         logs += Operation.execute(monitorings, async=async)
     
     kwargs = {'id__in': ids} if ids else {}

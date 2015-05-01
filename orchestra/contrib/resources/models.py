@@ -6,7 +6,7 @@ from django.db.models.loading import get_model
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
-from djcelery.models import PeriodicTask, CrontabSchedule
+from djcelery.models import CrontabSchedule
 
 from orchestra.core import validators
 from orchestra.models import queryset, fields
@@ -14,7 +14,7 @@ from orchestra.models.utils import get_model_field_path
 from orchestra.utils.paths import get_project_dir
 from orchestra.utils.sys import run
 
-from . import tasks
+from . import tasks, settings
 from .backends import ServiceMonitor
 from .aggregations import Aggregation
 from .validators import validate_scale
@@ -129,34 +129,18 @@ class Resource(models.Model):
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
         name = 'monitor.%s' % str(self)
+        self.sync_periodic_task()
+    
+    def sync_periodic_task(self):
+        name = 'monitor.%s' % str(self)
+        sync = import_class(settings.RESOURCES_TASK_BACKEND)
+        return sync(self, name)
     
     def get_model_path(self, monitor):
         """ returns a model path between self.content_type and monitor.model """
         resource_model = self.content_type.model_class()
         monitor_model = ServiceMonitor.get_backend(monitor).model_class()
         return get_model_field_path(monitor_model, resource_model)
-    
-    def sync_periodic_task(self):
-        name = 'monitor.%s' % str(self)
-        if self.pk and self.crontab:
-            try:
-                task = PeriodicTask.objects.get(name=name)
-            except PeriodicTask.DoesNotExist:
-                if self.is_active:
-                    PeriodicTask.objects.create(
-                        name=name,
-                        task='resources.Monitor',
-                        args=[self.pk],
-                        crontab=self.crontab
-                    )
-            else:
-                if task.crontab != self.crontab:
-                    task.crontab = self.crontab
-                    task.save(update_fields=['crontab'])
-        else:
-            PeriodicTask.objects.filter(
-                name=name,
-            ).delete()
     
     def get_scale(self):
         return eval(self.scale)

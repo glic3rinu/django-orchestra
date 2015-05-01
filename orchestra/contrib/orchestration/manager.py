@@ -3,9 +3,9 @@ import threading
 import traceback
 from collections import OrderedDict
 
-from django import db
 from django.core.mail import mail_admins
 
+from orchestra.utils.db import close_connection
 from orchestra.utils.python import import_class, OrderedSet
 
 from . import settings, Operation
@@ -39,20 +39,6 @@ def as_task(execute):
             # Absense of it will indicate a failure at this stage
             wrapper.log = log
             return log
-    return wrapper
-
-
-def close_connection(execute):
-    """ Threads have their own connection pool, closing it when finishing """
-    def wrapper(*args, **kwargs):
-        try:
-            log = execute(*args, **kwargs)
-        except Exception as e:
-            pass
-        else:
-            wrapper.log = log
-        finally:
-            db.connection.close()
     return wrapper
 
 

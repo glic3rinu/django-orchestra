@@ -1,4 +1,5 @@
 import re
+import socket
 import textwrap
 
 from django.utils.translation import ugettext_lazy as _
@@ -8,12 +9,13 @@ from orchestra.contrib.orchestration import Operation
 from orchestra.utils.python import OrderedSet
 
 from . import settings
+from .models import Record, Domain
 
 
 class Bind9MasterDomainBackend(ServiceController):
     """
     Bind9 zone and config generation.
-    It auto-discovers slave Bind9 servers based on your routing configuration or you can use DOMAINS_SLAVES to explicitly configure the slaves.
+    It auto-discovers slave Bind9 servers based on your routing configuration and NS servers.
     """
     CONF_PATH = settings.DOMAINS_MASTERS_PATH
     
@@ -25,7 +27,7 @@ class Bind9MasterDomainBackend(ServiceController):
     )
     ignore_fields = ['serial']
     doc_settings = (settings,
-        ('DOMAINS_SLAVES', 'DOMAINS_MASTERS_PATH')
+        ('DOMAINS_MASTERS_PATH',)
     )
     
     @classmethod
@@ -100,10 +102,32 @@ class Bind9MasterDomainBackend(ServiceController):
             servers.append(server.get_ip())
         return servers
     
+    def get_masters(self, domain):
+        ips = list(settings.DOMAINS_MASTERS)
+        if not ips:
+            ips += self.get_servers(domain, Bind9MasterDomainBackend)
+        return OrderedSet(sorted(ips))
+    
     def get_slaves(self, domain):
-        ips = list(settings.DOMAINS_SLAVES)
-        ips += self.get_servers(domain, Bind9SlaveDomainBackend)
-        return OrderedSet(ips)
+        ips = []
+        masters = self.get_masters(domain)
+        for ns in domain.records.filter(type=Record.NS):
+            hostname = ns.value.rstrip('.')
+            # First try with a DNS query, a more reliable source
+            try:
+                addr = socket.gethostbyname(hostname)
+            except socket.gaierror:
+                # check if domain is declared
+                try:
+                    domain = Domain.objects.get(name=ns)
+                except Domain.DoesNotExist:
+                    continue
+                else:
+                    a_record = domain.records.filter(name=Record.A) or [settings.DOMAINS_DEFAULT_NS]
+                    addr = a_record[0]
+            if addr not in masters:
+                ips.append(addr)
+        return OrderedSet(sorted(ips))
     
     def get_context(self, domain):
         slaves = self.get_slaves(domain)
@@ -153,11 +177,6 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     def commit(self):
         """ ideally slave should be restarted after master """
         self.append('if [[ $UPDATED == 1 ]]; then { sleep 1 && service bind9 reload; } & fi')
-    
-    def get_masters(self, domain):
-        ips = list(settings.DOMAINS_MASTERS)
-        ips += self.get_servers(domain, Bind9MasterDomainBackend)
-        return OrderedSet(ips)
     
     def get_context(self, domain):
         context = {

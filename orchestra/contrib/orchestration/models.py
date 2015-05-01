@@ -68,13 +68,11 @@ class BackendLog(models.Model):
     )
     
     backend = models.CharField(_("backend"), max_length=256)
-    state = models.CharField(_("state"), max_length=16, choices=STATES,
-        default=RECEIVED)
-    server = models.ForeignKey(Server, verbose_name=_("server"),
-        related_name='execution_logs')
+    state = models.CharField(_("state"), max_length=16, choices=STATES, default=RECEIVED)
+    server = models.ForeignKey(Server, verbose_name=_("server"), related_name='execution_logs')
     script = models.TextField(_("script"))
     stdout = models.TextField(_("stdout"))
-    stderr = models.TextField(_("stdin"))
+    stderr = models.TextField(_("stderr"))
     traceback = models.TextField(_("traceback"))
     exit_code = models.IntegerField(_("exit code"), null=True)
     task_id = models.CharField(_("task ID"), max_length=36, unique=True, null=True,

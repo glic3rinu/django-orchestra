@@ -16,6 +16,7 @@ def run_monitor(modeladmin, request, queryset):
         modeladmin.log_change(request, resource, _("Run monitors"))
     if async:
         num = len(queryset)
+        # TODO listfilter by uuid: task.request.id + ?task_id__in=ids
         link = reverse('admin:djcelery_taskstate_changelist')
         msg = ungettext(
             _("One selected resource has been <a href='%s'>scheduled for monitoring</a>.") % link,

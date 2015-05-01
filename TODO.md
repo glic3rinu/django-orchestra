@@ -300,30 +300,31 @@ https://code.djangoproject.com/ticket/24576
 # accounts.migrations link to last auth migration instead of first
 
 
+# DNS allow transfer other NS servers instead of masters and slaves!
 
 Replace celery by a custom solution?
+    # TODO create periodic task like settings, but parsing cronfiles!
+    # TODO create decorator wrapper that abstract the task away from the backen (cron/celery)
+    # TODO crontab model localhost/autoadded attribute
     * No more jumbo dependencies and wierd bugs
     1) Periodic Monitoring:
         * runtask management command + crontab scheduling or high performance beat crontab (not loading bloated django system)
-        class Command(BaseCommand):
-            def add_arguments(self, parser):
-                parser.add_argument('method', help='')
-                parser.add_argument('args', nargs='*', help='')
-            def handle(self, *args, **options):
-                method = import_class(options['method'])
-                kwargs = {}
-                arguments = []
-                for arg in args:
-                    if '=' in args:
-                        name, value = arg.split('=')
-                        kwargs[name] = value
-                    else:
-                        arguments.append(arg)
-                args = arguments
-                method(*args, **kwargs)
     2) Single time shot:
         sys.run("python3 manage.py runtas 'task' args")
     3) Emails:
         Custom backend that distinguishes between priority and bulk mail
-            priority: custom Thread backend
-            bulk: wrapper arround django-mailer to avoid loading django system
+            *priority: custom Thread backend
+            *bulk: wrapper arround django-mailer to avoid loading django system
+
+
+# uwsgi enable threads
+# Create superuser on migrate
+# register signals in app ready()
+def ready(self):
+    if self.has_attr('ready_run'): return
+    self.ready_run = True
+
+# database_ready(): connect to the database or inspect django connection
+# beat.sh
+
+# do settings validation on orchestra.apps.ready(), not during startime

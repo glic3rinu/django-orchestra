@@ -58,6 +58,7 @@ def get_eval_context():
         '_': _,
     }
 
+
 def serialize(obj, init=True):
     if isinstance(obj, NotSupported):
         return obj

@@ -50,8 +50,7 @@ def database_ready():
             # Celerybeat has yet to stablish a connection at AppConf.ready()
             'celerybeat' not in sys.argv and
             # Allow to run python manage.py without a database
-            len(sys.argv) <= 1 and
-            '--help' not in sys.argv)
+            sys.argv != ['manage.py'] and '--help' not in sys.argv)
 
 
 def dict_setting_to_choices(choices):

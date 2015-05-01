@@ -1,6 +1,9 @@
 import re
 
-import crack
+try:
+  import crack
+except:
+  import cracklib as crack
 import phonenumbers
 
 from django.core import validators

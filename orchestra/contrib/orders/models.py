@@ -4,10 +4,10 @@ import logging
 
 from django.db import models
 from django.db.models import F, Q
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -61,7 +61,7 @@ class OrderQuerySet(models.QuerySet):
     
     def get_related(self, **options):
         """ returns related orders that could have a pricing effect """
-        Service = get_model(settings.ORDERS_SERVICE_MODEL)
+        Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
         conflictive = self.filter(service__metric='')
         conflictive = conflictive.exclude(service__billing_period=Service.NEVER)
         conflictive = conflictive.select_related('service').group_by('account_id', 'service')
@@ -122,7 +122,7 @@ class Order(models.Model):
     ignore = models.BooleanField(_("ignore"), default=False)
     description = models.TextField(_("description"), blank=True)
     
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
     objects = OrderQuerySet.as_manager()
     
     class Meta:
@@ -135,7 +135,7 @@ class Order(models.Model):
     def update_orders(cls, instance, service=None, commit=True):
         updates = []
         if service is None:
-            Service = get_model(settings.ORDERS_SERVICE_MODEL)
+            Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
             services = Service.get_services(instance)
         else:
             services = [service]

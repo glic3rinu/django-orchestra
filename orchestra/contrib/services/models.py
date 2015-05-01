@@ -2,7 +2,7 @@ import decimal
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import string_concat, ugettext_lazy as _
@@ -236,7 +236,7 @@ class Service(models.Model):
         return rate_class.get_methods()[self.rate_algorithm]
     
     def update_orders(self, commit=True):
-        order_model = get_model(settings.SERVICES_ORDER_MODEL)
+        order_model = apps.get_model(settings.SERVICES_ORDER_MODEL)
         related_model = self.content_type.model_class()
         updates = []
         queryset = related_model.objects.all()

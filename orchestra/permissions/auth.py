@@ -1,6 +1,5 @@
 from django.contrib.auth.backends import ModelBackend
-from django.db.models.loading import get_model, get_app, get_models
-
+from django.apps import apps
 
 class OrchestraPermissionBackend(ModelBackend):
     supports_object_permissions = True
@@ -16,7 +15,7 @@ class OrchestraPermissionBackend(ModelBackend):
         if obj is None:
             app_label = perm.split('.')[0]
             model_label = perm.split('_')[1]
-            model = get_model(app_label, model_label)
+            model = apps.get_model(app_label, model_label)
             perm_manager = model
         else:
             perm_manager = obj
@@ -34,8 +33,8 @@ class OrchestraPermissionBackend(ModelBackend):
         """
         if not user.is_active:
             return False
-        app = get_app(app_label)
-        for model in get_models(app):
+        app = apps.get_app_config(app_label)
+        for model in apps.get_models(app):
             try:
                 has_perm = model.has_permission.view(user)
             except AttributeError:

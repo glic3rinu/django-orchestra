@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db.models import loading
-from django.utils import importlib
+import importlib
 
 
 def get_model(label, import_module=True):

@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.shortcuts import redirect
-from django.utils import importlib
+import importlib
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 

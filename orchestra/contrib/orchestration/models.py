@@ -1,6 +1,6 @@
 import socket
 
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.functional import cached_property
@@ -104,7 +104,7 @@ class BackendOperation(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     
-    instance = generic.GenericForeignKey('content_type', 'object_id')
+    instance = GenericForeignKey('content_type', 'object_id')
     
     class Meta:
         verbose_name = _("Operation")

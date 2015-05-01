@@ -2,7 +2,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
 from django.db import models
-from django.db.models.loading import get_model
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -106,7 +105,7 @@ class Resource(models.Model):
             try:
                 self.get_model_path(monitor)
             except (RuntimeError, LookupError):
-                model = get_model(ServiceMonitor.get_backend(monitor).model)
+                model = apps.get_model(ServiceMonitor.get_backend(monitor).model)
                 monitor_errors.append(model._meta.model_name)
         if monitor_errors:
             model_name = self.content_type.model_class()._meta.model_name

@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url
 from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
-from django.contrib.contenttypes import generic
+from django.contrib import contenttypes 
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.utils.functional import cached_property
@@ -180,7 +180,7 @@ admin.site.register(MonitorData, MonitorDataAdmin)
 # Mokey-patching
 
 def resource_inline_factory(resources):
-    class ResourceInlineFormSet(generic.BaseGenericInlineFormSet):
+    class ResourceInlineFormSet(contenttype.forms.BaseGenericInlineFormSet):
         def total_form_count(self, resources=resources):
             return len(resources)
         
@@ -220,7 +220,7 @@ def resource_inline_factory(resources):
                 forms.append(self._construct_form(i, resource=resource))
             return forms
     
-    class ResourceInline(generic.GenericTabularInline):
+    class ResourceInline(contenttype.admin.GenericTabularInline):
         model = ResourceData
         verbose_name_plural = _("resources")
         form = ResourceForm

@@ -46,7 +46,7 @@
 {% endif %}
 <ul id="navigation-menu">
     <div style="max-width: 1170px; margin:auto;">
-    <div id="branding"><a href="/admin/"></a><h1 id="site-name"><a href="/admin/">{{ ORCHESTRA_SITE_VERBOSE_NAME }}<span class="version">0.0.1a1</span></a></h1></div>
+    <div id="branding"><a href="/admin/"></a><h1 id="site-name"><a href="/admin/">{{ SITE_VERBOSE_NAME }}<span class="version">0.0.1a1</span></a></h1></div>
     {% for item in menu.children %}{% admin_tools_render_menu_item item forloop.counter %}{% endfor %}
     <span style="float:right;color:grey;padding:10px;font-size:11px;">{% trans 'Welcome' %},
         {% url 'admin:accounts_account_change' user.pk as user_change_url %}

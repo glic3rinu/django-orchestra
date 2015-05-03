@@ -126,15 +126,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'USER': 'orchestra',         # Not used with sqlite3.
-        'PASSWORD': 'orchestra',     # Not used with sqlite3.
-        'HOST': 'localhost',       # Set to empty string for localhost. Not used with sqlite3.
+        'USER': '',         # Not used with sqlite3.
+        'PASSWORD': '',     # Not used with sqlite3.
+        'HOST': '',       # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                # Set to empty string for default. Not used with sqlite3.
+        'CONN_MAX_AGE': 60*10      # Enable persistent connections
     }
 }
 
-# Enable persistent connections
-CONN_MAX_AGE = 60*10
 
 # Internationalization
 # https://docs.djangoproject.com/en/{{ docs_version }}/topics/i18n/

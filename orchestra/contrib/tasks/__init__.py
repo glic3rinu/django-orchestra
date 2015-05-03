@@ -57,6 +57,7 @@ def apply_async(fn, name=None, method='thread'):
         # Celery API compat
         thread.request = AttrDict(id=task_id)
         return thread
+    
     if name is None:
         name = get_name(fn)
     if method == 'thread':
@@ -64,7 +65,7 @@ def apply_async(fn, name=None, method='thread'):
     elif method == 'process':
         method = Process
     else:
-        raise NotImplementedError("Support for %s concurrency method is not supported." % method)
+        raise NotImplementedError("%s concurrency method is not supported." % method)
     fn.apply_async = partial(inner, close_connection(keep_state(fn)), name, method)
     fn.delay = fn.apply_async
     return fn

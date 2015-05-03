@@ -378,3 +378,5 @@ Collecting lxml==3.3.5 (from -r re (line 22))
         counter.apply_async(10, '/tmp/kakas')
 
 # standard django deployment pracices (run checks)
+# setup main systemuser on post_migrate SystemUser
+# Provide some fixtures with mocked data

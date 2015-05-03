@@ -29,7 +29,7 @@ def get_settings(settings_file):
                 values = var.value.values[0].values
                 for key, value in zip(keys, values):
                     if key.s == 'ENGINE':
-                        if not 'postgresql' in value.s:
+                        if value.s not in ('django.db.backends.sqlite3', 'django.db.backends.postgresql_psycopg2'):
                             raise ValueError("%s engine not supported." % value)
                     settings[key.s] = getattr(value, 's', None)
                 return settings

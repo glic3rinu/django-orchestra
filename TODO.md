@@ -318,14 +318,15 @@ pip3 install -r https://raw.githubusercontent.com/glic3rinu/django-orchestra/mas
 
 # TODO make them optional
 sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
-wget -O - https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt | xargs pip3 install 
-django-admin.py startproject panel --template="$HOME/django-orchestra/orchestra/conf/project_template"
+wget -O - https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt | xargs pip3 install
+orchestra-admin startproject panel
 python3 panel/manage.py migrate accounts
 python3 panel/manage.py migrate
 python3 panel/manage.py runserver
 
+http://localhost:8000/admin/
 
-
+setupcrontab
 
 
 Collecting lxml==3.3.5 (from -r re (line 22))

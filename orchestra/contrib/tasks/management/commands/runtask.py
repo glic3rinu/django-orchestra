@@ -18,7 +18,6 @@ class Command(BaseCommand):
             help='Additional arguments passed to the task, when task name is used.')
     
     def handle(self, *args, **options):
-
         task = options.get('task')
         if task.isdigit():
             # periodic task

@@ -46,7 +46,7 @@ sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
 pip3 install -r \
   https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt
 
-# Create an orchestra instance
+# Create an new Orchestra site
 orchestra-admin startproject panel
 python3 panel/manage.py migrate accounts
 python3 panel/manage.py migrate

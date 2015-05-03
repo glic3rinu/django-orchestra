@@ -109,21 +109,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'orchestra.core.context_processors.site',
             ],
         },
     },
 ]
-
-
-TEMPLATE_CONTEXT_PROCESSORS =(
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.contrib.messages.context_processors.messages",
-    "django.core.context_processors.request",
-    "orchestra.core.context_processors.site",
-)
 
 
 WSGI_APPLICATION = '{{ project_name }}.wsgi.application'

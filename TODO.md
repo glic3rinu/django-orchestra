@@ -297,13 +297,8 @@ https://code.djangoproject.com/ticket/24576
 # admin edit relevant djanog settings
 # django SITE_NAME vs ORCHESTRA_SITE_NAME ?
 
-# accounts.migrations link to last auth migration instead of first
-
-
-# DNS allow transfer other NS servers instead of masters and slaves!
 
 Replace celery by a custom solution?
-    # TODO create periodic task like settings, but parsing cronfiles!
     # TODO create decorator wrapper that abstract the task away from the backen (cron/celery)
     # TODO crontab model localhost/autoadded attribute
     * No more jumbo dependencies and wierd bugs
@@ -316,15 +311,49 @@ Replace celery by a custom solution?
             *priority: custom Thread backend
             *bulk: wrapper arround django-mailer to avoid loading django system
 
+python3 -mvenv env-django-orchestra
+source env-django-orchestra/bin/activate
+pip3 install django-orchestra==dev --allow-external django-orchestra --allow-unverified django-orchestra
+pip3 install -r https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt
 
+# TODO make them optional
+sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
+wget -O - https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt | xargs pip3 install 
+django-admin.py startproject panel --template="$HOME/django-orchestra/orchestra/conf/project_template"
+python3 panel/manage.py migrate accounts
+python3 panel/manage.py migrate
+python3 panel/manage.py runserver
+
+
+
+
+
+Collecting lxml==3.3.5 (from -r re (line 22))
+  Downloading lxml-3.3.5.tar.gz (3.5MB)
+    100% |################################| 3.5MB 60kB/s 
+    Building lxml version 3.3.5.
+    Building without Cython.
+    ERROR: b'/bin/sh: 1: xslt-config: not found\n'
+    ** make sure the development packages of libxml2 and libxslt are installed **
+    Using build configuration of libxslt
+    /usr/lib/python3.4/distutils/dist.py:260: UserWarning: Unknown distribution option: 'bugtrack_url'
+      warnings.warn(msg)
+
+
+# Setupcron
 # uwsgi enable threads
-# Create superuser on migrate
 # register signals in app ready()
-def ready(self):
-    if self.has_attr('ready_run'): return
-    self.ready_run = True
-
 # database_ready(): connect to the database or inspect django connection
-# beat.sh
 
-# do settings validation on orchestra.apps.ready(), not during startime
+# move Setting to contrib app __init__
+# cracklib vs crack
+# remove system dependencies
+# deprecate install_dependnecies in favour of only requirements.txt
+# import module and sed
+# if setting.value == default. remove
+# cron backend: os.cron or uwsgi.cron
+# reload generic admin view ?redirect=http...
+# inspecting django db connection for asserting db readines?
+# wake up django mailer on send_mail
+
+# project settings modified copy of django's default project settings

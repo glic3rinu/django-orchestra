@@ -5,7 +5,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
-from djcelery.models import CrontabSchedule
 
 from orchestra.core import validators
 from orchestra.models import queryset, fields
@@ -64,7 +63,7 @@ class Resource(models.Model):
                     "be prorcessed to match with unit. e.g. <tt>10**9</tt>"))
     disable_trigger = models.BooleanField(_("disable trigger"), default=False,
         help_text=_("Disables monitors exeeded and recovery triggers"))
-    crontab = models.ForeignKey(CrontabSchedule, verbose_name=_("crontab"),
+    crontab = models.ForeignKey('djcelery.CrontabSchedule', verbose_name=_("crontab"),
         null=True, blank=True,
         help_text=_("Crontab for periodic execution. "
                     "Leave it empty to disable periodic monitoring"))

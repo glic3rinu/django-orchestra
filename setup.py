@@ -27,7 +27,10 @@ setup(
         "The goal of this project is to provide the tools for easily build a fully "
         "featured control panel that fits any service architecture."),
     include_package_data = True,
-    scripts=['orchestra/bin/orchestra-admin'],
+    scripts=[
+        'orchestra/bin/orchestra-admin',
+        'orchestra/contrib/tasks/bin/orchestra-beat',
+    ],
     packages = packages,
     classifiers = [
         'Development Status :: 1 - Alpha',

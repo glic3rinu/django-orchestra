@@ -29,7 +29,7 @@ class SpanWidget(forms.Widget):
             return mark_safe('<img src="%s" alt="%s">' % (icon, str(display)))
         tag = self.tag[:-1]
         endtag = '/'.join((self.tag[0], self.tag[1:]))
-        return mark_safe('%s%s >%s%s' % (tag, forms.util.flatatt(final_attrs), display, endtag))
+        return mark_safe('%s%s >%s%s' % (tag, forms.utils.flatatt(final_attrs), display, endtag))
     
     def value_from_datadict(self, data, files, name):
         return self.original

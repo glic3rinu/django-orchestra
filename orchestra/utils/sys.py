@@ -45,7 +45,7 @@ def read_async(fd):
             return ''
 
 
-def runiterator(command, display=False, error_codes=[0], silent=False, stdin=b''):
+def runiterator(command, display=False, stdin=b''):
     """ Subprocess wrapper for running commands concurrently """
     if display:
         sys.stderr.write("\n\033[1m $ %s\033[0m\n" % command)
@@ -83,6 +83,7 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin=b''
         state = _Attribute(stdout)
         state.stderr = stderr
         state.return_code =  p.poll()
+        state.command = command
         yield state
         
         if state.return_code != None:
@@ -90,13 +91,8 @@ def runiterator(command, display=False, error_codes=[0], silent=False, stdin=b''
             p.stderr.close()
             raise StopIteration
 
-
-def run(command, display=False, error_codes=[0], silent=False, stdin=b'', async=False):
-    iterator = runiterator(command, display, error_codes, silent, stdin)
-    next(iterator)
-    if async:
-        return iterator
-    
+def join(iterator, display=False, silent=False, error_codes=[0]):
+    """ joins the iterator process """
     stdout = b''
     stderr = b''
     for state in iterator:
@@ -114,7 +110,7 @@ def run(command, display=False, error_codes=[0], silent=False, stdin=b'', async=
     if return_code not in error_codes:
         out.failed = True
         msg = "\nrun() encountered an error (return code %s) while executing '%s'\n"
-        msg = msg % (return_code, command)
+        msg = msg % (return_code, state.command)
         if display:
             sys.stderr.write("\n\033[1;31mCommandError: %s %s\033[m\n" % (msg, err))
         if not silent:
@@ -122,6 +118,14 @@ def run(command, display=False, error_codes=[0], silent=False, stdin=b'', async=
     
     out.succeeded = not out.failed
     return out
+
+
+def run(command, display=False, error_codes=[0], silent=False, stdin=b'', async=False):
+    iterator = runiterator(command, display, stdin)
+    next(iterator)
+    if async:
+        return iterator
+    return join(iterator, display=display, silent=silent, error_codes=error_codes)
 
 
 def sshrun(addr, command, *args, **kwargs):

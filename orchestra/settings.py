@@ -3,6 +3,7 @@ import sys
 from collections import OrderedDict
 
 from django.conf import settings
+from django.core.checks import register, Error
 from django.core.exceptions import ValidationError, AppRegistryNotReady
 from django.core.validators import validate_email
 from django.db.models import get_model
@@ -42,16 +43,6 @@ class Setting(object):
         for name, value in kwargs.items():
             setattr(self, name, value)
         self.value = self.get_value(self.name, self.default)
-        try:
-            self.validate_value(self.value)
-        except ValidationError as exc:
-            # Init time warning
-            sys.stderr.write("Error validating setting %s with value %s\n" % (self.name, self.value))
-            sys.stderr.write(format_exception(exc))
-            raise exc
-        except AppRegistryNotReady:
-            # lazy bastards
-            pass
         self.settings[name] = self
     
     @classmethod
@@ -115,6 +106,19 @@ class Setting(object):
     @classmethod
     def get_value(cls, name, default):
         return getattr(cls.conf_settings, name, default)
+
+
+@register()
+def check_settings(app_configs, **kwargs):
+    """ perfroms all the validation """
+    messages = []
+    for name, setting in Setting.settings.items():
+        try:
+            setting.validate_value(setting.value)
+        except ValidationError as exc:
+            msg = "Error validating setting with value %s: %s" % (setting.value, str(exc))
+            messages.append(Error(msg, obj=name, id='settings.E001'))
+    return messages
 
 
 ORCHESTRA_BASE_DOMAIN = Setting('ORCHESTRA_BASE_DOMAIN',

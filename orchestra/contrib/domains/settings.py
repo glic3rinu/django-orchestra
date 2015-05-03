@@ -89,7 +89,7 @@ DOMAINS_DEFAULT_MX = Setting('DOMAINS_DEFAULT_MX',
         '10 mail.{}.'.format(ORCHESTRA_BASE_DOMAIN),
         '10 mail2.{}.'.format(ORCHESTRA_BASE_DOMAIN),
     ),
-    validators=[lambda mxs: map(validate_mx_record, mxs)],
+    validators=[lambda mxs: list(map(validate_mx_record, mxs))],
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default."
 )
 
@@ -99,7 +99,7 @@ DOMAINS_DEFAULT_NS = Setting('DOMAINS_DEFAULT_NS',
         'ns1.{}.'.format(ORCHESTRA_BASE_DOMAIN),
         'ns2.{}.'.format(ORCHESTRA_BASE_DOMAIN),
     ),
-    validators=[lambda nss: map(validate_domain_name, nss)],
+    validators=[lambda nss: list(map(validate_domain_name, nss))],
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default."
 )
 
@@ -118,6 +118,6 @@ DOMAINS_FORBIDDEN = Setting('DOMAINS_FORBIDDEN',
 
 DOMAINS_MASTERS = Setting('DOMAINS_MASTERS',
     (),
-    validators=[lambda masters: map(validate_ip_address, masters)],
+    validators=[lambda masters: list(map(validate_ip_address, masters))],
     help_text="Additional master server ip addresses other than autodiscovered by router.get_servers()."
 )

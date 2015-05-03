@@ -1,6 +1,6 @@
 cracklib
 psycopg2
-django==1.8 
+django==1.8.1
 django-celery-email==1.0.4 
 https://github.com/glic3rinu/django-fluent-dashboard/archive/master.zip 
 https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip 

@@ -1,12 +1,11 @@
-from celery import shared_task
-
 from orchestra.contrib.orchestration import Operation
+from orchestra.contrib.tasks import task
 from orchestra.models.utils import get_model_field_path
 
 from .backends import ServiceMonitor
 
 
-@shared_task(name='resources.Monitor')
+@task(name='resources.Monitor')
 def monitor(resource_id, ids=None, async=True):
     from .models import ResourceData, Resource
     

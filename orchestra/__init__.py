@@ -1,3 +1,5 @@
+default_app_config = 'orchestra.apps.OrchestraConfig'
+
 VERSION = (0, 0, 1, 'alpha', 1)
 
 

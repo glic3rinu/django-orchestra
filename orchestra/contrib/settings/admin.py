@@ -86,6 +86,17 @@ class SettingView(generic.edit.FormView):
             messages.success(self.request, _("No changes have been detected."))
         return super(SettingView, self).form_valid(form)
 
+from orchestra.contrib.tasks import task
+import time, sys
+@task(name='rata')
+def counter(num, log):
+    for i in range(1, num):
+        with open(log, 'a') as handler:
+            handler.write(str(i))
+#        sys.stderr.write('hola\n')
+        time.sleep(1)
+#counter.apply_async(10, '/tmp/kakas')
+
 
 class SettingFileView(generic.TemplateView):
     template_name = 'admin/settings/view.html'

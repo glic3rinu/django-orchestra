@@ -122,6 +122,11 @@ function install_requirements () {
     check_root || true
     ORCHESTRA_PATH=$(get_orchestra_dir) || true
     
+    # TODO reduce this list to 0
+    # include /usr/sbin/named-checkzone
+    # wkhtmltopdf -> reportlab
+    # remove rabbit, postgres
+    # uwsgi –py-autoreload for devel
     APT="python3 \
          python3-pip \
          python3-psycopg2 \
@@ -137,6 +142,7 @@ function install_requirements () {
          ca-certificates \
          gettext"
     
+    # TODO remove celery deps,  django 1.8.1, glic3rinu fork, celery email
     PIP="django==1.8 \
          django-celery-email==1.0.4 \
          https://github.com/glic3rinu/django-fluent-dashboard/archive/master.zip \
@@ -202,12 +208,14 @@ function install_requirements () {
     
     run pip3 install $PIP
     
+    # TODO remove
     # Some versions of rabbitmq-server will not start automatically by default unless ...
     sed -i "s/# Default-Start:.*/# Default-Start:     2 3 4 5/" /etc/init.d/rabbitmq-server
     sed -i "s/# Default-Stop:.*/# Default-Stop:      0 1 6/" /etc/init.d/rabbitmq-server
     run update-rc.d rabbitmq-server defaults
     
     # Patch passlib
+    # TODO discover locaion by importing it
     IMPORT="from django.contrib.auth.hashers import mask_hash, _"
     COLLECTIONS="from collections import OrderedDict"
     ls /usr/local/lib/python*/dist-packages/passlib/ext/django/utils.py \

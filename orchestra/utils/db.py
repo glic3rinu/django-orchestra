@@ -1,5 +1,3 @@
-import ast
-
 from django import db
 
 
@@ -19,25 +17,23 @@ def close_connection(execute):
 
 def get_settings(settings_file):
     """ get db settings from settings.py file without importing """
-    settings = {}
-    with open(settings_file, 'r') as handler:
-        body = ast.parse(handler.read()).body
-        for var in body:
-            targets = getattr(var, 'targets', None)
-            if targets and targets[0].id == 'DATABASES':
-                keys = var.value.values[0].keys
-                values = var.value.values[0].values
-                for key, value in zip(keys, values):
-                    if key.s == 'ENGINE':
-                        if value.s not in ('django.db.backends.sqlite3', 'django.db.backends.postgresql_psycopg2'):
-                            raise ValueError("%s engine not supported." % value)
-                    settings[key.s] = getattr(value, 's', None)
-                return settings
+    settings = {'__file__': settings_file}
+    with open(settings_file) as f:
+        __file__ = 'rata'
+        exec(f.read(), settings)
+    settings = settings['DATABASES']['default']
+    if settings['ENGINE'] not in  ('django.db.backends.sqlite3', 'django.db.backends.postgresql_psycopg2'):
+        raise ValueError("%s engine not supported." % settings['ENGINE'])
+    return settings
 
 
 def get_connection(settings):
-    import psycopg2
-    conn = psycopg2.connect("dbname='{NAME}' user='{USER}' host='{HOST}' password='{PASSWORD}'".format(**settings))
+    if settings['ENGINE'] == 'django.db.backends.sqlite3':
+        import sqlite3
+        return sqlite3.connect(settings['NAME'])
+    elif settings['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+        import psycopg2
+        return psycopg2.connect("dbname='{NAME}' user='{USER}' host='{HOST}' password='{PASSWORD}'".format(**settings))
     return conn
 
 

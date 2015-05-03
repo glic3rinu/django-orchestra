@@ -41,11 +41,12 @@ def get_tasks(manage):
         sys.stderr.write("I am unable to connect to the database\n")
         sys.exit(1)
     script, settings_file = sys.argv[:2]
+    enabled = 1 if 'sqlite' in settings['ENGINE'] else True
     query = (
         "SELECT c.minute, c.hour, c.day_of_week, c.day_of_month, c.month_of_year, p.id "
         "FROM djcelery_periodictask as p, djcelery_crontabschedule as c "
-        "WHERE p.crontab_id = c.id AND p.enabled = True"
-    )
+        "WHERE p.crontab_id = c.id AND p.enabled = {}"
+    ).format(enabled)
     tasks = db.run_query(conn, query)
     conn.close()
     return tasks

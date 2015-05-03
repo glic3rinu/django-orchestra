@@ -50,15 +50,3 @@ def monitor(resource_id, ids=None, async=True):
                 triggers.append(op)
     Operation.execute(triggers)
     return logs
-
-
-from orchestra.contrib.tasks import task
-import time, sys
-@task(name='rata')
-def counter(num, log):
-    for i in range(1, num):
-        with open(log, 'a') as handler:
-            handler.write(str(i))
-#        sys.stderr.write('hola\n')
-        time.sleep(1)
-#counter.apply_async(10, '/tmp/kakas')

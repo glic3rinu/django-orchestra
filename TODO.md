@@ -361,4 +361,20 @@ Collecting lxml==3.3.5 (from -r re (line 22))
 
 # project settings modified copy of django's default project settings
 
-# migrate accounts break on superuser insert because of orders signals
+# migrate accounts break on superuser insert because of orders signals: read() + db_ready()
+
+# if backend.async: don't join
+
+# ngnix setup certificate
+        from orchestra.contrib.tasks import task
+        import time, sys
+        @task(name='rata')
+        def counter(num, log):
+            for i in range(1, num):
+                with open(log, 'a') as handler:
+                    handler.write(str(i))
+                sys.stderr.write('hola\n')
+                time.sleep(1)
+        counter.apply_async(10, '/tmp/kakas')
+
+# standard django deployment pracices (run checks)

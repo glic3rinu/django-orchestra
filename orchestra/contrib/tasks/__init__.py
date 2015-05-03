@@ -52,7 +52,7 @@ def apply_async(fn, name=None, method='thread'):
     def inner(fn, name, method, *args, **kwargs):
         task_id = get_id()
         args = (task_id, name) + args
-        thread = Process(target=fn, args=args, kwargs=kwargs)
+        thread = method(target=fn, args=args, kwargs=kwargs)
         thread.start()
         # Celery API compat
         thread.request = AttrDict(id=task_id)
@@ -66,15 +66,8 @@ def apply_async(fn, name=None, method='thread'):
     else:
         raise NotImplementedError("Support for %s concurrency method is not supported." % method)
     fn.apply_async = partial(inner, close_connection(keep_state(fn)), name, method)
+    fn.delay = fn.apply_async
     return fn
-
-
-def apply_async_override(fn, name):
-    if fn is None:
-        def decorator(fn):
-            return update_wrapper(apply_async(fn), fn)
-        return decorator
-    return update_wrapper(apply_async(fn, name), fn)
 
 
 def task(fn=None, **kwargs):
@@ -82,12 +75,16 @@ def task(fn=None, **kwargs):
     from . import settings
     # register task
     if fn is None:
-        fn = celery_shared_task(**kwargs)
-    else:
-        fn = celery_shared_task(fn)
+        if settings.TASKS_BACKEND in ('thread', 'process'):
+            def decorator(fn):
+                return apply_async(celery_shared_task(fn))
+            return decorator
+        else:
+            return celery_shared_task(**kwargs)
+    fn = update_wraper(partial(celery_shared_task, fn))
     if settings.TASKS_BACKEND in ('thread', 'process'):
         name = kwargs.pop('name', None)
-        apply_async_override(fn, name)
+        fn = update_wrapper(apply_async(fn, name), fn)
     return fn
 
 
@@ -95,10 +92,14 @@ def periodic_task(fn=None, **kwargs):
     from . import settings
     # register task
     if fn is None:
-        fn = celery_periodic_task(**kwargs)
-    else:
-        fn = celery_periodic_task(fn)
+        if settings.TASKS_BACKEND in ('thread', 'process'):
+            def decorator(fn):
+                return apply_async(celery_periodic_task(fn))
+            return decorator
+        else:
+            return celery_periodic_task(**kwargs)
+    fn = update_wraper(partial(celery_periodic_task, fn))
     if settings.TASKS_BACKEND in ('thread', 'process'):
         name = kwargs.pop('name', None)
-        apply_async_override(fn, name)
+        fn = update_wrapper(apply_async(fn, name), fn)
     return fn

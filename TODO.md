@@ -361,3 +361,4 @@ Collecting lxml==3.3.5 (from -r re (line 22))
 
 # project settings modified copy of django's default project settings
 
+# migrate accounts break on superuser insert because of orders signals

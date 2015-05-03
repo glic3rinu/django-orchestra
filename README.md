@@ -37,11 +37,11 @@ To only run the Python interface follow these steps:
 # Create a new virtualenv
 python3 -mvenv env-django-orchestra
 source env-django-orchestra/bin/activate
+
+# Install Orchestra and its dependencies
 pip3 install django-orchestra==dev \
   --allow-external django-orchestra \
   --allow-unverified django-orchestra
-
-# Install dependencies
 sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
 pip3 install -r \
   https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt

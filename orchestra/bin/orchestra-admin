@@ -131,8 +131,6 @@ function install_requirements () {
          python3-pip \
          python3-psycopg2 \
          python3-lxml \
-         postgresql \
-         rabbitmq-server \
          python3-dev \
          bind9utils \
          python3-cracklib \
@@ -143,7 +141,7 @@ function install_requirements () {
          gettext"
     
     # TODO remove celery deps,  django 1.8.1, glic3rinu fork, celery email
-    PIP="django==1.8 \
+    PIP="django==1.8.1 \
          django-celery-email==1.0.4 \
          https://github.com/glic3rinu/django-fluent-dashboard/archive/master.zip \
          https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
@@ -208,20 +206,12 @@ function install_requirements () {
     
     run pip3 install $PIP
     
-    # TODO remove
-    # Some versions of rabbitmq-server will not start automatically by default unless ...
-    sed -i "s/# Default-Start:.*/# Default-Start:     2 3 4 5/" /etc/init.d/rabbitmq-server
-    sed -i "s/# Default-Stop:.*/# Default-Stop:      0 1 6/" /etc/init.d/rabbitmq-server
-    run update-rc.d rabbitmq-server defaults
-    
     # Patch passlib
-    # TODO discover locaion by importing it
     IMPORT="from django.contrib.auth.hashers import mask_hash, _"
     COLLECTIONS="from collections import OrderedDict"
-    ls /usr/local/lib/python*/dist-packages/passlib/ext/django/utils.py \
-        | xargs sed -i "s/${IMPORT}, SortedDict/${IMPORT}\n        ${COLLECTIONS}/"
-    ls /usr/local/lib/python*/dist-packages/passlib/ext/django/utils.py \
-        | xargs sed -i "s/SortedDict/OrderedDict/g"
+    PASSLIB_PATH=$(python3 -c "from passlib.ext.django import utils; print(utils.__file__)")
+    sed -i "s/${IMPORT}, SortedDict/${IMPORT}\n        ${COLLECTIONS}/" $PASSLIB_PATH
+    sed -i "s/SortedDict/OrderedDict/g" $PASSLIB_PATH
 }
 export -f install_requirements
 

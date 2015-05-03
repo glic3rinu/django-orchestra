@@ -78,6 +78,7 @@ def apply_async_override(fn, name):
 
 
 def task(fn=None, **kwargs):
+    # TODO override this if 'celerybeat' in sys.argv ?
     from . import settings
     # register task
     if fn is None:

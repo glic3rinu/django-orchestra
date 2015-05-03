@@ -273,3 +273,4 @@ FLUENT_DASHBOARD_APP_ICONS = {
 # Django-celery
 import djcelery
 djcelery.setup_loader()
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'

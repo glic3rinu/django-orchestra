@@ -34,11 +34,20 @@ Fast Deployment Setup
 To only run the Python interface follow these steps:
 
 ```bash
-python3 -menv env-django-orchestra
+# Create a new virtualenv
+python3 -mvenv env-django-orchestra
 source env-django-orchestra/bin/activate
-echo $HOME/django-orchestra/ | sudo tee env-django-orchestra/lib/python3*/site-packages/orchestra.pth
-pip3 install -r $HOME/django-orchestra/requirements.txt
-django-admin.py startproject panel --template="$HOME/django-orchestra/orchestra/conf/project_template"
+pip3 install django-orchestra==dev \
+  --allow-external django-orchestra \
+  --allow-unverified django-orchestra
+
+# Install dependencies
+sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
+pip3 install -r \
+  https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt
+
+# Create an orchestra instance
+orchestra-admin startproject panel
 python3 panel/manage.py migrate accounts
 python3 panel/manage.py migrate
 python3 panel/manage.py runserver

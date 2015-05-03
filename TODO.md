@@ -311,14 +311,16 @@ Replace celery by a custom solution?
             *priority: custom Thread backend
             *bulk: wrapper arround django-mailer to avoid loading django system
 
+# Create a new virtualenv
 python3 -mvenv env-django-orchestra
 source env-django-orchestra/bin/activate
 pip3 install django-orchestra==dev --allow-external django-orchestra --allow-unverified django-orchestra
+
+# Install dependencies
+sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
 pip3 install -r https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt
 
-# TODO make them optional
-sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
-wget -O - https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt | xargs pip3 install
+# Create an orchestra instance
 orchestra-admin startproject panel
 python3 panel/manage.py migrate accounts
 python3 panel/manage.py migrate
@@ -352,9 +354,10 @@ Collecting lxml==3.3.5 (from -r re (line 22))
 # deprecate install_dependnecies in favour of only requirements.txt
 # import module and sed
 # if setting.value == default. remove
-# cron backend: os.cron or uwsgi.cron
+# TASKS_ENABLE_UWSGI_CRON
 # reload generic admin view ?redirect=http...
 # inspecting django db connection for asserting db readines?
 # wake up django mailer on send_mail
 
 # project settings modified copy of django's default project settings
+

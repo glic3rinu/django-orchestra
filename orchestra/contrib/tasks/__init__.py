@@ -76,16 +76,16 @@ def task(fn=None, **kwargs):
     from . import settings
     # register task
     if fn is None:
+        name = kwargs.get('name', None)
         if settings.TASKS_BACKEND in ('thread', 'process'):
             def decorator(fn):
-                return apply_async(celery_shared_task(fn))
+                return apply_async(celery_shared_task(**kwargs)(fn), name=name)
             return decorator
         else:
             return celery_shared_task(**kwargs)
     fn = update_wraper(partial(celery_shared_task, fn))
     if settings.TASKS_BACKEND in ('thread', 'process'):
-        name = kwargs.pop('name', None)
-        fn = update_wrapper(apply_async(fn, name), fn)
+        fn = update_wrapper(apply_async(fn), fn)
     return fn
 
 
@@ -93,13 +93,14 @@ def periodic_task(fn=None, **kwargs):
     from . import settings
     # register task
     if fn is None:
+        name = kwargs.get('name', None)
         if settings.TASKS_BACKEND in ('thread', 'process'):
             def decorator(fn):
-                return apply_async(celery_periodic_task(fn))
+                return apply_async(celery_periodic_task(**kwargs)(fn), name=name)
             return decorator
         else:
             return celery_periodic_task(**kwargs)
-    fn = update_wraper(partial(celery_periodic_task, fn))
+    fn = update_wraper(celery_periodic_task(fn), fn)
     if settings.TASKS_BACKEND in ('thread', 'process'):
         name = kwargs.pop('name', None)
         fn = update_wrapper(apply_async(fn, name), fn)

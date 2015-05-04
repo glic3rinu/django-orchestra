@@ -380,3 +380,43 @@ Collecting lxml==3.3.5 (from -r re (line 22))
 # standard django deployment pracices (run checks)
 # setup main systemuser on post_migrate SystemUser
 # Provide some fixtures with mocked data
+# don't make hard dependencies strict dependencies, fail when needed.
+# on project_settings add debug settings but commented
+# rename context processes varbailes to its original name
+
+
+# TODO http://wiki2.dovecot.org/HowTo/SimpleVirtualInstall
+# TODO http://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
+# TODO mount the filesystem with "nosuid" option
+# execute Make after postfix update
+# setupuwsgi + setupnginx
+
+
+if not cert:
+    sudo mkdir /etc/nginx/ssl
+    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt
+    if --noinput
+        openssl req \
+            -new \
+            -newkey rsa:4096 \
+            -days 365 \
+            -nodes \
+            -x509 \
+            -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com" \
+            -keyout www.example.com.key \
+            -out www.example.com.cert
+
+
+        ssl_certificate /etc/nginx/ssl/nginx.crt;
+        ssl_certificate_key /etc/nginx/ssl/nginx.key;
+
+if server_name:
+    at sites-enabled
+        server_name your_domain.com;
+
+else conf-enabled
+
+
+
+
+

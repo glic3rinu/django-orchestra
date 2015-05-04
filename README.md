@@ -31,10 +31,10 @@ However, Orchestra also provides glue, tools and patterns that you may find very
 
 Fast Deployment Setup
 ---------------------
-To only run the Python interface follow these steps:
+To only run the web interface follow these steps:
 
 ```bash
-# Create a new virtualenv
+# Create and activate a Python virtualenv
 python3 -mvenv env-django-orchestra
 source env-django-orchestra/bin/activate
 

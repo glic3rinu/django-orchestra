@@ -13,7 +13,13 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
         self.option_list = BaseCommand.option_list + (
-            make_option('--user', dest='user', default=get_default_celeryd_username(),
+            make_option('--cert', dest='cert', default='',
+                help='Nginx SSL certificate, one will be created by default.'),
+            make_option('--cert-key', dest='cert_key', default='',
+                help='Nginx SSL certificate key.'),
+            make_option('--server-name', dest='server_name', default='',
+                help='Nginx SSL certificate key.'),
+            make_option('--user', dest='user', default='',
                 help='uWSGI daemon user.'),
             make_option('--group', dest='group', default='',
                 help='uWSGI daemon group.'),
@@ -31,6 +37,16 @@ class Command(BaseCommand):
     @check_root
     def handle(self, *args, **options):
         interactive = options.get('interactive')
+        
+        cert = options.get('cert')
+        cert_key = options.get('cert_key')
+        if bool(cert) != bool(cert_key):
+            raise CommandError("--cert and --cert-key go in tandem")
+        
+        if not cert:
+            run("mkdir -p /etc/nginx/ssl")
+            if interactive:
+                run("openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt")
         
         context = {
             'project_name': paths.get_project_name(),

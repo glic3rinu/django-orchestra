@@ -2,6 +2,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.contrib.domains.models import Domain, Record
 from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
 
@@ -36,12 +37,15 @@ class MailmanBackend(ServiceController):
     
     def include_virtual_alias_domain(self, context):
         if context['address_domain']:
-            self.append(textwrap.dedent("""
-                [[ $(grep '^\s*%(address_domain)s\s*$' %(virtual_alias_domains)s) ]] || {
-                    echo '%(address_domain)s' >> %(virtual_alias_domains)s
-                    UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                }""") % context
-            )
+            # Check if the domain is hosted on this mail server
+            # TODO this is dependent on the domain model
+            if Domain.objects.filter(records__type=Record.MX, name=context['address_domain']).exists():
+                self.append(textwrap.dedent("""
+                    [[ $(grep '^\s*%(address_domain)s\s*$' %(virtual_alias_domains)s) ]] || {
+                        echo '%(address_domain)s' >> %(virtual_alias_domains)s
+                        UPDATED_VIRTUAL_ALIAS_DOMAINS=1
+                    }""") % context
+                )
     
     def exclude_virtual_alias_domain(self, context):
         address_domain = context['address_domain']

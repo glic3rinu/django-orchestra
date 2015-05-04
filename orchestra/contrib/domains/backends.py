@@ -111,8 +111,10 @@ class Bind9MasterDomainBackend(ServiceController):
     def get_slaves(self, domain):
         ips = []
         masters = self.get_masters(domain)
-        for ns in domain.records.filter(type=Record.NS):
-            hostname = ns.value.rstrip('.')
+        ns_queryset = domain.records.filter(type=Record.NS).values_list('value', flat=True)
+        ns_records = ns_queryset or settings.DOMAINS_DEFAULT_NS
+        for ns in ns_records:
+            hostname = ns.rstrip('.')
             # First try with a DNS query, a more reliable source
             try:
                 addr = socket.gethostbyname(hostname)
@@ -123,7 +125,7 @@ class Bind9MasterDomainBackend(ServiceController):
                 except Domain.DoesNotExist:
                     continue
                 else:
-                    a_record = domain.records.filter(name=Record.A) or [settings.DOMAINS_DEFAULT_NS]
+                    a_record = domain.records.filter(name=Record.A) or [settings.DOMAINS_DEFAULT_A]
                     addr = a_record[0]
             if addr not in masters:
                 ips.append(addr)

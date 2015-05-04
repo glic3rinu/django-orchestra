@@ -38,22 +38,38 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 
 5. Create and configure a Postgres database
     ```bash
+    sudo apt-get install python3-psycopg2 postgresql
     sudo python3 manage.py setuppostgres --db_password <password>
     # admin_tools needs accounts and does not have migrations
     python3 manage.py migrate accounts
     python3 manage.py migrate
     ```
 
-7. Configure celeryd
+
+6. See the Django deployment checklist
     ```bash
-    sudo python3 manage.py setupcelery --username orchestra
+    python3 panel/manage.py check --deploy
     ```
+
+
+6. Configure periodic execution of tasks (choose one)
+    1. Use cron
+        ```bash
+        sudo python3 manage.py setupcronbeat
+        ```
+
+    2. Use celeryd
+        ```bash
+        sudo apt-get install rabbitmq
+        sudo python3 manage.py setupcelery --username orchestra
+        ```
+
 
 8. Configure the web server:
     ```bash
     python3 manage.py collectstatic --noinput
     sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
-    sudo python3 manage.py setupnginx
+    sudo python3 manage.py setupnginx --user orchestra
     ```
 
 9. Start all services:

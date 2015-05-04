@@ -122,56 +122,23 @@ function install_requirements () {
     check_root || true
     ORCHESTRA_PATH=$(get_orchestra_dir) || true
     
-    # TODO reduce this list to 0
-    # include /usr/sbin/named-checkzone
-    # wkhtmltopdf -> reportlab
-    # remove rabbit, postgres
-    # uwsgi –py-autoreload for devel
     APT="python3 \
          python3-pip \
-         python3-psycopg2 \
-         python3-lxml \
          python3-dev \
-         bind9utils \
-         python3-cracklib \
-         libz-dev \
+         libxml2-dev \
+         libxslt1-dev \
          wkhtmltopdf \
          xvfb \
          ca-certificates \
          gettext"
     
-    # TODO remove celery deps,  django 1.8.1, glic3rinu fork, celery email
-    PIP="django==1.8.1 \
-         django-celery-email==1.0.4 \
-         https://github.com/glic3rinu/django-fluent-dashboard/archive/master.zip \
-         https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip \
-         IPy==0.81 \
-         django-extensions==1.5.2 \
-         django-transaction-signals==1.0.0 \
-         django-celery==3.1.16 \
-         celery==3.1.16 \
-         kombu==3.0.23 \
-         billiard==3.3.0.18 \
-         Markdown==2.4 \
-         djangorestframework==3.1.1 \
-         paramiko==1.15.1 \
-         ecdsa==0.11 \
-         Pygments==1.6 \
-         django-filter==0.9.2 \
-         https://github.com/glic3rinu/passlib/archive/master.zip \
-         jsonfield==0.9.22 \
-         python-dateutil==2.4.2 \
-         django-iban==0.3.0 \
-         requests \
-         phonenumbers \
-         django-countries \
-         django-localflavor \
-         pip==6.0.8"
+    PIP=$(wget https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt -q -O - | tr '\n' ' ')
     
     if $testing; then
         APT="${APT} \
             iceweasel \
             dnsutils"
+        
         PIP="${PIP} \
             selenium \
             xvfbwrapper \
@@ -205,13 +172,6 @@ function install_requirements () {
     fi
     
     run pip3 install $PIP
-    
-    # Patch passlib
-#    IMPORT="from django.contrib.auth.hashers import mask_hash, _"
-#    COLLECTIONS="from collections import OrderedDict"
-#    PASSLIB_PATH=$(python3 -c "from passlib.ext.django import utils; print(utils.__file__)")
-#    sed -i "s/${IMPORT}, SortedDict/${IMPORT}\n        ${COLLECTIONS}/" $PASSLIB_PATH
-#    sed -i "s/SortedDict/OrderedDict/g" $PASSLIB_PATH
 }
 export -f install_requirements
 

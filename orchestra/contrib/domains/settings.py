@@ -63,7 +63,7 @@ DOMAINS_SLAVES_PATH = Setting('DOMAINS_SLAVES_PATH',
 
 
 DOMAINS_CHECKZONE_BIN_PATH = Setting('DOMAINS_CHECKZONE_BIN_PATH',
-    '/usr/sbin/named-checkzone -i local -k fail -n fail',
+    'named-checkzone -i local -k fail -n fail',
 )
 
 

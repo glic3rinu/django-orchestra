@@ -3,10 +3,12 @@ from django.conf import settings
 from django.conf.urls import patterns, include, url
 
 from . import api
+from .utils.apps import isinstalled
 
 
 admin.autodiscover()
 api.autodiscover()
+
 
 urlpatterns = patterns('',
     # Admin
@@ -27,7 +29,7 @@ urlpatterns = patterns('',
 )
 
 
-if settings.DEBUG:
+if isinstalled('debug_toolbar'):
     import debug_toolbar
     urlpatterns += patterns('',
         url(r'^__debug__/', include(debug_toolbar.urls)),

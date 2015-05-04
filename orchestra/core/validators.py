@@ -1,17 +1,16 @@
+import logging
 import re
 
-try:
-  import crack
-except:
-  import cracklib as crack
 import phonenumbers
-
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from IPy import IP
 
 from ..utils.python import import_class
+
+
+logger = logging.getLogger(__name__)
 
 
 def all_valid(*args):
@@ -103,6 +102,14 @@ def validate_username(value):
 
 
 def validate_password(value):
+    try:
+        import crack
+    except:
+        try:
+            import cracklib as crack
+        except:
+            logger.error("Can not validate password. Cracklib bindings are not installed.")
+            return
     try:
         crack.VeryFascistCheck(value)
     except ValueError as message:

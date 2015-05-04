@@ -1,3 +1,4 @@
+from django import db
 from django.apps import AppConfig
 
 from orchestra.utils import database_ready
@@ -10,7 +11,11 @@ class ResourcesConfig(AppConfig):
     def ready(self):
         if database_ready():
             from .models import create_resource_relation
-            create_resource_relation()
+            try:
+                create_resource_relation()
+            except db.utils.OperationalError:
+                # Not ready afterall
+                pass
     
     def reload_relations(self):
         from .admin import insert_resource_inlines

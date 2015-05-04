@@ -5,18 +5,16 @@ import logging
 from django.db import models
 from django.db.models import F, Q
 from django.apps import apps
-from django.db.models.signals import post_delete, post_save, pre_delete
-from django.dispatch import receiver
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import accounts, services
+from orchestra.core import services
 from orchestra.models import queryset
 from orchestra.utils.python import import_class
 
-from . import helpers, settings
+from . import settings
 
 
 logger = logging.getLogger(__name__)
@@ -273,38 +271,3 @@ class MetricStorage(models.Model):
             else:
                 last.updated_on = now
                 last.save(update_fields=['updated_on'])
-
-
-accounts.register(Order)
-
-
-# TODO perhas use cache = caches.get_request_cache() to cache an account delete and don't processes get_related_objects() if the case
-# FIXME https://code.djangoproject.com/ticket/24576
-# TODO build a cache hash table {model: related, model: None}
-@receiver(post_delete, dispatch_uid="orders.cancel_orders")
-def cancel_orders(sender, **kwargs):
-    if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
-        instance = kwargs['instance']
-        # Account delete will delete all related orders, no need to maintain order consistency
-        if isinstance(instance, Order.account.field.rel.to):
-            return
-        if type(instance) in services:
-            for order in Order.objects.by_object(instance).active():
-                order.cancel()
-        elif not hasattr(instance, 'account'):
-            # FIXME Indeterminate behaviour
-            related = helpers.get_related_object(instance)
-            if related and related != instance:
-                type(related).objects.get(pk=related.pk)
-
-
-@receiver(post_save, dispatch_uid="orders.update_orders")
-def update_orders(sender, **kwargs):
-    if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
-        instance = kwargs['instance']
-        if type(instance) in services:
-            Order.update_orders(instance)
-        elif not hasattr(instance, 'account'):
-            related = helpers.get_related_object(instance)
-            if related and related != instance:
-                Order.update_orders(related)

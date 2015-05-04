@@ -1,3 +1,4 @@
+import logging
 from dateutil import relativedelta
 
 from orchestra import plugins
@@ -5,6 +6,9 @@ from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from .. import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class PaymentMethod(plugins.Plugin):
@@ -19,7 +23,10 @@ class PaymentMethod(plugins.Plugin):
     def get_plugins(cls):
         plugins = []
         for cls in settings.PAYMENTS_ENABLED_METHODS:
-            plugins.append(import_class(cls))
+            try:
+                plugins.append(import_class(cls))
+            except ImportError as exc:
+                logger.error(str(exc))
         return plugins
     
     def get_label(self):

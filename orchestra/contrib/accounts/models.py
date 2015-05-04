@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
 from orchestra.contrib.orchestration import Operation
-from orchestra.core import services, accounts
 from orchestra.utils import send_email_template
 
 from . import settings
@@ -156,7 +155,3 @@ class Account(auth.AbstractBaseUser):
                 continue
             related.append(rel)
         return related
-
-
-services.register(Account, menu=False)
-accounts.register(Account)

@@ -2,7 +2,9 @@ import sys
 import textwrap
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import FieldError
 from django.core.management import execute_from_command_line
+from django.db import models
 
 
 def create_initial_superuser(**kwargs):
@@ -15,5 +17,11 @@ def create_initial_superuser(**kwargs):
                 
                 """)
             )
+            from ..models import Account
+            try:
+                Account.systemusers.related.model.objects.filter(account_id=1).exists()
+            except FieldError:
+                # avoid creating a systemuser when systemuser table is not ready
+                Account.save = models.Model.save
             manager = sys.argv[0]
             execute_from_command_line(argv=[manager, 'createsuperuser'])

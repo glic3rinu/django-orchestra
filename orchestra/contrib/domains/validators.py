@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 
@@ -9,6 +10,9 @@ from orchestra.utils import paths
 from orchestra.utils.sys import run
 
 from .. import domains
+
+
+logger = logging.getLogger(__name__)
 
 
 def validate_allowed_domain(value):
@@ -114,9 +118,11 @@ def validate_zone(zone):
         with open(zone_path, 'wb') as f:
             f.write(zone.encode('ascii'))
         # Don't use /dev/stdin becuase the 'argument list is too long' error
-        check = run(' '.join([checkzone, zone_name, zone_path]), error_codes=[0,1], display=False)
+        check = run(' '.join([checkzone, zone_name, zone_path]), error_codes=[0,1,127], display=False)
     finally:
         os.unlink(zone_path)
-    if check.return_code == 1:
+    if check.return_code == 127:
+        logger.error("Cannot validate domain zone: %s not installed." % checkzone)
+    elif check.return_code == 1:
         errors = re.compile(r'zone.*: (.*)').findall(check.stdout)[:-1]
         raise ValidationError(', '.join(errors))

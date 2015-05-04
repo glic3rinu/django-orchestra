@@ -126,13 +126,17 @@ function install_requirements () {
          python3-pip \
          python3-dev \
          libxml2-dev \
+         bind9utils \
          libxslt1-dev \
          wkhtmltopdf \
          xvfb \
          ca-certificates \
          gettext"
     
-    PIP=$(wget https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt -q -O - | tr '\n' ' ')
+    PIP="$(wget https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt -q -O - | tr '\n' ' ') \
+        https://github.com/glic3rinu/passlib/archive/master.zip \
+        cracklib \
+        lxml==3.3.5"
     
     if $testing; then
         APT="${APT} \

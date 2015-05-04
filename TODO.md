@@ -391,4 +391,6 @@ TODO mount the filesystem with "nosuid" option
 # wkhtmltopdf -> reportlab
 
 
+# MAKE DEPENDENCIES OPTIONAL, check on deploy and warn that functionallity will not be available
+
 

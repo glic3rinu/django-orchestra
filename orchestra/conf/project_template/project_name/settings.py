@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'passlib.ext.django',
     'django_countries',
 #    'django_mailer',
+#    'debug_toolbar',
     
     # Django.contrib
     'django.contrib.auth',

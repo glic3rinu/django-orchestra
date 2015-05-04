@@ -108,6 +108,3 @@ class SystemUser(models.Model):
     
     def get_home(self):
         return os.path.normpath(os.path.join(self.home, self.directory))
-
-
-services.register(SystemUser)

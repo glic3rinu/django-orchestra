@@ -1,7 +1,8 @@
 from django.conf import settings
 from django_countries import data
 
-from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
+from orchestra.contrib.settings import Setting
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 BILLS_NUMBER_LENGTH = Setting('BILLS_NUMBER_LENGTH',

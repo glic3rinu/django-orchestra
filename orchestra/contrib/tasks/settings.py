@@ -1,4 +1,4 @@
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 
 
 TASKS_BACKEND = Setting('TASKS_BACKEND',
@@ -8,4 +8,10 @@ TASKS_BACKEND = Setting('TASKS_BACKEND',
         ('process', "multiprocess.Process (no queue)"),
         ('celery', "Celery (with queue)"),
     )
+)
+
+
+TASKS_ENABLE_UWSGI_CRON_BEAT = Setting('TASKS_ENABLE_UWSGI_CRON_BEAT',
+    False,
+    help_text="Not implemented.",
 )

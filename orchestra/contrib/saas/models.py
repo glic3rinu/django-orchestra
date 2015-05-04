@@ -1,11 +1,9 @@
 from django.db import models
-from django.db.models.signals import pre_save, pre_delete
-from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
-from orchestra.core import services, validators
+from orchestra.core import validators
 
 from .fields import VirtualDatabaseRelation
 from .services import SoftwareService
@@ -73,23 +71,3 @@ class SaaS(models.Model):
     
     def set_password(self, password):
         self.password = password
-
-
-services.register(SaaS)
-
-
-# Admin bulk deletion doesn't call model.delete()
-# So, signals are used instead of model method overriding
-
-@receiver(pre_save, sender=SaaS, dispatch_uid='saas.service.save')
-def type_save(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    instance.service_instance.save()
-
-@receiver(pre_delete, sender=SaaS, dispatch_uid='saas.service.delete')
-def type_delete(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    try:
-        instance.service_instance.delete()
-    except KeyError:
-        pass

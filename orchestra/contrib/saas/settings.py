@@ -1,4 +1,5 @@
-from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
+from orchestra.contrib.settings import Setting
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 from .. import saas
 

@@ -1,5 +1,6 @@
+from orchestra.contrib.settings import Setting
 from orchestra.core.validators import validate_ipv4_address, validate_ipv6_address, validate_ip_address
-from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 from .validators import validate_zone_interval, validate_mx_record, validate_domain_name
 

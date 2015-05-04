@@ -5,7 +5,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from djcelery.models import PeriodicTask
 
-from ... import keep_state, get_id, get_name
+from ...decorators import keep_state
+from ...utils import get_id, get_name
 
 
 class Command(BaseCommand):

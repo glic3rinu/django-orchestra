@@ -2,13 +2,11 @@ import os
 from collections import OrderedDict
 
 from django.db import models
-from django.db.models.signals import pre_save, pre_delete
-from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
-from orchestra.core import validators, services
+from orchestra.core import validators
 from orchestra.utils.functional import cached
 
 from . import settings
@@ -121,23 +119,3 @@ class WebAppOption(models.Model):
     
     def clean(self):
         self.option_instance.validate()
-
-
-services.register(WebApp)
-
-
-# Admin bulk deletion doesn't call model.delete()
-# So, signals are used instead of model method overriding
-
-@receiver(pre_save, sender=WebApp, dispatch_uid='webapps.type.save')
-def type_save(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    instance.type_instance.save()
-
-@receiver(pre_delete, sender=WebApp, dispatch_uid='webapps.type.delete')
-def type_delete(sender, *args, **kwargs):
-    instance = kwargs['instance']
-    try:
-        instance.type_instance.delete()
-    except KeyError:
-        pass

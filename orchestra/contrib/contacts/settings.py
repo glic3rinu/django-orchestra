@@ -1,6 +1,6 @@
 from django_countries import data
 
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 
 
 CONTACTS_DEFAULT_EMAIL_USAGES = Setting('CONTACTS_DEFAULT_EMAIL_USAGES',

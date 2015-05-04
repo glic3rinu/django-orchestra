@@ -1,6 +1,6 @@
 from orchestra.core.validators import validate_hostname
 
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 
 
 DATABASES_TYPE_CHOICES = Setting('DATABASES_TYPE_CHOICES',

@@ -5,7 +5,7 @@ from celery.schedules import crontab_parser as CrontabParser
 from django.utils import timezone
 from djcelery.models import PeriodicTask
 
-from . import apply_async
+from .decorators import apply_async
 
 
 def is_due(task, time=None):

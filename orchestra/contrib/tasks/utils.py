@@ -1,9 +1,16 @@
 import threading
+from uuid import uuid4
 
 from orchestra.utils.db import close_connection
 
 
-# TODO import as_task
+def get_id():
+    return str(uuid4())
+
+
+def get_name(fn):
+    return '.'.join((fn.__module__, fn.__name__))
+
 
 def run(method, *args, **kwargs):
     async = kwargs.pop('async', True)

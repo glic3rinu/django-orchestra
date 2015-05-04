@@ -311,62 +311,36 @@ Replace celery by a custom solution?
             *priority: custom Thread backend
             *bulk: wrapper arround django-mailer to avoid loading django system
 
-# Create a new virtualenv
-python3 -mvenv env-django-orchestra
-source env-django-orchestra/bin/activate
-pip3 install django-orchestra==dev --allow-external django-orchestra --allow-unverified django-orchestra
 
-# Install dependencies
-sudo apt-get install python3.4-dev libxml2-dev libxslt1-dev libcrack2-dev
-pip3 install -r https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt
-
-# Create an orchestra instance
-orchestra-admin startproject panel
-python3 panel/manage.py migrate accounts
-python3 panel/manage.py migrate
-python3 panel/manage.py runserver
-
-http://localhost:8000/admin/
-
-setupcrontab
+pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
 
 
-Collecting lxml==3.3.5 (from -r re (line 22))
-  Downloading lxml-3.3.5.tar.gz (3.5MB)
-    100% |################################| 3.5MB 60kB/s 
-    Building lxml version 3.3.5.
-    Building without Cython.
-    ERROR: b'/bin/sh: 1: xslt-config: not found\n'
-    ** make sure the development packages of libxml2 and libxslt are installed **
-    Using build configuration of libxslt
-    /usr/lib/python3.4/distutils/dist.py:260: UserWarning: Unknown distribution option: 'bugtrack_url'
-      warnings.warn(msg)
+
+# TASKS_ENABLE_UWSGI_CRON_BEAT (default) for production + system check --deploy
+    if 'wsgi' in sys.argv and settings.TASKS_ENABLE_UWSGI_CRON_BEAT:
+        import uwsgi
+        def uwsgi_beat(signum):
+            print "It's 5 o'clock of the first day of the month."
+        uwsgi.register_signal(99, '', uwsgi_beat)
+        uwsgi.add_timer(99, 60)
+# TASK_BEAT_BACKEND = ('cron', 'celerybeat', 'uwsgi')
+# SHip orchestra production-ready (no DEBUG etc)
 
 
-# Setupcron
-# uwsgi enable threads
-# register signals in app ready()
-# database_ready(): connect to the database or inspect django connection
 
-# move Setting to contrib app __init__
-# cracklib vs crack
-# remove system dependencies
-# deprecate install_dependnecies in favour of only requirements.txt
 # import module and sed
 # if setting.value == default. remove
-# TASKS_ENABLE_UWSGI_CRON
 # reload generic admin view ?redirect=http...
-# inspecting django db connection for asserting db readines?
+# inspecting django db connection for asserting db readines? or performing a query
 # wake up django mailer on send_mail
 
 # project settings modified copy of django's default project settings
 
-# migrate accounts break on superuser insert because of orders signals: ready() + db_ready()
+# all signals + accouns.register() services.register() on apps.py
 
 # if backend.async: don't join.
 # RELATED: domains.sync to ns3 make it async
 
-# ngnix setup certificate
         from orchestra.contrib.tasks import task
         import time, sys
         @task(name='rata')
@@ -378,10 +352,7 @@ Collecting lxml==3.3.5 (from -r re (line 22))
                 time.sleep(1)
         counter.apply_async(10, '/tmp/kakas')
 
-# setup main systemuser on post_migrate SystemUser
 # Provide some fixtures with mocked data
-don't make hard dependencies strict dependencies, fail when needed.
-# on project_settings add debug settings but commented
 
 
 TODO http://wiki2.dovecot.org/HowTo/SimpleVirtualInstall
@@ -389,8 +360,4 @@ TODO http://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
 TODO mount the filesystem with "nosuid" option
 # execute Make after postfix update
 # wkhtmltopdf -> reportlab
-
-
-# MAKE DEPENDENCIES OPTIONAL, check on deploy and warn that functionallity will not be available
-
-
+# autoiscover modules on app.ready()

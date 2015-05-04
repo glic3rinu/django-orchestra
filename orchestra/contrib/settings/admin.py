@@ -7,7 +7,7 @@ from django.views import generic
 from django.utils.translation import ngettext, ugettext_lazy as _
 
 from orchestra.admin.dashboard import OrchestraIndexDashboard
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 from orchestra.utils import sys, paths
 
 from . import parser

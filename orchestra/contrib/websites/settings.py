@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 
 from .. import websites
 

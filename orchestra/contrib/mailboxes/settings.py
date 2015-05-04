@@ -5,8 +5,9 @@ from django.utils.functional import lazy
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.contrib.settings import Setting
 from orchestra.core.validators import validate_name
-from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 _names = ('name', 'username',)

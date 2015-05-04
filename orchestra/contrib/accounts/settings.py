@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.settings import ORCHESTRA_BASE_DOMAIN, Setting
+from orchestra.contrib.settings import Setting
+from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 
 ACCOUNTS_TYPES = Setting('ACCOUNTS_TYPES',

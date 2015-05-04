@@ -95,13 +95,12 @@ def get_administration_items():
         task = reverse('admin:djcelery_taskstate_changelist')
         periodic = reverse('admin:djcelery_periodictask_changelist')
         worker = reverse('admin:djcelery_workerstate_changelist')
-        childrens.append(items.MenuItem(_("Celery"), task, children=[
-            items.MenuItem(_("Tasks"), task),
+        childrens.append(items.MenuItem(_("Tasks"), task, children=[
+            items.MenuItem(_("Logs"), task),
             items.MenuItem(_("Periodic tasks"), periodic),
             items.MenuItem(_("Workers"), worker),
         ]))
     return childrens
-
 
 
 class OrchestraMenu(Menu):

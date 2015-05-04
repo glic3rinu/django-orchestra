@@ -1,6 +1,6 @@
 from os import path
 
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 
 
 ORCHESTRATION_OS_CHOICES = Setting('ORCHESTRATION_OS_CHOICES',

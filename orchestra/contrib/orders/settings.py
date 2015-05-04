@@ -1,4 +1,4 @@
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 
 
 ORDERS_BILLING_BACKEND = Setting('ORDERS_BILLING_BACKEND',

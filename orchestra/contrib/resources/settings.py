@@ -1,4 +1,4 @@
-from orchestra.settings import Setting
+from orchestra.contrib.settings import Setting
 
 
 RESOURCES_TASK_BACKEND = Setting('RESOURCES_TASK_BACKEND',

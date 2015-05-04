@@ -32,7 +32,6 @@ However, Orchestra also provides glue, tools and patterns that you may find very
 Fast Deployment Setup
 ---------------------
 This deployment is not suitable for production but more than enough for checking out this project.
-Notice that it does not require external dependencies.
 
 ```bash
 # Create and activate a Python virtualenv
@@ -43,7 +42,7 @@ source env-django-orchestra/bin/activate
 pip3 install django-orchestra==dev \
   --allow-external django-orchestra \
   --allow-unverified django-orchestra
-# The only non-pip required dependency is python3-dev:
+# The only non-pip required dependency for runing pip install is python3-dev
 #   sudo apt-get install python3.4-dev
 pip3 install -r \
   https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt

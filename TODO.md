@@ -382,7 +382,6 @@ Collecting lxml==3.3.5 (from -r re (line 22))
 # Provide some fixtures with mocked data
 don't make hard dependencies strict dependencies, fail when needed.
 # on project_settings add debug settings but commented
-# rename context processes varbailes to its original name
 
 
 TODO http://wiki2.dovecot.org/HowTo/SimpleVirtualInstall

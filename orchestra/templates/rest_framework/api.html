@@ -5,8 +5,8 @@
     {{ block.super }}
     <link rel="icon" href="{% static "orchestra/images/favicon.png" %}" type="image/png" />
 {% endblock %}
-{% block title %}{{ SITE_VERBOSE_NAME }} REST API{% endblock %}
-{% block branding %}<a class='brand' href="{% url 'api-root' %}">{{ SITE_VERBOSE_NAME }} REST API <span class="version">{% version %}</span></a>{% endblock %}
+{% block title %}{{ ORCHESTRA_SITE_VERBOSE_NAME }} REST API{% endblock %}
+{% block branding %}<a class='brand' href="{% url 'api-root' %}">{{ ORCHESTRA_SITE_VERBOSE_NAME }} REST API <span class="version">{% version %}</span></a>{% endblock %}
 {% block userlinks %}
     <li><a href="{% admin_url %}">Admin</a></li>
     {% if user.is_authenticated %}

@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% load admin_tools_menu_tags utils static %}
 
-{% block title %}{% if header_title %}{{ header_title }}{% else %}{{ title }}{% endif %} | {{ SITE_VERBOSE_NAME }} {% endblock %}
+{% block title %}{% if header_title %}{{ header_title }}{% else %}{{ title }}{% endif %} | {{ ORCHESTRA_SITE_VERBOSE_NAME }} {% endblock %}
 
 {% block blockbots %}
 {{ block.super }}
@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block branding %}
-<!--<a href="{% url 'admin:index' %}"><h1 id="site-name">{{ SITE_VERBOSE_NAME }} <span class="version">{% version %}</span></a>-->
+<!--<a href="{% url 'admin:index' %}"><h1 id="site-name">{{ ORCHESTRA_SITE_VERBOSE_NAME }} <span class="version">{% version %}</span></a>-->
 {% endblock %}
 {% block nav-global %}
 {% if user.is_active and user.is_staff %}

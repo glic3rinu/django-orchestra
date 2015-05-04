@@ -30,7 +30,6 @@ setup(
     scripts=[
         'orchestra/bin/orchestra-admin',
         'orchestra/contrib/tasks/bin/orchestra-beat',
-        'orchestra/contrib/domains/bin/named-checkzone',
     ],
     packages = packages,
     classifiers = [

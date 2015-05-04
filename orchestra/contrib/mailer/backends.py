@@ -12,6 +12,7 @@ class EmailBackend(BaseEmailBackend):
         if not email_messages:
             return
         num_sent = 0
+        # TODO if multiple messages queue, else async?
         for message in email_messages:
             priority = message.extra_headers.get('X-Mail-Priority', Message.NORMAL)
             if priority == Message.CRITICAL:

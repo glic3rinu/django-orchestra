@@ -311,10 +311,7 @@ Replace celery by a custom solution?
             *priority: custom Thread backend
             *bulk: wrapper arround django-mailer to avoid loading django system
 
-
 pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
-
-
 
 # TASKS_ENABLE_UWSGI_CRON_BEAT (default) for production + system check --deploy
     if 'wsgi' in sys.argv and settings.TASKS_ENABLE_UWSGI_CRON_BEAT:
@@ -325,8 +322,6 @@ pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
         uwsgi.add_timer(99, 60)
 # TASK_BEAT_BACKEND = ('cron', 'celerybeat', 'uwsgi')
 # SHip orchestra production-ready (no DEBUG etc)
-
-
 
 # import module and sed
 # if setting.value == default. remove

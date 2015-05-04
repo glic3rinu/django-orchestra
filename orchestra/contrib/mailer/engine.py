@@ -12,7 +12,7 @@ def send_message(message, num, connection, bulk):
         connection.close()
         connection = None
     if connection is None:
-        # Reset connection
+        # Reset connection with django 
         connection = get_connection(backend='django.core.mail.backends.smtp.EmailBackend')
         connection.open()
     error = None
@@ -44,7 +44,6 @@ def send_pending(bulk=100):
     for retries, seconds in enumerate(settings.MAILER_DEFERE_SECONDS):
         delta = timedelta(seconds=seconds)
         qs = qs | Q(retries=retries, last_retry__lte=now-delta)
-
     for message in Message.objects.filter(state=Message.DEFERRED).filter(qs).order_by('priority'):
         send_message(message, num, connection, bulk)
     if connection is not None:

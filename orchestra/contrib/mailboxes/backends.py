@@ -219,7 +219,7 @@ class PostfixAddressBackend(ServiceController):
         if context['domain'] != context['local_domain']:
             # Check if the domain is hosted on this mail server
             # TODO this is dependent on the domain model
-            if Domain.objects.filter(records__type=Record.MX, name=context['address_domain']).exists():
+            if Domain.objects.filter(records__type=Record.MX, name=context['domain']).exists():
                 self.append(textwrap.dedent("""
                     [[ $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]] || {
                         echo '%(domain)s' >> %(virtual_alias_domains)s

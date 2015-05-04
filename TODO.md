@@ -356,3 +356,5 @@ TODO mount the filesystem with "nosuid" option
 # execute Make after postfix update
 # wkhtmltopdf -> reportlab
 # autoiscover modules on app.ready()
+# uwse uwsgi cron: decorator or config cron = 59 2 -1 -1 -1 %(virtualenv)/bin/python manage.py runmyfunnytask
+

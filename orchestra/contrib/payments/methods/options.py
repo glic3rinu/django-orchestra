@@ -26,7 +26,7 @@ class PaymentMethod(plugins.Plugin):
             try:
                 plugins.append(import_class(cls))
             except ImportError as exc:
-                logger.error(str(exc))
+                logger.error('Error loading %s: %s' % (cls, str(exc)))
         return plugins
     
     def get_label(self):

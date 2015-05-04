@@ -133,8 +133,8 @@ function install_requirements () {
          ca-certificates \
          gettext"
     
+    # cracklib and lxml are excluded on the requirements because they are hard to build
     PIP="$(wget https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt -q -O - | tr '\n' ' ') \
-        https://github.com/glic3rinu/passlib/archive/master.zip \
         cracklib \
         lxml==3.3.5"
     

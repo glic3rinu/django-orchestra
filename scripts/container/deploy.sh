@@ -64,8 +64,7 @@ if [[ ! -e $BASE_DIR ]]; then
     surun "orchestra-admin startproject $PROJECT_NAME"
     cd -
 else
-    echo "$BASE_DIR already existis, doing postupgrade."
-    $PYTHON_BIN $MANAGE postupgradeorchestra --from $CURRENT_VERSION
+    echo "$BASE_DIR already existis, doing nothing."
 fi
 
 
@@ -85,6 +84,7 @@ if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$
     # Create database permissions are needed for running tests
     sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
 fi
+
 
 # admin_tools needs accounts and does not have migrations
 run "$PYTHON_BIN $MANAGE migrate --noinput accounts"

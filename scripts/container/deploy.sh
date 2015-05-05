@@ -69,7 +69,7 @@ else
 fi
 
 
-run apt-get install postgres
+run apt-get -y install postgresql
 if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$') ]]; then
     # orchestra database does not esists
     # Speeding up tests, don't do this in production!

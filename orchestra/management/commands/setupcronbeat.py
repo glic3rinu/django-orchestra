@@ -16,7 +16,7 @@ class Command(BaseCommand):
             'orchestra_beat': run('which orchestra-beat').stdout.decode('utf8'),
             'venv': os.environ.get('VIRTUAL_ENV', ''),
         }
-        content = run('crontab -l').stdout.decode('utf8')
+        content = run('crontab -l || true').stdout.decode('utf8')
         if 'orchestra-beat' not in content:
             if context['venv']:
                 content += "* * * * * . %(venv)s/bin/activate && %(orchestra_beat)s %(site_dir)s/manage.py; deactivate" % context

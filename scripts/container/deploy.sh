@@ -117,7 +117,7 @@ run "$PYTHON_BIN $MANAGE setupnginx --user $USER --noinput"
 run "service nginx start"
 
 # Apply changes on related services
-run "$PYTHON_BIN $MANAGE restartservices"
+run "$PYTHON_BIN $MANAGE restartservices" || true
 
 # Create orchestra superuser
 cat <<- EOF | $PYTHON_BIN $MANAGE shell

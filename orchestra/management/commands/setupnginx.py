@@ -18,7 +18,7 @@ class Command(BaseCommand):
                 help='Nginx SSL certificate, one will be created by default.'),
             make_option('--cert-key', dest='cert_key', default='',
                 help='Nginx SSL certificate key.'),
-                
+            
             make_option('--cert-path', dest='cert_path', default='/etc/nginx/ssl/orchestra.crt',
                 help='Nginx SSL certificate, one will be created by default.'),
             make_option('--cert-key-path', dest='cert_key_path', default='/etc/nginx/ssl/orchestra.key',
@@ -40,7 +40,7 @@ class Command(BaseCommand):
                 help='Certificate Distinguished Name Email Address.'),
             make_option('--cert-common_name', dest='cert_common_name', default=None,
                 help='Certificate Distinguished Name Common Name.'),
-
+            
             make_option('--server-name', dest='server_name', default='',
                 help='Nginx SSL certificate key.'),
             make_option('--user', dest='user', default='',
@@ -132,7 +132,6 @@ class Command(BaseCommand):
         self.stdout.write('writing new cert to \'%s\'' % cert_path)
         self.stdout.write('writing new cert key to \'%s\'' % key_path)
         run('openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout %(key_path)s -out %(cert_path)s -subj "%(subject)s"' % context, display=True)
-        
         return cert_path, key_path
     
     @check_root
@@ -204,7 +203,7 @@ class Command(BaseCommand):
             """
         ) % context
         
-        nginx_file = '/etc/nginx/conf.d/%(project_name)s.conf' % context
+        nginx_file = '/etc/nginx/sites-available/%(project_name)s.conf' % context
         if server_name:
             context['server_name'] = server_name
             nginx_file = '/etc/nginx/sites-available/%(server_name)s.conf' % context
@@ -242,8 +241,14 @@ class Command(BaseCommand):
                     "The old version has been placed at %(file)s.save\033[m" % context)
         
         if server_name:
-            run('ln -s /etc/nginx/sites-available/%(server_name)s.conf /etc/nginx/sites-enabled/' % context, error_codes=[0,1], display=True)
-        run('ln -s /etc/uwsgi/apps-available/%(project_name)s.ini /etc/uwsgi/apps-enabled/' % context, error_codes=[0,1], display=True)
+            run('ln -s /etc/nginx/sites-available/%(server_name)s.conf /etc/nginx/sites-enabled/' % context,
+                error_codes=[0,1], display=True)
+        else:
+            run('rm /etc/nginx/sites-enabled/default')
+            run('ln -s /etc/nginx/sites-available/%(project_name)s.conf /etc/nginx/sites-enabled/' % context,
+                error_codes=[0,1], display=True)
+        run('ln -s /etc/uwsgi/apps-available/%(project_name)s.ini /etc/uwsgi/apps-enabled/' % context,
+            error_codes=[0,1], display=True)
         
         rotate = textwrap.dedent("""\
             /var/log/nginx/*.log {

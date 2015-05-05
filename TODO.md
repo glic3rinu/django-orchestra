@@ -380,3 +380,5 @@ try: import uwsgi to know its running uwsgi
 
 
 # LOCK beat lockfile
+
+# Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)

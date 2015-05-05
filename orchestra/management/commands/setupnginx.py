@@ -70,7 +70,7 @@ class Command(BaseCommand):
         cert_path = options.get('cert_path')
         key_path = options.get('cert_key_path')
         
-        run('mkdir -p %s' % os.path.basename(cert_path))
+        run('mkdir -p %s' % os.path.dirname(cert_path))
         exists = os.path.isfile(cert_path)
         
         if not override and exists:

@@ -122,16 +122,19 @@ function install_requirements () {
     check_root || true
     ORCHESTRA_PATH=$(get_orchestra_dir) || true
     
+    # lxml: libxml2-dev, libxslt1-dev, zlib1g-dev
     APT="python3 \
          python3-pip \
          python3-dev \
          libxml2-dev \
-         bind9utils \
          libxslt1-dev \
+         zlib1g-dev \
+         bind9utils \
          wkhtmltopdf \
          xvfb \
          ca-certificates \
-         gettext"
+         gettext \
+         libcrack2-dev"
     
     # cracklib and lxml are excluded on the requirements because they are hard to build
     PIP="$(wget https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt -q -O - | tr '\n' ' ') \

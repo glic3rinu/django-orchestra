@@ -4,7 +4,7 @@ from optparse import make_option
 from os.path import expanduser
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from orchestra.utils import paths
 from orchestra.utils.sys import run, check_root, get_default_celeryd_username

@@ -20,6 +20,7 @@ PASSWORD='orchestra'
 HOME="/home/$USER"
 PROJECT_NAME='panel'
 BASE_DIR="$HOME/$PROJECT_NAME"
+MANAGE="$BASE_DIR/manage.py"
 PYTHON_BIN="python3"
 CELERY=false
 
@@ -54,13 +55,6 @@ if [[ ! $CURRENT_VERSION ]]; then
     PYTHON_PATH=$($PYTHON_BIN -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][0]);")
     echo $HOME/django-orchestra/ | sudo tee "$PYTHON_PATH/orchestra.pth"
     run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
-else
-    # Upgrade and relay on postguprade for finishing up the installation
-    surun "export GIT_DIR=~/django-orchestra/.git && git checkout master && git pull origin"
-    # TODO pass testing to postupgrade instead of running his here
-    sudo orchestra-admin install_requirements --testing
-    $PYTHON_BIN $MANAGE migrate postupgradeorchestra --from $CURRENT_VERSION
-    exit
 fi
 
 sudo orchestra-admin install_requirements --testing
@@ -70,11 +64,12 @@ if [[ ! -e $BASE_DIR ]]; then
     surun "orchestra-admin startproject $PROJECT_NAME"
     cd -
 else
-    echo "$BASE_DIT already existis, doing nothing."
+    echo "$BASE_DIT already existis, doing postupgrade."
+    $PYTHON_BIN $MANAGE migrate postupgradeorchestra --from $CURRENT_VERSION
 fi
 
-MANAGE="$BASE_DIR/manage.py"
 
+run apt-get install postgres
 if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$') ]]; then
     # orchestra database does not esists
     # Speeding up tests, don't do this in production!

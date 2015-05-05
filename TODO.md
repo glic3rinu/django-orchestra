@@ -377,3 +377,6 @@ try: import uwsgi to know its running uwsgi
 # rename virtual_maps to virtual_alias_maps and remove virtual_alias_domains ?
 
 # Message last_retry auto_now doesn't work!
+
+
+# LOCK beat lockfile

@@ -36,7 +36,6 @@ mount --bind /dev $CONTAINER/dev
 mount -t sysfs none $CONTAINER/sys
 
 
-
 sed -i "s/\tlocalhost$/\tlocalhost $NAME/" $CONTAINER/etc/hosts
 sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" $CONTAINER/etc/locale.gen
 chroot $CONTAINER locale-gen
@@ -49,5 +48,9 @@ chroot $CONTAINER apt-get clean
 
 
 sleep 0.1
-umount $CONTAINER/{dev,sys}
+umount $CONTAINER/{dev,sys} || {
+    echo "Killing processes inside the container ..."
+    lsof | grep $CONTAINER | awk {'print $2'} | uniq | xargs kill
+    umount $CONTAINER/{dev,sys}
+}
 trap - INT TERM EXIT

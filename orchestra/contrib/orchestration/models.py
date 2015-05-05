@@ -26,7 +26,7 @@ class Server(models.Model):
         default=settings.ORCHESTRATION_DEFAULT_OS)
     
     def __str__(self):
-        return self.name
+        return self.name or str(self.address)
     
     def get_address(self):
         if self.address:
@@ -53,6 +53,7 @@ class BackendLog(models.Model):
     ERROR = 'ERROR'
     REVOKED = 'REVOKED'
     ABORTED = 'ABORTED'
+    NOTHING = 'NOTHING'
     # Special state for mocked backendlogs
     EXCEPTION = 'EXCEPTION'
     
@@ -65,6 +66,7 @@ class BackendLog(models.Model):
         (ERROR, ERROR),
         (ABORTED, ABORTED),
         (REVOKED, REVOKED),
+        (NOTHING, NOTHING),
     )
     
     backend = models.CharField(_("backend"), max_length=256)

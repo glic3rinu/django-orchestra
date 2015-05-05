@@ -21,6 +21,16 @@ def check_root(func):
     return wrapped
 
 
+def check_non_root(func):
+    """ Function decorator that checks if user not has root permissions """
+    def wrapped(*args, **kwargs):
+        if getpass.getuser() == 'root':
+            cmd_name = func.__module__.split('.')[-1]
+            raise CommandError("Sorry, you don't want to execute '%s' as superuser (root)." % cmd_name)
+        return func(*args, **kwargs)
+    return wrapped
+
+
 class _Attribute(object):
     """ Simple string subclass to allow arbitrary attribute access. """
     def __init__(self, stdout):

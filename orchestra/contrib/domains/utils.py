@@ -1,4 +1,30 @@
+from collections import defaultdict
+
 from django.utils import timezone
+
+
+class RecordStorage(object):
+    """
+    list-dict implementation for fast lookups of record types
+    """
+    
+    def __init__(self, *args):
+        self.records = list(*args)
+        self.type = defaultdict(list)
+    
+    def __iter__(self):
+        return iter(self.records)
+    
+    def append(self, record):
+        self.records.append(record)
+        self.type[record['type']].append(record)
+    
+    def insert(self, ix, record):
+        self.records.insert(ix, record)
+        self.type[record['type']].insert(ix, record)
+    
+    def by_type(self, type):
+        return self.type[type]
 
 
 def generate_zone_serial():

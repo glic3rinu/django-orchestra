@@ -3,12 +3,13 @@ import os
 from django.core.management.base import BaseCommand, CommandError
 
 from orchestra.utils.paths import get_site_dir
-from orchestra.utils.sys import run
+from orchestra.utils.sys import run, check_non_root
 
 
 class Command(BaseCommand):
-    help = 'Runs periodic tasks.'
+    help = 'Confingure crontab to run periodic tasks and mailer with orchestra-beat.'
     
+    @check_non_root
     def handle(self, *args, **options):
         context = {
             'site_dir': get_site_dir(),

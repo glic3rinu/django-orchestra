@@ -30,3 +30,4 @@ class Register(object):
 services = Register()
 # TODO rename to something else
 accounts = Register()
+administration = Register()

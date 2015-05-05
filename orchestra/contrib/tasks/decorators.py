@@ -76,9 +76,9 @@ def task(fn=None, **kwargs):
             return decorator
         else:
             return celery_shared_task(**kwargs)
-    fn = update_wraper(partial(celery_shared_task, fn))
+    fn = celery_shared_task(fn)
     if settings.TASKS_BACKEND in ('thread', 'process'):
-        fn = update_wrapper(apply_async(fn), fn)
+        fn = apply_async(fn)
     return fn
 
 
@@ -93,7 +93,7 @@ def periodic_task(fn=None, **kwargs):
             return decorator
         else:
             return celery_periodic_task(**kwargs)
-    fn = update_wraper(celery_periodic_task(fn), fn)
+    fn = celery_periodic_task(fn)
     if settings.TASKS_BACKEND in ('thread', 'process'):
         name = kwargs.pop('name', None)
         fn = update_wrapper(apply_async(fn, name), fn)

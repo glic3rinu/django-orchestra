@@ -12,7 +12,7 @@ from . import settings, Operation
 from .backends import ServiceBackend
 from .helpers import send_report
 from .models import BackendLog
-from .signals import pre_action, post_action
+from .signals import pre_action, post_action, pre_commit, post_commit, pre_prepare, post_prepare
 
 
 logger = logging.getLogger(__name__)
@@ -54,8 +54,12 @@ def generate(operations):
         for server in operation.servers:
             key = (server, operation.backend)
             if key not in scripts:
-                scripts[key] = (operation.backend(), [operation])
-                scripts[key][0].prepare()
+                backend, operations = (operation.backend(), [operation])
+                scripts[key] = (backend, operations)
+                backend.set_head()
+                pre_prepare.send(sender=backend.__class__, backend=backend)
+                backend.prepare()
+                post_prepare.send(sender=backend.__class__, backend=backend)
             else:
                 scripts[key][1].append(operation)
             # Get and call backend action method
@@ -67,6 +71,7 @@ def generate(operations):
                 'instance': operation.instance,
                 'action': operation.action,
             }
+            backend.set_content()
             pre_action.send(**kwargs)
             method(operation.instance)
             post_action.send(**kwargs)
@@ -74,7 +79,10 @@ def generate(operations):
                 block = True
     for value in scripts.values():
         backend, operations = value
+        backend.set_tail()
+        pre_commit.send(sender=backend.__class__, backend=backend)
         backend.commit()
+        post_commit.send(sender=backend.__class__, backend=backend)
     return scripts, block
 
 

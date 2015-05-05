@@ -203,88 +203,64 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
         return replace(context, "'", '"')
 
 
-class PostfixAddressBackend(ServiceController):
+class PostfixAddressVirtualDomainBackend(ServiceController):
     """
-    Addresses based on Postfix virtual alias domains.
+    Secondary SMTP server without mailboxes in it, only syncs virtual domains.
     """
-    verbose_name = _("Postfix address")
+    verbose_name = _("Postfix address virtdomain-only")
     model = 'mailboxes.Address'
     related_models = (
         ('mailboxes.Mailbox', 'addresses'),
     )
     doc_settings = (settings,
-        ('MAILBOXES_LOCAL_DOMAIN', 'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH', 'MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH',)
+        ('MAILBOXES_LOCAL_DOMAIN', 'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH')
     )
+    
+    def is_local_domain(self, domain):
+        """ whether or not domain MX points to this server """
+        return domain.has_default_mx()
+    
     def include_virtual_alias_domain(self, context):
-        if context['domain'] != context['local_domain']:
-            # Check if the domain is hosted on this mail server
-            # TODO this is dependent on the domain model
-            if Domain.objects.filter(records__type=Record.MX, name=context['domain']).exists():
-                self.append(textwrap.dedent("""
-                    [[ $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]] || {
-                        echo '%(domain)s' >> %(virtual_alias_domains)s
-                        UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                    }""") % context
-                )
+        domain = context['domain']
+        if domain.name != context['local_domain'] and self.is_local_domain(domain):
+            self.append(textwrap.dedent("""
+                [[ $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]] || {
+                    echo '%(domain)s' >> %(virtual_alias_domains)s
+                    UPDATED_VIRTUAL_ALIAS_DOMAINS=1
+                }""") % context
+            )
+    
+    def is_last_domain(self, domain):
+        return not Address.objects.filter(domain=domain).exists()
     
     def exclude_virtual_alias_domain(self, context):
         domain = context['domain']
-        if not Address.objects.filter(domain=domain).exists():
-            self.append("sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s" % context)
-    
-    def update_virtual_alias_maps(self, address, context):
-        # Virtual mailbox stuff
-#        destination = []
-#        for mailbox in address.get_mailboxes():
-#            context['mailbox'] = mailbox
-#            destination.append("%(mailbox)s@%(local_domain)s" % context)
-#        for forward in address.forward:
-#            if '@' in forward:
-#                destination.append(forward)
-        destination = address.destination
-        if destination:
-            context['destination'] = destination
-            self.append(textwrap.dedent("""
-                LINE='%(email)s\t%(destination)s'
-                if [[ ! $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
-                   echo "${LINE}" >> %(virtual_alias_maps)s
-                   UPDATED_VIRTUAL_ALIAS_MAPS=1
-                else
-                   if [[ ! $(grep "^${LINE}$" %(virtual_alias_maps)s) ]]; then
-                       sed -i "s/^%(email)s\s.*$/${LINE}/" %(virtual_alias_maps)s
-                       UPDATED_VIRTUAL_ALIAS_MAPS=1
-                   fi
-                fi""") % context)
-        else:
-            logger.warning("Address %i is empty" % address.pk)
-            self.append("sed -i '/^%(email)s\s/d' %(virtual_alias_maps)s" % context)
-            self.append('UPDATED_VIRTUAL_ALIAS_MAPS=1')
-    
-    def exclude_virtual_alias_maps(self, context):
-        self.append(textwrap.dedent("""
-            if [[ $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
-               sed -i '/^%(email)s\s.*$/d' %(virtual_alias_maps)s
-               UPDATED_VIRTUAL_ALIAS_MAPS=1
-            fi""") % context)
+        if self.is_last_domain(domain):
+            self.append(textwrap.dedent("""\
+                sed -i '/^%(domain)s\s*/d;{!q0;q1}' %(virtual_alias_domains)s && \\
+                    UPDATED_VIRTUAL_ALIAS_DOMAINS=1
+                """) % context
+            )
     
     def save(self, address):
         context = self.get_context(address)
         self.include_virtual_alias_domain(context)
-        self.update_virtual_alias_maps(address, context)
+        return context
     
     def delete(self, address):
         context = self.get_context(address)
         self.exclude_virtual_alias_domain(context)
-        self.exclude_virtual_alias_maps(context)
+        return context
     
     def commit(self):
         context = self.get_context_files()
-        self.append(textwrap.dedent("""
-            [[ $UPDATED_VIRTUAL_ALIAS_MAPS == 1 ]] && { postmap %(virtual_alias_maps)s; }
-            [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && { service postfix reload; }
+        self.append(textwrap.dedent("""\
+            [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && {
+                service postfix reload
+            }
+            exit $exit_code
             """) % context
         )
-        self.append('exit 0')
     
     def get_context_files(self):
         return {
@@ -300,6 +276,77 @@ class PostfixAddressBackend(ServiceController):
             'local_domain': settings.MAILBOXES_LOCAL_DOMAIN,
         })
         return replace(context, "'", '"')
+
+
+class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
+    """
+    Addresses based on Postfix virtual alias domains, includes <tt>PostfixAddressVirtualDomainBackend</tt>.
+    """
+    verbose_name = _("Postfix address")
+    doc_settings = (settings,
+        ('MAILBOXES_LOCAL_DOMAIN', 'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH', 'MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH')
+    )
+    
+    def update_virtual_alias_maps(self, address, context):
+        destination = address.destination
+        if destination:
+            context['destination'] = destination
+            self.append(textwrap.dedent("""
+                LINE='%(email)s\t%(destination)s'
+                if [[ ! $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
+                    # Add new line
+                    echo "${LINE}" >> %(virtual_alias_maps)s
+                    UPDATED_VIRTUAL_ALIAS_MAPS=1
+                else
+                    # Update existing line, if needed
+                    if [[ ! $(grep "^${LINE}$" %(virtual_alias_maps)s) ]]; then
+                        sed -i "s/^%(email)s\s.*$/${LINE}/" %(virtual_alias_maps)s
+                        UPDATED_VIRTUAL_ALIAS_MAPS=1
+                    fi
+                fi""") % context)
+        else:
+            logger.warning("Address %i is empty" % address.pk)
+            self.append(textwrap.dedent("""
+                sed -i '/^%(email)s\s/d;{!q0;q1}' %(virtual_alias_maps)s && \\
+                    UPDATED_VIRTUAL_ALIAS_MAPS=1
+                """) % context
+            )
+        # Virtual mailbox stuff
+#        destination = []
+#        for mailbox in address.get_mailboxes():
+#            context['mailbox'] = mailbox
+#            destination.append("%(mailbox)s@%(local_domain)s" % context)
+#        for forward in address.forward:
+#            if '@' in forward:
+#                destination.append(forward)
+    
+    def exclude_virtual_alias_maps(self, context):
+        self.append(textwrap.dedent("""
+            sed -i '/^%(email)s\s.*$/d;{!q0;q1}' %(virtual_alias_maps)s && \\
+                UPDATED_VIRTUAL_ALIAS_MAPS=1
+            """) % context
+        )     
+    
+    def save(self, address):
+        context = super(PostfixAddressBackend, self).save(address)
+        self.update_virtual_alias_maps(address, context)
+    
+    def delete(self, address):
+        context = super(PostfixAddressBackend, self).save(address)
+        self.exclude_virtual_alias_maps(context)
+    
+    def commit(self):
+        context = self.get_context_files()
+        self.append(textwrap.dedent("""\
+            [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && {
+                service postfix reload
+            }
+            [[ $UPDATED_VIRTUAL_ALIAS_MAPS == 1 ]] && {
+                postmap %(virtual_alias_maps)s
+            }
+            exit $exit_code
+            """) % context
+        )
 
 
 class AutoresponseBackend(ServiceController):

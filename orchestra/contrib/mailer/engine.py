@@ -7,7 +7,7 @@ from django.utils.encoding import smart_str
 from .models import Message
 
 
-def send_message(message, num, connection, bulk):
+def send_message(message, num=0, connection=None, bulk=100):
     if num >= bulk:
         connection.close()
         connection = None
@@ -34,6 +34,7 @@ def send_pending(bulk=100):
     num = 0
     for message in Message.objects.filter(state=Message.QUEUED).order_by('priority'):
         send_message(message, num, connection, bulk)
+        num += 1
     from django.utils import timezone
     from . import settings
     from datetime import timedelta
@@ -48,4 +49,3 @@ def send_pending(bulk=100):
         send_message(message, num, connection, bulk)
     if connection is not None:
         connection.close()
-

@@ -8,7 +8,7 @@ from orchestra.contrib.tasks import periodic_task
 from .models import BackendLog
 
 
-@periodic_task(run_every=crontab(hour=7, minute=30, day_of_week=1))
+@periodic_task(run_every=crontab(hour=7, minute=0))
 def backend_logs_cleanup():
     days = settings.ORCHESTRATION_BACKEND_CLEANUP_DAYS
     epoch = timezone.now()-timedelta(days=days)

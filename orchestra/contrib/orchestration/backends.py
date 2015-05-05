@@ -46,6 +46,9 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
     # Force the backend manager to block in multiple backend executions executing them synchronously
     block = False
     doc_settings = None
+    # By default backend will not run if actions do not generate insctructions,
+    # If your backend uses prepare() or commit() only then you should set force_empty_action_execution = True
+    force_empty_action_execution = False
     
     def __str__(self):
         return type(self).__name__
@@ -64,15 +67,28 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
             'tail',
             'content',
             'script_method',
-            'function_method'
+            'function_method',
+            'set_head',
+            'set_tail',
+            'set_content',
+            'actions',
         )
         if attr == 'prepare':
-            self.cmd_section = self.head
+            self.set_head()
         elif attr == 'commit':
-            self.cmd_section = self.tail
-        elif attr not in IGNORE_ATTRS:
-            self.cmd_section = self.content
+            self.set_tail()
+        elif attr not in IGNORE_ATTRS and attr in self.actions:
+            self.set_content()
         return super(ServiceBackend, self).__getattribute__(attr)
+    
+    def set_head(self):
+        self.cmd_section = self.head
+    
+    def set_tail(self):
+        self.cmd_section = self.tail
+    
+    def set_content(self):
+        self.cmd_section = self.content
     
     @classmethod
     def get_actions(cls):
@@ -148,13 +164,15 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
         from .models import BackendLog
         scripts = self.scripts
         state = BackendLog.STARTED
-        if not scripts:
-            state = BackendLog.SUCCESS
+        run = bool(scripts) or (self.force_empty_action_execution or bool(self.content))
+        if not run:
+            state = BackendLog.NOTHING
         log = BackendLog.objects.create(backend=self.get_name(), state=state, server=server)
-        for method, commands in scripts:
-            method(log, server, commands, async)
-            if log.state != BackendLog.SUCCESS:
-                break
+        if run:
+            for method, commands in scripts:
+                method(log, server, commands, async)
+                if log.state != BackendLog.SUCCESS:
+                    break
         return log
     
     def append(self, *cmd):

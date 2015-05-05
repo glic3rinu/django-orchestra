@@ -16,10 +16,10 @@ class Message(models.Model):
         (FAILED, _("Failes")),
     )
     
-    CRITICAL = '0'
-    HIGH = '1'
-    NORMAL = '2'
-    LOW = '3'
+    CRITICAL = 0
+    HIGH = 1
+    NORMAL = 2
+    LOW = 3
     PRIORITIES = (
         (CRITICAL, _("Critical (not queued)")),
         (HIGH, _("High")),
@@ -31,11 +31,12 @@ class Message(models.Model):
     priority = models.PositiveIntegerField(_("Priority"), choices=PRIORITIES, default=NORMAL)
     to_address = models.CharField(max_length=256)
     from_address = models.CharField(max_length=256)
-    subject = models.CharField(max_length=256)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    retries = models.PositiveIntegerField(default=0)
-    last_retry = models.DateTimeField(auto_now=True)
+    subject = models.CharField(_("subject"), max_length=256)
+    content = models.TextField(_("content"))
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+    retries = models.PositiveIntegerField(_("retries"), default=0)
+    # TODO rename to last_try
+    last_retry = models.DateTimeField(_("last try"), auto_now=True)
     
     def defer(self):
         self.state = self.DEFERRED

@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services, accounts
+from orchestra.core import services, accounts, administration
 from orchestra.utils.apps import isinstalled
 
 
@@ -27,15 +27,20 @@ def api_link(context):
         return reverse('api-root')
 
 
-def get_services():
+def process_registered_models(register):
     childrens = []
-    for model, options in services.get().items():
+    for model, options in register.get().items():
         if options.get('menu', True):
             opts = model._meta
             url = reverse('admin:{}_{}_changelist'.format(
                     opts.app_label, opts.model_name))
             name = capfirst(options.get('verbose_name_plural'))
             childrens.append(items.MenuItem(name, url))
+    return childrens
+
+
+def get_services():
+    childrens = process_registered_models(services)
     return sorted(childrens, key=lambda i: i.title)
 
 
@@ -47,13 +52,7 @@ def get_accounts():
     if isinstalled('orchestra.contrib.issues'):
         url = reverse('admin:issues_ticket_changelist')
         childrens.append(items.MenuItem(_("Tickets"), url))
-    for model, options in accounts.get().items():
-        if options.get('menu', True):
-            opts = model._meta
-            url = reverse('admin:{}_{}_changelist'.format(
-                    opts.app_label, opts.model_name))
-            name = capfirst(options.get('verbose_name_plural'))
-            childrens.append(items.MenuItem(name, url))
+    childrens.extend(process_registered_models(accounts))
     return sorted(childrens, key=lambda i: i.title)
 
 
@@ -100,6 +99,7 @@ def get_administration_items():
             items.MenuItem(_("Periodic tasks"), periodic),
             items.MenuItem(_("Workers"), worker),
         ]))
+    childrens.extend(process_registered_models(administration))
     return childrens
 
 

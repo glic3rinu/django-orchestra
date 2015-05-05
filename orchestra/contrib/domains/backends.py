@@ -102,7 +102,7 @@ class Bind9MasterDomainBackend(ServiceController):
             servers.append(server.get_ip())
         return servers
     
-    def get_masters(self, domain):
+    def get_masters_ips(self, domain):
         ips = list(settings.DOMAINS_MASTERS)
         if not ips:
             ips += self.get_servers(domain, Bind9MasterDomainBackend)
@@ -110,24 +110,23 @@ class Bind9MasterDomainBackend(ServiceController):
     
     def get_slaves(self, domain):
         ips = []
-        masters = self.get_masters(domain)
-        ns_queryset = domain.records.filter(type=Record.NS).values_list('value', flat=True)
-        ns_records = ns_queryset or settings.DOMAINS_DEFAULT_NS
-        for ns in ns_records:
-            hostname = ns.rstrip('.')
+        masters_ips = self.get_masters_ips(domain)
+        records = domain.get_records()
+        for record in records.by_type(Record.NS):
+            hostname = record.value.rstrip('.')
             # First try with a DNS query, a more reliable source
             try:
                 addr = socket.gethostbyname(hostname)
             except socket.gaierror:
-                # check if domain is declared
+                # check if hostname is declared
                 try:
-                    domain = Domain.objects.get(name=ns)
+                    domain = Domain.objects.get(name=hostname)
                 except Domain.DoesNotExist:
                     continue
                 else:
-                    a_record = domain.records.filter(name=Record.A) or [settings.DOMAINS_DEFAULT_A]
-                    addr = a_record[0]
-            if addr not in masters:
+                    # default to domain A record address
+                    addr = records.by_type(Record.A)[0].value
+            if addr not in masters_ips:
                 ips.append(addr)
         return OrderedSet(sorted(ips))
     
@@ -185,7 +184,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
             'name': domain.name,
             'banner': self.get_banner(),
             'subdomains': domain.subdomains.all(),
-            'masters': '; '.join(self.get_masters(domain)) or 'none',
+            'masters': '; '.join(self.get_masters_ips(domain)) or 'none',
             'conf_path': self.CONF_PATH,
         }
         context['conf'] = textwrap.dedent("""

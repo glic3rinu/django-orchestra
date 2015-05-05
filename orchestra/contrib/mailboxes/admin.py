@@ -13,7 +13,7 @@ from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
 
 from . import settings
-from .actions import SendMailboxEmail
+from .actions import SendMailboxEmail, SendAddressEmail
 from .filters import HasMailboxListFilter, HasForwardListFilter, HasAddressListFilter
 from .forms import MailboxCreationForm, MailboxChangeForm, AddressForm
 from .models import Mailbox, Address, Autoresponse
@@ -84,9 +84,9 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     
     def get_actions(self, request):
         if settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
-            self.actions = (SendMailboxEmail(),)
+            type(self).actions = (SendMailboxEmail(),)
         else:
-            self.actions = ()
+            type(self).actions = ()
         return super(MailboxAdmin, self).get_actions(request)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
@@ -127,6 +127,7 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     inlines = [AutoresponseInline]
     search_fields = ('forward', 'mailboxes__name', 'account__username', 'computed_email')
     readonly_fields = ('account_link', 'domain_link', 'email_link')
+    actions = (SendAddressEmail(),)
     filter_by_account_fields = ('domain', 'mailboxes')
     filter_horizontal = ['mailboxes']
     form = AddressForm

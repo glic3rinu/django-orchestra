@@ -1,3 +1,4 @@
+import re
 import textwrap
 
 from django.utils.translation import ugettext_lazy as _
@@ -10,12 +11,73 @@ from . import settings
 from .models import List
 
 
-class MailmanBackend(ServiceController):
+class MailmanVirtualDomainBackend(ServiceController):
+    """
+    Only syncs virtualdomains used on mailman addresses
+    """
+    verbose_name = _("Mailman virtdomain-only")
+    model = 'lists.List'
+    doc_settings = (settings,
+        ('LISTS_VIRTUAL_ALIAS_DOMAINS_PATH',)
+    )
+    
+    def is_local_domain(self, domain):
+        """ whether or not domain MX points to this server """
+        return domain.has_default_mx()
+    
+    def include_virtual_alias_domain(self, context):
+        domain = context['address_domain']
+        if domain and self.is_local_domain(domain):
+            self.append(textwrap.dedent("""
+                [[ $(grep '^\s*%(address_domain)s\s*$' %(virtual_alias_domains)s) ]] || {
+                    echo '%(address_domain)s' >> %(virtual_alias_domains)s
+                    UPDATED_VIRTUAL_ALIAS_DOMAINS=1
+                }""") % self.context
+            )
+    
+    def is_last_domain(self, domain):
+        return not List.objects.filter(address_domain=domain).exists()
+    
+    def exclude_virtual_alias_domain(self, context):
+        domain = context['address_domain']
+        if domain and self.is_last_domain(domain):
+            self.append("sed -i '/^%(address_domain)s\s*$/d' %(virtual_alias_domains)s" % context)
+    
+    def save(self, mail_list):
+        context = self.get_context(mail_list)
+        self.include_virtual_alias_domain(context)
+    
+    def delete(self, mail_list):
+        context = self.get_context(mail_list)
+        self.include_virtual_alias_domain(context)
+    
+    def commit(self):
+        context = self.get_context_files()
+        self.append(textwrap.dedent("""
+            if [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]]; then
+                service postfix reload
+            fi""") % context
+        )
+    
+    def get_context_files(self):
+        return {
+            'virtual_alias_domains': settings.LISTS_VIRTUAL_ALIAS_DOMAINS_PATH,
+        }
+    
+    def get_context(self, mail_list):
+        context = self.get_context_files()
+        context.update({
+            'address_domain': mail_list.address_domain,
+        })
+        return replace(context, "'", '"')
+
+
+class MailmanBackend(MailmanVirtualDomainBackend):
     """
     Mailman 2 backend based on <tt>newlist</tt>, it handles custom domains.
+    Includes <tt>MailmanVirtualDomainBackend</tt>
     """
     verbose_name = "Mailman"
-    model = 'lists.List'
     addresses = [
         '',
         '-admin',
@@ -34,23 +96,6 @@ class MailmanBackend(ServiceController):
         'LISTS_DEFAULT_DOMAIN',
         'LISTS_MAILMAN_ROOT_DIR'
     ))
-    
-    def include_virtual_alias_domain(self, context):
-        if context['address_domain']:
-            # Check if the domain is hosted on this mail server
-            # TODO this is dependent on the domain model
-            if Domain.objects.filter(records__type=Record.MX, name=context['address_domain']).exists():
-                self.append(textwrap.dedent("""
-                    [[ $(grep '^\s*%(address_domain)s\s*$' %(virtual_alias_domains)s) ]] || {
-                        echo '%(address_domain)s' >> %(virtual_alias_domains)s
-                        UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                    }""") % context
-                )
-    
-    def exclude_virtual_alias_domain(self, context):
-        address_domain = context['address_domain']
-        if not List.objects.filter(address_domain=address_domain).exists():
-            self.append("sed -i '/^%(address_domain)s\s*$/d' %(virtual_alias_domains)s" % context)
     
     def get_virtual_aliases(self, context):
         aliases = ['# %(banner)s' % context]
@@ -161,7 +206,6 @@ class MailmanBackend(ServiceController):
             'mailman_root': settings.LISTS_MAILMAN_ROOT_DIR,
         })
         return replace(context, "'", '"')
-
 
 
 class MailmanTraffic(ServiceMonitor):

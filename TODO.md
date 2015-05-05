@@ -358,3 +358,22 @@ TODO mount the filesystem with "nosuid" option
 # autoiscover modules on app.ready()
 # uwse uwsgi cron: decorator or config cron = 59 2 -1 -1 -1 %(virtualenv)/bin/python manage.py runmyfunnytask
 
+# SecondaryMailServerBackend and check_origin signal
+try: import uwsgi to know its running uwsgi
+# avoid cron email errors when failing hard
+
+
+# mailboxes.address settings multiple local domains, not only one?
+# backend.context = self.get_context() or save(obj, context=None)
+
+# smtplib.SMTPConnectError: (421, b'4.7.0 mail.pangea.org Error: too many connections from 77.246.181.209')
+
+# create registered periodic_task  on beat execution: and management command: syncperiodictasks
+
+# MERGE beats and inspect INSTALLED_APPS and get IS_ENABLED
+
+# make exceptions fot check origin shit
+
+# rename virtual_maps to virtual_alias_maps and remove virtual_alias_domains ?
+
+# Message last_retry auto_now doesn't work!

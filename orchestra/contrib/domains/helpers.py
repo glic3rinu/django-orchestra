@@ -9,10 +9,10 @@ def domain_for_validation(instance, records):
     so when validation calls render_zone() it will use the new provided data
     """
     domain = copy.copy(instance)
-    def get_records(records=records):
+    def get_declared_records(records=records):
         for data in records:
             yield Record(type=data['type'], value=data['value'])
-    domain.get_records = get_records
+    domain.get_declared_records = get_declared_records
     
     if not domain.pk:
         # top domain lookup for new domains

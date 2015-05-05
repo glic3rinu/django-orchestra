@@ -19,6 +19,7 @@ STATE_COLORS = {
     BackendLog.FAILURE: 'red',
     BackendLog.ERROR: 'red',
     BackendLog.REVOKED: 'magenta',
+    BackendLog.NOTHING: 'green',
 }
 
 

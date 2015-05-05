@@ -21,6 +21,8 @@ HOME="/home/$USER"
 PROJECT_NAME='panel'
 BASE_DIR="$HOME/$PROJECT_NAME"
 PYTHON_BIN="python3"
+CELERY=false
+
 
 surun () {
     echo " ${bold}\$ su $USER -c \"${@}\"${normal}"
@@ -93,17 +95,23 @@ fi
 run "$PYTHON_BIN $MANAGE migrate --noinput accounts"
 run "$PYTHON_BIN $MANAGE migrate --noinput"
 
-sudo $PYTHON_BIN $MANAGE setupcelery --username $USER --processes 2
+if [[ $CELERY == true ]]; then
+    run apt-get install -y rabbitmq
+    sudo $PYTHON_BIN $MANAGE setupcelery --username $USER --processes 2
+else
+    run "$PYTHON_BIN $MANAGE setupcronbeat"
+fi
+
 
 # Install and configure Nginx+uwsgi web services
 surun "mkdir -p $BASE_DIR/static"
 surun "$PYTHON_BIN $MANAGE collectstatic --noinput"
 run "apt-get install -y nginx uwsgi uwsgi-plugin-python3"
-run "$PYTHON_BIN $MANAGE setupnginx"
+run "$PYTHON_BIN $MANAGE setupnginx --user $USER --noinput"
 run "service nginx start"
 
 # Apply changes on related services
-run "$PYTHON_BIN $MANAGE restartservices"
+run "$PYTHON_BIN $MANAGE reloadservices"
 
 # Create orchestra superuser
 cat <<- EOF | $PYTHON_BIN $MANAGE shell

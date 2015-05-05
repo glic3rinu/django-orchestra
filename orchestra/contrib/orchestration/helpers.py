@@ -78,7 +78,7 @@ def message_user(request, logs):
         if log.state != log.EXCEPTION:
             # EXCEPTION logs are not stored on the database
             ids.append(log.pk)
-        if log.state == log.SUCCESS:
+        if log.state in (log.SUCCESS, log.NOTHING):
             successes += 1
     errors = total-successes
     if len(ids) == 1:

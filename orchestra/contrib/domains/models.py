@@ -85,7 +85,7 @@ class Domain(models.Model):
     def get_absolute_url(self):
         return 'http://%s' % self.name
     
-    def get_records(self):
+    def get_declared_records(self):
         """ proxy method, needed for input validation, see helpers.domain_for_validation """
         return self.records.all()
     
@@ -122,10 +122,10 @@ class Domain(models.Model):
         self.serial = serial
         self.save(update_fields=['serial'])
     
-    def render_records(self):
+    def get_records(self):
         types = {}
-        records = []
-        for record in self.get_records():
+        records = utils.RecordStorage()
+        for record in self.get_declared_records():
             types[record.type] = True
             if record.type == record.SOA:
                 # Update serial and insert at 0
@@ -183,8 +183,11 @@ class Domain(models.Model):
                     type=Record.AAAA,
                     value=default_aaaa
                 ))
+        return records
+    
+    def render_records(self):
         result = ''
-        for record in records:
+        for record in self.get_records():
             name = '{name}.{spaces}'.format(
                 name=self.name,
                 spaces=' ' * (37-len(self.name))
@@ -205,6 +208,14 @@ class Domain(models.Model):
                 value=record.value
             )
         return result
+    
+    def has_default_mx(self):
+        records = self.get_records()
+        for record in records.by_type('MX'):
+            for default in settings.DOMAINS_DEFAULT_MX:
+                if record.value.endswith(' %s' % default.split()[-1]):
+                    return True
+        return False
 
 
 class Record(models.Model):

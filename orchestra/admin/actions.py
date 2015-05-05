@@ -37,7 +37,7 @@ class SendEmail(object):
             raise PermissionDenied
         initial={
             'email_from': self.default_from,
-            'to': ' '.join(self.get_queryset_emails())
+            'to': ' '.join(self.get_email_addresses())
         }
         form = self.form(initial=initial)
         if request.POST.get('post'):
@@ -62,7 +62,7 @@ class SendEmail(object):
         # Display confirmation page
         return render(request, self.template, self.context)
     
-    def get_queryset_emails(self):
+    def get_email_addresses(self):
         return self.queryset.values_list('email', flat=True)
     
     def confirm_email(self, request, **options):
@@ -74,7 +74,7 @@ class SendEmail(object):
         if request.POST.get('post') == 'email_confirmation':
             emails = []
             num = 0
-            for email in self.get_queryset_emails():
+            for email in self.get_email_addresses():
                 emails.append((subject, message, email_from, [email]))
                 num += 1
             if extra_to:
@@ -99,7 +99,7 @@ class SendEmail(object):
             'content_message': _(
                 "Are you sure you want to send the following message to the following %s?"
             ) % self.opts.verbose_name_plural,
-            'display_objects': ["%s (%s)" % (contact, contact.email) for contact in self.queryset],
+            'display_objects': ["%s (%s)" % (contact, email) for contact, email in zip(self.queryset, self.get_email_addresses())],
             'form': form,
             'subject': subject,
             'message': message,

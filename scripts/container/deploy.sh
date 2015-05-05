@@ -55,6 +55,7 @@ if [[ ! $CURRENT_VERSION ]]; then
     PYTHON_PATH=$($PYTHON_BIN -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][0]);")
     echo $HOME/django-orchestra/ | sudo tee "$PYTHON_PATH/orchestra.pth"
     run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
+    run "cp $HOME/django-orchestra/orchestra/bin/orchestra-beat /usr/local/bin/"
 fi
 
 sudo orchestra-admin install_requirements --testing
@@ -68,7 +69,7 @@ else
 fi
 
 
-run apt-get -y install postgresql
+run "apt-get -y install postgresql"
 if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$') ]]; then
     # orchestra database does not esists
     # Speeding up tests, don't do this in production!
@@ -85,12 +86,17 @@ if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$
     sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
 fi
 
+# create logfile
+touch /home/orchestra/panel/orchestra.log
+chown $USER:$USER /home/orchestra/panel/orchestra.log
+
+
 # admin_tools needs accounts and does not have migrations
 if [[ ! $(sudo su postgres -c "psql orchestra -q -c 'SELECT * FROM accounts_account LIMIT 1;' 2> /dev/null") ]]; then
-    run "$PYTHON_BIN $MANAGE migrate --noinput accounts"
-    run "$PYTHON_BIN $MANAGE migrate --noinput"
+    surun "$PYTHON_BIN $MANAGE migrate --noinput accounts"
+    surun "$PYTHON_BIN $MANAGE migrate --noinput"
 else
-    $PYTHON_BIN $MANAGE postupgradeorchestra --from $CURRENT_VERSION
+    surun "$PYTHON_BIN $MANAGE postupgradeorchestra --from $CURRENT_VERSION"
 fi
 
 

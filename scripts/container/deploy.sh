@@ -85,16 +85,20 @@ if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$
     sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
 fi
 
-
 # admin_tools needs accounts and does not have migrations
-run "$PYTHON_BIN $MANAGE migrate --noinput accounts"
-run "$PYTHON_BIN $MANAGE migrate --noinput"
+if [[ ! $(sudo su postgres -c "psql orchestra -q -c 'SELECT * FROM accounts_account LIMIT 1;' 2> /dev/null") ]]; then
+    run "$PYTHON_BIN $MANAGE migrate --noinput accounts"
+    run "$PYTHON_BIN $MANAGE migrate --noinput"
+else
+    $PYTHON_BIN $MANAGE postupgradeorchestra --from $CURRENT_VERSION
+fi
+
 
 if [[ $CELERY == true ]]; then
     run apt-get install -y rabbitmq
     sudo $PYTHON_BIN $MANAGE setupcelery --username $USER --processes 2
 else
-    run "$PYTHON_BIN $MANAGE setupcronbeat"
+    surun "$PYTHON_BIN $MANAGE setupcronbeat"
 fi
 
 

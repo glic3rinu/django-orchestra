@@ -54,9 +54,10 @@ if [[ ! $CURRENT_VERSION ]]; then
     }
     PYTHON_PATH=$($PYTHON_BIN -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][0]);")
     echo $HOME/django-orchestra/ | sudo tee "$PYTHON_PATH/orchestra.pth"
-    run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
-    run "cp $HOME/django-orchestra/orchestra/bin/orchestra-beat /usr/local/bin/"
 fi
+
+run "cp $HOME/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/"
+run "cp $HOME/django-orchestra/orchestra/bin/orchestra-beat /usr/local/bin/"
 
 sudo orchestra-admin install_requirements --testing
 

@@ -120,7 +120,7 @@ def fire_pending_messages(settings, db):
         return bool(db.query(query))
     
     if has_pending_messages(settings, db):
-        command = 'python3 -W ignore::DeprecationWarning {manage} send'.format(manage=manage)
+        command = 'python3 -W ignore::DeprecationWarning {manage} sendpendingmessages'.format(manage=manage)
         proc = run(command, async=True)
         yield proc
 

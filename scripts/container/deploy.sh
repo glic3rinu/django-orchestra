@@ -64,8 +64,8 @@ if [[ ! -e $BASE_DIR ]]; then
     surun "orchestra-admin startproject $PROJECT_NAME"
     cd -
 else
-    echo "$BASE_DIT already existis, doing postupgrade."
-    $PYTHON_BIN $MANAGE migrate postupgradeorchestra --from $CURRENT_VERSION
+    echo "$BASE_DIR already existis, doing postupgrade."
+    $PYTHON_BIN $MANAGE postupgradeorchestra --from $CURRENT_VERSION
 fi
 
 

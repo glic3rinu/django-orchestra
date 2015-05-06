@@ -25,10 +25,10 @@ STATE_COLORS = {
 
 class RouteAdmin(admin.ModelAdmin):
     list_display = (
-        'backend', 'host', 'match', 'display_model', 'display_actions', 'is_active'
+        'backend', 'host', 'match', 'display_model', 'display_actions', 'async', 'is_active'
     )
-    list_editable = ('host', 'match', 'is_active')
-    list_filter = ('host', 'is_active', 'backend')
+    list_editable = ('host', 'match', 'async', 'is_active')
+    list_filter = ('host', 'is_active', 'async', 'backend')
     ordering = ('backend',)
     
     BACKEND_HELP_TEXT = helpers.get_backends_help_text(ServiceBackend.get_backends())

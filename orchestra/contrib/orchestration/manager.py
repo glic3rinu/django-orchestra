@@ -2,6 +2,7 @@ import logging
 import threading
 import traceback
 from collections import OrderedDict
+from functools import partial
 
 from django.core.mail import mail_admins
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = import_class(settings.ORCHESTRATION_ROUTER)
 
 
-def as_task(execute):
+def as_task(execute, log, operations):
     def wrapper(*args, **kwargs):
         """ send report """
         # Tasks run on a separate transaction pool (thread), no need to temper with the transaction
@@ -33,12 +34,21 @@ def as_task(execute):
             logger.error(subject)
             logger.error(message)
             mail_admins(subject, message)
+            log.state = BackendLog.EXCEPTION
+            log.stderr = traceback.format_exc()
+            log.save(update_fields=('state', 'stderr'))
             # We don't propagate the exception further to avoid transaction rollback
-        else:
-            # Using the wrapper function as threader messenger for the execute output
-            # Absense of it will indicate a failure at this stage
-            wrapper.log = log
-            return log
+        finally:
+            # Store the operation
+            for operation in operations:
+                logger.info("Executed %s" % str(operation))
+                if operation.instance.pk:
+                    # Not all backends are called with objects saved on the database
+                    operation.store(log)
+            stdout = log.stdout.strip()
+            stdout and logger.debug('STDOUT %s', stdout)
+            stderr = log.stderr.strip()
+            stderr and logger.debug('STDERR %s', stderr)
     return wrapper
 
 
@@ -92,41 +102,31 @@ def execute(scripts, block=False, async=False):
         logger.info('Orchestration execution is dissabled by ORCHESTRATION_DISABLE_EXECUTION settings.')
         return []
     # Execute scripts on each server
-    threads = []
     executions = []
+    threads_to_join = []
+    logs = []
     for key, value in scripts.items():
         server, __ = key
         backend, operations = value
-        execute = as_task(backend.execute)
+        args = (server,)
+        kwargs = {
+            'async': async or server.async
+        }
+        log = backend.create_log(*args, **kwargs)
+        kwargs['log'] = log
+        task = as_task(backend.execute, log, operations)
         logger.debug('%s is going to be executed on %s' % (backend, server))
         if block:
             # Execute one backend at a time, no need for threads
-            execute(server, async=async)
+            task(*args, **kwargs)
         else:
-            execute = close_connection(execute)
-            thread = threading.Thread(target=execute, args=(server,), kwargs={'async': async})
+            task = close_connection(task)
+            thread = threading.Thread(target=task, args=args, kwargs=kwargs)
             thread.start()
-            threads.append(thread)
-        executions.append((execute, operations))
-    [ thread.join() for thread in threads ]
-    logs = []
-    # collect results
-    for execution, operations in executions:
-        # There is no log if an exception has been rised at the very end of the execution
-        if hasattr(execution, 'log'):
-            for operation in operations:
-                logger.info("Executed %s" % str(operation))
-                if operation.instance.pk:
-                    # Not all backends are called with objects saved on the database
-                    operation.store(execution.log)
-            stdout = execution.log.stdout.strip()
-            stdout and logger.debug('STDOUT %s', stdout)
-            stderr = execution.log.stderr.strip()
-            stderr and logger.debug('STDERR %s', stderr)
-            logs.append(execution.log)
-        else:
-            mocked_log = BackendLog(state=BackendLog.EXCEPTION)
-            logs.append(mocked_log)
+            if not server.async:
+                threads_to_join.append(thread)
+        logs.append(log)
+    [ thread.join() for thread in threads_to_join ]
     return logs
 
 

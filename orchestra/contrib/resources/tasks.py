@@ -8,7 +8,7 @@ from .backends import ServiceMonitor
 
 @task(name='resources.Monitor')
 def monitor(resource_id, ids=None, async=True):
-    with LockFile('/dev/shm/resources.monitor.lock', expire=60*60):
+    with LockFile('/dev/shm/resources.monitor-%i.lock' % resource_id, expire=60*60):
         from .models import ResourceData, Resource
         resource = Resource.objects.get(pk=resource_id)
         resource_model = resource.content_type.model_class()

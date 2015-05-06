@@ -70,9 +70,18 @@ def send_report(method, args, log):
     mail_admins(subject, message, html_message=html_message)
 
 
+def get_backend_url(ids):
+    if len(ids) == 1:
+        return reverse('admin:orchestration_backendlog_change', args=ids)
+    elif len(ids) > 1:
+        url = reverse('admin:orchestration_backendlog_changelist')
+        return url + '?id__in=%s' % ','.join(map(str, ids))
+    return ''
+
 def message_user(request, logs):
-    total, successes = 0, 0
+    total, successes, async = 0, 0, 0
     ids = []
+    async_ids = []
     for log in logs:
         total += 1
         if log.state != log.EXCEPTION:
@@ -80,25 +89,42 @@ def message_user(request, logs):
             ids.append(log.pk)
         if log.state in (log.SUCCESS, log.NOTHING):
             successes += 1
-    errors = total-successes
-    if len(ids) == 1:
-        url = reverse('admin:orchestration_backendlog_change', args=ids)
-        href = '<a href="{}">backends</a>'.format(url)
-    elif len(ids) > 1:
-        url = reverse('admin:orchestration_backendlog_changelist')
-        url += '?id__in=%s' % ','.join(map(str, ids))
-        href = '<a href="{}">backends</a>'.format(url)
-    else:
-        href = ''
+        elif log.state in (log.RECEIVED, log.STARTED):
+            async += 1
+            async_ids.append(log.id)
+    errors = total-successes-async
+    url = get_backend_url(ids)
+    async_url = get_backend_url(async_ids)
+    async_msg = ''
+    if async:
+        async_msg = ungettext(
+            _('<a href="{async_url}">{async} backend</a> is running on the background'),
+            _('<a href="{async_url}">{async} backends</a> are running on the background'),
+            async)
     if errors:
         msg = ungettext(
-            _('{errors} out of {total} {href} has fail to execute.'),
-            _('{errors} out of {total} {href} have fail to execute.'),
+            _('<a href="{url}">{errors} out of {total} backend</a> has fail to execute'),
+            _('<a href="{url}">{errors} out of {total} backends</a> have fail to execute'),
             errors)
-        messages.error(request, mark_safe(msg.format(errors=errors, total=total, href=href)))
+        if async_msg:
+            msg += ', ' + str(async_msg)
+        msg = msg.format(errors=errors, async=async, async_url=async_url, total=total, url=url)
+        messages.error(request, mark_safe(msg + '.'))
+    elif successes:
+        if async_msg:
+            msg = ungettext(
+                _('<a href="{url}">{successes} out of {total} backend</a> has been executed'),
+                _('<a href="{url}">{successes} out of {total} backends</a> have been executed'),
+                successes)
+            msg += ', ' + str(async_msg)
+        else:
+            msg = ungettext(
+                _('<a href="{url}">{total} backend</a> has been executed'),
+                _('<a href="{url}">{total} backends</a> have been executed'),
+                total)
+        msg = msg.format(total=total, url=url, async_url=async_url, async=async, successes=successes)
+        messages.success(request, mark_safe(msg + '.'))
     else:
-        msg = ungettext(
-            _('{total} {href} has been executed.'),
-            _('{total} {href} have been executed.'),
-            total)
-        messages.success(request, mark_safe(msg.format(total=total, href=href)))
+        msg = async_msg.format(url=url, async_url=async_url, async=async)
+        messages.success(request, mark_safe(msg + '.'))
+

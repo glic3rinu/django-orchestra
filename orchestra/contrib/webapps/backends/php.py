@@ -34,13 +34,13 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     def save(self, webapp):
         context = self.get_context(webapp)
         self.create_webapp_dir(context)
-        self.set_under_construction(context)
         if webapp.type_instance.is_fpm:
             self.save_fpm(webapp, context)
             self.delete_fcgid(webapp, context)
         elif webapp.type_instance.is_fcgid:
             self.save_fcgid(webapp, context)
             self.delete_fpm(webapp, context)
+        self.set_under_construction(context)
     
     def save_fpm(self, webapp, context):
         self.append(textwrap.dedent("""\
@@ -108,36 +108,38 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     def prepare(self):
         super(PHPBackend, self).prepare()
         # Coordinate apache restart with php backend in order not to overdo it
-        self.append('echo "PHPBackend" >> /dev/shm/restart.apache2')
+        self.append(textwrap.dedent("""\
+            backend="PHPBackend"
+            echo "$backend" >> /dev/shm/restart.apache2
+            """)
+        )
     
     def commit(self):
         self.append(textwrap.dedent("""
             if [[ $UPDATED_FPM -eq 1 ]]; then
                 service php5-fpm reload
             fi
-            # Coordinate apache restart with Apache2Backend
-            restart=0
-            backend='PHPBackend'
+            
+            # Coordinate Apache restart with other concurrent backends (i.e. Apache2Backend)
+            is_last=0
             mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked || {
-                sleep 0.1
+                sleep 0.2
                 mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked
             }
-            state="$(grep -v $backend /dev/shm/restart.apache2.locked)" || restart=1
-            echo -n "$state" > /dev/shm/restart.apache2.locked
-            if [[ $UPDATED_APACHE -eq 1 ]]; then
-                if [[ $restart == 1 ]]; then
+            state="$(grep -v "$backend" /dev/shm/restart.apache2.locked)" || is_last=1
+            if [[ $is_last -eq 1 ]]; then
+                if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
                     service apache2 status && service apache2 reload || service apache2 start
-                    rm /dev/shm/restart.apache2.locked
-                else
-                    echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
-                    mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
                 fi
-            elif [[ "$state" =~ .*RESTART$ ]]; then
                 rm /dev/shm/restart.apache2.locked
-                service apache2 status && service apache2 reload || service apache2 start
             else
+                echo -n "$state" > /dev/shm/restart.apache2.locked
+                if [[ $UPDATED_APACHE -eq 1 ]]; then
+                    echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
+                fi
                 mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
             fi
+            # End of coordination
             """)
         )
         super(PHPBackend, self).commit()

@@ -133,7 +133,9 @@ class Route(models.Model):
     match = models.CharField(_("match"), max_length=256, blank=True, default='True',
         help_text=_("Python expression used for selecting the targe host, "
                     "<em>instance</em> referes to the current object."))
-#    async = models.BooleanField(default=False)
+    async = models.BooleanField(default=False,
+        help_text=_("Whether or not block the request/response cycle waitting this backend to "
+                    "finish its execution."))
 #    method = models.CharField(_("method"), max_lenght=32, choices=method_choices,
 #            default=MethodBackend.get_default())
     is_active = models.BooleanField(_("active"), default=True)
@@ -148,6 +150,7 @@ class Route(models.Model):
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
     
+    # TODO rename to get_hosts
     @classmethod
     def get_servers(cls, operation, **kwargs):
         cache = kwargs.get('cache', {})
@@ -169,6 +172,7 @@ class Route(models.Model):
         else:
             for route in routes:
                 if route.matches(operation.instance):
+                    route.host.async = route.async
                     servers.append(route.host)
         return servers
     

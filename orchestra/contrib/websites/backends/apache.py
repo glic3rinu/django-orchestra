@@ -132,34 +132,36 @@ class Apache2Backend(ServiceController):
     def prepare(self):
         super(Apache2Backend, self).prepare()
         # Coordinate apache restart with php backend in order not to overdo it
-        self.append('echo "Apache2Backend" >> /dev/shm/restart.apache2')
+        self.append(textwrap.dedent("""\
+            backend="Apache2Backend"
+            echo "$backend" >> /dev/shm/restart.apache2
+            """)
+        )
     
     def commit(self):
         """ reload Apache2 if necessary """
-        self.append(textwrap.dedent("""\
-            # Coordinate apache restart with Apache2Backend
-            restart=0
-            backend='Apache2Backend'
+        self.append(textwrap.dedent("""
+            # Coordinate Apache restart with other concurrent backends (i.e. Apache2Backend)
+            is_last=0
             mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked || {
-                sleep 0.1
+                sleep 0.2
                 mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked
             }
-            state="$(grep -v $backend /dev/shm/restart.apache2.locked)" || restart=1
-            echo -n "$state" > /dev/shm/restart.apache2.locked
-            if [[ $UPDATED_APACHE -eq 1 ]]; then
-                if [[ $restart == 1 ]]; then
+            state="$(grep -v "$backend" /dev/shm/restart.apache2.locked)" || is_last=1
+            if [[ $is_last -eq 1 ]]; then
+                if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
                     service apache2 status && service apache2 reload || service apache2 start
-                    rm /dev/shm/restart.apache2.locked
-                else
-                    echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
-                    mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
                 fi
-            elif [[ "$state" =~ .*RESTART$ ]]; then
                 rm /dev/shm/restart.apache2.locked
-                service apache2 status && service apache2 reload || service apache2 start
             else
+                echo -n "$state" > /dev/shm/restart.apache2.locked
+                if [[ $UPDATED_APACHE -eq 1 ]]; then
+                    echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
+                fi
                 mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
-            fi""")
+            fi
+            # End of coordination
+            """)
         )
         super(Apache2Backend, self).commit()
     

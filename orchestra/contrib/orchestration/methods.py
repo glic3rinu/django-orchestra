@@ -33,8 +33,9 @@ def SSH(backend, log, server, cmds, async=False):
     digest = hashlib.md5(bscript).hexdigest()
     path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_DIR, digest)
     remote_path = "%s.remote" % path
+    log.state = log.STARTED
     log.script = '# %s\n%s' % (remote_path, script)
-    log.save(update_fields=['script'])
+    log.save(update_fields=('script', 'state'))
     if not cmds:
         return
     channel = None
@@ -133,8 +134,9 @@ def Python(backend, log, server, cmds, async=False):
     # TODO collect stdout?
     script = [ str(cmd.func.__name__) + str(cmd.args) for cmd in cmds ]
     script = json.dumps(script, indent=4).replace('"', '')
+    log.state = log.STARTED
     log.script = '\n'.join([log.script, script])
-    log.save(update_fields=['script'])
+    log.save(update_fields=('script', 'state'))
     try:
         for cmd in cmds:
             with CaptureStdout() as stdout:

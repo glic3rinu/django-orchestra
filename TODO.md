@@ -334,7 +334,7 @@ pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
 # all signals + accouns.register() services.register() on apps.py
 
 # if backend.async: don't join.
-# RELATED: domains.sync to ns3 make it async
+# RELATED: domains.sync to ns3 make it async backend rather than cron based ?
 
         from orchestra.contrib.tasks import task
         import time, sys
@@ -358,10 +358,7 @@ TODO mount the filesystem with "nosuid" option
 # autoiscover modules on app.ready()
 # uwse uwsgi cron: decorator or config cron = 59 2 -1 -1 -1 %(virtualenv)/bin/python manage.py runmyfunnytask
 
-# SecondaryMailServerBackend and check_origin signal
-try: import uwsgi to know its running uwsgi
 # avoid cron email errors when failing hard
-
 
 # mailboxes.address settings multiple local domains, not only one?
 # backend.context = self.get_context() or save(obj, context=None)
@@ -372,20 +369,11 @@ try: import uwsgi to know its running uwsgi
 
 # MERGE beats and inspect INSTALLED_APPS and get IS_ENABLED
 
-# make exceptions fot check origin shit
-
 # rename virtual_maps to virtual_alias_maps and remove virtual_alias_domains ?
 # virtdomains file is not ideal, prevent fake/error on domains there! and make sure this file is required!
 
-
 # Message last_retry auto_now doesn't work!
-
-
-# LOCK beat lockfile, all tasks (monitors, billing (or unique number will fuck the transaction?))
 
 # don't block on beat, and --report periodic tasks
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
-
-
-# high perf apache sync, 

@@ -124,7 +124,7 @@ def join(iterator, display=False, silent=False, error_codes=[0]):
         if display:
             sys.stderr.write("\n\033[1;31mCommandError: %s %s\033[m\n" % (msg, err))
         if not silent:
-            raise CommandError("%s %s %s" % (msg, err, out))
+            raise CommandError("%s %s" % (msg, err))
     
     out.succeeded = not out.failed
     return out
@@ -156,6 +156,13 @@ def get_default_celeryd_username():
         if user is None:
             raise CommandError("Can not find the default celeryd username")
     return user
+
+
+def touch(fname, mode=0o666, dir_fd=None, **kwargs):
+    flags = os.O_CREAT | os.O_APPEND
+    with os.fdopen(os.open(fname, flags=flags, mode=mode, dir_fd=dir_fd)) as f:
+        os.utime(f.fileno() if os.utime in os.supports_fd else fname,
+            dir_fd=None if os.supports_fd else dir_fd, **kwargs)
 
 
 class LockFile(object):

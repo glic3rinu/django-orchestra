@@ -19,8 +19,8 @@ class Command(BaseCommand):
         content = run('crontab -l || true').stdout.decode('utf8')
         if 'orchestra-beat' not in content:
             if context['venv']:
-                content += "* * * * * . %(venv)s/bin/activate && %(orchestra_beat)s %(site_dir)s/manage.py; deactivate" % context
+                content += "\n* * * * * . %(venv)s/bin/activate && %(orchestra_beat)s %(site_dir)s/manage.py; deactivate" % context
             else:
-                content += "* * * * * %(orchestra_beat)s %(site_dir)s/manage.py" % context
+                content += "\n* * * * * %(orchestra_beat)s %(site_dir)s/manage.py" % context
             context['content'] = content
-            run("echo '%(content)s' | crontab" % context, display=True)
+            run("cat << EOF | crontab\n%(content)s\nEOF" % context, display=True)

@@ -98,8 +98,8 @@ class Bind9MasterDomainBackend(ServiceController):
         from orchestra.contrib.orchestration.manager import router
         operation = Operation(backend, domain, Operation.SAVE)
         servers = []
-        for server in router.get_servers(operation):
-            servers.append(server.get_ip())
+        for routes in router.get_routes(operation):
+            servers.append(route.host.get_ip())
         return servers
     
     def get_masters_ips(self, domain):

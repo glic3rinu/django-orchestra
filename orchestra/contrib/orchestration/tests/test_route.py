@@ -30,12 +30,12 @@ class RouterTests(BaseTestCase):
         
         route = Route.objects.create(backend=backend, host=self.host, match='True')
         operation = Operation(backend=TestBackend, instance=route, action='save')
-        self.assertEqual(1, len(Route.get_servers(operation)))
+        self.assertEqual(1, len(Route.get_routes(operation)))
 
         route = Route.objects.create(backend=backend, host=self.host1,
                 match='route.backend == "%s"' % TestBackend.get_name())
-        self.assertEqual(2, len(Route.get_servers(operation)))
+        self.assertEqual(2, len(Route.get_routes(operation)))
         
         route = Route.objects.create(backend=backend, host=self.host2,
                 match='route.backend == "something else"')
-        self.assertEqual(2, len(Route.get_servers(operation)))
+        self.assertEqual(2, len(Route.get_routes(operation)))

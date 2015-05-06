@@ -21,13 +21,13 @@ class Operation():
         """ set() """
         return hash(self) == hash(operation)
     
-    def __init__(self, backend, instance, action, servers=None):
+    def __init__(self, backend, instance, action, routes=None):
         self.backend = backend
         # instance should maintain any dynamic attribute until backend execution
         # deep copy is prefered over copy otherwise objects will share same atributes (queryset cache)
         self.instance = copy.deepcopy(instance)
         self.action = action
-        self.servers = servers
+        self.routes = routes
     
     @classmethod
     def execute(cls, operations, async=False):

@@ -4,7 +4,7 @@ from django.apps import apps
 from orchestra.contrib.orchestration import manager, Operation
 from orchestra.contrib.orchestration.models import Server
 from orchestra.contrib.orchestration.backends import ServiceBackend
-from orchestra.utils.python import import_class, OrderedSet
+from orchestra.utils.python import import_class, OrderedSet, AttrDict
 
 
 class Command(BaseCommand):
@@ -53,7 +53,7 @@ class Command(BaseCommand):
         if servers:
             servers = servers.split(',')
             backends = backends.split(',')
-            server_objects = []
+            routes = []
             # Get and create missing Servers
             for server in servers:
                 try:
@@ -62,12 +62,12 @@ class Command(BaseCommand):
                     server = Server(name=server, address=server)
                     server.full_clean()
                     server.save()
-                server_objects.append(server)
+                routes.append(AttrDict(host=server, async=False))
             # Generate operations for the given backend
             for instance in queryset:
                 for backend in backends:
                     backend = import_class(backend)
-                    operations.add(Operation(backend, instance, action, servers=server_objects))
+                    operations.add(Operation(backend, instance, action, routes=routes))
         else:
             for instance in queryset:
                 manager.collect(instance, action, operations=operations, route_cache=route_cache)
@@ -75,9 +75,9 @@ class Command(BaseCommand):
         servers = []
         # Print scripts
         for key, value in scripts.items():
-            server, __ = key
+            route, __ = key
             backend, operations = value
-            servers.append(server.name)
+            servers.append(str(route.host))
             self.stdout.write('# Execute on %s' % server.name)
             for method, commands in backend.scripts:
                 script = '\n'.join(commands)

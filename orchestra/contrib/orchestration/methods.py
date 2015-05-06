@@ -33,6 +33,8 @@ def SSH(backend, log, server, cmds, async=False):
     digest = hashlib.md5(bscript).hexdigest()
     path = os.path.join(settings.ORCHESTRATION_TEMP_SCRIPT_DIR, digest)
     remote_path = "%s.remote" % path
+    # Ensure unique local paths for each file because of problems when os.remove(path)
+    path += '@%s' % str(server)
     log.state = log.STARTED
     log.script = '# %s\n%s' % (remote_path, script)
     log.save(update_fields=('script', 'state'))

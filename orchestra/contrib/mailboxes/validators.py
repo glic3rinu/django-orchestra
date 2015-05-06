@@ -51,14 +51,17 @@ def validate_forward(value):
 
 def validate_sieve(value):
     sieve_name = '%s.sieve' % hashlib.md5(value.encode('utf8')).hexdigest()
-    path = os.path.join(settings.MAILBOXES_SIEVETEST_PATH, sieve_name)
-    with open(path, 'w') as f:
+    test_path = os.path.join(settings.MAILBOXES_SIEVETEST_PATH, sieve_name)
+    with open(test_path, 'w') as f:
         f.write(value)
     context = {
         'orchestra_root': paths.get_orchestra_dir()
     }
     sievetest = settings.MAILBOXES_SIEVETEST_BIN_PATH % context
-    test = run(' '.join([sievetest, path, '/dev/null']), silent=True)
+    try:
+        test = run(' '.join([sievetest, test_path, '/dev/null']), silent=True)
+    finally:
+        os.unlink(test_path)
     if test.return_code:
         errors = []
         for line in test.stderr.decode('utf8').splitlines():

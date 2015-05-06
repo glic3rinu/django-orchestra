@@ -23,7 +23,8 @@ router = import_class(settings.ORCHESTRATION_ROUTER)
 def as_task(execute, log, operations):
     def wrapper(*args, **kwargs):
         """ send report """
-        # Tasks run on a separate transaction pool (thread), no need to temper with the transaction
+        # Remember that threads have their oun connection poll
+        # No need to EVER temper with the transaction here
         try:
             log = execute(*args, **kwargs)
             if log.state != log.SUCCESS:
@@ -39,7 +40,7 @@ def as_task(execute, log, operations):
             log.save(update_fields=('state', 'stderr'))
             # We don't propagate the exception further to avoid transaction rollback
         finally:
-            # Store the operation
+            # Store and log the operation
             for operation in operations:
                 logger.info("Executed %s" % str(operation))
                 if operation.instance.pk:
@@ -56,13 +57,13 @@ def generate(operations):
     scripts = OrderedDict()
     cache = {}
     block = False
-    # Generate scripts per server+backend
+    # Generate scripts per route+backend
     for operation in operations:
         logger.debug("Queued %s" % str(operation))
-        if operation.servers is None:
-            operation.servers = router.get_servers(operation, cache=cache)
-        for server in operation.servers:
-            key = (server, operation.backend)
+        if operation.routes is None:
+            operation.routes = router.get_routes(operation, cache=cache)
+        for route in operation.routes:
+            key = (route, operation.backend)
             if key not in scripts:
                 backend, operations = (operation.backend(), [operation])
                 scripts[key] = (backend, operations)
@@ -106,16 +107,16 @@ def execute(scripts, block=False, async=False):
     threads_to_join = []
     logs = []
     for key, value in scripts.items():
-        server, __ = key
+        route, __ = key
         backend, operations = value
-        args = (server,)
+        args = (route.host,)
         kwargs = {
-            'async': async or server.async
+            'async': async or route.async
         }
         log = backend.create_log(*args, **kwargs)
         kwargs['log'] = log
         task = as_task(backend.execute, log, operations)
-        logger.debug('%s is going to be executed on %s' % (backend, server))
+        logger.debug('%s is going to be executed on %s' % (backend, route.host))
         if block:
             # Execute one backend at a time, no need for threads
             task(*args, **kwargs)
@@ -123,7 +124,7 @@ def execute(scripts, block=False, async=False):
             task = close_connection(task)
             thread = threading.Thread(target=task, args=args, kwargs=kwargs)
             thread.start()
-            if not server.async:
+            if not route.async:
                 threads_to_join.append(thread)
         logs.append(log)
     [ thread.join() for thread in threads_to_join ]
@@ -182,10 +183,10 @@ def collect(instance, action, **kwargs):
                         if not execute:
                             continue
             operation = Operation(backend_cls, selected, iaction)
-            # Only schedule operations if the router gives servers to execute into
-            servers = router.get_servers(operation, cache=route_cache)
-            if servers:
-                operation.servers = servers
+            # Only schedule operations if the router has execution routes
+            routes = router.get_routes(operation, cache=route_cache)
+            if routes:
+                operation.routes = routes
                 if iaction != Operation.DELETE:
                     # usually we expect to be using last object state,
                     # except when we are deleting it

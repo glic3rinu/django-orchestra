@@ -1,5 +1,6 @@
 import os
 import textwrap
+from collections import OrderedDict
 
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
@@ -115,19 +116,27 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 service php5-fpm reload
             fi
             # Coordinate apache restart with Apache2Backend
-            # FIXME race condition
-            locked=1
-            state="$(grep -v 'PHPBackend' /dev/shm/restart.apache2)" || locked=0
-            echo -n "$state" > /dev/shm/restart.apache2
+            restart=0
+            backend='PHPBackend'
+            mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked || {
+                sleep 0.1
+                mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked
+            }
+            state="$(grep -v $backend /dev/shm/restart.apache2.locked)" || restart=1
+            echo -n "$state" > /dev/shm/restart.apache2.locked
             if [[ $UPDATED_APACHE -eq 1 ]]; then
-                if [[ $locked == 0 ]]; then
+                if [[ $restart == 1 ]]; then
                     service apache2 status && service apache2 reload || service apache2 start
+                    rm /dev/shm/restart.apache2.locked
                 else
-                    echo "PHPBackend RESTART" >> /dev/shm/restart.apache2
+                    echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
+                    mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
                 fi
             elif [[ "$state" =~ .*RESTART$ ]]; then
-                rm /dev/shm/restart.apache2
+                rm /dev/shm/restart.apache2.locked
                 service apache2 status && service apache2 reload || service apache2 start
+            else
+                mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
             fi
             """)
         )
@@ -135,7 +144,6 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def get_options(self, webapp):
         kwargs = {}
-        print(webapp.data)
         if self.MERGE:
             kwargs = {
                 'webapp__account': webapp.account,
@@ -195,10 +203,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def get_fcgid_cmd_options(self, webapp, context):
         options = self.get_options(webapp)
-        maps = {
-            'MaxProcesses': options.get('processes', None),
-            'IOTimeout': options.get('timeout', None),
-        }
+        maps = OrderedDict(
+            MaxProcesses=options.get('processes', None),
+            IOTimeout=options.get('timeout', None),
+        )
         cmd_options = []
         for directive, value in maps.items():
             if value:

@@ -156,3 +156,35 @@ def get_default_celeryd_username():
         if user is None:
             raise CommandError("Can not find the default celeryd username")
     return user
+
+
+class LockFile(object):
+    """ File-based lock mechanism used for preventing concurrency problems """
+    def __init__(self, lockfile, expire=5*60, unlocked=False):
+        """ /dev/shm/ can be a good place for storing locks ;) """
+        self.lockfile = lockfile
+        self.expire = expire
+        self.unlocked = unlocked
+    
+    def acquire(self):
+        if os.path.exists(self.lockfile):
+            lock_time = os.path.getmtime(self.lockfile)
+            # lock expires to avoid starvation
+            if time.time()-lock_time < self.expire:
+                return False
+        touch(self.lockfile)
+        return True
+    
+    def release(self):
+        os.remove(self.lockfile)
+    
+    def __enter__(self):
+        if not self.unlocked:
+            if not self.acquire():
+                raise OperationLocked('%s lock file exists and its mtime is less '
+                    'than %s seconds' % (self.lockfile, self.expire))
+        return True
+    
+    def __exit__(self, type, value, traceback):
+        if not self.unlocked:
+            self.release()

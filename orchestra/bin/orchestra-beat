@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 from celery.schedules import crontab_parser as CrontabParser
 
-from orchestra.utils.sys import run, join
+from orchestra.utils.sys import run, join, LockFile
 
 
 class Setting(object):
@@ -126,27 +126,21 @@ def fire_pending_messages(settings, db):
 
 
 if __name__ == "__main__":
-    # TODO aquire lock
-    manage = sys.argv[1]
-    procs = []
-    settings = Setting(manage).get_settings()
-    db = DB(settings)
-    db.connect()
-    try:
-        if 'orchestra.contrib.tasks' in settings['INSTALLED_APPS']:
-            if settings.get('TASKS_BACKEND', 'thread') in ('thread', 'process'):
-                for proc in fire_pending_tasks(manage, db):
+    with LockFile('/dev/shm/beat.lock', expire=20):
+        manage = sys.argv[1]
+        procs = []
+        settings = Setting(manage).get_settings()
+        db = DB(settings)
+        db.connect()
+        try:
+            # Non-blocking loop, we need to finish this in time for the next minute.
+            if 'orchestra.contrib.tasks' in settings['INSTALLED_APPS']:
+                if settings.get('TASKS_BACKEND', 'thread') in ('thread', 'process'):
+                    for proc in fire_pending_tasks(manage, db):
+                        procs.append(proc)
+            if 'orchestra.contrib.mailer' in settings['INSTALLED_APPS']:
+                for proc in fire_pending_messages(settings, db):
                     procs.append(proc)
-        if 'orchestra.contrib.mailer' in settings['INSTALLED_APPS']:
-            for proc in fire_pending_messages(settings, db):
-                procs.append(proc)
-        exit_code = 0
-        for proc in procs:
-            result = join(proc)
-            sys.stdout.write(result.stdout.decode('utf8'))
-            sys.stderr.write(result.stderr.decode('utf8'))
-            if result.return_code != 0:
-                exit_code = result.return_code
-    finally:
-        db.close()
-    sys.exit(exit_code)
+        finally:
+            db.close()
+    sys.exit(0)

@@ -386,3 +386,6 @@ try: import uwsgi to know its running uwsgi
 # don't block on beat, and --report periodic tasks
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
+
+
+# high perf apache sync, 

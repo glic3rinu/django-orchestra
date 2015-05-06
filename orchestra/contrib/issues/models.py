@@ -6,7 +6,7 @@ from orchestra.contrib.contacts import settings as contacts_settings
 from orchestra.contrib.contacts.models import Contact
 from orchestra.core.translations import ModelTranslation
 from orchestra.models.fields import MultiSelectField
-from orchestra.utils import send_email_template
+from orchestra.utils.mail import send_email_template
 
 from . import settings
 

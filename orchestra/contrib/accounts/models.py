@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
 from orchestra.contrib.orchestration import Operation
-from orchestra.utils import send_email_template
+from orchestra.utils.mail import send_email_template
 
 from . import settings
 

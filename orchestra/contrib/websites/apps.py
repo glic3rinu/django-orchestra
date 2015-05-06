@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from django.contrib.contenttypes.fields import GenericRelation
 
-from orchestra.utils import database_ready
+from orchestra.utils.db import database_ready
 
 
 class WebsiteConfig(AppConfig):

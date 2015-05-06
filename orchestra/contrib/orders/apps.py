@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 from orchestra.core import accounts
-from orchestra.utils import database_ready
+from orchestra.utils.db import database_ready
 
 
 class OrdersConfig(AppConfig):

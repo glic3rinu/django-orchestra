@@ -135,7 +135,7 @@ class Route(models.Model):
                     "<em>instance</em> referes to the current object."))
     async = models.BooleanField(default=False,
         help_text=_("Whether or not block the request/response cycle waitting this backend to "
-                    "finish its execution."))
+                    "finish its execution. Usually you want slave servers to run asynchronously."))
 #    method = models.CharField(_("method"), max_lenght=32, choices=method_choices,
 #            default=MethodBackend.get_default())
     is_active = models.BooleanField(_("active"), default=True)

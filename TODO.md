@@ -333,9 +333,6 @@ pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
 
 # all signals + accouns.register() services.register() on apps.py
 
-# if backend.async: don't join.
-# RELATED: domains.sync to ns3 make it async backend rather than cron based ?
-
         from orchestra.contrib.tasks import task
         import time, sys
         @task(name='rata')
@@ -353,12 +350,10 @@ pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
 TODO http://wiki2.dovecot.org/HowTo/SimpleVirtualInstall
 TODO http://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
 TODO mount the filesystem with "nosuid" option
-# execute Make after postfix update
 # wkhtmltopdf -> reportlab
-# autoiscover modules on app.ready()
+# autoiscover modules on app.ready() ? lazy choices on models for plugins
+# ModelTranslation.register on app.ready()
 # uwse uwsgi cron: decorator or config cron = 59 2 -1 -1 -1 %(virtualenv)/bin/python manage.py runmyfunnytask
-
-# avoid cron email errors when failing hard
 
 # mailboxes.address settings multiple local domains, not only one?
 # backend.context = self.get_context() or save(obj, context=None)
@@ -377,3 +372,7 @@ TODO mount the filesystem with "nosuid" option
 # don't block on beat, and --report periodic tasks
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
+
+# orchestrate async stdout stderr (inspired on pangea managemengt commands)
+
+# orchestra-beat support for uwsgi cron

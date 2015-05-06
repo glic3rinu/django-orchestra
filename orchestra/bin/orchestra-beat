@@ -14,10 +14,85 @@ import re
 import sys
 from datetime import datetime, timedelta
 
-from celery.schedules import crontab_parser as CrontabParser
-
 from orchestra.utils.sys import run, join, LockFile
 
+
+class crontab_parser(object):
+    """
+    from celery.schedules import crontab_parser
+    Too expensive to import celery
+    """
+    ParseException = ValueError
+
+    _range = r'(\w+?)-(\w+)'
+    _steps = r'/(\w+)?'
+    _star = r'\*'
+    
+    def __init__(self, max_=60, min_=0):
+        self.max_ = max_
+        self.min_ = min_
+        self.pats = (
+            (re.compile(self._range + self._steps), self._range_steps),
+            (re.compile(self._range), self._expand_range),
+            (re.compile(self._star + self._steps), self._star_steps),
+            (re.compile('^' + self._star + '$'), self._expand_star),
+        )
+
+    def parse(self, spec):
+        acc = set()
+        for part in spec.split(','):
+            if not part:
+                raise self.ParseException('empty part')
+            acc |= set(self._parse_part(part))
+        return acc
+    
+    def _parse_part(self, part):
+        for regex, handler in self.pats:
+            m = regex.match(part)
+            if m:
+                return handler(m.groups())
+        return self._expand_range((part, ))
+    
+    def _expand_range(self, toks):
+        fr = self._expand_number(toks[0])
+        if len(toks) > 1:
+            to = self._expand_number(toks[1])
+            if to < fr:  # Wrap around max_ if necessary
+                return (list(range(fr, self.min_ + self.max_)) +
+                        list(range(self.min_, to + 1)))
+            return list(range(fr, to + 1))
+        return [fr]
+    
+    def _range_steps(self, toks):
+        if len(toks) != 3 or not toks[2]:
+            raise self.ParseException('empty filter')
+        return self._expand_range(toks[:2])[::int(toks[2])]
+    
+    def _star_steps(self, toks):
+        if not toks or not toks[0]:
+            raise self.ParseException('empty filter')
+        return self._expand_star()[::int(toks[0])]
+    def _expand_star(self, *args):
+        return list(range(self.min_, self.max_ + self.min_))
+    
+    def _expand_number(self, s):
+        if isinstance(s, str) and s[0] == '-':
+            raise self.ParseException('negative numbers not supported')
+        try:
+            i = int(s)
+        except ValueError:
+            try:
+                i = weekday(s)
+            except KeyError:
+                raise ValueError('Invalid weekday literal {0!r}.'.format(s))
+        max_val = self.min_ + self.max_ - 1
+        if i > max_val:
+            raise ValueError(
+                'Invalid end range: {0} > {1}.'.format(i, max_val))
+        if i < self.min_:
+            raise ValueError(
+                'Invalid beginning range: {0} < {1}.'.format(i, self.min_))
+        return i
 
 class Setting(object):
     def __init__(self, manage):
@@ -28,8 +103,12 @@ class Setting(object):
         """ get db settings from settings.py file without importing """
         settings = {'__file__': self.settings_file}
         with open(self.settings_file) as f:
-            __file__ = 'rata'
-            exec(f.read(), settings)
+            content = ''
+            for line in f.readlines():
+                # This is very costly, skip
+                if not line.startswith(('import djcelery', 'djcelery.setup_loader()')):
+                    content += line
+            exec(content, settings)
         return settings
     
     def get_settings_file(self, manage):
@@ -85,11 +164,11 @@ def fire_pending_tasks(manage, db):
     def is_due(now, minute, hour, day_of_week, day_of_month, month_of_year):
         n_minute, n_hour, n_day_of_week, n_day_of_month, n_month_of_year = now
         return (
-            n_minute in CrontabParser(60).parse(minute) and
-            n_hour in CrontabParser(24).parse(hour) and
-            n_day_of_week in CrontabParser(7).parse(day_of_week) and
-            n_day_of_month in CrontabParser(31, 1).parse(day_of_month) and
-            n_month_of_year in CrontabParser(12, 1).parse(month_of_year)
+            n_minute in crontab_parser(60).parse(minute) and
+            n_hour in crontab_parser(24).parse(hour) and
+            n_day_of_week in crontab_parser(7).parse(day_of_week) and
+            n_day_of_month in crontab_parser(31, 1).parse(day_of_month) and
+            n_month_of_year in crontab_parser(12, 1).parse(month_of_year)
         )
     
     now = datetime.utcnow()

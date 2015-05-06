@@ -2,6 +2,7 @@ import re
 
 from django import forms
 from django.contrib import admin
+from django.db.models.functions import Concat
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -103,16 +104,8 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
         """ Order by structured name and imporve performance """
         qs = super(DomainAdmin, self).get_queryset(request)
         qs = qs.select_related('top', 'account')
-        # Order by structured name
         if request.method == 'GET':
-            # For some reason if we do this we know for sure that join table will be called T4
-            query = str(qs.query)
-            table = re.findall(r'(T\d+)\."account_id"', query)[0]
-            qs = qs.extra(
-                select={
-                    'structured_name': 'CONCAT({table}.name, domains_domain.name)'.format(table=table)
-                },
-            ).order_by('structured_name')
+            qs = qs.annotate(structured_name=Concat('top__name', 'name')).order_by('structured_name')
         if apps.isinstalled('orchestra.contrib.websites'):
             qs = qs.prefetch_related('websites')
         return qs

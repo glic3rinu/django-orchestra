@@ -10,4 +10,4 @@ class SendMailboxEmail(SendEmail):
 class SendAddressEmail(SendEmail):
     def get_email_addresses(self):
         for address in self.queryset.all():
-            yield address.emails
+            yield address.email

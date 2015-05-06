@@ -11,7 +11,7 @@ from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date
 from orchestra.contrib.orchestration.models import Route
 from orchestra.core import services
-from orchestra.utils import database_ready
+from orchestra.utils.db import database_ready
 from orchestra.utils.functional import cached
 
 from .actions import run_monitor

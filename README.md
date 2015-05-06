@@ -47,7 +47,7 @@ pip3 install django-orchestra==dev \
 pip3 install -r \
   https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt
 
-# Create an new Orchestra site
+# Create a new Orchestra site
 orchestra-admin startproject panel
 python3 panel/manage.py migrate accounts
 python3 panel/manage.py migrate

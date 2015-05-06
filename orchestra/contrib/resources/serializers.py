@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from orchestra.api import router
-from orchestra.utils import database_ready
+from orchestra.utils.db import database_ready
 
 from .models import Resource, ResourceData
 

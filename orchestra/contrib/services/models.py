@@ -20,7 +20,6 @@ autodiscover_modules('handlers')
 rate_class = import_class(settings.SERVICES_RATE_CLASS)
 
 
-
 class Service(models.Model):
     NEVER = ''
 #    DAILY = 'DAILY'

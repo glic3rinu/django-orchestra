@@ -1,7 +1,7 @@
 from django import db
 from django.apps import AppConfig
 
-from orchestra.utils import database_ready
+from orchestra.utils.db import database_ready
 
 
 class ResourcesConfig(AppConfig):

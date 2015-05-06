@@ -375,10 +375,14 @@ try: import uwsgi to know its running uwsgi
 # make exceptions fot check origin shit
 
 # rename virtual_maps to virtual_alias_maps and remove virtual_alias_domains ?
+# virtdomains file is not ideal, prevent fake/error on domains there! and make sure this file is required!
+
 
 # Message last_retry auto_now doesn't work!
 
 
-# LOCK beat lockfile
+# LOCK beat lockfile, all tasks (monitors, billing (or unique number will fuck the transaction?))
+
+# don't block on beat, and --report periodic tasks
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)

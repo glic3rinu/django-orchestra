@@ -29,7 +29,7 @@ setup(
     include_package_data = True,
     scripts=[
         'orchestra/bin/orchestra-admin',
-        'orchestra//bin/orchestra-beat',
+        'orchestra/bin/orchestra-beat',
     ],
     packages = packages,
     classifiers = [

@@ -1,6 +1,7 @@
 from django import db
 from django.apps import AppConfig
 
+from orchestra.core import administration
 from orchestra.utils.db import database_ready
 
 
@@ -16,6 +17,10 @@ class ResourcesConfig(AppConfig):
             except db.utils.OperationalError:
                 # Not ready afterall
                 pass
+        from .models import Resource, ResourceData, MonitorData
+        administration.register(Resource, icon='gauge.png')
+        administration.register(ResourceData, parent=Resource, icon='monitor.png')
+        administration.register(MonitorData, parent=Resource, dashboard=False)
     
     def reload_relations(self):
         from .admin import insert_resource_inlines

@@ -18,7 +18,7 @@ class PhpListSaaSBackend(ServiceController):
     verbose_name = _("phpList SaaS")
     model = 'saas.SaaS'
     default_route_match = "saas.service == 'phplist'"
-    block = True
+    serialize = True
     
     def _save(self, saas, server):
         admin_link = 'http://%s/admin/' % saas.get_site_domain()

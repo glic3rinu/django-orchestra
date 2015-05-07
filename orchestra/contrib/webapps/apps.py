@@ -10,4 +10,4 @@ class WebAppsConfig(AppConfig):
     def ready(self):
         from . import signals
         from .models import WebApp
-        services.register(WebApp)
+        services.register(WebApp, icon='Applications-other.png')

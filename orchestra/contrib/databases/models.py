@@ -3,7 +3,7 @@ import hashlib
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import validators, services
+from orchestra.core import validators
 
 from . import settings
 
@@ -76,7 +76,3 @@ class DatabaseUser(models.Model):
             self.password = '*%s' % hexdigest.upper()
         else:
             raise TypeError("Database type '%s' not supported" % self.type)
-
-
-services.register(Database)
-services.register(DatabaseUser, verbose_name_plural=_("Database users"))

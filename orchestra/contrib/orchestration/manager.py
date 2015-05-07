@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = import_class(settings.ORCHESTRATION_ROUTER)
 
 
-def as_task(execute, log, operations):
+def keep_log(execute, log, operations):
     def wrapper(*args, **kwargs):
         """ send report """
         # Remember that threads have their oun connection poll
@@ -30,14 +30,14 @@ def as_task(execute, log, operations):
             if log.state != log.SUCCESS:
                 send_report(execute, args, log)
         except Exception as e:
-            subject = 'EXCEPTION executing backend(s) %s %s' % (str(args), str(kwargs))
-            message = traceback.format_exc()
-            logger.error(subject)
-            logger.error(message)
-            mail_admins(subject, message)
+            trace = traceback.format_exc()
             log.state = BackendLog.EXCEPTION
-            log.stderr = traceback.format_exc()
-            log.save(update_fields=('state', 'stderr'))
+            log.stderr = trace
+            log.save()
+            subject = 'EXCEPTION executing backend(s) %s %s' % (str(args), str(kwargs))
+            logger.error(subject)
+            logger.error(trace)
+            mail_admins(subject, trace)
             # We don't propagate the exception further to avoid transaction rollback
         finally:
             # Store and log the operation
@@ -56,7 +56,7 @@ def as_task(execute, log, operations):
 def generate(operations):
     scripts = OrderedDict()
     cache = {}
-    block = False
+    serialize = False
     # Generate scripts per route+backend
     for operation in operations:
         logger.debug("Queued %s" % str(operation))
@@ -86,18 +86,18 @@ def generate(operations):
             pre_action.send(**kwargs)
             method(operation.instance)
             post_action.send(**kwargs)
-            if backend.block:
-                block = True
+            if backend.serialize:
+                serialize = True
     for value in scripts.values():
         backend, operations = value
         backend.set_tail()
         pre_commit.send(sender=backend.__class__, backend=backend)
         backend.commit()
         post_commit.send(sender=backend.__class__, backend=backend)
-    return scripts, block
+    return scripts, serialize
 
 
-def execute(scripts, block=False, async=False):
+def execute(scripts, serialize=False, async=False):
     """ executes the operations on the servers """
     if settings.ORCHESTRATION_DISABLE_EXECUTION:
         logger.info('Orchestration execution is dissabled by ORCHESTRATION_DISABLE_EXECUTION settings.')
@@ -110,21 +110,22 @@ def execute(scripts, block=False, async=False):
         route, __ = key
         backend, operations = value
         args = (route.host,)
+        async = not serialize and (async or route.async)
         kwargs = {
-            'async': async or route.async
+            'async': async,
         }
         log = backend.create_log(*args, **kwargs)
         kwargs['log'] = log
-        task = as_task(backend.execute, log, operations)
+        task = keep_log(backend.execute, log, operations)
         logger.debug('%s is going to be executed on %s' % (backend, route.host))
-        if block:
+        if serialize:
             # Execute one backend at a time, no need for threads
             task(*args, **kwargs)
         else:
             task = close_connection(task)
             thread = threading.Thread(target=task, args=args, kwargs=kwargs)
             thread.start()
-            if not route.async:
+            if not async:
                 threads_to_join.append(thread)
         logs.append(log)
     [ thread.join() for thread in threads_to_join ]

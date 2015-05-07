@@ -3,6 +3,9 @@ import copy
 from .backends import ServiceBackend, ServiceController, replace
 
 
+default_app_config = 'orchestra.contrib.orchestration.apps.OrchestrationConfig'
+
+
 class Operation():
     DELETE = 'delete'
     SAVE = 'save'
@@ -30,10 +33,10 @@ class Operation():
         self.routes = routes
     
     @classmethod
-    def execute(cls, operations, async=False):
+    def execute(cls, operations, serialize=False, async=False):
         from . import manager
-        scripts, block = manager.generate(operations)
-        return manager.execute(scripts, block=block, async=async)
+        scripts, oserialize = manager.generate(operations)
+        return manager.execute(scripts, serialize=(serialize or oserialize), async=async)
     
     @classmethod
     def execute_action(cls, instance, action):

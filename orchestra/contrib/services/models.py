@@ -8,7 +8,6 @@ from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import string_concat, ugettext_lazy as _
 
 from orchestra.core import caches, validators
-from orchestra.core.translations import ModelTranslation
 from orchestra.utils.python import import_class
 
 from . import settings
@@ -244,6 +243,3 @@ class Service(models.Model):
         for instance in queryset:
             updates += order_model.update_orders(instance, service=self, commit=commit)
         return updates
-
-
-ModelTranslation.register(Service, ('description',))

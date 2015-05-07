@@ -2,8 +2,6 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
-from orchestra.core.translations import ModelTranslation
 from orchestra.core.validators import validate_name
 from orchestra.models.fields import NullableCharField
 
@@ -69,8 +67,3 @@ class Miscellaneous(models.Model):
         if self.identifier:
             self.identifier = self.identifier.strip()
         self.description = self.description.strip()
-
-
-services.register(Miscellaneous)
-
-ModelTranslation.register(MiscService, ('verbose_name',))

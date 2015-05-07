@@ -45,7 +45,7 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
     actions = []
     default_route_match = 'True'
     # Force the backend manager to block in multiple backend executions executing them synchronously
-    block = False
+    serialize = False
     doc_settings = None
     # By default backend will not run if actions do not generate insctructions,
     # If your backend uses prepare() or commit() only then you should set force_empty_action_execution = True

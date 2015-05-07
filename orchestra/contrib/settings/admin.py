@@ -103,7 +103,5 @@ class SettingFileView(generic.TemplateView):
         return context
 
 
-
 admin.site.register_url(r'^settings/setting/view/$', SettingFileView.as_view(), 'settings_setting_view')
 admin.site.register_url(r'^settings/setting/$', SettingView.as_view(), 'settings_setting_change')
-OrchestraIndexDashboard.register_link('Administration', 'settings_setting_change', _("Settings"))

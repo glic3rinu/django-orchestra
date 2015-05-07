@@ -7,7 +7,7 @@ from .backends import ServiceMonitor
 
 
 @task(name='resources.Monitor')
-def monitor(resource_id, ids=None, async=True):
+def monitor(resource_id, ids=None):
     with LockFile('/dev/shm/resources.monitor-%i.lock' % resource_id, expire=60*60):
         from .models import ResourceData, Resource
         resource = Resource.objects.get(pk=resource_id)
@@ -29,9 +29,7 @@ def monitor(resource_id, ids=None, async=True):
             for obj in model.objects.filter(**kwargs):
                 op = Operation(backend, obj, Operation.MONITOR)
                 monitorings.append(op)
-            # TODO async=True only when running with celery
-            # monitor.request.id
-            logs += Operation.execute(monitorings, async=async)
+            logs += Operation.execute(monitorings, async=False)
         
         kwargs = {'id__in': ids} if ids else {}
         # Update used resources and trigger resource exceeded and revovery

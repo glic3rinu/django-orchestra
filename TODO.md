@@ -376,3 +376,18 @@ TODO mount the filesystem with "nosuid" option
 # orchestrate async stdout stderr (inspired on pangea managemengt commands)
 
 # orchestra-beat support for uwsgi cron
+
+# message.log if 1: return changeform
+
+# generate nginx certs on project dir rather than nginx
+
+# Register icons
+
+# send_message doesn't log task
+
+make django admin taskstate uncollapse fucking traceback, ( if exists ?)
+
+# receive tass stuck at RECEIVED	
+# monitor tasks in started and backend already in success?
+
+# custom message on admin save

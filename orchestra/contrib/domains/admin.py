@@ -11,8 +11,8 @@ from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
 from .actions import view_zone
-from .forms import RecordInlineFormSet, BatchDomainCreationAdminForm
 from .filters import TopDomainListFilter
+from .forms import RecordInlineFormSet, BatchDomainCreationAdminForm
 from .models import Domain, Record
 
 
@@ -21,11 +21,6 @@ class RecordInline(admin.TabularInline):
     formset = RecordInlineFormSet
     verbose_name_plural = _("Extra records")
     
-#    class Media:
-#        css = {
-#            'all': ('orchestra/css/hide-inline-id.css',)
-#        }
-#    
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
         if db_field.name == 'value':
@@ -73,9 +68,9 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_view_actions = [view_zone]
     
     def structured_name(self, domain):
-        if not domain.is_top:
-            return '&nbsp;'*4 + domain.name
-        return domain.name
+        if domain.is_top:
+            return domain.name
+        return '&nbsp;'*4 + domain.name
     structured_name.short_description = _("name")
     structured_name.allow_tags = True
     structured_name.admin_order_field = 'structured_name'

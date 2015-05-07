@@ -6,6 +6,7 @@ from threading import Thread
 from celery import shared_task as celery_shared_task
 from celery import states
 from celery.decorators import periodic_task as celery_periodic_task
+from django.core.mail import mail_admins
 from django.utils import timezone
 
 from orchestra.utils.db import close_connection
@@ -26,11 +27,15 @@ def keep_state(fn):
             result = fn(*args, **kwargs)
         except Exception as exc:
             state.state = states.FAILURE
-            state.traceback = traceback.format_exc()
+            state.traceback = trace
             state.runtime = (timezone.now()-now).total_seconds()
             state.save()
+            subject = 'EXCEPTION executing task %s(args=%s, kwargs=%s)' % (name, str(args), str(kwargs))
+            trace = traceback.format_exc()
+            logger.error(subject)
+            logger.error(trace)
+            mail_admins(subject, trace)
             return
-            # TODO send email
         else:
             state.state = states.SUCCESS
             state.result = str(result)

@@ -1,45 +1,61 @@
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 from fluent_dashboard import dashboard
 from fluent_dashboard.modules import CmsAppIconList
 
-from orchestra.core import services
+from orchestra.core import services, accounts, administration
+
+
+class AppDefaultIconList(CmsAppIconList):
+    def __init__(self, *args, **kwargs):
+        self.icons = kwargs.pop('icons')
+        super(AppDefaultIconList, self).__init__(*args, **kwargs)
+    
+    def get_icon_for_model(self, app_name, model_name, default=None):
+        icon = self.icons.get('.'.join((app_name, model_name)))
+        return super(AppDefaultIconList, self).get_icon_for_model(app_name, model_name, default=icon)
 
 
 class OrchestraIndexDashboard(dashboard.FluentIndexDashboard):
-    _registry = {}
-    
-    @classmethod
-    def register_link(cls, module, view_name, title):
-        registered = cls._registry.get(module, [])
-        registered.append((view_name, title))
-        cls._registry[module] = registered
+    def process_registered_view(self, module, view_name, options):
+        app_name, name = view_name.split('_')[:-1]
+        module.icons['.'.join((app_name, name))] = options.get('icon')
+        url = reverse('admin:' + view_name)
+        add_url = '/'.join(url.split('/')[:-2])
+        module.children.append({
+            'models': [{
+                'add_url': add_url,
+                'app_name': app_name,
+                'change_url': url,
+                'name': name,
+                'title': options.get('verbose_name')}],
+           'name': app_name,
+           'title': options.get('verbose_name'),
+           'url': add_url,
+        })
     
     def get_application_modules(self):
-        modules = super(OrchestraIndexDashboard, self).get_application_modules()
-        models = []
-        for model, options in services.get().items():
-            if options.get('menu', True):
-                models.append("%s.%s" % (model.__module__, model._meta.object_name))
-        
-        for module in modules:
-            registered = self._registry.get(module.title, None)
-            if registered:
-                for view_name, title in registered:
-                    # This values are shit, but it is how fluent dashboard will look for the icon
-                    app_name, name = view_name.split('_')[:-1]
-                    url = reverse('admin:' + view_name)
-                    add_url = '/'.join(url.split('/')[:-2])
-                    module.children.append({
-                        'models': [{
-                            'add_url': add_url,
-                            'app_name': app_name,
-                            'change_url': url,
-                            'name': name,
-                            'title': title }],
-                       'name': app_name,
-                       'title': title,
-                       'url': add_url,
-                    })
-        service_icon_list = CmsAppIconList('Services', models=models, collapsible=True)
-        modules.append(service_icon_list)
+        from fluent_dashboard import appsettings
+        modules = []
+        # Honor settings override, hacky. I Know
+        if appsettings.FLUENT_DASHBOARD_APP_GROUPS[0][0] != _('CMS'):
+            modules = super(OrchestraIndexDashboard, self).get_application_modules()
+        for register in (accounts, administration, services):
+            title = register.verbose_name
+            models = []
+            icons = {}
+            views = []
+            for model, options in register.get().items():
+                if isinstance(model, str):
+                    views.append((model, options))
+                elif options.get('dashboard', True):
+                    opts = model._meta
+                    label = "%s.%s" % (model.__module__, opts.object_name)
+                    models.append(label)
+                    label = '.'.join((opts.app_label, opts.model_name))
+                    icons[label] = options.get('icon')
+            module = AppDefaultIconList(title, models=models, icons=icons, collapsible=True)
+            for view_name, options in views:
+                self.process_registered_view(module, view_name, options)
+            modules.append(module)
         return modules

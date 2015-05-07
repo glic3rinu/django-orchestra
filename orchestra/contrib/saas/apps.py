@@ -10,6 +10,4 @@ class SaaSConfig(AppConfig):
     def ready(self):
         from . import signals
         from .models import SaaS
-        services.register(SaaS)
-
-
+        services.register(SaaS, icon='saas.png')

@@ -43,7 +43,7 @@ class Message(models.Model):
         # Max tries
         if self.retries >= len(settings.MAILER_DEFERE_SECONDS):
             self.state = self.FAILED
-        self.save(update_fields=('state', 'retries'))
+        self.save(update_fields=('state', 'retries', 'last_retry'))
     
     def sent(self):
         self.state = self.SENT

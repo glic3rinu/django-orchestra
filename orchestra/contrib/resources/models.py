@@ -148,9 +148,8 @@ class Resource(models.Model):
     
     def monitor(self, async=True):
         if async:
-            print(tasks.monitor.delay)
-            return tasks.monitor.delay(self.pk, async=async)
-        return tasks.monitor(self.pk, async=async)
+            return tasks.monitor.apply_async(self.pk)
+        return tasks.monitor(self.pk)
 
 
 class ResourceData(models.Model):

@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.accounts.models import Account
 from orchestra.contrib.contacts.models import Contact
-from orchestra.core import accounts, validators
+from orchestra.core import validators
 from orchestra.utils.html import html_to_pdf
 
 from . import settings
@@ -351,6 +351,3 @@ class BillSubline(models.Model):
 #        if self.line.bill.is_open:
 #            self.line.bill.total = self.line.bill.get_total()
 #            self.line.bill.save(update_fields=['total'])
-
-
-accounts.register(Bill)

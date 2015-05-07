@@ -3,7 +3,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import accounts, validators
+from orchestra.core import validators
 from orchestra.models.fields import MultiSelectField
 
 from . import settings
@@ -78,6 +78,3 @@ class Contact(models.Model):
                 errors['zipcode'] = error
         if errors:
             raise ValidationError(errors)
-
-
-accounts.register(Contact)

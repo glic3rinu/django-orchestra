@@ -4,7 +4,6 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
-from orchestra.core import accounts
 from orchestra.models.queryset import group_by
 
 from . import settings
@@ -200,7 +199,3 @@ class TransactionProcess(models.Model):
         for transaction in self.transactions.processing():
             transaction.mark_as_secured()
         self.save(update_fields=['state'])
-
-
-accounts.register(PaymentSource)
-accounts.register(Transaction)

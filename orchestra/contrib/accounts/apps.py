@@ -12,7 +12,7 @@ class AccountConfig(AppConfig):
     def ready(self):
         from .management import create_initial_superuser
         from .models import Account
-        services.register(Account, menu=False)
-        accounts.register(Account)
+        services.register(Account, menu=False, dashboard=False)
+        accounts.register(Account, icon='Face-monkey.png')
         post_migrate.connect(create_initial_superuser,
             dispatch_uid="orchestra.contrib.accounts.management.createsuperuser")

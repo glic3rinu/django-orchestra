@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import validators, services
+from orchestra.core import validators
 from orchestra.utils.functional import cached
 
 from . import settings
@@ -152,6 +152,3 @@ class Content(models.Model):
         domain = self.website.domains.first()
         if domain:
             return '%s://%s%s' % (self.website.get_protocol(), domain, self.path)
-
-
-services.register(Website)

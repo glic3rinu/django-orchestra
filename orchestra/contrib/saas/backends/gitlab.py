@@ -12,7 +12,7 @@ class GitLabSaaSBackend(ServiceController):
     verbose_name = _("GitLab SaaS")
     model = 'saas.SaaS'
     default_route_match = "saas.service == 'gitlab'"
-    block = True
+    serialize = True
     actions = ('save', 'delete', 'validate_creation')
     doc_settings = (settings,
         ('SAAS_GITLAB_DOMAIN', 'SAAS_GITLAB_ROOT_PASSWORD'),

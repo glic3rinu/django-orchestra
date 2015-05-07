@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
 from orchestra.core.validators import validate_name
 
 from . import settings
@@ -70,6 +69,3 @@ class List(models.Model):
             'name': self.name
         }
         return settings.LISTS_LIST_URL % context
-
-
-services.register(List)

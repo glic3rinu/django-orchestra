@@ -71,7 +71,7 @@ class Command(BaseCommand):
         else:
             for instance in queryset:
                 manager.collect(instance, action, operations=operations, route_cache=route_cache)
-        scripts, block = manager.generate(operations)
+        scripts, serialize = manager.generate(operations)
         servers = []
         # Print scripts
         for key, value in scripts.items():
@@ -96,7 +96,7 @@ class Command(BaseCommand):
                     return
                 break
         if not dry:
-            logs = manager.execute(scripts, block=block)
+            logs = manager.execute(scripts, serialize=serialize)
             for log in logs:
                 self.stdout.write(log.stdout)
                 self.stderr.write(log.stderr)

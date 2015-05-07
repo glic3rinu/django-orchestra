@@ -72,7 +72,7 @@ class ServiceMonitor(ServiceBackend):
             MonitorData.objects.create(monitor=name, object_id=object_id,
                     content_type=ct, value=value, created_at=self.current_date)
     
-    def execute(self, server, async=False):
-        log = super(ServiceMonitor, self).execute(server, async=async)
+    def execute(self, *args, **kwargs):
+        log = super(ServiceMonitor, self).execute(*args, **kwargs)
         self.store(log)
         return log

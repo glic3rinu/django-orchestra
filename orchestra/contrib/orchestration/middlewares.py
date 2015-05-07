@@ -97,14 +97,14 @@ class OperationsMiddleware(object):
             operations = self.get_pending_operations()
             if operations:
                 try:
-                    scripts, block = manager.generate(operations)
+                    scripts, serialize = manager.generate(operations)
                 except Exception as exception:
                     self.leave_transaction_management(exception)
                     raise
                 # We commit transaction just before executing operations
                 # because here is when IntegrityError show up
                 self.leave_transaction_management()
-                logs = manager.execute(scripts, block=block)
+                logs = manager.execute(scripts, serialize=serialize)
                 if logs and resolve(request.path).app_name == 'admin':
                     message_user(request, logs)
                 return response

@@ -2,7 +2,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ungettext, ugettext_lazy as _
 
-from orchestra.core import services
 from orchestra.core.validators import validate_ipv4_address, validate_ipv6_address, validate_ascii
 from orchestra.utils.python import AttrDict
 
@@ -271,6 +270,3 @@ class Record(models.Model):
     
     def get_ttl(self):
         return self.ttl or settings.DOMAINS_DEFAULT_TTL
-
-
-services.register(Domain)

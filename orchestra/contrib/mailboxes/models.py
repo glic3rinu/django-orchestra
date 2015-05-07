@@ -6,8 +6,6 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
-
 from . import validators, settings
 
 
@@ -152,7 +150,3 @@ class Autoresponse(models.Model):
     
     def __str__(self):
         return self.address
-
-
-services.register(Mailbox)
-services.register(Address)

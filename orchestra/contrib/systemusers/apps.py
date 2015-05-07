@@ -12,7 +12,7 @@ class SystemUsersConfig(AppConfig):
     
     def ready(self):
         from .models import SystemUser
-        services.register(SystemUser)
+        services.register(SystemUser, icon='roleplaying.png')
         if 'migrate' in sys.argv and 'accounts' not in sys.argv:
             post_migrate.connect(self.create_initial_systemuser,
                 dispatch_uid="orchestra.contrib.systemusers.apps.create_initial_systemuser")

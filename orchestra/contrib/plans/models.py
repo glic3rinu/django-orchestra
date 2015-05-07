@@ -5,7 +5,6 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services, accounts
-from orchestra.core.translations import ModelTranslation
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
 
@@ -100,9 +99,3 @@ class Rate(models.Model):
         for name, method in cls.RATE_METHODS.items():
             choices.append((name, method.verbose_name))
         return choices
-
-
-accounts.register(ContractedPlan)
-services.register(ContractedPlan, menu=False)
-
-ModelTranslation.register(Plan, ('verbose_name',))

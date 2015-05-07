@@ -1,8 +1,7 @@
+from django.contrib.auth.hashers import make_password
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.hashers import make_password
 
-from orchestra.core import services
 from orchestra.core.validators import validate_hostname
 
 from . import settings
@@ -32,6 +31,3 @@ class VPS(models.Model):
     
     def get_username(self):
         return self.hostname
-
-
-services.register(VPS)

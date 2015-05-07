@@ -1,12 +1,20 @@
 from django.apps import AppConfig
 from django.core.checks import register, Error
 from django.core.exceptions import ValidationError
+from django.utils.translation import ngettext, ugettext_lazy as _
+
+from orchestra.core import administration
 
 from . import Setting
+
 
 class SettingsConfig(AppConfig):
     name = 'orchestra.contrib.settings'
     verbose_name = 'Settings'
+    
+    def ready(self):
+        administration.register_view('settings_setting_change', verbose_name=_("Settings"),
+            icon='Multimedia-volume-control.png')
     
     @register()
     def check_settings(app_configs, **kwargs):

@@ -9,4 +9,4 @@ class MailerConfig(AppConfig):
     
     def ready(self):
         from .models import Message
-        administration.register(Message)
+        administration.register(Message, icon='Mail-send.png')

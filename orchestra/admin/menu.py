@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from admin_tools.menu import items, Menu
 from django.core.urlresolvers import reverse
 from django.utils.text import capfirst
@@ -27,7 +29,6 @@ def api_link(context):
         return reverse('api-root')
 
 
-from copy import copy
 def process_registry(register):
     def get_item(model, options):
         if isinstance(model, str):
@@ -47,7 +48,7 @@ def process_registry(register):
                 parent_item = childrens.get(parent)
                 if parent_item:
                     if not parent_item.children:
-                        parent_item.children.append(copy(parent_item))
+                        parent_item.children.append(deepcopy(parent_item))
                 else:
                     parent_item = get_item(parent, register[parent])
                     parent_item.children = []

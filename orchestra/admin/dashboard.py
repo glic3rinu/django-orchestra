@@ -28,9 +28,9 @@ class OrchestraIndexDashboard(dashboard.FluentIndexDashboard):
                 'app_name': app_name,
                 'change_url': url,
                 'name': name,
-                'title': options.get('verbose_name')}],
+                'title': options.get('verbose_name_plural')}],
            'name': app_name,
-           'title': options.get('verbose_name'),
+           'title': options.get('verbose_name_plural'),
            'url': add_url,
         })
     

@@ -13,7 +13,8 @@ class SettingsConfig(AppConfig):
     verbose_name = 'Settings'
     
     def ready(self):
-        administration.register_view('settings_setting_change', verbose_name=_("Settings"),
+        administration.register_view('settings_setting_change', verbose_name=_("Setting"),
+            verbose_name_plural=_("Settings"),
             icon='Multimedia-volume-control.png')
     
     @register()

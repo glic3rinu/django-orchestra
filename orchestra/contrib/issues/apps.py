@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 
 from orchestra.core import accounts, administration
+from orchestra.core.translations import ModelTranslation
 
 
 class IssuesConfig(AppConfig):
@@ -11,3 +12,4 @@ class IssuesConfig(AppConfig):
         from .models import Queue, Ticket
         accounts.register(Ticket, icon='Ticket_star.png')
         administration.register(Queue, dashboard=False)
+        ModelTranslation.register(Queue, ('verbose_name',))

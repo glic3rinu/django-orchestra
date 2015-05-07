@@ -19,9 +19,11 @@ class Command(BaseCommand):
             make_option('--cert-key', dest='cert_key', default='',
                 help='Nginx SSL certificate key.'),
             
-            make_option('--cert-path', dest='cert_path', default='/etc/nginx/ssl/orchestra.crt',
+            make_option('--cert-path', dest='cert_path',
+                default=os.path.join(paths.get_site_dir(), 'ssl', 'orchestra.crt'),
                 help='Nginx SSL certificate, one will be created by default.'),
-            make_option('--cert-key-path', dest='cert_key_path', default='/etc/nginx/ssl/orchestra.key',
+            make_option('--cert-key-path', dest='cert_key_path',
+                default=os.path.join(paths.get_site_dir(), 'ssl', 'orchestra.key'),
                 help='Nginx SSL certificate key.'),
             # Cert options
             make_option('--cert-override', dest='cert_override', action='store_true',

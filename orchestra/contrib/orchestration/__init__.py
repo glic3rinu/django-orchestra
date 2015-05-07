@@ -33,7 +33,7 @@ class Operation():
         self.routes = routes
     
     @classmethod
-    def execute(cls, operations, serialize=False, async=False):
+    def execute(cls, operations, serialize=False, async=None):
         from . import manager
         scripts, oserialize = manager.generate(operations)
         return manager.execute(scripts, serialize=(serialize or oserialize), async=async)

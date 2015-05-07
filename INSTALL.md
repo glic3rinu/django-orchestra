@@ -53,7 +53,8 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 6. Configure periodic execution of tasks (choose one)
     1. Use cron
         ```bash
-        sudo python3 manage.py setupcronbeat
+        python3 manage.py setupcronbeat
+        python3 panel/manage.py syncperiodictasks
         ```
 
     2. Use celeryd

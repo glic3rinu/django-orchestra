@@ -55,6 +55,7 @@ python3 panel/manage.py runserver
 
 # Enable periodic tasks with cron (optional)
 python3 panel/manage.py setupcronbeat
+python3 panel/manage.py syncperiodictasks
 ```
 
 Now you can see the web interface on http://localhost:8000/admin

@@ -6,7 +6,6 @@ from django.utils import timezone
 from djcelery.models import PeriodicTask
 
 from ...decorators import keep_state
-from ...utils import get_id, get_name
 
 
 class Command(BaseCommand):
@@ -46,4 +45,4 @@ class Command(BaseCommand):
                     arguments.append(arg)
             args = arguments
         # Run task synchronously, but logging TaskState
-        keep_state(task)(get_id(), get_name(task), *args, **kwargs)
+        keep_state(task)(*args, **kwargs)

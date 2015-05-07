@@ -18,14 +18,18 @@ from .utils import get_name, get_id
 def keep_state(fn):
     """ logs task on djcelery's TaskState model """
     @wraps(fn)
-    def wrapper(task_id, name, *args, **kwargs):
+    def wrapper(*args, _task_id=None, _name=None, **kwargs):
         from djcelery.models import TaskState
         now = timezone.now()
-        state = TaskState.objects.create(state=states.STARTED, task_id=task_id, name=name, args=str(args),
+        if _task_id is None:
+            _task_id = get_id()
+        if _name is None:
+            _name = get_name(fn)
+        state = TaskState.objects.create(state=states.STARTED, task_id=_task_id, name=_name, args=str(args),
             kwargs=str(kwargs), tstamp=now)
         try:
             result = fn(*args, **kwargs)
-        except Exception as exc:
+        except:
             state.state = states.FAILURE
             state.traceback = trace
             state.runtime = (timezone.now()-now).total_seconds()
@@ -35,7 +39,7 @@ def keep_state(fn):
             logger.error(subject)
             logger.error(trace)
             mail_admins(subject, trace)
-            return
+            raise
         else:
             state.state = states.SUCCESS
             state.result = str(result)
@@ -49,7 +53,10 @@ def apply_async(fn, name=None, method='thread'):
     """ replaces celery apply_async """
     def inner(fn, name, method, *args, **kwargs):
         task_id = get_id()
-        args = (task_id, name) + args
+        kwargs.update({
+            '_name': name, 
+            '_task_id': task_id,
+        })
         thread = method(target=fn, args=args, kwargs=kwargs)
         thread.start()
         # Celery API compat

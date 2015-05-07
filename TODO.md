@@ -288,30 +288,15 @@ https://code.djangoproject.com/ticket/24576
 # insert settings on dashboard dynamically
 
 # convert all complex settings to string
-# @ something database names
+# size monitor of @002 @003 database names
 # password validation cracklib on change password form=?????
-# reset setting buton 
+# reset setting button 
 
 # periodic cleaning of spam mailboxes
 
 # admin edit relevant djanog settings
 # django SITE_NAME vs ORCHESTRA_SITE_NAME ?
 
-
-Replace celery by a custom solution?
-    # TODO create decorator wrapper that abstract the task away from the backen (cron/celery)
-    # TODO crontab model localhost/autoadded attribute
-    * No more jumbo dependencies and wierd bugs
-    1) Periodic Monitoring:
-        * runtask management command + crontab scheduling or high performance beat crontab (not loading bloated django system)
-    2) Single time shot:
-        sys.run("python3 manage.py runtas 'task' args")
-    3) Emails:
-        Custom backend that distinguishes between priority and bulk mail
-            *priority: custom Thread backend
-            *bulk: wrapper arround django-mailer to avoid loading django system
-
-pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
 
 # TASKS_ENABLE_UWSGI_CRON_BEAT (default) for production + system check --deploy
     if 'wsgi' in sys.argv and settings.TASKS_ENABLE_UWSGI_CRON_BEAT:
@@ -321,15 +306,13 @@ pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
         uwsgi.register_signal(99, '', uwsgi_beat)
         uwsgi.add_timer(99, 60)
 # TASK_BEAT_BACKEND = ('cron', 'celerybeat', 'uwsgi')
-# SHip orchestra production-ready (no DEBUG etc)
+# Ship orchestra production-ready (no DEBUG etc)
 
 # import module and sed
 # if setting.value == default. remove
 # reload generic admin view ?redirect=http...
 # inspecting django db connection for asserting db readines? or performing a query
 # wake up django mailer on send_mail
-
-# project settings modified copy of django's default project settings
 
 # all signals + accouns.register() services.register() on apps.py
 
@@ -350,44 +333,23 @@ pip3 install https://github.com/APSL/django-mailer-2/archive/master.zip
 TODO http://wiki2.dovecot.org/HowTo/SimpleVirtualInstall
 TODO http://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
 TODO mount the filesystem with "nosuid" option
-# wkhtmltopdf -> reportlab
-# autoiscover modules on app.ready() ? lazy choices on models for plugins
-# ModelTranslation.register on app.ready()
+
 # uwse uwsgi cron: decorator or config cron = 59 2 -1 -1 -1 %(virtualenv)/bin/python manage.py runmyfunnytask
 
 # mailboxes.address settings multiple local domains, not only one?
-# backend.context = self.get_context() or save(obj, context=None)
+# backend.context = self.get_context() or save(obj, context=None) ?? more like form.cleaned_data
 
 # smtplib.SMTPConnectError: (421, b'4.7.0 mail.pangea.org Error: too many connections from 77.246.181.209')
-
-# create registered periodic_task  on beat execution: and management command: syncperiodictasks
-
-# MERGE beats and inspect INSTALLED_APPS and get IS_ENABLED
 
 # rename virtual_maps to virtual_alias_maps and remove virtual_alias_domains ?
 # virtdomains file is not ideal, prevent fake/error on domains there! and make sure this file is required!
 
-# Message last_retry auto_now doesn't work!
-
-# don't block on beat, and --report periodic tasks
-
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
-
 # orchestrate async stdout stderr (inspired on pangea managemengt commands)
-
 # orchestra-beat support for uwsgi cron
 
-# message.log if 1: return changeform
-
-# generate nginx certs on project dir rather than nginx
-
-# Register icons
-
-# send_message doesn't log task
+# message.log if len() == 1: return changeform
 
 make django admin taskstate uncollapse fucking traceback, ( if exists ?)
 
-# receive tass stuck at RECEIVED	
-# monitor tasks in started and backend already in success?
-
-# custom message on admin save
+# form for custom message on admin save "comment & save"?

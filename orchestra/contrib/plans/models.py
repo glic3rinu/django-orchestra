@@ -4,7 +4,6 @@ from django.db.models import Q
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services, accounts
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
 

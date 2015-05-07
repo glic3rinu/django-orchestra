@@ -9,8 +9,6 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.core import validators
 from orchestra.models import queryset, fields
 from orchestra.models.utils import get_model_field_path
-from orchestra.utils.paths import get_project_dir
-from orchestra.utils.sys import run
 
 from . import tasks, settings
 from .backends import ServiceMonitor
@@ -122,7 +120,6 @@ class Resource(models.Model):
         self.sync_periodic_task()
         # This only work on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
-        run('{ sleep 2 && touch %s/wsgi.py; } &' % get_project_dir(), async=True)
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)

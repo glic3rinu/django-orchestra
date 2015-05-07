@@ -97,8 +97,13 @@ def generate(operations):
     return scripts, serialize
 
 
-def execute(scripts, serialize=False, async=False):
-    """ executes the operations on the servers """
+def execute(scripts, serialize=False, async=None):
+    """
+    executes the operations on the servers
+    
+    serialize: execute one backend at a time
+    async: do not join threads (overrides route.async)
+    """
     if settings.ORCHESTRATION_DISABLE_EXECUTION:
         logger.info('Orchestration execution is dissabled by ORCHESTRATION_DISABLE_EXECUTION settings.')
         return []
@@ -110,7 +115,10 @@ def execute(scripts, serialize=False, async=False):
         route, __ = key
         backend, operations = value
         args = (route.host,)
-        async = not serialize and (async or route.async)
+        if async is None:
+            async = not serialize and route.async
+        else:
+            async = not serialize and async
         kwargs = {
             'async': async,
         }

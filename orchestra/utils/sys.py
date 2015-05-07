@@ -195,3 +195,8 @@ class LockFile(object):
     def __exit__(self, type, value, traceback):
         if not self.unlocked:
             self.release()
+
+
+def touch_wsgi():
+    from . import paths
+    run('{ sleep 2 && touch %s/wsgi.py; } &' % paths.get_project_dir(), async=True)

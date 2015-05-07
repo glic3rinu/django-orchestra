@@ -73,7 +73,7 @@ class SettingView(generic.edit.FormView):
             
             # Save changes
             parser.save(changes)
-            sys.run('{ sleep 2 && touch %s/wsgi.py; } &' % paths.get_project_dir(), async=True)
+            sys.touch_wsgi()
             n = len(changes)
             context = {
                 'message': ngettext(

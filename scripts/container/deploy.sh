@@ -106,6 +106,7 @@ if [[ $CELERY == true ]]; then
     sudo $PYTHON_BIN $MANAGE setupcelery --username $USER --processes 2
 else
     surun "$PYTHON_BIN $MANAGE setupcronbeat"
+    surun "$PYTHON_BIN $MANAGE syncperiodictasks"
 fi
 
 

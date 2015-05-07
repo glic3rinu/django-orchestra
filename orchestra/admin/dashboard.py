@@ -1,12 +1,13 @@
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from fluent_dashboard import dashboard
+from fluent_dashboard import dashboard, appsettings
 from fluent_dashboard.modules import CmsAppIconList
 
 from orchestra.core import services, accounts, administration
 
 
 class AppDefaultIconList(CmsAppIconList):
+    """ Provides support for custom default icons """
     def __init__(self, *args, **kwargs):
         self.icons = kwargs.pop('icons')
         super(AppDefaultIconList, self).__init__(*args, **kwargs)
@@ -17,25 +18,28 @@ class AppDefaultIconList(CmsAppIconList):
 
 
 class OrchestraIndexDashboard(dashboard.FluentIndexDashboard):
+    """ Gets application modules from services, accounts and administration registries """
     def process_registered_view(self, module, view_name, options):
         app_name, name = view_name.split('_')[:-1]
         module.icons['.'.join((app_name, name))] = options.get('icon')
         url = reverse('admin:' + view_name)
         add_url = '/'.join(url.split('/')[:-2])
         module.children.append({
-            'models': [{
-                'add_url': add_url,
-                'app_name': app_name,
-                'change_url': url,
-                'name': name,
-                'title': options.get('verbose_name_plural')}],
-           'name': app_name,
-           'title': options.get('verbose_name_plural'),
-           'url': add_url,
+            'models': [
+                {
+                    'add_url': add_url,
+                    'app_name': app_name,
+                    'change_url': url,
+                    'name': name,
+                    'title': options.get('verbose_name_plural')
+                }
+            ],
+            'name': app_name,
+            'title': options.get('verbose_name_plural'),
+            'url': add_url,
         })
     
     def get_application_modules(self):
-        from fluent_dashboard import appsettings
         modules = []
         # Honor settings override, hacky. I Know
         if appsettings.FLUENT_DASHBOARD_APP_GROUPS[0][0] != _('CMS'):

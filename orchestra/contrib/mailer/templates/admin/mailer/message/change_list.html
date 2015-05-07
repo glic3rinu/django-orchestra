@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls admin_static admin_list %}
+
+
+{% block object-tools-items %}
+    <li>
+      {% url cl.opts|admin_urlname:'send_pending' as send_pending_url %}
+      <a href="{% add_preserved_filters send_pending_url is_popup to_field %}" class="historylink">
+        {% blocktrans with cl.opts.verbose_name as name %}Send pending{% endblocktrans %}
+      </a>
+    </li>
+    {{ block.super }}
+{% endblock %}
+

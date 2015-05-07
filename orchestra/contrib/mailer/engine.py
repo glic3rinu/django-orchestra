@@ -1,11 +1,15 @@
 import smtplib
+from datetime import timedelta
 from socket import error as SocketError
 
 from django.core.mail import get_connection
+from django.db.models import Q
+from django.utils import timezone
 from django.utils.encoding import smart_str
 
 from orchestra.utils.sys import LockFile
 
+from . import settings
 from .models import Message
 
 
@@ -37,11 +41,6 @@ def send_pending(bulk=100):
         for message in Message.objects.filter(state=Message.QUEUED).order_by('priority'):
             send_message(message, num, connection, bulk)
             num += 1
-        from django.utils import timezone
-        from . import settings
-        from datetime import timedelta
-        from django.db.models import Q
-        
         now = timezone.now()
         qs = Q()
         for retries, seconds in enumerate(settings.MAILER_DEFERE_SECONDS):

@@ -11,7 +11,7 @@ from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date
 from orchestra.contrib.orchestration.models import Route
 from orchestra.core import services
-from orchestra.utils.db import database_ready
+from orchestra.utils import db, sys
 from orchestra.utils.functional import cached
 
 from .actions import run_monitor
@@ -45,7 +45,9 @@ class ResourceAdmin(ExtendedModelAdmin):
     actions = (run_monitor,)
     change_view_actions = actions
     change_readonly_fields = ('name', 'content_type')
-    prepopulated_fields = {'name': ('verbose_name',)}
+    prepopulated_fields = {
+        'name': ('verbose_name',)
+    }
     list_select_related = ('content_type', 'crontab',)
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -70,6 +72,7 @@ class ResourceAdmin(ExtendedModelAdmin):
     
     def save_model(self, request, obj, form, change):
         super(ResourceAdmin, self).save_model(request, obj, form, change)
+        # best-effort
         model = obj.content_type.model_class()
         modeladmin = type(get_modeladmin(model))
         resources = obj.content_type.resource_set.filter(is_active=True)
@@ -79,6 +82,8 @@ class ResourceAdmin(ExtendedModelAdmin):
                 inline = resource_inline_factory(resources)
             inlines.append(inline)
         modeladmin.inlines = inlines
+        # reload Not always work
+        sys.touch_wsgi()
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ filter service content_types """
@@ -271,5 +276,5 @@ def insert_resource_inlines():
         insertattr(model, 'inlines', inline)
 
 
-if database_ready():
+if db.database_ready():
     insert_resource_inlines()

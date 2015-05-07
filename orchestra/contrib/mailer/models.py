@@ -38,6 +38,9 @@ class Message(models.Model):
     # TODO rename to last_try
     last_retry = models.DateTimeField(_("last try"), auto_now=True)
     
+    def __str__(self):
+        return '%s to %s' % (self.subject, self.to_address)
+    
     def defer(self):
         self.state = self.DEFERRED
         # Max tries

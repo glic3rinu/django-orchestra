@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from orchestra.core import administration, accounts
+from orchestra.core import administration, accounts, services
 from orchestra.core.translations import ModelTranslation
 
 
@@ -11,5 +11,6 @@ class PlansConfig(AppConfig):
     def ready(self):
         from .models import Plan, ContractedPlan
         accounts.register(ContractedPlan, icon='ContractedPack.png')
+        services.register(ContractedPlan, menu=False, dashboard=False)
         administration.register(Plan, icon='Pack.png')
         ModelTranslation.register(Plan, ('verbose_name',))

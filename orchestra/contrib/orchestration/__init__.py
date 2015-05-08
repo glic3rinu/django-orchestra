@@ -1,3 +1,4 @@
+import collections
 import copy
 
 from .backends import ServiceBackend, ServiceController, replace
@@ -35,19 +36,31 @@ class Operation():
     @classmethod
     def execute(cls, operations, serialize=False, async=None):
         from . import manager
-        scripts, oserialize = manager.generate(operations)
-        return manager.execute(scripts, serialize=(serialize or oserialize), async=async)
+        scripts, backend_serialize = manager.generate(operations)
+        return manager.execute(scripts, serialize=(serialize or backend_serialize), async=async)
     
     @classmethod
-    def execute_action(cls, instance, action):
-        backends = ServiceBackend.get_backends(instance=instance, action=action)
-        operations = [cls(backend_cls, instance, action) for backend_cls in backends]
+    def create_for_action(cls, instances, action):
+        if not isinstance(instances, collections.Iterable):
+            instances = [instances]
+        operations = []
+        for instance in instances:
+            backends = ServiceBackend.get_backends(instance=instance, action=action)
+            for backend_cls in backends:
+                operations.append(
+                    cls(backend_cls, instance, action)
+                )
+        return operations
+    
+    @classmethod
+    def execute_action(cls, instances, action):
+        """ instances can be an object or an iterable for batch processing """
+        operations = cls.create_for_action(instances, action)
         return cls.execute(operations)
     
     def preload_context(self):
         """
-        Heuristic
-        Running get_context will prevent most of related objects do not exist errors
+        Heuristic: Running get_context will prevent most of related objects do not exist errors
         """
         if self.action == self.DELETE:
             if hasattr(self.backend, 'get_context'):

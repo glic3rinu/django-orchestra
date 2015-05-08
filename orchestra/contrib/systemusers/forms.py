@@ -1,6 +1,7 @@
 import textwrap
 
 from django import forms
+from django.utils.translation import ngettext, ugettext_lazy as _
 
 from orchestra.forms import UserCreationForm, UserChangeForm
 
@@ -34,6 +35,8 @@ class SystemUserFormMixin(object):
             self.fields['directory'].widget = forms.HiddenInput()
         elif self.instance.pk and (self.instance.get_base_home() == self.instance.home):
             self.fields['directory'].widget = forms.HiddenInput()
+        else:
+            self.fields['directory'].widget = forms.TextInput(attrs={'size':'70'})
         if not self.instance.pk or not self.instance.is_main:
             # Some javascript for hidde home/directory inputs when convinient
             self.fields['shell'].widget.attrs = {
@@ -74,3 +77,23 @@ class SystemUserCreationForm(SystemUserFormMixin, UserCreationForm):
 
 class SystemUserChangeForm(SystemUserFormMixin, UserChangeForm):
     pass
+
+
+class GrantPermissionForm(forms.Form):
+    base_path = forms.ChoiceField(label=_("Grant access to"), choices=(),
+        help_text=_("User will be granted access to this directory."))
+    path_extension = forms.CharField(label=_("Path extension"), required=False, initial='',
+        widget=forms.TextInput(attrs={'size':'70'}), help_text=_("Relative to chosen home."))
+    read_only = forms.BooleanField(label=_("Read only"), initial=False, required=False,
+        help_text=_("Designates whether the permissions granted will be read-only or read/write."))
+    
+    def __init__(self, *args, **kwargs):
+        instance = args[0]
+        super_args = []
+        if len(args) > 1:
+            super_args.append(args[1])
+        super(GrantPermissionForm, self).__init__(*super_args, **kwargs)
+        related_users = type(instance).objects.filter(account=instance.account_id)
+        self.fields['base_path'].choices = (
+            (user.get_base_home(), user.get_base_home()) for user in related_users
+        )

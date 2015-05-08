@@ -1,0 +1,65 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "orchestra/css/hide-inline-id.css" %}" />
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">{{ app_label|capfirst|escape }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+{% if obj %}
+&rsaquo; <a href="{% url opts|admin_urlname:'change' obj.pk %}">{{ obj }}</a>
+&rsaquo; {{ action_name }}
+{% elif add %}
+&rsaquo; <a href="../">{% trans "Add" %} {{ opts.verbose_name }}</a>
+&rsaquo; {{ action_name }}
+{% else %}
+&rsaquo; {{ action_name }} multiple objects
+{% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+  <div>
+    <div style="margin:20px;">
+    Grant permissions to these system users: {% for user in queryset %}{{ user.username }}{% if not forloop.last %},{% endif %}{% endfor %}.
+    <ul>{{ display_objects | unordered_list }}</ul>
+    <form action="" method="post">{% csrf_token %}
+        <fieldset class="module aligned wide">
+        <div class="form-row ">
+            <div class="field-box field-home">
+                {{ form.path_extension.errors }}
+                <label for="{{ form.base_path.id_for_label }}">{{ form.base_path.label }}:</label>
+                {{ form.base_path }}
+                <p class="help">{{ form.base_path.help_text|safe }}</p>
+            </div>
+            <div class="field-box field-home">
+                {{ form.path_extension.errors }}
+                <label for="{{ form.path_extension.id_for_label }}"></label>
+                {{ form.path_extension }}
+                <p class="help">{{ form.path_extension.help_text|safe }}</p>
+            </div>
+        </div>
+        <div class="form-row ">
+            {{ form.read_only }} <label for="{{ form.read_only.id_for_label }}" class="vCheckboxLabel">{{ form.read_only.label }}</label>
+            <p class="help">{{ form.read_only.help_text|safe }}</p>
+        </div>
+        </fieldset>
+    <div>
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_value }}" />
+    <input type="hidden" name="post" value="{{ post_value|default:'generic_confirmation' }}" />
+    <input type="submit" value="{{ submit_value|default:_("Save") }}" />
+    </div>
+    </form>
+{% endblock %}
+

@@ -66,8 +66,16 @@ class UNIXUserBackend(ServiceController):
             self.append("rm -fr %(base_home)s" % context)
     
     def grant_permission(self, user):
+        # TODO
         context = self.get_context(user)
-        # TODO setacl
+        context.update({
+            'to': user.grant_to,
+            'ro': user.grant_ro,
+        })
+        if user.ro:
+            self.append('echo "acl add read permissions for %(user)s to %(to)s"' % context)
+        else:
+            self.append('echo "acl add read-write permissions for %(user)s to %(to)s"' % context)
     
     def get_groups(self, user):
         if user.is_main:

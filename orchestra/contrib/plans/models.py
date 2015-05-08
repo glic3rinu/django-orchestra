@@ -68,9 +68,11 @@ class RateQuerySet(models.QuerySet):
 class Rate(models.Model):
     STEP_PRICE = 'STEP_PRICE'
     MATCH_PRICE = 'MATCH_PRICE'
+    BEST_PRICE = 'BEST_PRICE'
     RATE_METHODS = {
         STEP_PRICE: rating.step_price,
         MATCH_PRICE: rating.match_price,
+        BEST_PRICE: rating.best_price,
     }
     
     service = models.ForeignKey('services.Service', verbose_name=_("service"),

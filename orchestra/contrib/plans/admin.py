@@ -28,7 +28,7 @@ class ContractedPlanAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_display = ('plan', 'account_link')
     list_filter = ('plan__name',)
     list_select_related = ('plan', 'account')
-
+    search_fields = ('account__username', 'plan__name', 'id')
 
 admin.site.register(Plan, PlanAdmin)
 admin.site.register(ContractedPlan, ContractedPlanAdmin)

@@ -152,3 +152,9 @@ def match_price(rates, metric):
 match_price.verbose_name = _("Match price")
 match_price.help_text = _("Only <b>the rate</b> with a) inmediate inferior metric and b) lower price is applied. "
                           "Nominal price will be used when initial block is missing.")
+
+
+def best_price(rates, metric):
+    pass
+best_price.verbose_name = _("Best price")
+best_price.help_text = _("Produces the best possible price given all active rating lines.")

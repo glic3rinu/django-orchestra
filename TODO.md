@@ -346,10 +346,12 @@ TODO mount the filesystem with "nosuid" option
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
 # orchestrate async stdout stderr (inspired on pangea managemengt commands)
-# orchestra-beat support for uwsgi cron
-
-# message.log if len() == 1: return changeform
+orchestra-beat support for uwsgi cron
 
 make django admin taskstate uncollapse fucking traceback, ( if exists ?)
 
 # form for custom message on admin save "comment & save"?
+
+# backend.context and backned.instance provided when an action is called? like forms.cleaned_data: do it on manager.generation(backend.context = backend.get_context()) or in backend.__getattr__ ? also backend.head,tail,content switching on manager.generate()?
+
+# replace return_code by exit_code everywhere

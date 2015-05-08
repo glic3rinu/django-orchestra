@@ -1,3 +1,4 @@
+import time
 from django.core.management.base import BaseCommand, CommandError
 from django.apps import apps
 
@@ -96,9 +97,22 @@ class Command(BaseCommand):
                     return
                 break
         if not dry:
-            logs = manager.execute(scripts, serialize=serialize)
-            for log in logs:
-                self.stdout.write(log.stdout)
-                self.stderr.write(log.stderr)
+            logs = manager.execute(scripts, serialize=serialize, async=True)
+            running = list(logs)
+            stdout = 0
+            stderr = 0
+            while running:
+                for log in running:
+                    cstdout = len(log.stdout)
+                    cstderr = len(log.stderr)
+                    if cstdout > stdout:
+                        self.stdout.write(log.stdout[stdout:])
+                        stdout = cstdout
+                    if cstderr > stderr:
+                        self.stderr.write(log.stderr[stderr:])
+                        stderr = cstderr
+                    if log.has_finished:
+                        running.remove(log)
+                    time.sleep(0.1)
             for log in logs:
                 self.stdout.write(' '.join((log.backend, log.state)))

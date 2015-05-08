@@ -49,7 +49,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             return
         try:
             bool(getattr(self, method)(obj))
-        except Exception as exception:
+        except Exception as exc:
             raise ValidationError(format_exception(exc))
     
     def validate_match(self, service):
@@ -124,8 +124,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             safe_locals = self.get_expression_context(instance)
             try:
                 return eval(self.metric, safe_locals)
-            except Exception as error:
-                raise type(error)("%s on '%s'" %(error, self.service))
+            except Exception as exc:
+                raise type(exc)("%s on '%s'" %(exc, self.service))
     
     def get_order_description(self, instance):
         safe_locals = self.get_expression_context(instance)

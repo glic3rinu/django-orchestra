@@ -92,8 +92,13 @@ class BackendLog(models.Model):
     def execution_time(self):
         return (self.updated_at-self.created_at).total_seconds()
     
+    @property
+    def has_finished(self):
+        return self.state not in (self.STARTED, self.RECEIVED)
+    
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
+    
 
 
 class BackendOperation(models.Model):

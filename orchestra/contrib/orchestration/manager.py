@@ -123,9 +123,14 @@ def execute(scripts, serialize=False, async=None):
             'async': async,
         }
         log = backend.create_log(*args, **kwargs)
+        # TODO Perform this shit outside of the current transaction in a non-hacky way
+        #t = threading.Thread(target=backend.create_log, args=args, kwargs=kwargs)
+        #t.start()
+        #log = t.join()
+        # End of hack
         kwargs['log'] = log
         task = keep_log(backend.execute, log, operations)
-        logger.debug('%s is going to be executed on %s' % (backend, route.host))
+        logger.debug('%s is going to be executed on %s.' % (backend, route.host))
         if serialize:
             # Execute one backend at a time, no need for threads
             task(*args, **kwargs)
@@ -181,7 +186,7 @@ def collect(instance, action, **kwargs):
                 if update_fields is not None:
                     # TODO remove this, django does not execute post_save if update_fields=[]...
                     # Maybe open a ticket at Djangoproject ?
-                    # "update_fileds=[]" is a convention for explicitly executing backend
+                    # INITIAL INTENTION: "update_fileds=[]" is a convention for explicitly executing backend
                     # i.e. account.disable()
                     if update_fields != []:
                         execute = False

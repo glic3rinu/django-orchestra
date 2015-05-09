@@ -105,7 +105,7 @@ def execute(scripts, serialize=False, async=None):
     async: do not join threads (overrides route.async)
     """
     if settings.ORCHESTRATION_DISABLE_EXECUTION:
-        logger.info('Orchestration execution is dissabled by ORCHESTRATION_DISABLE_EXECUTION settings.')
+        logger.info('Orchestration execution is dissabled by ORCHESTRATION_DISABLE_EXECUTION.')
         return []
     # Execute scripts on each server
     executions = []
@@ -122,6 +122,7 @@ def execute(scripts, serialize=False, async=None):
         kwargs = {
             'async': async,
         }
+        # we clone the connection just in case we are isolated inside a transaction
         with db.clone(model=BackendLog) as handle:
             log = backend.create_log(*args, using=handle.target)
             log._state.db = handle.origin

@@ -6,8 +6,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
+from orchestra.utils.functional import cached
+from orchestra.utils.python import import_class
 
-from . import rating
+from . import settings
 
 
 class Plan(models.Model):
@@ -66,15 +68,6 @@ class RateQuerySet(models.QuerySet):
 
 
 class Rate(models.Model):
-    STEP_PRICE = 'STEP_PRICE'
-    MATCH_PRICE = 'MATCH_PRICE'
-    BEST_PRICE = 'BEST_PRICE'
-    RATE_METHODS = {
-        STEP_PRICE: rating.step_price,
-        MATCH_PRICE: rating.match_price,
-        BEST_PRICE: rating.best_price,
-    }
-    
     service = models.ForeignKey('services.Service', verbose_name=_("service"),
         related_name='rates')
     plan = models.ForeignKey(Plan, verbose_name=_("plan"), related_name='rates')
@@ -91,12 +84,18 @@ class Rate(models.Model):
         return "{}-{}".format(str(self.price), self.quantity)
     
     @classmethod
+    @cached
     def get_methods(cls):
-        return cls.RATE_METHODS
+        return dict((method, import_class(method)) for method in settings.PLANS_RATE_METHODS)
     
     @classmethod
+    @cached
     def get_choices(cls):
         choices = []
-        for name, method in cls.RATE_METHODS.items():
+        for name, method in cls.get_methods().items():
             choices.append((name, method.verbose_name))
         return choices
+    
+    @classmethod
+    def get_default(cls):
+        return settings.PLANS_DEFAULT_RATE_METHOD

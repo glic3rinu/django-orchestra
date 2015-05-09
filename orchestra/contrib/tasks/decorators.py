@@ -1,3 +1,4 @@
+import logging
 import traceback
 from functools import partial, wraps, update_wrapper
 from multiprocessing import Process
@@ -15,6 +16,9 @@ from orchestra.utils.python import AttrDict, OrderedSet
 from .utils import get_name, get_id
 
 
+logger = logging.getLogger(__name__)
+
+
 def keep_state(fn):
     """ logs task on djcelery's TaskState model """
     @wraps(fn)
@@ -30,14 +34,14 @@ def keep_state(fn):
         try:
             result = fn(*args, **kwargs)
         except:
+            trace = traceback.format_exc()
+            subject = 'EXCEPTION executing task %s(args=%s, kwargs=%s)' % (_name, str(args), str(kwargs))
+            logger.error(subject)
+            logger.error(trace)
             state.state = states.FAILURE
             state.traceback = trace
             state.runtime = (timezone.now()-now).total_seconds()
             state.save()
-            subject = 'EXCEPTION executing task %s(args=%s, kwargs=%s)' % (name, str(args), str(kwargs))
-            trace = traceback.format_exc()
-            logger.error(subject)
-            logger.error(trace)
             mail_admins(subject, trace)
             raise
         else:

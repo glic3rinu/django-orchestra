@@ -6,6 +6,7 @@ import re
 import select
 import subprocess
 import sys
+import time
 
 from django.core.management.base import CommandError
 
@@ -165,6 +166,10 @@ def touch(fname, mode=0o666, dir_fd=None, **kwargs):
             dir_fd=None if os.supports_fd else dir_fd, **kwargs)
 
 
+class OperationLocked(Exception):
+    pass
+
+
 class LockFile(object):
     """ File-based lock mechanism used for preventing concurrency problems """
     def __init__(self, lockfile, expire=5*60, unlocked=False):
@@ -188,8 +193,8 @@ class LockFile(object):
     def __enter__(self):
         if not self.unlocked:
             if not self.acquire():
-                raise OperationLocked('%s lock file exists and its mtime is less '
-                    'than %s seconds' % (self.lockfile, self.expire))
+                raise OperationLocked("%s lock file exists and its mtime is less than %s seconds" %
+                    (self.lockfile, self.expire))
         return True
     
     def __exit__(self, type, value, traceback):

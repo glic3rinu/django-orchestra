@@ -127,11 +127,13 @@ class Service(models.Model):
             (ANUAL, _("Anual data")),
         ),
         default=BILLING_PERIOD)
-    rate_algorithm = models.CharField(_("rate algorithm"), max_length=16,
+    rate_algorithm = models.CharField(_("rate algorithm"), max_length=64,
+        choices=rate_class.get_choices(),
+        default=rate_class.get_default(),
         help_text=string_concat(_("Algorithm used to interprete the rating table."), *[
             string_concat('<br>&nbsp;&nbsp;', method.verbose_name, ': ', method.help_text)
                 for name, method in rate_class.get_methods().items()
-        ]), choices=rate_class.get_choices(), default=rate_class.get_choices()[0][0])
+        ]))
     on_cancel = models.CharField(_("on cancel"), max_length=16,
         help_text=_("Defines the cancellation behaviour of this service."),
         choices=(

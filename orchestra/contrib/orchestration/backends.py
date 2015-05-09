@@ -167,7 +167,11 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
         run = bool(self.scripts) or (self.force_empty_action_execution or bool(self.content))
         if not run:
             state = BackendLog.NOTHING
-        log = BackendLog.objects.create(backend=self.get_name(), state=state, server=server)
+        using = kwargs.pop('using', None)
+        manager = BackendLog.objects
+        if using:
+            manager = manager.using(using)
+        log = manager.create(backend=self.get_name(), state=state, server=server)
         return log
     
     def execute(self, server, async=False, log=None):

@@ -1,6 +1,7 @@
 import sys
 
 from django import db
+from django.conf import settings as djsettings
 
 
 def running_syncdb():
@@ -31,3 +32,31 @@ def close_connection(execute):
         finally:
             db.connection.close()
     return wrapper
+
+
+class clone(object):
+    """
+    clone database in order to have fresh connections and make queries outside the current transaction
+    
+        with db.clone(model=BackendLog) as handle:
+            log = BackendLog.objects.using(handle.target).create()
+            log._state.db = handle.origin
+    
+    """
+    def __init__(self, model=None, origin='', target=''):
+        if model is not None:
+            origin = db.router.db_for_write(model)
+        self.origin = origin or db.DEFAULT_DB_ALIAS
+        self.target = target or 'other_' + origin
+    
+    def __enter__(self):
+        djsettings.DATABASES[self.target] = djsettings.DATABASES[self.origin]
+        # Because db.connections.datases is a cached property
+        self.old_connections = db.connections
+        db.connections = db.utils.ConnectionHandler()
+        return self
+    
+    def __exit__(self, type, value, traceback):
+        db.connections[self.target].close()
+        djsettings.DATABASES.pop(self.target)
+        db.connections = self.old_connections

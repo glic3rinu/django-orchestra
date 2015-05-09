@@ -37,7 +37,7 @@
             <div class="field-box field-home">
                 {{ form.path_extension.errors }}
                 <label for="{{ form.base_path.id_for_label }}">{{ form.base_path.label }}:</label>
-                {{ form.base_path }}
+                {{ form.base_path }}{% for x in ""|ljust:"50" %}&nbsp;{% endfor %}
                 <p class="help">{{ form.base_path.help_text|safe }}</p>
             </div>
             <div class="field-box field-home">

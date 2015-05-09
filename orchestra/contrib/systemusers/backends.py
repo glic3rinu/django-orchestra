@@ -72,7 +72,7 @@ class UNIXUserBackend(ServiceController):
             'to': user.grant_to,
             'ro': user.grant_ro,
         })
-        if user.ro:
+        if user.grant_ro:
             self.append('echo "acl add read permissions for %(user)s to %(to)s"' % context)
         else:
             self.append('echo "acl add read-write permissions for %(user)s to %(to)s"' % context)

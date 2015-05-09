@@ -28,6 +28,7 @@ def grant_permission(modeladmin, request, queryset):
             for user in queryset:
                 user.grant_to = to
                 user.grant_ro = ro
+                # DOn't collect, execute right away for path validation
                 OperationsMiddleware.collect('grant_permission', instance=user)
                 context = {
                     'type': _("read-only") if ro else _("read-write"),
@@ -35,6 +36,7 @@ def grant_permission(modeladmin, request, queryset):
                 }
                 msg = _("Granted %(type)s permissions on %(to)s") % context
                 modeladmin.log_change(request, user, msg)
+            # TODO feedback message
             return
     opts = modeladmin.model._meta
     app_label = opts.app_label

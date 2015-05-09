@@ -6,7 +6,7 @@ from functools import partial
 
 from django.core.mail import mail_admins
 
-from orchestra.utils.db import close_connection
+from orchestra.utils import db
 from orchestra.utils.python import import_class, OrderedSet
 
 from . import settings, Operation
@@ -31,7 +31,7 @@ def keep_log(execute, log, operations):
                 send_report(execute, args, log)
         except Exception as e:
             trace = traceback.format_exc()
-            log.state = BackendLog.EXCEPTION
+            log.state = log.EXCEPTION
             log.stderr = trace
             log.save()
             subject = 'EXCEPTION executing backend(s) %s %s' % (str(args), str(kwargs))
@@ -122,12 +122,9 @@ def execute(scripts, serialize=False, async=None):
         kwargs = {
             'async': async,
         }
-        log = backend.create_log(*args, **kwargs)
-        # TODO Perform this shit outside of the current transaction in a non-hacky way
-        #t = threading.Thread(target=backend.create_log, args=args, kwargs=kwargs)
-        #t.start()
-        #log = t.join()
-        # End of hack
+        with db.clone(model=BackendLog) as handle:
+            log = backend.create_log(*args, using=handle.target)
+            log._state.db = handle.origin
         kwargs['log'] = log
         task = keep_log(backend.execute, log, operations)
         logger.debug('%s is going to be executed on %s.' % (backend, route.host))
@@ -135,7 +132,7 @@ def execute(scripts, serialize=False, async=None):
             # Execute one backend at a time, no need for threads
             task(*args, **kwargs)
         else:
-            task = close_connection(task)
+            task = db.close_connection(task)
             thread = threading.Thread(target=task, args=args, kwargs=kwargs)
             thread.start()
             if not async:

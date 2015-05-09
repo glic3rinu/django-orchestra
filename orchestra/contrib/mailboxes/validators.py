@@ -62,7 +62,7 @@ def validate_sieve(value):
         test = run(' '.join([sievetest, test_path, '/dev/null']), silent=True)
     finally:
         os.unlink(test_path)
-    if test.return_code:
+    if test.exit_code:
         errors = []
         for line in test.stderr.decode('utf8').splitlines():
             error = re.match(r'^.*(line\s+[0-9]+:.*)', line)

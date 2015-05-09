@@ -66,7 +66,7 @@ class SettingView(generic.edit.FormView):
             if not self.request.POST.get('confirmation'):
                 settings_file = parser.get_settings_file()
                 new_content = parser.apply(changes)
-                diff = sys.run("cat <<EOF | diff %s -\n%s\nEOF" % (settings_file, new_content), error_codes=[1, 0]).stdout
+                diff = sys.run("cat <<EOF | diff %s -\n%s\nEOF" % (settings_file, new_content), valid_codes=(1, 0)).stdout
                 context = self.get_context_data(form=form)
                 context['diff'] = diff
                 return self.render_to_response(context)

@@ -354,4 +354,4 @@ make django admin taskstate uncollapse fucking traceback, ( if exists ?)
 
 # backend.context and backned.instance provided when an action is called? like forms.cleaned_data: do it on manager.generation(backend.context = backend.get_context()) or in backend.__getattr__ ? also backend.head,tail,content switching on manager.generate()?
 
-# replace return_code by exit_code everywhere
+resorce monitoring more efficient, less mem an better queries for calc current data

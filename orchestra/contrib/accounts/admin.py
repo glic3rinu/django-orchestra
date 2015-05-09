@@ -12,12 +12,12 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
-from orchestra.admin.actions import SendEmail
+from orchestra.admin.actions import SendEmail, disable
 from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, change_url
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
 
-from .actions import disable, list_contacts, service_report, delete_related_services
+from .actions import list_contacts, service_report, delete_related_services
 from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm
 from .models import Account

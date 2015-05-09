@@ -11,9 +11,9 @@ def run_tuple(services, action, options, optional=False):
         services = [services]
     for service in services:
         if options.get(service):
-            error_codes = [0,1] if optional else [0]
-            e = run('service %s %s' % (service, action), error_codes=error_codes)
-            if e.return_code == 1:
+            valid_codes = (0,1) if optional else (0,)
+            e = run('service %s %s' % (service, action), valid_codes=valid_codes)
+            if e.exit_code == 1:
                 return False
     return True
 

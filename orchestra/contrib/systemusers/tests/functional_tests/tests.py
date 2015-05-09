@@ -62,7 +62,7 @@ class SystemUserMixin(object):
     
     def validate_user(self, username):
         idcmd = sshr(self.MASTER_SERVER, "id %s" % username)
-        self.assertEqual(0, idcmd.return_code)
+        self.assertEqual(0, idcmd.exit_code)
         user = SystemUser.objects.get(username=username)
         groups = list(user.groups.values_list('username', flat=True))
         groups.append(user.username)
@@ -336,7 +336,7 @@ class AdminSystemUserTest(AdminSystemUserMixin, BaseLiveServerTestCase):
         self.assertNotEqual(url, self.selenium.current_url)
         
         self.addCleanup(self.delete_account, account_username)
-        self.assertEqual(0, sshr(self.MASTER_SERVER, "id %s" % account_username).return_code)
+        self.assertEqual(0, sshr(self.MASTER_SERVER, "id %s" % account_username).exit_code)
     
     @snapshot_on_error
     def test_delete_account(self):

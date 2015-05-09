@@ -5,6 +5,7 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 
 from .. import settings
 
+from .decorators import action_with_confirmation
 from .forms import SendEmailForm
 
 
@@ -107,3 +108,25 @@ class SendEmail(object):
         })
         # Display the confirmation page
         return render(request, self.template, self.context)
+
+
+@action_with_confirmation()
+def disable(modeladmin, request, queryset):
+    num = 0
+    for obj in queryset:
+        obj.disable()
+        modeladmin.log_change(request, obj, _("Disabled"))
+        num += 1
+    opts = modeladmin.model._meta
+    context = {
+        'verbose_name': opts.verbose_name,
+        'verbose_name_plural': opts.verbose_name_plural,
+        'num': num
+    }
+    msg = ungettext(
+        _("Selected %(verbose_name)s and related services has been disabled.") % context,
+        _("%(num)s selected %(verbose_name_plural)s and related services have been disabled.") % context,
+        num)
+    modeladmin.message_user(request, msg)
+disable.url_name = 'disable'
+disable.verbose_name = _("Disable")

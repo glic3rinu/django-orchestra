@@ -114,7 +114,7 @@ class DomainTestMixin(object):
             'server_addr': server_addr
         }
         dig_soa = 'dig @%(server_addr)s %(domain_name)s|grep "\sSOA\s"'
-        soa = run(dig_soa % context, error_codes=[0,1]).stdout
+        soa = run(dig_soa % context, valid_codes=(0, 1)).stdout
         if soa:
             soa = soa.split()
             self.assertEqual('IN', soa[2])

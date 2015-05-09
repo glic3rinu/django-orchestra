@@ -223,7 +223,7 @@ password_query = \
         run("chmod go= %(dovecot_dir)s/dovecot-sql.conf.ext" % context)
 
         file_name = "%(postfix_dir)s/master.cf" % context
-        grep_dovecot = run("grep dovecot %s" % file_name, error_codes=[0,1])
+        grep_dovecot = run("grep dovecot %s" % file_name, valid_codes=(0,1))
         if grep_dovecot == '':
             run("#Processing %s" % file_name)
             dovecot_master="""
@@ -264,8 +264,8 @@ amavis unix    -       -       n       -       5     smtp
 
 
         #Postfix
-        mailname = run("cat /etc/mailname", error_codes=[0,1])
-        hostname = run("hostname", error_codes=[0,1])
+        mailname = run("cat /etc/mailname", vallid_codes=[0,1])
+        hostname = run("hostname", valid_codes=[0,1])
         if mailname != hostname:
             file_name = "/etc/mailname"
             run("#Processing %s" % file_name)

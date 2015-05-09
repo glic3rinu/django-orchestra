@@ -42,6 +42,10 @@ class Mailbox(models.Model):
         except type(self).account.field.rel.to.DoesNotExist:
             return self.is_active
     
+    def disable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
     

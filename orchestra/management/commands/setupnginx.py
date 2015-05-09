@@ -195,13 +195,14 @@ class Command(BaseCommand):
             processes      = %(processes)d
             chmod-socket   = 664
             stats          = /run/uwsgi/%%(deb-confnamespace)/%%(deb-confname)/statsocket
-            vacuum         = true
             uid            = %(user)s
             gid            = %(group)s
             env            = HOME=%(home)s
             touch-reload   = %(project_dir)s/wsgi.py
-            enable-threads = true
-            max-requests   = 500
+            vacuum         = true    # Remove socket stop
+            enable-threads = true    # Initializes the GIL
+            max-requests   = 500     # Mitigates memory leaks
+            lazy-apps      = true    # Don't share database connections
             """
         ) % context
         
@@ -220,11 +221,11 @@ class Command(BaseCommand):
         
         for extra_context in (nginx, uwsgi):
             context.update(extra_context)
-            diff = run("echo '%(conf)s' | diff - %(file)s" % context, error_codes=[0,1,2])
-            if diff.return_code == 2:
+            diff = run("echo '%(conf)s' | diff - %(file)s" % context, valid_codes=(0,1,2))
+            if diff.exit_code == 2:
                 # File does not exist
                 run("echo '%(conf)s' > %(file)s" % context, display=True)
-            elif diff.return_code == 1:
+            elif diff.exit_code == 1:
                 # File is different, save the old one
                 if interactive:
                     msg = ("\n\nFile %(file)s be updated, do you like to overide "
@@ -244,13 +245,13 @@ class Command(BaseCommand):
         
         if server_name:
             run('ln -s /etc/nginx/sites-available/%(server_name)s.conf /etc/nginx/sites-enabled/' % context,
-                error_codes=[0,1], display=True)
+                valid_codes=[0,1], display=True)
         else:
             run('rm /etc/nginx/sites-enabled/default')
             run('ln -s /etc/nginx/sites-available/%(project_name)s.conf /etc/nginx/sites-enabled/' % context,
-                error_codes=[0,1], display=True)
+                valid_codes=[0,1], display=True)
         run('ln -s /etc/uwsgi/apps-available/%(project_name)s.ini /etc/uwsgi/apps-enabled/' % context,
-            error_codes=[0,1], display=True)
+            valid_codes=[0,1], display=True)
         
         rotate = textwrap.dedent("""\
             /var/log/nginx/*.log {

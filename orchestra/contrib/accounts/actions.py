@@ -12,26 +12,9 @@ from django.utils.html import format_html
 from django.utils.text import capfirst
 from django.utils.translation import ungettext, ugettext_lazy as _
 
-from orchestra.admin.decorators import action_with_confirmation
 from orchestra.core import services
 
 from . import settings
-
-
-@action_with_confirmation()
-def disable(modeladmin, request, queryset):
-    num = 0
-    for account in queryset:
-        account.disable()
-        modeladmin.log_change(request, account, _("Disabled"))
-        num += 1
-    msg = ungettext(
-        _("Selected account and related services has been disabled."),
-        _("%s selected accounts and related services have been disabled.") % num,
-        num)
-    modeladmin.message_user(request, msg)
-disable.url_name = 'disable'
-disable.verbose_name = _("Disable")
 
 
 def list_contacts(modeladmin, request, queryset):

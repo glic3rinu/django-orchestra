@@ -68,6 +68,10 @@ class SystemUser(models.Model):
     def has_shell(self):
         return self.shell not in settings.SYSTEMUSERS_DISABLED_SHELLS
     
+    def disable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
     def get_description(self):
         return self.get_shell_display()
     

@@ -8,6 +8,7 @@ from django.db.models.functions import Concat
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
+from orchestra.admin.actions import disable
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
@@ -65,6 +66,12 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     add_form = MailboxCreationForm
     form = MailboxChangeForm
     list_prefetch_related = ('addresses__domain',)
+    actions = (disable,)
+    
+    def __init__(self, *args, **kwargs):
+        super(MailboxAdmin, self).__init__(*args, **kwargs)
+        if settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
+            type(self).actions = self.actions + (SendMailboxEmail(),)
     
     def display_addresses(self, mailbox):
         addresses = []
@@ -81,13 +88,6 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     display_filtering.short_description = _("Filtering")
     display_filtering.admin_order_field = 'filtering'
     display_filtering.allow_tags = True
-    
-    def get_actions(self, request):
-        if settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
-            type(self).actions = (SendMailboxEmail(),)
-        else:
-            type(self).actions = ()
-        return super(MailboxAdmin, self).get_actions(request)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'filtering':

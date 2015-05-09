@@ -93,16 +93,16 @@ def runiterator(command, display=False, stdin=b''):
         
         state = _Attribute(stdout)
         state.stderr = stderr
-        state.return_code =  p.poll()
+        state.exit_code =  p.poll()
         state.command = command
         yield state
         
-        if state.return_code != None:
+        if state.exit_code != None:
             p.stdout.close()
             p.stderr.close()
             raise StopIteration
 
-def join(iterator, display=False, silent=False, error_codes=[0]):
+def join(iterator, display=False, silent=False, valid_codes=(0,)):
     """ joins the iterator process """
     stdout = b''
     stderr = b''
@@ -110,18 +110,18 @@ def join(iterator, display=False, silent=False, error_codes=[0]):
         stdout += state.stdout
         stderr += state.stderr
     
-    return_code = state.return_code
+    exit_code = state.exit_code
     
     out = _Attribute(stdout.strip())
     err = stderr.strip()
     
     out.failed = False
-    out.return_code = return_code
+    out.exit_code = exit_code
     out.stderr = err
-    if return_code not in error_codes:
+    if exit_code not in valid_codes:
         out.failed = True
         msg = "\nrun() encountered an error (return code %s) while executing '%s'\n"
-        msg = msg % (return_code, state.command)
+        msg = msg % (exit_code, state.command)
         if display:
             sys.stderr.write("\n\033[1;31mCommandError: %s %s\033[m\n" % (msg, err))
         if not silent:
@@ -131,12 +131,12 @@ def join(iterator, display=False, silent=False, error_codes=[0]):
     return out
 
 
-def run(command, display=False, error_codes=[0], silent=False, stdin=b'', async=False):
+def run(command, display=False, valid_codes=(0,), silent=False, stdin=b'', async=False):
     iterator = runiterator(command, display, stdin)
     next(iterator)
     if async:
         return iterator
-    return join(iterator, display=display, silent=silent, error_codes=error_codes)
+    return join(iterator, display=display, silent=silent, valid_codes=valie_codes)
 
 
 def sshrun(addr, command, *args, **kwargs):

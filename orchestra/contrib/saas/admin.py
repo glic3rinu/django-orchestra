@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
+from orchestra.admin.actions import disable
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
@@ -17,6 +18,7 @@ class SaaSAdmin(SelectPluginAdminMixin, ChangePasswordAdminMixin, AccountAdminMi
     plugin = SoftwareService
     plugin_field = 'service'
     plugin_title = 'Software as a Service'
+    actions = (disable,)
     
     def display_site_domain(self, saas):
         site_domain = saas.get_site_domain()

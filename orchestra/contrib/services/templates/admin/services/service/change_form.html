@@ -23,7 +23,7 @@
                         nominal_price=28.10&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=STEP_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.step_price&
                         on_cancel=COMPENSATE&
                         payment_style=PREPAY">Mailbox</option>
     <option value="./?description=Mailbox%20allocated%20disk&
@@ -41,7 +41,7 @@
                         nominal_price=20.00&
                         tax=21&
                         pricing_period=&
-                        rate_algorithm=MATCH_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.match_price&
                         on_cancel=DISCOUNT&
                         payment_style=PREPAY">Mailbox allocated disk</option>
     <option value="./?description=Database&
@@ -58,7 +58,7 @@
                         nominal_price=24.79&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=STEP_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.step_price&
                         on_cancel=COMPENSATE&
                         payment_style=PREPAY">Database</option>
     <option value="./?description=Basic%20domain&
@@ -76,7 +76,7 @@
                         nominal_price=19.01&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=STEP_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.step_price&
                         on_cancel=NOTHING&
                         payment_style=PREPAY">Basic domain</option>
     <option value="./?description=Domain%20.cat%20extra&
@@ -94,7 +94,7 @@
                         nominal_price=26.59&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=STEP_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.step_price&
                         on_cancel=NOTHING&
                         payment_style=PREPAY">Domain .cat extra</option>
     <option value="./?description=FTP%20account&
@@ -112,7 +112,7 @@
                         nominal_price=28.10&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=STEP_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.step_price&
                         on_cancel=COMPENSATE&
                         payment_style=PREPAY">FTP account</option>
     <option value="./?description=Traffic&
@@ -130,7 +130,7 @@
                         nominal_price=4.50&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=MATCH_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.match_price&
                         on_cancel=NOTHING&
                         payment_style=POSTPAY">Traffic</option>
     <option value="./?description=Traffic%20prepay&
@@ -148,7 +148,7 @@
                         nominal_price=3.00&
                         tax=21&
                         pricing_period=MONTHLY&
-                        rate_algorithm=MATCH_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.match_price&
                         on_cancel=REFUND&
                         payment_style=PREPAY">Traffic prepay</option>
     <option value="./?description=Development&
@@ -166,7 +166,7 @@
                         nominal_price=40.00&
                         tax=21&
                         pricing_period=BILLING_PERIOD&
-                        rate_algorithm=STEP_PRICE&
+                        rate_algorithm=orchestra.contrib.plans.ratings.step_price&
                         on_cancel=NOTHING&
                         payment_style=PREPAY">Develompent</option>
     {% endoneliner %}

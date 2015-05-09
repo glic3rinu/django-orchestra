@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
+from orchestra.admin.actions import disable
 from orchestra.admin.utils import admin_link
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
@@ -52,6 +53,7 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
     add_form = ListCreationForm
     list_select_related = ('account', 'address_domain',)
     filter_by_account_fields = ['address_domain']
+    actions = (disable,)
     
     address_domain_link = admin_link('address_domain', order='address_domain__name')
     

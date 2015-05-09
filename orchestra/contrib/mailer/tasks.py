@@ -1,9 +1,11 @@
+from datetime import timedelta
+
 from django.utils import timezone
 from celery.task.schedules import crontab
 
 from orchestra.contrib.tasks import task, periodic_task
 
-from . import engine
+from . import engine, settings
 
 
 @task
@@ -17,4 +19,4 @@ def cleanup_messages():
     delta = timedelta(days=settings.MAILER_MESSAGES_CLEANUP_DAYS)
     now = timezone.now()
     epoch = (now-delta)
-    Message.objects.filter(state=Message.SENT, last_retry__lt=epoc).delete()
+    return Message.objects.filter(state=Message.SENT, last_retry__lt=epoch).delete()

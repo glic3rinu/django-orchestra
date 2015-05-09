@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from orchestra.contrib.tasks import periodic_task
 
+from . import settings
 from .models import BackendLog
 
 
@@ -12,4 +13,4 @@ from .models import BackendLog
 def backend_logs_cleanup():
     days = settings.ORCHESTRATION_BACKEND_CLEANUP_DAYS
     epoch = timezone.now()-timedelta(days=days)
-    BackendLog.objects.filter(created_at__lt=epoch).delete()
+    return BackendLog.objects.filter(created_at__lt=epoch).delete()

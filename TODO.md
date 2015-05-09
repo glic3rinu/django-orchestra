@@ -314,8 +314,6 @@ https://code.djangoproject.com/ticket/24576
 # inspecting django db connection for asserting db readines? or performing a query
 # wake up django mailer on send_mail
 
-# all signals + accouns.register() services.register() on apps.py
-
         from orchestra.contrib.tasks import task
         import time, sys
         @task(name='rata')
@@ -355,3 +353,8 @@ make django admin taskstate uncollapse fucking traceback, ( if exists ?)
 # backend.context and backned.instance provided when an action is called? like forms.cleaned_data: do it on manager.generation(backend.context = backend.get_context()) or in backend.__getattr__ ? also backend.head,tail,content switching on manager.generate()?
 
 resorce monitoring more efficient, less mem an better queries for calc current data
+
+# best_price rating method
+
+
+# error reporting on periodic tasks

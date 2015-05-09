@@ -94,6 +94,7 @@ class crontab_parser(object):
                 'Invalid beginning range: {0} < {1}.'.format(i, self.min_))
         return i
 
+
 class Setting(object):
     def __init__(self, manage):
         self.manage = manage

@@ -25,6 +25,7 @@ def keep_log(execute, log, operations):
         """ send report """
         # Remember that threads have their oun connection poll
         # No need to EVER temper with the transaction here
+        log = kwargs['log']
         try:
             log = execute(*args, **kwargs)
             if log.state != log.SUCCESS:
@@ -116,11 +117,11 @@ def execute(scripts, serialize=False, async=None):
         backend, operations = value
         args = (route.host,)
         if async is None:
-            async = not serialize and route.async
+            is_async = not serialize and route.async
         else:
-            async = not serialize and async
+            is_async = not serialize and async
         kwargs = {
-            'async': async,
+            'async': is_async,
         }
         # we clone the connection just in case we are isolated inside a transaction
         with db.clone(model=BackendLog) as handle:
@@ -136,7 +137,7 @@ def execute(scripts, serialize=False, async=None):
             task = db.close_connection(task)
             thread = threading.Thread(target=task, args=args, kwargs=kwargs)
             thread.start()
-            if not async:
+            if not is_async:
                 threads_to_join.append(thread)
         logs.append(log)
     [ thread.join() for thread in threads_to_join ]

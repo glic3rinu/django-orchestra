@@ -113,6 +113,6 @@ class Command(BaseCommand):
                         stderr = cstderr
                     if log.has_finished:
                         running.remove(log)
-                    time.sleep(0.1)
+                    time.sleep(0.05)
             for log in logs:
                 self.stdout.write(' '.join((log.backend, log.state)))

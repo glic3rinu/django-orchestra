@@ -98,7 +98,6 @@ class BackendLog(models.Model):
     
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
-    
 
 
 class BackendOperation(models.Model):

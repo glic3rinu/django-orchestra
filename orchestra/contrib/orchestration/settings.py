@@ -1,5 +1,7 @@
 from os import path
 
+from django.utils.translation import ugettext_lazy as _
+
 from orchestra.contrib.settings import Setting
 
 
@@ -28,10 +30,6 @@ ORCHESTRATION_ROUTER = Setting('ORCHESTRATION_ROUTER',
 )
 
 
-ORCHESTRATION_TEMP_SCRIPT_DIR = Setting('ORCHESTRATION_TEMP_SCRIPT_DIR',
-    '/dev/shm'
-)
-
 
 ORCHESTRATION_DISABLE_EXECUTION = Setting('ORCHESTRATION_DISABLE_EXECUTION',
     False
@@ -40,4 +38,14 @@ ORCHESTRATION_DISABLE_EXECUTION = Setting('ORCHESTRATION_DISABLE_EXECUTION',
 
 ORCHESTRATION_BACKEND_CLEANUP_DAYS = Setting('ORCHESTRATION_BACKEND_CLEANUP_DAYS',
     7
+)
+
+
+ORCHESTRATION_SSH_METHOD_BACKEND = Setting('ORCHESTRATION_SSH_METHOD_BACKEND',
+    'orchestra.contrib.orchestration.methods.OpenSSH',
+    help_text=_("Two methods provided:<br>"
+                "<tt>orchestra.contrib.orchestration.methods.OpenSSH</tt> with ControlPersist.<br>"
+                "<tt>orchestra.contrib.orchestration.methods.Paramiko</tt> with connection pool.<br>"
+                "Both perform similarly, but OpenSSH has the advantage that the connections are shared between workers,<br>"
+                "Paramiko, in contrast, has a per worker connection pool.")
 )

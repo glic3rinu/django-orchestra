@@ -343,7 +343,6 @@ TODO mount the filesystem with "nosuid" option
 # virtdomains file is not ideal, prevent fake/error on domains there! and make sure this file is required!
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
-# orchestrate async stdout stderr (inspired on pangea managemengt commands)
 orchestra-beat support for uwsgi cron
 
 make django admin taskstate uncollapse fucking traceback, ( if exists ?)
@@ -356,5 +355,7 @@ resorce monitoring more efficient, less mem an better queries for calc current d
 
 # best_price rating method
 
+# paramiko arcfour cypher
 
-# error reporting on periodic tasks
+ciphers=['arcfour128', 'aes256']
+http://paramiko-docs.readthedocs.org/en/latest/api/transport.html

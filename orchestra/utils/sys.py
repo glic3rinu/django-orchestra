@@ -102,6 +102,7 @@ def runiterator(command, display=False, stdin=b''):
             p.stderr.close()
             raise StopIteration
 
+
 def join(iterator, display=False, silent=False, valid_codes=(0,)):
     """ joins the iterator process """
     stdout = b''
@@ -136,13 +137,20 @@ def run(command, display=False, valid_codes=(0,), silent=False, stdin=b'', async
     next(iterator)
     if async:
         return iterator
-    return join(iterator, display=display, silent=silent, valid_codes=valie_codes)
+    return join(iterator, display=display, silent=silent, valid_codes=valid_codes)
 
 
-def sshrun(addr, command, *args, **kwargs):
-    command = command.replace("'", """'"'"'""")
-    cmd = "ssh -o stricthostkeychecking=no -C root@%s '%s'" % (addr, command)
-    return run(cmd, *args, **kwargs)
+def sshrun(addr, command, *args, executable='bash', persist=False, **kwargs):
+    options = ['stricthostkeychecking=no']
+    if persist:
+        options.extend((
+            'ControlMaster=auto',
+            'ControlPersist=yes',
+            'ControlPath=~/.ssh/orchestra-%r-%h-%p',
+        ))
+    cmd = 'ssh -o {options} -C root@{addr} {executable}'.format(options=' -o '.join(options),
+        addr=addr, executable=executable)
+    return run(cmd, *args, stdin=command.encode('utf8'), **kwargs)
 
 
 def get_default_celeryd_username():
@@ -202,6 +210,6 @@ class LockFile(object):
             self.release()
 
 
-def touch_wsgi():
+def touch_wsgi(delay=5):
     from . import paths
-    run('{ sleep 2 && touch %s/wsgi.py; } &' % paths.get_project_dir(), async=True)
+    run('{ sleep %i && touch %s/wsgi.py; } &' % (delay, paths.get_project_dir()), async=True)

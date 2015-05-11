@@ -26,7 +26,8 @@ def set_permission(modeladmin, request, queryset):
             messages.error("Users from the same account should be selected.")
     user = queryset[0]
     form = PermissionForm(user)
-    if request.method == 'POST':
+    action_value = 'set_permission'
+    if request.POST.get('action') == action_value:
         form = PermissionForm(user, request.POST)
         if form.is_valid():
             cleaned_data = form.cleaned_data
@@ -56,7 +57,7 @@ def set_permission(modeladmin, request, queryset):
     context = {
         'title': _("Set permission"),
         'action_name': _("Set permission"),
-        'action_value': 'set_permission',
+        'action_value': action_value,
         'queryset': queryset,
         'opts': opts,
         'obj': user,

@@ -106,27 +106,27 @@ class Apache2Backend(ServiceController):
                     echo -e "${apache_conf}" | diff -N -I'^\s*#' %(sites_available)s -
                 } || {
                     echo -e "${apache_conf}" > %(sites_available)s
-                    UPDATED=1
+                    UPDATED_APACHE=1
                 }""") % context
             )
         if context['server_name'] and site.active:
             self.append(textwrap.dedent("""\
                 if [[ ! -f %(sites_enabled)s ]]; then
                     a2ensite %(site_unique_name)s.conf
-                    UPDATED=1
+                    UPDATED_APACHE=1
                 fi""") % context
             )
         else:
             self.append(textwrap.dedent("""\
                 if [[ -f %(sites_enabled)s ]]; then
                     a2dissite %(site_unique_name)s.conf;
-                    UPDATED=1
+                    UPDATED_APACHE=1
                 fi""") % context
             )
     
     def delete(self, site):
         context = self.get_context(site)
-        self.append("a2dissite %(site_unique_name)s.conf && UPDATED=1" % context)
+        self.append("a2dissite %(site_unique_name)s.conf && UPDATED_APACHE=1" % context)
         self.append("rm -f %(sites_available)s" % context)
     
     def prepare(self):

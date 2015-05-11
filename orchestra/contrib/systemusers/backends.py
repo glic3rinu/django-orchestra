@@ -80,7 +80,6 @@ class UNIXUserBackend(ServiceController):
             exclude_acl.append('-not -path "%(perm_home)s/%(exclude)s"' % context)
         if exclude_acl:
             context['exclude'] = ' \\\n    -a '.join(exclude_acl)
-        
         if user.set_perm_perms == 'read-write':
             context['perm_perms'] = 'rwx' if user.set_perm_action == 'grant' else '---'
         elif user.set_perm_perms == 'read-only':

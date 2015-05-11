@@ -211,7 +211,7 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
         self.append(
             'set -e\n'
             'set -o pipefail\n'
-            'exit_code=0;'
+            'exit_code=0;\n'
         )
     
     def commit(self):

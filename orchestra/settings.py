@@ -79,3 +79,9 @@ ORCHESTRA_DEFAULT_SUPPORT_FROM_EMAIL = Setting('ORCHESTRA_DEFAULT_SUPPORT_FROM_E
 ORCHESTRA_EDIT_SETTINGS = Setting('ORCHESTRA_EDIT_SETTINGS',
     True
 )
+
+
+ORCHESTRA_SSH_CONTROL_PATH = Setting('ORCHESTRA_SSH_CONTROL_PATH',
+    '~/.ssh/orchestra-%r-%h-%p',
+    help_text='Location for the control socket used by the multiplexed sessions, used for SSH connection reuse.'
+)

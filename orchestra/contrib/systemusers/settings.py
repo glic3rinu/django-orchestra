@@ -62,6 +62,6 @@ SYSTEMUSERS_MOVE_ON_DELETE_PATH = Setting('SYSTEMUSERS_MOVE_ON_DELETE_PATH',
 
 SYSTEMUSERS_EXLUDE_ACL_PATHS = Setting('SYSTEMUSERS_EXLUDE_ACL_PATHS',
     (),
-    help_text=("Relative to user's home.<br>"
+    help_text=("Exlude ACL operations on provided globs, relative to user's home.<br>"
                "e.g. ('logs', 'logs/apache*', 'webapps')"),
 )

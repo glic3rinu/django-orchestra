@@ -141,12 +141,13 @@ def run(command, display=False, valid_codes=(0,), silent=False, stdin=b'', async
 
 
 def sshrun(addr, command, *args, executable='bash', persist=False, **kwargs):
+    from .. import settings
     options = ['stricthostkeychecking=no']
     if persist:
         options.extend((
             'ControlMaster=auto',
             'ControlPersist=yes',
-            'ControlPath=~/.ssh/orchestra-%r-%h-%p',
+            'ControlPath=' + settings.ORCHESTRA_SSH_CONTROL_PATH,
         ))
     options = ' -o '.join(options)
     cmd = 'ssh -o {options} -C root@{addr} {executable}'.format(options=options, addr=addr,

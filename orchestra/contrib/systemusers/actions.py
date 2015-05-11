@@ -7,54 +7,67 @@ from django.template.response import TemplateResponse
 from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.decorators import action_with_confirmation
-from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
+from orchestra.contrib.orchestration import Operation, helpers
 
-from .forms import GrantPermissionForm
+from .forms import PermissionForm
 
 
-def grant_permission(modeladmin, request, queryset):
+def get_verbose_choice(choices, value):
+    for choice, verbose in choices:
+        if choice == value:
+            return verbose
+
+
+def set_permission(modeladmin, request, queryset):
     account_id = None
     for user in queryset:
         account_id = account_id or user.account_id
         if user.account_id != account_id:
             messages.error("Users from the same account should be selected.")
     user = queryset[0]
+    form = PermissionForm(user)
     if request.method == 'POST':
-        form = GrantPermissionForm(user, request.POST)
+        form = PermissionForm(user, request.POST)
         if form.is_valid():
             cleaned_data = form.cleaned_data
-            to = os.path.join(cleaned_data['base_path'], cleaned_data['path_extension'])
-            ro = cleaned_data['read_only']
+            operations = []
             for user in queryset:
-                user.grant_to = to
-                user.grant_ro = ro
-                # DOn't collect, execute right away for path validation
-                OperationsMiddleware.collect('grant_permission', instance=user)
+                user.set_perm_action = cleaned_data['set_action']
+                user.set_perm_base_home = cleaned_data['base_home']
+                user.set_perm_home_extension = cleaned_data['home_extension']
+                user.set_perm_perms = cleaned_data['permissions']
+                operations.extend(Operation.create_for_action(user, 'set_permission'))
+                verbose_action = get_verbose_choice(form.fields['set_action'].choices,
+                    user.set_perm_action)
+                verbose_permissions = get_verbose_choice(form.fields['permissions'].choices,
+                    user.set_perm_perms)
                 context = {
-                    'type': _("read-only") if ro else _("read-write"),
-                    'to': to,
+                    'action': verbose_action,
+                    'perms': verbose_permissions,
+                    'to': os.path.join(user.set_perm_base_home, user.set_perm_home_extension),
                 }
-                msg = _("Granted %(type)s permissions on %(to)s") % context
+                msg = _("%(action)s %(perms)s permission to %(to)s") % context
                 modeladmin.log_change(request, user, msg)
-            # TODO feedback message
+            logs = Operation.execute(operations)
+            helpers.message_user(request, logs)
             return
     opts = modeladmin.model._meta
     app_label = opts.app_label
     context = {
-        'title': _("Grant permission"),
-        'action_name': _("Grant permission"),
-        'action_value': 'grant_permission',
+        'title': _("Set permission"),
+        'action_name': _("Set permission"),
+        'action_value': 'set_permission',
         'queryset': queryset,
         'opts': opts,
         'obj': user,
         'app_label': app_label,
         'action_checkbox_name': admin.helpers.ACTION_CHECKBOX_NAME,
-        'form': GrantPermissionForm(user),
+        'form': form,
     }
-    return TemplateResponse(request, 'admin/systemusers/systemuser/grant_permission.html',
+    return TemplateResponse(request, 'admin/systemusers/systemuser/set_permission.html',
         context, current_app=modeladmin.admin_site.name)
-grant_permission.url_name = 'grant-permission'
-grant_permission.verbose_name = _("Grant permission")
+set_permission.url_name = 'set-permission'
+set_permission.verbose_name = _("Set permission")
 
 
 def delete_selected(modeladmin, request, queryset):

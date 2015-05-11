@@ -43,9 +43,9 @@ ORCHESTRATION_BACKEND_CLEANUP_DAYS = Setting('ORCHESTRATION_BACKEND_CLEANUP_DAYS
 
 ORCHESTRATION_SSH_METHOD_BACKEND = Setting('ORCHESTRATION_SSH_METHOD_BACKEND',
     'orchestra.contrib.orchestration.methods.OpenSSH',
-    help_text=_("Two methods provided:<br>"
-                "<tt>orchestra.contrib.orchestration.methods.OpenSSH</tt> with ControlPersist.<br>"
-                "<tt>orchestra.contrib.orchestration.methods.Paramiko</tt> with connection pool.<br>"
-                "Both perform similarly, but OpenSSH has the advantage that the connections are shared between workers,<br>"
+    help_text=_("Two methods are provided:<br>"
+                "1) <tt>orchestra.contrib.orchestration.methods.OpenSSH</tt> with ControlPersist.<br>"
+                "2) <tt>orchestra.contrib.orchestration.methods.Paramiko</tt> with connection pool.<br>"
+                "Both perform similarly, but OpenSSH has the advantage that the connections are shared between workers. "
                 "Paramiko, in contrast, has a per worker connection pool.")
 )

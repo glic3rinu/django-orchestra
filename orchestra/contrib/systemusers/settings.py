@@ -58,3 +58,10 @@ SYSTEMUSERS_MOVE_ON_DELETE_PATH = Setting('SYSTEMUSERS_MOVE_ON_DELETE_PATH',
     help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_backend_names),
     validators=[Setting.string_format_validator(_backend_names)],
 )
+
+
+SYSTEMUSERS_EXLUDE_ACL_PATHS = Setting('SYSTEMUSERS_EXLUDE_ACL_PATHS',
+    (),
+    help_text=("Relative to user's home.<br>"
+               "e.g. ('logs', 'logs/apache*', 'webapps')"),
+)

@@ -6,7 +6,6 @@ import socket
 import sys
 import select
 
-import paramiko
 from celery.datastructures import ExceptionInfo
 from django.conf import settings as djsettings
 
@@ -25,11 +24,12 @@ def Paramiko(backend, log, server, cmds, async=False):
     """
     Executes cmds to remote server using Pramaiko
     """
+    import paramiko
     script = '\n'.join(cmds)
     script = script.replace('\r', '')
     log.state = log.STARTED
     log.script = script
-    log.save(update_fields=('script', 'state'))
+    log.save(update_fields=('script', 'state', 'updated_at'))
     if not cmds:
         return
     channel = None
@@ -48,7 +48,7 @@ def Paramiko(backend, log, server, cmds, async=False):
                 logger.error('%s timed out on %s' % (backend, addr))
                 log.state = log.TIMEOUT
                 log.stderr = str(e)
-                log.save(update_fields=['state', 'stderr'])
+                log.save(update_fields=('state', 'stderr', 'updated_at'))
                 return
             paramiko_connections[addr] = ssh
         transport = ssh.get_transport()
@@ -73,7 +73,7 @@ def Paramiko(backend, log, server, cmds, async=False):
                     while part:
                         log.stderr += part
                         part = channel.recv_stderr(1024).decode('utf-8')
-                log.save(update_fields=['stdout', 'stderr'])
+                log.save(update_fields=('stdout', 'stderr', 'updated_at'))
                 if channel.exit_status_ready():
                     if second:
                         break
@@ -95,7 +95,7 @@ def Paramiko(backend, log, server, cmds, async=False):
     finally:
         if log.state == log.STARTED:
             log.state = log.ABORTED
-            log.save(update_fields=['state'])
+            log.save(update_fields=('state', 'updated_at'))
         if channel is not None:
             channel.close()
 
@@ -108,25 +108,25 @@ def OpenSSH(backend, log, server, cmds, async=False):
     script = script.replace('\r', '')
     log.state = log.STARTED
     log.script = script
-    log.save(update_fields=('script', 'state'))
+    log.save(update_fields=('script', 'state', 'updated_at'))
     if not cmds:
         return
     channel = None
     ssh = None
     try:
         ssh = sshrun(server.get_address(), script, executable=backend.script_executable,
-            persist=True, async=async)
+            persist=True, async=async, silent=True)
         logger.debug('%s running on %s' % (backend, server))
         if async:
             second = False
             for state in ssh:
                 log.stdout += state.stdout.decode('utf8')
                 log.stderr += state.stderr.decode('utf8')
-                log.save()
+                log.save(update_fields=('stdout', 'stderr', 'updated_at'))
             log.exit_code = state.exit_code
         else:
-            log.stdout = ssh.stdout
-            log.stderr = ssh.stderr
+            log.stdout = ssh.stdout.decode('utf8')
+            log.stderr = ssh.stderr.decode('utf8')
             log.exit_code = ssh.exit_code
         log.state = log.SUCCESS if log.exit_code == 0 else log.FAILURE
         logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
@@ -140,7 +140,7 @@ def OpenSSH(backend, log, server, cmds, async=False):
     finally:
         if log.state == log.STARTED:
             log.state = log.ABORTED
-            log.save(update_fields=['state'])
+            log.save(update_fields=('state', 'updated_at'))
 
 
 def SSH(*args, **kwargs):
@@ -150,12 +150,11 @@ def SSH(*args, **kwargs):
 
 
 def Python(backend, log, server, cmds, async=False):
-    # TODO collect stdout?
     script = [ str(cmd.func.__name__) + str(cmd.args) for cmd in cmds ]
     script = json.dumps(script, indent=4).replace('"', '')
     log.state = log.STARTED
-    log.script = '\n'.join([log.script, script])
-    log.save(update_fields=('script', 'state'))
+    log.script = '\n'.join((log.script, script))
+    log.save(update_fields=('script', 'state', 'updated_at'))
     try:
         for cmd in cmds:
             with CaptureStdout() as stdout:
@@ -163,7 +162,7 @@ def Python(backend, log, server, cmds, async=False):
             for line in stdout:
                 log.stdout += line + '\n'
             if async:
-                log.save(update_fields=['stdout'])
+                log.save(update_fields=('stdout', 'updated_at'))
     except:
         log.exit_code = 1
         log.state = log.FAILURE

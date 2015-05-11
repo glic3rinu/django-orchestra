@@ -1,8 +1,10 @@
 import textwrap
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.utils.translation import ngettext, ugettext_lazy as _
 
+from orchestra.contrib.orchestration import Operation
 from orchestra.forms import UserCreationForm, UserChangeForm
 
 from . import settings
@@ -79,21 +81,44 @@ class SystemUserChangeForm(SystemUserFormMixin, UserChangeForm):
     pass
 
 
-class GrantPermissionForm(forms.Form):
-    base_path = forms.ChoiceField(label=_("Grant access to"), choices=(),
-        help_text=_("User will be granted access to this directory."))
-    path_extension = forms.CharField(label=_("Path extension"), required=False, initial='',
+class PermissionForm(forms.Form):
+    set_action = forms.ChoiceField(label=_("Action"), initial='grant',
+        choices=(
+            ('grant', _("Grant")),
+            ('revoke', _("Revoke"))
+        ))
+    base_home = forms.ChoiceField(label=_("Set permissions to"), choices=(),
+        help_text=_("User will be granted/revoked access to this directory."))
+    home_extension = forms.CharField(label=_("Home extension"), required=False, initial='',
         widget=forms.TextInput(attrs={'size':'70'}), help_text=_("Relative to chosen home."))
-    read_only = forms.BooleanField(label=_("Read only"), initial=False, required=False,
-        help_text=_("Designates whether the permissions granted will be read-only or read/write."))
+    permissions = forms.ChoiceField(label=_("Permissions"), initial='read-write',
+        choices=(
+            ('read-write', _("Read and write")),
+            ('read-only', _("Read only")),
+            ('write-only', _("Write only"))
+        ))
     
     def __init__(self, *args, **kwargs):
-        instance = args[0]
+        self.instance = args[0]
         super_args = []
         if len(args) > 1:
             super_args.append(args[1])
-        super(GrantPermissionForm, self).__init__(*super_args, **kwargs)
-        related_users = type(instance).objects.filter(account=instance.account_id)
-        self.fields['base_path'].choices = (
+        super(PermissionForm, self).__init__(*super_args, **kwargs)
+        related_users = type(self.instance).objects.filter(account=self.instance.account_id)
+        self.fields['base_home'].choices = (
             (user.get_base_home(), user.get_base_home()) for user in related_users
         )
+    
+    def clean(self):
+        cleaned_data = super(PermissionForm, self).clean()
+        user = self.instance
+        user.set_perm_action = cleaned_data['set_action']
+        user.set_perm_base_home = cleaned_data['base_home']
+        user.set_perm_home_extension = cleaned_data['home_extension']
+        user.set_perm_perms = cleaned_data['permissions']
+        log = Operation.execute_action(user, 'validate_path')[0]
+        if 'path does not exists' in log.stderr:
+            raise ValidationError({
+                'home_extension': log.stderr,
+            })
+        return cleaned_data

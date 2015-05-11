@@ -15,7 +15,7 @@ class UNIXUserBackend(ServiceController):
     """
     verbose_name = _("UNIX user")
     model = 'systemusers.SystemUser'
-    actions = ('save', 'delete', 'grant_permission')
+    actions = ('save', 'delete', 'set_permission', 'validate_path')
     doc_settings = (settings,
         ('SYSTEMUSERS_DEFAULT_GROUP_MEMBERS', 'SYSTEMUSERS_MOVE_ON_DELETE_PATH')
     )
@@ -65,17 +65,69 @@ class UNIXUserBackend(ServiceController):
         else:
             self.append("rm -fr %(base_home)s" % context)
     
-    def grant_permission(self, user):
-        # TODO
+    def set_permission(self, user):
         context = self.get_context(user)
         context.update({
-            'to': user.grant_to,
-            'ro': user.grant_ro,
+            'perm_action': user.set_perm_action,
+            'perm_home': user.set_perm_base_home,
+            'perm_to': os.path.join(user.set_perm_base_home, user.set_perm_home_extension),
+            'exclude': '',
         })
-        if user.grant_ro:
-            self.append('echo "acl add read permissions for %(user)s to %(to)s"' % context)
+        
+        exclude_acl = []
+        for exclude in settings.SYSTEMUSERS_EXLUDE_ACL_PATHS:
+            context['exclude'] = exclude
+            exclude_acl.append('-not -path "%(perm_home)s/%(exclude)s"' % context)
+        if exclude_acl:
+            context['exclude'] = ' \\\n    -a '.join(exclude_acl)
+        
+        if user.set_perm_perms == 'read-write':
+            context['perm_perms'] = 'rwx' if user.set_perm_action == 'grant' else '---'
+        elif user.set_perm_perms == 'read-only':
+            context['perm_perms'] = 'r-x' if user.set_perm_action == 'grant' else '-wx'
+        elif user.set_perm_perms == 'write-only':
+            context['perm_perms'] = '-wx' if user.set_perm_action == 'grant' else 'r-x'
+        if user.set_perm_action == 'grant':
+            self.append(textwrap.dedent("""\
+                # Home access
+                setfacl -m u:%(user)s:--x '%(perm_home)s'
+                # Grant perms to existing and future files
+                find '%(perm_to)s' %(exclude)s \\
+                    -exec setfacl -m u:%(user)s:%(perm_perms)s {} \\;
+                find '%(perm_to)s' -type d %(exclude)s \\
+                    -exec setfacl -m d:u:%(user)s:%(perm_perms)s {} \\;
+                # Account group as the owner of new files
+                chmod g+s '%(perm_to)s'
+                """) % context
+            )
+            if not user.is_main:
+                self.append(textwrap.dedent("""\
+                    # Grant access to main user
+                    find '%(perm_to)s' -type d %(exclude)s \\
+                        -exec setfacl -m d:u:%(mainuser)s:rwx {} \\;
+                    """) % context
+                )
+        elif user.set_perm_action == 'revoke':
+            self.append(textwrap.dedent("""\
+                # Revoke permissions
+                find '%(perm_to)s' %(exclude)s \\
+                    -exec setfacl -m u:%(user)s:%(perm_perms)s {} \\;
+                """) % context
+            )
         else:
-            self.append('echo "acl add read-write permissions for %(user)s to %(to)s"' % context)
+            raise NotImplementedError()
+    
+    def validate_path(self, user):
+        context = {
+            'perm_to': os.path.join(user.set_perm_base_home, user.set_perm_home_extension)
+        }
+        self.append(textwrap.dedent("""\
+            if [[ ! -e '%(perm_to)s' ]]; then
+                echo "%(perm_to)s path does not exists." >&2
+                exit 1
+            fi
+            """) % context
+        )
     
     def get_groups(self, user):
         if user.is_main:

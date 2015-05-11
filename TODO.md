@@ -359,3 +359,10 @@ resorce monitoring more efficient, less mem an better queries for calc current d
 
 ciphers=['arcfour128', 'aes256']
 http://paramiko-docs.readthedocs.org/en/latest/api/transport.html
+
+
+
+* Grant and revoke permissions
+
+setfacl: /home/marcay//logs: Operation not permitted
+

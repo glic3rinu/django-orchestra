@@ -34,6 +34,7 @@
     <form action="" method="post">{% csrf_token %}
     {% if form %}
         <fieldset class="module aligned">
+        {{ form.non_field_errors }}
         {% for field in form %}
         <div class="form-row ">
             <div >

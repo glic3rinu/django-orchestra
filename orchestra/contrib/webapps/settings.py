@@ -179,7 +179,6 @@ WEBAPPS_UNDER_CONSTRUCTION_PATH = Setting('WEBAPPS_UNDER_CONSTRUCTION_PATH', '',
 #        WEBAPPS_TYPES[webapp_type] = value
 
 
-
 WEBAPPS_PHP_DISABLED_FUNCTIONS = Setting('WEBAPPS_PHP_DISABLED_FUNCTION', (
     'exec',
     'passthru',
@@ -200,7 +199,14 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = Setting('WEBAPPS_PHP_DISABLED_FUNCTION', (
     'openlog',
     'escapeshellcmd',
     'escapeshellarg',
-    'dl'
+    'dl',
+    'fsockopen',
+    'pfsockopen',
+    'stream_socket_client',
+    # Used for spamming
+    'getmxrr',
+    # Used in some php shells
+    'str_rot13',
 ))
 
 

@@ -6,7 +6,7 @@ from orchestra.admin.actions import disable
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
 
-from .actions import grant_permission, delete_selected
+from .actions import set_permission, delete_selected
 from .filters import IsMainListFilter
 from .forms import SystemUserCreationForm, SystemUserChangeForm
 from .models import SystemUser
@@ -41,7 +41,7 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     add_form = SystemUserCreationForm
     form = SystemUserChangeForm
     ordering = ('-id',)
-    actions = (delete_selected, grant_permission, disable)
+    actions = (delete_selected, set_permission, disable)
     change_view_actions = actions
     
     def display_main(self, user):

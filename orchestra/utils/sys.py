@@ -148,8 +148,9 @@ def sshrun(addr, command, *args, executable='bash', persist=False, **kwargs):
             'ControlPersist=yes',
             'ControlPath=~/.ssh/orchestra-%r-%h-%p',
         ))
-    cmd = 'ssh -o {options} -C root@{addr} {executable}'.format(options=' -o '.join(options),
-        addr=addr, executable=executable)
+    options = ' -o '.join(options)
+    cmd = 'ssh -o {options} -C root@{addr} {executable}'.format(options=options, addr=addr,
+        executable=executable)
     return run(cmd, *args, stdin=command.encode('utf8'), **kwargs)
 
 
@@ -181,7 +182,7 @@ class OperationLocked(Exception):
 class LockFile(object):
     """ File-based lock mechanism used for preventing concurrency problems """
     def __init__(self, lockfile, expire=5*60, unlocked=False):
-        """ /dev/shm/ can be a good place for storing locks ;) """
+        # /dev/shm/ can be a good place for storing locks
         self.lockfile = lockfile
         self.expire = expire
         self.unlocked = unlocked

@@ -155,6 +155,29 @@ match_price.help_text = _("Only <b>the rate</b> with a) inmediate inferior metri
 
 
 def best_price(rates, metric):
-    pass
+    candidates = []
+    selected = False
+    prev = None
+    rates = _prepend_missing(rates.distinct())
+    for rate in rates:
+        if prev:
+            if prev.plan != rate.plan:
+                if not selected and prev.quantity <= metric:
+                    candidates.append(prev)
+                selected = False
+            if not selected and rate.quantity > metric:
+                if prev.quantity <= metric:
+                    candidates.append(prev)
+                    selected = True
+        prev = rate
+    if not selected and prev.quantity <= metric:
+        candidates.append(prev)
+    candidates.sort(key=lambda r: r.price)
+    if candidates:
+        return [AttrDict(**{
+            'quantity': metric,
+            'price': candidates[0].price,
+        })]
+    return None
 best_price.verbose_name = _("Best price")
 best_price.help_text = _("Produces the best possible price given all active rating lines.")

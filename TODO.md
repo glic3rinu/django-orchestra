@@ -355,4 +355,9 @@ resorce monitoring more efficient, less mem an better queries for calc current d
 
 # best_price rating method
 
-# select contact with one result: redirect
+# bill this https://orchestra.pangea.org/admin/orders/order/8236/ should be already billed, <= vs <
+# Convert rating method from function to PluginClass
+# Tests can not run because django.db.utils.ProgrammingError: relation "accounts_account" does not exist
+
+
+

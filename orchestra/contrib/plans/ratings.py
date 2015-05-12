@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.utils.python import AttrDict
 
 
-def _compute(rates, metric):
+def _compute_steps(rates, metric):
     value = 0
     num = len(rates)
     accumulated = 0
@@ -65,18 +65,20 @@ def _prepend_missing(rates):
 
 
 def step_price(rates, metric):
+    if rates.query.order_by != ['plan', 'quantity']:
+        raise ValueError("rates queryset should be ordered by 'plan' and 'quantity'")
     # Step price
     group = []
     minimal = (sys.maxsize, [])
     for plan, rates in rates.group_by('plan').items():
         rates = _prepend_missing(rates)
-        value, steps = _compute(rates, metric)
+        value, steps = _compute_steps(rates, metric)
         if plan.is_combinable:
             group.append(steps)
         else:
             minimal = min(minimal, (value, steps), key=lambda v: v[0])
     if len(group) == 1:
-        value, steps = _compute(rates, metric)
+        value, steps = _compute_steps(rates, metric)
         minimal = min(minimal, (value, steps), key=lambda v: v[0])
     elif len(group) > 1:
         # Merge
@@ -125,6 +127,8 @@ step_price.help_text = _("All rates with a quantity lower than the metric are ap
 
 
 def match_price(rates, metric):
+    if rates.query.order_by != ['plan', 'quantity']:
+        raise ValueError("rates queryset should be ordered by 'plan' and 'quantity'")
     candidates = []
     selected = False
     prev = None
@@ -155,29 +159,37 @@ match_price.help_text = _("Only <b>the rate</b> with a) inmediate inferior metri
 
 
 def best_price(rates, metric):
+    if rates.query.order_by != ['plan', 'quantity']:
+        raise ValueError("rates queryset should be ordered by 'plan' and 'quantity'")
     candidates = []
-    selected = False
-    prev = None
-    rates = _prepend_missing(rates.distinct())
-    for rate in rates:
-        if prev:
-            if prev.plan != rate.plan:
-                if not selected and prev.quantity <= metric:
-                    candidates.append(prev)
-                selected = False
-            if not selected and rate.quantity > metric:
-                if prev.quantity <= metric:
-                    candidates.append(prev)
-                    selected = True
-        prev = rate
-    if not selected and prev.quantity <= metric:
-        candidates.append(prev)
-    candidates.sort(key=lambda r: r.price)
-    if candidates:
-        return [AttrDict(**{
-            'quantity': metric,
-            'price': candidates[0].price,
-        })]
-    return None
+    for plan, rates in rates.group_by('plan').items():
+        rates = _prepend_missing(rates)
+        plan_candidates = []
+        for rate in rates:
+            if rate.quantity > metric:
+                break
+            if plan_candidates:
+                plan_candidates[-1].barrier = rate.quantity
+            plan_candidates.append(AttrDict(
+                price=rate.price,
+                barrier=metric,
+            ))
+        candidates.extend(plan_candidates)
+    results = []
+    accumulated = 0
+    for candidate in sorted(candidates, key=lambda c: c.price):
+        if accumulated+candidate.barrier > metric:
+            quantity = metric - accumulated
+        else:
+            quantity = candidate.barrier
+        if quantity:
+            if results and results[-1].price == candidate.price:
+                results[-1].quantity += quantity
+            else:
+                results.append(AttrDict(**{
+                    'quantity': quantity,
+                    'price': candidate.price
+                }))
+    return results
 best_price.verbose_name = _("Best price")
 best_price.help_text = _("Produces the best possible price given all active rating lines.")

@@ -221,15 +221,19 @@ class Service(models.Model):
                 counter += rate['quantity']
                 if counter >= position:
                     return decimal.Decimal(str(rate['price']))
-
+    
     def get_rates(self, account, cache=True):
         # rates are cached per account
         if not cache:
             return self.rates.by_account(account)
         if not hasattr(self, '__cached_rates'):
             self.__cached_rates = {}
-        rates = self.__cached_rates.get(account.id, self.rates.by_account(account))
-        return rates
+        try:
+            return self.__cached_rates[account.id]
+        except KeyError:
+            rates = self.rates.by_account(account)
+            self.__cached_rates[account.id] = rates
+            return rates
     
     @property
     def rate_method(self):

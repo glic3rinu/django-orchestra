@@ -16,7 +16,7 @@ class Order(object):
     last_id = 0
     
     def __init__(self, **kwargs):
-        self.registered_on = kwargs.get('registered_on', timezone.now().date())
+        self.registered_on = kwargs.get('registered_on') or timezone.now().date()
         self.billed_until = kwargs.get('billed_until', None)
         self.cancelled_on = kwargs.get('cancelled_on', None)
         type(self).last_id += 1

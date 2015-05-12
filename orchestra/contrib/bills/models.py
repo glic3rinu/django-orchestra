@@ -233,7 +233,7 @@ class Bill(models.Model):
         subtotals = {}
         lines = self.lines.annotate(totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)))
         for tax, total in lines.values_list('tax', 'totals'):
-            subtotal, taxes = subtotals.get(tax, (0, 0))
+            subtotal, taxes = subtotals.get(tax) or (0, 0)
             subtotal += total
             subtotals[tax] = (subtotal, round(tax/100*subtotal, 2))
         return subtotals

@@ -138,7 +138,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     def get_billing_point(self, order, bp=None, **options):
         not_cachable = self.billing_point == self.FIXED_DATE and options.get('fixed_point')
         if not_cachable or bp is None:
-            bp = options.get('billing_point', timezone.now().date())
+            bp = options.get('billing_point') or timezone.now().date()
             if not options.get('fixed_point'):
                 msg = ("Support for '%s' period and '%s' point is not implemented"
                     % (self.get_billing_period_display(), self.get_billing_point_display()))
@@ -501,7 +501,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                             if charged is None:
                                 charged = metric
                             size = self.get_price_size(cini, cend)
-                            new_price += self.get_price(order, metric) * size
+                            new_price += self.get_price(account, metric) * size
                             new_metric += metric
                         size = self.get_price_size(rini, bp)
                         old_price = self.get_price(account, charged) * size

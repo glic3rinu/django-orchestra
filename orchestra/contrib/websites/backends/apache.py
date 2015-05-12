@@ -148,6 +148,9 @@ class Apache2Backend(ServiceController):
                 mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked
             }
             state="$(grep -v "$backend" /dev/shm/restart.apache2.locked)" || is_last=1
+            [[ $is_last -eq 0 ]] && {
+                echo "$state" | grep -v ' RESTART$' || is_last=1
+            }
             if [[ $is_last -eq 1 ]]; then
                 if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
                     service apache2 status && service apache2 reload || service apache2 start

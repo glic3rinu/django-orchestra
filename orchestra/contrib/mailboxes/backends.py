@@ -48,12 +48,16 @@ class SieveFilteringMixin(object):
 class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
     """
     Assumes that all system users on this servers all mail accounts.
-    If you want to have system users AND mailboxes on the same server you should consider using virtual mailboxes
+    If you want to have system users AND mailboxes on the same server you should consider using virtual mailboxes.
+    Supports quota allocation via <tt>resources.disk.allocated</tt>.
     """
     SHELL = '/dev/null'
     
     verbose_name = _("UNIX maildir user")
     model = 'mailboxes.Mailbox'
+    doc_settings = (settings,
+        ('MAILBOXES_USE_ACCOUNT_AS_GROUP',)
+    )
     
     def save(self, mailbox):
         context = self.get_context(mailbox)
@@ -89,7 +93,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         context = self.get_context(mailbox)
         self.append('mv %(home)s %(home)s.deleted || exit_code=$?' % context)
         self.append(textwrap.dedent("""
-            { sleep 2 && killall -u %(user)s -s KILL; } &
+            nohup bash -c '{ sleep 2 && killall -u %(user)s -s KILL; }' &> /dev/null &
             killall -u %(user)s || true
             userdel %(user)s || true
             groupdel %(user)s || true""") % context
@@ -98,7 +102,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
     def get_context(self, mailbox):
         context = {
             'user': mailbox.name,
-            'group': mailbox.name,
+            'group': mailbox.account.username if settings.MAILBOXES_USE_ACCOUNT_AS_GROUP else mailbox.name,
             'name': mailbox.name,
             'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
             'home': mailbox.get_home(),
@@ -147,7 +151,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
     def delete(self, mailbox):
         context = self.get_context(mailbox)
         self.append(textwrap.dedent("""\
-            { sleep 2 && killall -u %(uid)s -s KILL; } &
+            nohup bash -c 'sleep 2 && killall -u %(uid)s -s KILL' &> /dev/null &
             killall -u %(uid)s || true
             sed -i '/^%(user)s:.*/d' %(passwd_path)s
             sed -i '/^%(user)s@%(mailbox_domain)s\s.*/d' %(virtual_mailbox_maps)s
@@ -224,10 +228,10 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         domain = context['domain']
         if domain.name != context['local_domain'] and self.is_local_domain(domain):
             self.append(textwrap.dedent("""
-                [[ $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]] || {
+                if [[ ! $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]]; then
                     echo '%(domain)s' >> %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                }""") % context
+                fi""") % context
             )
     
     def is_last_domain(self, domain):
@@ -237,9 +241,10 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         domain = context['domain']
         if self.is_last_domain(domain):
             self.append(textwrap.dedent("""\
-                sed -i '/^%(domain)s\s*/d;{!q0;q1}' %(virtual_alias_domains)s && \\
+                if [[ $(grep '^%(domain)s\s*$' %(virtual_alias_domains)s) ]]; then
+                    sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                """) % context
+                fi""") % context
             )
     
     def save(self, address):
@@ -307,9 +312,10 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
         else:
             logger.warning("Address %i is empty" % address.pk)
             self.append(textwrap.dedent("""
-                sed -i '/^%(email)s\s/d;{!q0;q1}' %(virtual_alias_maps)s && \\
+                if [[ $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
+                    sed -i '/^%(email)s\s/d' %(virtual_alias_maps)s
                     UPDATED_VIRTUAL_ALIAS_MAPS=1
-                """) % context
+                fi""") % context
             )
         # Virtual mailbox stuff
 #        destination = []

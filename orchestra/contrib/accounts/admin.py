@@ -58,7 +58,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     add_form = AccountCreationForm
     form = UserChangeForm
     filter_horizontal = ()
-    change_readonly_fields = ('username', 'main_systemuser_link')
+    change_readonly_fields = ('username', 'main_systemuser_link', 'is_active')
     change_form_template = 'admin/accounts/account/change_form.html'
     actions = [disable, list_contacts, service_report, SendEmail(), delete_related_services]
     change_view_actions = [disable, service_report]
@@ -139,8 +139,14 @@ class AccountListAdmin(AccountAdmin):
             'original_model': original_model,
         }
         context.update(extra_context or {})
-        return super(AccountListAdmin, self).changelist_view(request,
-                extra_context=context)
+        response = super(AccountListAdmin, self).changelist_view(request, extra_context=context)
+        if hasattr(response, 'context_data'):
+            # user has submitted a change list change, we redirect directly to the add view
+            # if there is only one result
+            queryset = response.context_data['cl'].queryset
+            if len(queryset) == 1:
+                return HttpResponseRedirect('../?account=%i' % queryset[0].pk)
+        return response
 
 
 class AccountAdminMixin(object):
@@ -283,8 +289,7 @@ class AccountAdminMixin(object):
                 request_copy.pop('account')
                 request.GET = request_copy
         context.update(extra_context or {})
-        return super(AccountAdminMixin, self).changelist_view(request,
-                extra_context=context)
+        return super(AccountAdminMixin, self).changelist_view(request, extra_context=context)
 
 
 class SelectAccountAdminMixin(AccountAdminMixin):

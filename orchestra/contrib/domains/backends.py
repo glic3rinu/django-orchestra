@@ -177,7 +177,12 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     
     def commit(self):
         """ ideally slave should be restarted after master """
-        self.append('if [[ $UPDATED == 1 ]]; then { sleep 1 && service bind9 reload; } & fi')
+        self.append(textwrap.dedent("""\
+            if [[ $UPDATED == 1 ]]; then
+                nohup bash -c 'sleep 1 && service bind9 reload' &> /dev/null &
+            fi
+            """)
+        )
     
     def get_context(self, domain):
         context = {

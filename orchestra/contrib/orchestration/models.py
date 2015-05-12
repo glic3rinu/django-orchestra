@@ -96,6 +96,10 @@ class BackendLog(models.Model):
     def has_finished(self):
         return self.state not in (self.STARTED, self.RECEIVED)
     
+    @property
+    def is_success(self):
+        return self.state in (self.SUCCESS, self.NOTHING)
+    
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
 

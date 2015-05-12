@@ -4,12 +4,11 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ngettext, ugettext_lazy as _
 
-from orchestra.contrib.orchestration import Operation
 from orchestra.forms import UserCreationForm, UserChangeForm
 
 from . import settings
 from .models import SystemUser
-from .validators import validate_home
+from .validators import validate_home, validate_path_exists
 
 
 class SystemUserFormMixin(object):
@@ -66,11 +65,13 @@ class SystemUserFormMixin(object):
     
     def clean(self):
         super(SystemUserFormMixin, self).clean()
-        home = self.cleaned_data.get('home')
+        cleaned_data = self.cleaned_data
+        home = cleaned_data.get('home')
         if home and self.MOCK_USERNAME in home:
-            username = self.cleaned_data.get('username', '')
-            self.cleaned_data['home'] = home.replace(self.MOCK_USERNAME, username)
-        validate_home(self.instance, self.cleaned_data, self.account)
+            username = cleaned_data.get('username', '')
+            cleaned_data['home'] = home.replace(self.MOCK_USERNAME, username)
+        validate_home(self.instance, cleaned_data, self.account)
+        return cleaned_data
 
 
 class SystemUserCreationForm(SystemUserFormMixin, UserCreationForm):
@@ -111,14 +112,11 @@ class PermissionForm(forms.Form):
     
     def clean(self):
         cleaned_data = super(PermissionForm, self).clean()
-        user = self.instance
-        user.set_perm_action = cleaned_data['set_action']
-        user.set_perm_base_home = cleaned_data['base_home']
-        user.set_perm_home_extension = cleaned_data['home_extension']
-        user.set_perm_perms = cleaned_data['permissions']
-        log = Operation.execute_action(user, 'validate_path')[0]
-        if 'path does not exists' in log.stderr:
+        path = os.path.join(cleaned_data['base_home'], cleaned_data['home_extension'])
+        try:
+            validate_path_exists(self.instance, path)
+        except ValidationError as err:
             raise ValidationError({
-                'home_extension': log.stderr,
+                'home_extension': err,
             })
         return cleaned_data

@@ -1,3 +1,4 @@
+import fnmatch
 import os
 
 from django.contrib.auth.hashers import make_password
@@ -64,6 +65,10 @@ class SystemUser(models.Model):
             return self.account.main_systemuser_id == self.pk
         return self.account.username == self.username
     
+    @cached_property
+    def main(self):
+        return self.account.main_systemuser
+    
     @property
     def has_shell(self):
         return self.shell not in settings.SYSTEMUSERS_DISABLED_SHELLS
@@ -84,16 +89,20 @@ class SystemUser(models.Model):
         if self.home:
             self.home = os.path.normpath(self.home)
         if self.directory:
-            directory_error = None
+            self.directory = os.path.normpath(self.directory)
+            dir_errors = []
             if self.has_shell:
-                directory_error = _("Directory with shell users can not be specified.")
+                dir_errors.append(_("Directory with shell users can not be specified."))
             elif self.account_id and self.is_main:
-                directory_error = _("Directory with main system users can not be specified.")
+                dir_errors.append(_("Directory with main system users can not be specified."))
             elif self.home == self.get_base_home():
-                directory_error = _("Directory on the user's base home is not allowed.")
-            if directory_error:
+                dir_errors.append(_("Directory on the user's base home is not allowed."))
+            for pattern in settings.SYSTEMUSERS_FORBIDDEN_PATHS:
+                if fnmatch.fnmatch(self.directory, pattern):
+                    dir_errors.append(_("Provided directory is forbidden."))
+            if dir_errors:
                 raise ValidationError({
-                    'directory': directory_error,
+                    'directory': [ValidationError(error) for error in dir_errors]
                 })
         if self.has_shell and self.home and self.home != self.get_base_home():
             raise ValidationError({

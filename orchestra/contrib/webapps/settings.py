@@ -261,3 +261,10 @@ WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST = Setting('WEBAPPS_DEFAULT_MYSQL_DATABASE_HO
 WEBAPPS_MOVE_ON_DELETE_PATH = Setting('WEBAPPS_MOVE_ON_DELETE_PATH',
     ''
 )
+
+
+
+WEBAPPS_CMS_CACHE_DIR = Setting('WEBAPPS_CMS_CACHE_DIR',
+    '/tmp/orchestra_cms_cache',
+    help_text="Server-side cache directori for CMS tarballs.",
+)

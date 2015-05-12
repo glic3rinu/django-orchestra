@@ -1,0 +1,74 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<link rel="stylesheet" type="text/css" href="{% static "orchestra/css/hide-inline-id.css" %}" />
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">{{ app_label|capfirst|escape }}</a>
+&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+{% if obj %}
+&rsaquo; <a href="{% url opts|admin_urlname:'change' obj.pk %}">{{ obj }}</a>
+&rsaquo; {{ action_name }}
+{% elif add %}
+&rsaquo; <a href="../">{% trans "Add" %} {{ opts.verbose_name }}</a>
+&rsaquo; {{ action_name }}
+{% else %}
+&rsaquo; {{ action_name }} multiple objects
+{% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+  <div>
+    <div style="margin:20px;">
+    Set permissions for {% for user in queryset %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endfor %} system user(s).
+    <ul>{{ display_objects | unordered_list }}</ul>
+    <form action="" method="post">{% csrf_token %}
+        <fieldset class="module aligned wide">
+        {{ form.non_field_errors }}
+        <div class="form-row ">
+            {{ form.set_action.errors }}
+            <label for="{{ form.set_action.id_for_label }}">{{ form.set_action.label }}:</label>
+            {{ form.set_action }}{% for x in ""|ljust:"50" %}&nbsp;{% endfor %}
+            <p class="help">{{ form.set_action.help_text|safe }}</p>
+        </div>
+        <div class="form-row ">
+            <div class="field-box field-base_home">
+                {{ form.base_home.errors }}
+                <label for="{{ form.base_home.id_for_label }}">{{ form.base_home.label }}:</label>
+                {{ form.base_home }}{% for x in ""|ljust:"50" %}&nbsp;{% endfor %}
+                <p class="help">{{ form.base_home.help_text|safe }}</p>
+            </div>
+            <div class="field-box field-user_extension">
+                {{ form.home_extension.errors }}
+                <label for="{{ form.home_extension.id_for_label }}"></label>
+                {{ form.home_extension }}
+                <p class="help">{{ form.home_extension.help_text|safe }}</p>
+            </div>
+        </div>
+        <div class="form-row ">
+            {{ form.permissions.errors }}
+            <label for="{{ form.base_path.id_for_label }}">{{ form.permissions.label }}:</label>
+            {{ form.permissions }}{% for x in ""|ljust:"50" %}&nbsp;{% endfor %}
+            <p class="help">{{ form.permissions.help_text|safe }}</p>
+        </div>
+        </fieldset>
+    <div>
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_value }}" />
+    <input type="hidden" name="post" value="{{ post_value|default:'generic_confirmation' }}" />
+    <input type="submit" value="{{ submit_value|default:_("Save") }}" />
+    </div>
+    </form>
+{% endblock %}
+

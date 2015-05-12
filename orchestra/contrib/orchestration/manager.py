@@ -28,7 +28,7 @@ def keep_log(execute, log, operations):
         log = kwargs['log']
         try:
             log = execute(*args, **kwargs)
-            if log.state != log.SUCCESS:
+            if not log.is_success:
                 send_report(execute, args, log)
         except Exception as e:
             trace = traceback.format_exc()

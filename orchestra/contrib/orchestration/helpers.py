@@ -87,9 +87,9 @@ def message_user(request, logs):
         if log.state != log.EXCEPTION:
             # EXCEPTION logs are not stored on the database
             ids.append(log.pk)
-        if log.state in (log.SUCCESS, log.NOTHING):
+        if log.is_success:
             successes += 1
-        elif log.state in (log.RECEIVED, log.STARTED):
+        elif not log.has_finished:
             async += 1
             async_ids.append(log.id)
     errors = total-successes-async

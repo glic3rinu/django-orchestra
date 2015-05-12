@@ -78,7 +78,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
     Includes <tt>MailmanVirtualDomainBackend</tt>
     """
     verbose_name = "Mailman"
-    addresses = [
+    address_suffixes = [
         '',
         '-admin',
         '-bounces',
@@ -99,9 +99,12 @@ class MailmanBackend(MailmanVirtualDomainBackend):
     
     def get_virtual_aliases(self, context):
         aliases = ['# %(banner)s' % context]
-        for address in self.addresses:
-            context['address'] = address
-            aliases.append("%(address_name)s%(address)s@%(domain)s\t%(name)s%(address)s" % context)
+        for suffix in self.address_suffixes:
+            context['suffix'] = suffix
+            # Because mailman doesn't properly handle lists aliases we need two virtual aliases
+            aliases.append("%(address_name)s%(suffix)s@%(domain)s\t%(name)s%(suffix)s" % context)
+            # And another with the original list name; Mailman generates links with it
+            aliases.append("%(name)s%(suffix)s@%(domain)s\t%(name)s%(suffix)s" % context)
         return '\n'.join(aliases)
     
     def save(self, mail_list):
@@ -122,7 +125,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
                     UPDATED_VIRTUAL_ALIAS=1
                 else
                     if [[ ! $(grep '^\s*%(address_name)s@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
-                        sed -i -e '/^.*\s%(name)s\(%(address_regex)s\)\s*$/d' \\
+                        sed -i -e '/^.*\s%(name)s\(%(suffixes_regex)s\)\s*$/d' \\
                                -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s
                         echo "${aliases}" >> %(virtual_alias)s
                         UPDATED_VIRTUAL_ALIAS=1
@@ -159,7 +162,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
         context = self.get_context(mail_list)
         self.exclude_virtual_alias_domain(context)
         self.append(textwrap.dedent("""
-            sed -i -e '/^.*\s%(name)s\(%(address_regex)s\)\s*$/d' \\
+            sed -i -e '/^.*\s%(name)s\(%(suffixes_regex)s\)\s*$/d' \\
                    -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s""") % context
         )
         self.append(textwrap.dedent("""
@@ -201,7 +204,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
             'domain': mail_list.address_domain or settings.LISTS_DEFAULT_DOMAIN,
             'address_name': mail_list.get_address_name(),
             'address_domain': mail_list.address_domain,
-            'address_regex': '\|'.join(self.addresses),
+            'suffixes_regex': '\|'.join(self.address_suffixes),
             'admin': mail_list.admin_email,
             'mailman_root': settings.LISTS_MAILMAN_ROOT_DIR,
         })

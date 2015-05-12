@@ -29,14 +29,13 @@ class WebAppServiceMixin(object):
         if context['under_construction_path']:
             self.append(textwrap.dedent("""\
                 if [[ $CREATED == 1 && ! $(ls -A %(app_path)s) ]]; then
-                    {
-                        # Wait for other backends to do their thing or cp under construction
+                    # Async wait for other backends to do their thing or cp under construction
+                    nohup bash -c '
                         sleep 10
                         if [[ ! $(ls -A %(app_path)s) ]]; then
                             cp -r %(under_construction_path)s %(app_path)s
                             chown -R %(user)s:%(group)s %(app_path)s
-                        fi
-                    } &
+                        fi' &> /dev/null &
                 fi""") % context
             )
     

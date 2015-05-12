@@ -2,6 +2,15 @@ import os
 
 from django.core.exceptions import ValidationError
 
+from orchestra.contrib.orchestration import Operation
+
+
+def validate_path_exists(user, path, ):
+    user.path_to_validate = path
+    log = Operation.execute_action(user, 'validate_path_exists')[0]
+    if 'path does not exists' in log.stderr:
+        raise ValidationError(log.stderr)
+
 
 def validate_home(user, data, account):
     """ validates home based on account and data['shell'] """
@@ -25,3 +34,11 @@ def validate_home(user, data, account):
             raise ValidationError({
                 'home': _("Not a valid home directory.")
             })
+        if 'directory' in data and data['directory']:
+            path = os.path.join(data['home'], data['directory'])
+            try:
+                validate_path_exists(user, path)
+            except ValidationError as err:
+                raise ValidationError({
+                    'directory': err,
+                })

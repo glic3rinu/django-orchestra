@@ -354,3 +354,5 @@ make django admin taskstate uncollapse fucking traceback, ( if exists ?)
 resorce monitoring more efficient, less mem an better queries for calc current data
 
 # best_price rating method
+
+# select contact with one result: redirect

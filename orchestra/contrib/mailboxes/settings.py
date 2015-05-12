@@ -45,6 +45,12 @@ MAILBOXES_SIEVETEST_BIN_PATH = Setting('MAILBOXES_SIEVETEST_BIN_PATH',
 )
 
 
+MAILBOXES_USE_ACCOUNT_AS_GROUP = Setting('MAILBOXES_USE_ACCOUNT_AS_GROUP',
+    False,
+    help_text="Group used for system user based mailboxes. If <tt>False</tt> mailbox.name will be used as group."
+)
+
+
 MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH = Setting('MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH',
     '/etc/postfix/virtual_mailboxes'
 )

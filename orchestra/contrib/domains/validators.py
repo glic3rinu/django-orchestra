@@ -124,5 +124,5 @@ def validate_zone(zone):
     if check.exit_code == 127:
         logger.error("Cannot validate domain zone: %s not installed." % checkzone)
     elif check.exit_code == 1:
-        errors = re.compile(r'zone.*: (.*)').findall(check.stdout)[:-1]
+        errors = re.compile(r'zone.*: (.*)').findall(check.stdout.decode('utf8'))[:-1]
         raise ValidationError(', '.join(errors))

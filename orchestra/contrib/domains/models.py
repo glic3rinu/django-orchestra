@@ -252,7 +252,8 @@ class Record(models.Model):
     def clean(self):
         """ validates record value based on its type """
         # validate value
-        self.value = self.value.lower().strip()
+        if self.type != self.TXT:
+            self.value = self.value.lower().strip()
         choices = {
             self.MX: validators.validate_mx_record,
             self.NS: validators.validate_zone_label,

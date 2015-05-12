@@ -1,3 +1,4 @@
+import os
 import textwrap
 
 from django.utils.translation import ugettext_lazy as _
@@ -41,11 +42,19 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             if (count(glob("%(app_path)s/*")) > 1) {
                 die("App directory not empty.");
             }
-            exc('mkdir -p %(app_path)s');
-            exc('rm -f %(app_path)s/index.html');
-            exc('wget http://wordpress.org/latest.tar.gz -O - --no-check-certificate | tar -xzvf - -C %(app_path)s --strip-components=1');
-            exc('mkdir %(app_path)s/wp-content/uploads');
-            exc('chmod 750 %(app_path)s/wp-content/uploads');
+            shell_exec("mkdir -p %(app_path)s
+                rm -f %(app_path)s/index.html
+                filename=\\$(wget https://wordpress.org/latest.tar.gz --server-response --spider --no-check-certificate 2>&1 | grep filename | cut -d'=' -f2)
+                mkdir -p %(cms_cache_dir)s
+                if [ \\$(basename \\$(readlink %(cms_cache_dir)s/wordpress) 2> /dev/null ) != \\$filename ]; then
+                    wget https://wordpress.org/latest.tar.gz -O - --no-check-certificate | tee %(cms_cache_dir)s/\\$filename | tar -xzvf - -C %(app_path)s --strip-components=1
+                    rm -f %(cms_cache_dir)s/wordpress
+                    ln -s %(cms_cache_dir)s/\\$filename %(cms_cache_dir)s/wordpress
+                else
+                    tar -xzvf %(cms_cache_dir)s/wordpress -C %(app_path)s --strip-components=1
+                fi
+                mkdir %(app_path)s/wp-content/uploads
+                chmod 750 %(app_path)s/wp-content/uploads");
             
             $config_file = file('%(app_path)s/' . 'wp-config-sample.php');
             $secret_keys = file_get_contents('https://api.wordpress.org/secret-key/1.1/salt/');
@@ -124,5 +133,6 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             'db_host': settings.WEBAPPS_DEFAULT_MYSQL_DATABASE_HOST,
             'email': webapp.account.email,
             'title': "%s blog's" % webapp.account.get_full_name(),
+            'cms_cache_dir': os.path.normpath(settings.WEBAPPS_CMS_CACHE_DIR)
         })
         return replace(context, '"', "'")

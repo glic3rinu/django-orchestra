@@ -79,7 +79,7 @@ class Command(BaseCommand):
             route, __ = key
             backend, operations = value
             servers.append(str(route.host))
-            self.stdout.write('# Execute on %s' % server.name)
+            self.stdout.write('# Execute on %s' % route.host)
             for method, commands in backend.scripts:
                 script = '\n'.join(commands)
                 self.stdout.write(script)

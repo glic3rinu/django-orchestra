@@ -2,14 +2,12 @@ from django.contrib.contenttypes.models import ContentType
 
 from orchestra.contrib.miscellaneous.models import MiscService, Miscellaneous
 from orchestra.contrib.plans.models import Plan
-from orchestra.utils.tests import random_ascii
+from orchestra.utils.tests import random_ascii, BaseTestCase
 
 from ...models import Service
 
-from . import BaseBillingTest
 
-
-class JobBillingTest(BaseBillingTest):
+class JobBillingTest(BaseTestCase):
     def create_job_service(self):
         service = Service.objects.create(
             description="Random job",

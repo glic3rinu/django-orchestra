@@ -6,14 +6,12 @@ from freezegun import freeze_time
 from orchestra.contrib.mailboxes.models import Mailbox
 from orchestra.contrib.plans.models import Plan
 from orchestra.contrib.resources.models import Resource, ResourceData
-from orchestra.utils.tests import random_ascii
+from orchestra.utils.tests import random_ascii, BaseTestCase
 
 from ...models import Service
 
-from . import BaseBillingTest
 
-
-class MailboxBillingTest(BaseBillingTest):
+class MailboxBillingTest(BaseTestCase):
     def create_mailbox_service(self):
         service = Service.objects.create(
             description="Mailbox",
@@ -59,7 +57,7 @@ class MailboxBillingTest(BaseBillingTest):
         self.resource = Resource.objects.create(
             name='disk',
             content_type=ContentType.objects.get_for_model(Mailbox),
-            period=Resource.LAST,
+            aggregation='last',
             verbose_name='Mailbox disk',
             unit='GB',
             scale=10**9,

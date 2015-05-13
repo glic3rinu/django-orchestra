@@ -1,13 +1,12 @@
 from django.contrib.contenttypes.models import ContentType
 
 from orchestra.contrib.plans.models import Plan, ContractedPlan
+from orchestra.utils.tests import BaseTestCase
 
 from ...models import Service
 
-from . import BaseBillingTest
 
-
-class PlanBillingTest(BaseBillingTest):
+class PlanBillingTest(BaseTestCase):
     def create_plan_service(self):
         service = Service.objects.create(
             description="Association membership fee",

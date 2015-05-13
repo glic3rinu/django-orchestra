@@ -362,3 +362,8 @@ resorce monitoring more efficient, less mem an better queries for calc current d
 # autoresponses on mailboxes, not addresses or remove them
 
 # Async particular actions?
+
+
+apt-get install cython3
+export CYTHON='cython3'
+pip3 install https://github.com/fantix/gevent/archive/master.zip

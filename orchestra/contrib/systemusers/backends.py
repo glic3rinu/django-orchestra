@@ -35,11 +35,14 @@ class UNIXUserBackend(ServiceController):
                 usermod %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             else
                 useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s || {
+                useradd_code=$?
                 # User is logged in, kill and retry
-                if [[ $? -eq 8 ]]; then
+                if [[ $useradd_code -eq 8 ]]; then
                     pkill -u %(user)s; sleep 2
                     pkill -9 -u %(user)s; sleep 1
                     useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+                else
+                    exit $useradd_code
                 fi
                 }
             fi

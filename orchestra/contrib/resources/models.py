@@ -5,12 +5,13 @@ from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+from djcelery.models import PeriodicTask
 
 from orchestra.core import validators
 from orchestra.models import queryset, fields
 from orchestra.models.utils import get_model_field_path
 
-from . import tasks, settings
+from . import tasks
 from .backends import ServiceMonitor
 from .aggregations import Aggregation
 from .validators import validate_scale
@@ -37,9 +38,9 @@ class Resource(models.Model):
     _related = set() # keeps track of related models for resource cleanup
     
     name = models.CharField(_("name"), max_length=32,
-            help_text=_("Required. 32 characters or fewer. Lowercase letters, "
-                        "digits and hyphen only."),
-            validators=[validators.validate_name])
+        help_text=_("Required. 32 characters or fewer. Lowercase letters, "
+                    "digits and hyphen only."),
+        validators=[validators.validate_name])
     verbose_name = models.CharField(_("verbose name"), max_length=256)
     content_type = models.ForeignKey(ContentType,
         help_text=_("Model where this resource will be hooked."))
@@ -118,18 +119,32 @@ class Resource(models.Model):
         created = not self.pk
         super(Resource, self).save(*args, **kwargs)
         self.sync_periodic_task()
-        # This only work on tests (multiprocessing used on real deployments)
+        # This only works on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
     
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
-        name = 'monitor.%s' % str(self)
         self.sync_periodic_task()
     
     def sync_periodic_task(self):
         name = 'monitor.%s' % str(self)
-        sync = import_class(settings.RESOURCES_TASK_BACKEND)
-        return sync(self, name)
+        if resource.pk and resource.crontab:
+            try:
+                task = PeriodicTask.objects.get(name=name)
+            except PeriodicTask.DoesNotExist:
+                if resource.is_active:
+                    PeriodicTask.objects.create(
+                        name=name,
+                        task='resources.Monitor',
+                        args=[resource.pk],
+                        crontab=resource.crontab
+                    )
+            else:
+                if task.crontab != resource.crontab:
+                    task.crontab = resource.crontab
+                    task.save(update_fields=['crontab'])
+        else:
+            PeriodicTask.objects.filter(name=name).delete()
     
     def get_model_path(self, monitor):
         """ returns a model path between self.content_type and monitor.model """

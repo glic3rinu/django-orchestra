@@ -6,15 +6,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from orchestra.contrib.systemusers.models import SystemUser
-from orchestra.utils.tests import random_ascii
+from orchestra.utils.tests import random_ascii, BaseTestCase
 
 from ... import settings
 from ...models import Service
 
-from . import BaseBillingTest
 
-
-class FTPBillingTest(BaseBillingTest):
+class FTPBillingTest(BaseTestCase):
     def create_ftp_service(self):
         return Service.objects.create(
             description="FTP Account",

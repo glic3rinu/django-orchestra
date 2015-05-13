@@ -7,13 +7,12 @@ from orchestra.contrib.accounts.models import Account
 from orchestra.contrib.miscellaneous.models import MiscService, Miscellaneous
 from orchestra.contrib.plans.models import Plan
 from orchestra.contrib.resources.models import Resource, ResourceData, MonitorData
+from orchestra.utils.tests import BaseTestCase
 
 from ...models import Service
 
-from . import BaseBillingTest
 
-
-class BaseTrafficBillingTest(BaseBillingTest):
+class BaseTrafficBillingTest(BaseTestCase):
     TRAFFIC_METRIC = 'account.resources.traffic.used'
     
     def create_traffic_service(self):
@@ -41,7 +40,7 @@ class BaseTrafficBillingTest(BaseBillingTest):
         self.resource = Resource.objects.create(
             name='traffic',
             content_type=ContentType.objects.get_for_model(Account),
-            period=Resource.MONTHLY_SUM,
+            aggregation='monthly-sum',
             verbose_name='Account Traffic',
             unit='GB',
             scale='10**9',

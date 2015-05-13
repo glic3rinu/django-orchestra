@@ -7,7 +7,6 @@ from django.contrib.auth import BACKEND_SESSION_KEY, SESSION_KEY
 from django.contrib.sessions.backends.db import SessionStore
 from django.core.urlresolvers import reverse
 from django.test import LiveServerTestCase, TestCase
-from orm.api import Api
 from selenium.webdriver.firefox.webdriver import WebDriver
 from xvfbwrapper import Xvfb
 
@@ -88,6 +87,7 @@ class BaseLiveServerTestCase(AppDependencyMixin, LiveServerTestCase):
         return Account.objects.create_user(username, password=password, email='orchestra@orchestra.org')
     
     def setUp(self):
+        from orm.api import Api
         super(BaseLiveServerTestCase, self).setUp()
         self.rest = Api(self.live_server_url + '/api/')
         self.rest.enable_logging()

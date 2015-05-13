@@ -32,9 +32,16 @@ class UNIXUserBackend(ServiceController):
         # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
             if [[ $( id %(user)s ) ]]; then
-               usermod  %(user)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+                usermod %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
             else
-               useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+                useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s || {
+                # User is logged in, kill and retry
+                if [[ $? -eq 8 ]]; then
+                    pkill -u %(user)s; sleep 2
+                    pkill -9 -u %(user)s; sleep 1
+                    useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+                fi
+                }
             fi
             mkdir -p %(base_home)s
             chmod 750 %(base_home)s
@@ -43,7 +50,9 @@ class UNIXUserBackend(ServiceController):
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""
                 if [[ $(mount | grep "^$(df %(home)s|grep '^/')\s" | grep acl) ]]; then
+                    # Accountn group as the owner
                     chown %(mainuser)s:%(mainuser)s %(home)s
+                    chmod g+s %(home)s
                     # Home access
                     setfacl -m u:%(user)s:--x '%(mainuser_home)s'
                     # Grant perms to future files within the directory

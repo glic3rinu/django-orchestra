@@ -94,7 +94,6 @@ chown $USER:$USER /home/orchestra/panel/orchestra.log
 
 # admin_tools needs accounts and does not have migrations
 if [[ ! $(sudo su postgres -c "psql orchestra -q -c 'SELECT * FROM accounts_account LIMIT 1;' 2> /dev/null") ]]; then
-    surun "$PYTHON_BIN $MANAGE migrate --noinput accounts"
     surun "$PYTHON_BIN $MANAGE migrate --noinput"
 else
     surun "$PYTHON_BIN $MANAGE postupgradeorchestra --from $CURRENT_VERSION"

@@ -49,7 +49,6 @@ pip3 install -r \
 
 # Create a new Orchestra site
 orchestra-admin startproject panel
-python3 panel/manage.py migrate accounts
 python3 panel/manage.py migrate
 python3 panel/manage.py runserver
 

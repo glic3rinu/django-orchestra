@@ -33,44 +33,46 @@ class SystemUserFormMixin(object):
         self.fields['home'].widget = forms.Select(choices=choices)
         if self.instance.pk and (self.instance.is_main or self.instance.has_shell):
             # hidde home option for shell users
-            self.fields['home'].widget = forms.HiddenInput()
-            self.fields['directory'].widget = forms.HiddenInput()
+            self.fields['home'].widget.input_type = 'hidden'
+            self.fields['directory'].widget.input_type = 'hidden'
         elif self.instance.pk and (self.instance.get_base_home() == self.instance.home):
             self.fields['directory'].widget = forms.HiddenInput()
         else:
             self.fields['directory'].widget = forms.TextInput(attrs={'size':'70'})
         if not self.instance.pk or not self.instance.is_main:
             # Some javascript for hidde home/directory inputs when convinient
-            self.fields['shell'].widget.attrs = {
-                'onChange': textwrap.dedent("""\
-                    field = $(".field-home, .field-directory");
-                    input = $("#id_home, #id_directory");
-                    if ($.inArray(this.value, %s) < 0) {
-                        field.addClass("hidden");
-                    } else {
-                       field.removeClass("hidden");
-                       input.removeAttr("type");
-                    };""" % str(list(settings.SYSTEMUSERS_DISABLED_SHELLS)))
-            }
-        self.fields['home'].widget.attrs = {
-            'onChange': textwrap.dedent("""\
-                field = $(".field-box.field-directory");
-                input = $("#id_directory");
-                if (this.value.search("%s") > 0) {
-                   field.addClass("hidden");
+            self.fields['shell'].widget.attrs['onChange'] = textwrap.dedent("""\
+                field = $(".field-home, .field-directory");
+                input = $("#id_home, #id_directory");
+                if ($.inArray(this.value, %s) < 0) {
+                    field.addClass("hidden");
                 } else {
                    field.removeClass("hidden");
                    input.removeAttr("type");
-                };""" % username)
-        }
+                };""" % str(list(settings.SYSTEMUSERS_DISABLED_SHELLS))
+            )
+        self.fields['home'].widget.attrs['onChange'] = textwrap.dedent("""\
+            field = $(".field-box.field-directory");
+            input = $("#id_directory");
+            if (this.value.search("%s") > 0) {
+               field.addClass("hidden");
+            } else {
+               field.removeClass("hidden");
+               input.removeAttr("type");
+            };""" % username
+        )
     
     def clean(self):
         super(SystemUserFormMixin, self).clean()
         cleaned_data = self.cleaned_data
         home = cleaned_data.get('home')
+        shell = cleaned_data.get('shell')
         if home and self.MOCK_USERNAME in home:
             username = cleaned_data.get('username', '')
             cleaned_data['home'] = home.replace(self.MOCK_USERNAME, username)
+        elif home and shell not in settings.SYSTEMUSERS_DISABLED_SHELLS:
+            cleaned_data['home'] = ''
+            cleaned_data['directory'] = ''
         validate_home(self.instance, cleaned_data, self.account)
         return cleaned_data
 

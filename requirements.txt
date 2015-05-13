@@ -1,7 +1,7 @@
 django==1.8.1
 django-celery-email==1.0.4
 django-fluent-dashboard==0.5
-https://bitbucket.org/izi/django-admin-tools/get/a0abfffd76a0.zip
+https://github.com/glic3rinu/django-admin-tools/archive/master.zip
 IPy==0.81
 django-extensions==1.5.2
 django-transaction-signals==1.0.0

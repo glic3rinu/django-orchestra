@@ -57,7 +57,7 @@
 
 * print open invoices as proforma?
 
-* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python manage.py test orchestra.apps.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture
+* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python3 manage.py test orchestra.contrib.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture
 
 * ForeignKey.swappable
 * Field.editable
@@ -360,3 +360,5 @@ resorce monitoring more efficient, less mem an better queries for calc current d
 # Tests can not run because django.db.utils.ProgrammingError: relation "accounts_account" does not exist
 
 # autoresponses on mailboxes, not addresses or remove them
+
+# Async particular actions?

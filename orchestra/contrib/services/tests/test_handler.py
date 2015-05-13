@@ -5,10 +5,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from orchestra.contrib.systemusers.models import SystemUser
+from orchestra.contrib.plans.models import Plan
+from orchestra.utils.python import cmp_to_key
 from orchestra.utils.tests import BaseTestCase
 
 from .. import helpers
-from ..models import Service, Plan
+from ..models import Service
 
 
 class Order(object):
@@ -40,7 +42,7 @@ class HandlerTests(BaseTestCase):
             is_fee=False,
             metric='',
             pricing_period=Service.NEVER,
-            rate_algorithm='STEP_PRICE',
+            rate_algorithm='orchestra.contrib.plans.ratings.step_price',
             on_cancel=Service.DISCOUNT,
             payment_style=Service.PREPAY,
             tax=0,
@@ -144,7 +146,7 @@ class HandlerTests(BaseTestCase):
         order6 = Order(
             registered_on=now+datetime.timedelta(days=8))
         orders = [order3, order, order1, order2, order4, order5, order6]
-        self.assertEqual(orders, sorted(orders, cmp=helpers.cmp_billed_until_or_registered_on))
+        self.assertEqual(orders, sorted(orders, key=cmp_to_key(helpers.cmp_billed_until_or_registered_on)))
     
     def test_compensation(self):
         now = timezone.now().date()
@@ -192,7 +194,7 @@ class HandlerTests(BaseTestCase):
             [now+datetime.timedelta(days=100), now+datetime.timedelta(days=102), order],
         ])
         porders = [order3, order, order1, order2, order4, order5, order6]
-        porders = sorted(porders, cmp=helpers.cmp_billed_until_or_registered_on)
+        porders = sorted(porders, key=cmp_to_key(helpers.cmp_billed_until_or_registered_on))
         compensations = []
         receivers = []
         for order in porders:
@@ -223,10 +225,19 @@ class HandlerTests(BaseTestCase):
         results = service.get_rates(account, cache=False)
         results = service.rate_method(results, 30)
         rates = [
-            {'price': decimal.Decimal('0.00'), 'quantity': 2},
-            {'price': decimal.Decimal('10.00'), 'quantity': 1},
-            {'price': decimal.Decimal('9.00'), 'quantity': 6},
-            {'price': decimal.Decimal('1.00'), 'quantity': 21}
+            {
+                'price': decimal.Decimal('0.00'),
+                'quantity': 2
+            }, {
+                'price': decimal.Decimal('10.00'),
+                'quantity': 1
+            }, {
+                'price': decimal.Decimal('9.00'),
+                'quantity': 6
+            }, {
+                'price': decimal.Decimal('1.00'),
+                'quantity': 21
+            }
         ]
         for rate, result in zip(rates, results):
             self.assertEqual(rate['price'], result.price)
@@ -280,7 +291,7 @@ class HandlerTests(BaseTestCase):
             self.assertEqual(rate['price'], result.price)
             self.assertEqual(rate['quantity'], result.quantity)
         
-        service.rate_algorithm = service.MATCH_PRICE
+        service.rate_algorithm = 'orchestra.contrib.plans.ratings.match_price'
         service.save()
         results = service.get_rates(account, cache=False)
         results = service.rate_method(results, 30)
@@ -313,9 +324,16 @@ class HandlerTests(BaseTestCase):
         results = service.get_rates(account, cache=False)
         results = service.rate_method(results, 30)
         rates = [
-            {'price': decimal.Decimal('10.00'), 'quantity': 3},
-            {'price': decimal.Decimal('9.00'), 'quantity': 6},
-            {'price': decimal.Decimal('1.00'), 'quantity': 21}
+            {
+                'price': decimal.Decimal('10.00'),
+                'quantity': 3
+            }, {
+                'price': decimal.Decimal('9.00'),
+                'quantity': 6
+            }, {
+                'price': decimal.Decimal('1.00'),
+                'quantity': 21
+            }
         ]
         for rate, result in zip(rates, results):
             self.assertEqual(rate['price'], result.price)

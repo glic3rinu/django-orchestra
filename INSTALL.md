@@ -38,8 +38,6 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
     ```bash
     sudo apt-get install python3-psycopg2 postgresql
     sudo python3 manage.py setuppostgres --db_password <password>
-    # admin_tools needs accounts and does not have migrations
-    python3 manage.py migrate accounts
     python3 manage.py migrate
     ```
 

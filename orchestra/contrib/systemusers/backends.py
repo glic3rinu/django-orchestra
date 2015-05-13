@@ -86,14 +86,14 @@ class UNIXUserBackend(ServiceController):
         })
         exclude_acl = []
         for exclude in settings.SYSTEMUSERS_FORBIDDEN_PATHS:
-            context['exclude_acl'] = exclude
-            exclude_acl.append('-not -path "%(perm_to)s/%(exclude_acl)s"' % context)
+            context['exclude_acl'] = os.path.join(context['perm_home'], exclude)
+            exclude_acl.append('-not -path "%(exclude_acl)s"' % context)
         context['exclude_acl'] = ' \\\n    -a '.join(exclude_acl) if exclude_acl else ''
-        if user.set_perm_perms == 'read-write':
+        if user.set_perm_perms == 'rw':
             context['perm_perms'] = 'rwx' if user.set_perm_action == 'grant' else '---'
-        elif user.set_perm_perms == 'read-only':
+        elif user.set_perm_perms == 'r':
             context['perm_perms'] = 'r-x' if user.set_perm_action == 'grant' else '-wx'
-        elif user.set_perm_perms == 'write-only':
+        elif user.set_perm_perms == 'w':
             context['perm_perms'] = '-wx' if user.set_perm_action == 'grant' else 'r-x'
         if user.set_perm_action == 'grant':
             self.append(textwrap.dedent("""\
@@ -105,8 +105,7 @@ class UNIXUserBackend(ServiceController):
                 find '%(perm_to)s' -type d %(exclude_acl)s \\
                     -exec setfacl -m d:u:%(user)s:%(perm_perms)s {} \\;
                 # Account group as the owner of new files
-                chmod g+s '%(perm_to)s'
-                """) % context
+                chmod g+s '%(perm_to)s'""") % context
             )
             if not user.is_main:
                 self.append(textwrap.dedent("""\

@@ -33,10 +33,11 @@ def set_permission(modeladmin, request, queryset):
             cleaned_data = form.cleaned_data
             operations = []
             for user in queryset:
-                user.set_perm_action = cleaned_data['set_action']
-                user.set_perm_base_home = cleaned_data['base_home']
-                user.set_perm_home_extension = cleaned_data['home_extension']
-                user.set_perm_perms = cleaned_data['permissions']
+                base_home = cleaned_data['base_home']
+                extension = cleaned_data['home_extension']
+                action = cleaned_data['set_action']
+                perms = cleaned_data['permissions']
+                user.set_permission(base_home, extension, action=action, perms=perms)
                 operations.extend(Operation.create_for_action(user, 'set_permission'))
                 verbose_action = get_verbose_choice(form.fields['set_action'].choices,
                     user.set_perm_action)

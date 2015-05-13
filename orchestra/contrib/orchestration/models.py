@@ -104,6 +104,17 @@ class BackendLog(models.Model):
         return ServiceBackend.get_backend(self.backend)
 
 
+class BackendOperationQuerySet(models.QuerySet):
+    def create(self, **kwargs):
+        instance = kwargs.get('instance')
+        if instance and not instance.pk and 'instance_repr' not in kwargs:
+            try:
+                kwargs['instance_repr'] = str(instance)[:256]
+            except:
+                pass
+        return super(BackendOperationQuerySet, self).create(**kwargs)
+
+
 class BackendOperation(models.Model):
     """
     Encapsulates an operation, storing its related object, the action and the backend.
@@ -112,9 +123,11 @@ class BackendOperation(models.Model):
     backend = models.CharField(_("backend"), max_length=256)
     action = models.CharField(_("action"), max_length=64)
     content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField(null=True)
+    instance_repr = models.CharField(_("instance representation"), max_length=256)
     
     instance = GenericForeignKey('content_type', 'object_id')
+    objects = BackendOperationQuerySet.as_manager()
     
     class Meta:
         verbose_name = _("Operation")

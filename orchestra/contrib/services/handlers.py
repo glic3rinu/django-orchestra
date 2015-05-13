@@ -431,6 +431,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                         continue
                 cini = order.billed_until
             bp = self.get_billing_point(order, bp=bp, **options)
+            if order.billed_until and order.billed_until >= bp:
+                continue
             order.new_billed_until = bp
             ini = min(ini, cini)
             end = max(end, bp)

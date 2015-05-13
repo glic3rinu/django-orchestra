@@ -27,7 +27,7 @@ def get_request_cache():
 
 class RequestCacheMiddleware(object):
     def process_request(self, request):
-        cache = _request_cache.get(currentThread()) or RequestCache()
+        cache = _request_cache.get(currentThread(), RequestCache())
         _request_cache[currentThread()] = cache
         cache.clear()
     

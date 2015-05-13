@@ -340,7 +340,7 @@ TODO mount the filesystem with "nosuid" option
 # smtplib.SMTPConnectError: (421, b'4.7.0 mail.pangea.org Error: too many connections from 77.246.181.209')
 
 # rename virtual_maps to virtual_alias_maps and remove virtual_alias_domains ?
-# virtdomains file is not ideal, prevent fake/error on domains there! and make sure this file is required!
+# virtdomains file is not ideal, prevent fake/error on domains there! and make sure to chekc if this file is required!
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
 orchestra-beat support for uwsgi cron
@@ -353,11 +353,10 @@ make django admin taskstate uncollapse fucking traceback, ( if exists ?)
 
 resorce monitoring more efficient, less mem an better queries for calc current data
 
-# best_price rating method
+# test best_price rating method
 
 # bill this https://orchestra.pangea.org/admin/orders/order/8236/ should be already billed, <= vs <
 # Convert rating method from function to PluginClass
 # Tests can not run because django.db.utils.ProgrammingError: relation "accounts_account" does not exist
 
-
-
+# autoresponses on mailboxes, not addresses or remove them

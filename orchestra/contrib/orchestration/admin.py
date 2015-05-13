@@ -92,12 +92,11 @@ class BackendOperationInline(admin.TabularInline):
         }
     
     def instance_link(self, operation):
-        try:
-            return admin_link('instance')(self, operation)
-        except:
-            return _("deleted {0} {1}").format(
-                escape(operation.content_type), escape(operation.object_id)
-            )
+        link = admin_link('instance')(self, operation)
+        if not link.startswith('<a'):
+            return _("Deleted {0}").format(operation.instance_repr or '-'.join(
+                (escape(operation.content_type), escape(operation.object_id))))
+        return link
     instance_link.allow_tags = True
     instance_link.short_description = _("Instance")
     

@@ -1,5 +1,4 @@
 from django.contrib.admin import SimpleListFilter
-from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -16,7 +15,6 @@ class IsMainListFilter(SimpleListFilter):
     
     def queryset(self, request, queryset):
         if self.value() == 'True':
-            return queryset.filter(account__main_systemuser_id=F('id'))
+            return queryset.by_is_main()
         if self.value() == 'False':
-            return queryset.exclude(account__main_systemuser_id=F('id'))
-
+            return queryset.by_is_main(is_main=False)

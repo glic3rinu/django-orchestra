@@ -44,9 +44,7 @@ def keep_log(execute, log, operations):
             # Store and log the operation
             for operation in operations:
                 logger.info("Executed %s" % str(operation))
-                if operation.instance.pk:
-                    # Not all backends are called with objects saved on the database
-                    operation.store(log)
+                operation.store(log)
             stdout = log.stdout.strip()
             stdout and logger.debug('STDOUT %s', stdout)
             stderr = log.stderr.strip()
@@ -146,8 +144,8 @@ def execute(scripts, serialize=False, async=None):
 
 def collect(instance, action, **kwargs):
     """ collect operations """
-    operations = kwargs.get('operations') or OrderedSet()
-    route_cache = kwargs.get('route_cache') or {}
+    operations = kwargs.get('operations', OrderedSet())
+    route_cache = kwargs.get('route_cache', {})
     for backend_cls in ServiceBackend.get_backends():
         # Check if there exists a related instance to be executed for this backend and action
         instances = []

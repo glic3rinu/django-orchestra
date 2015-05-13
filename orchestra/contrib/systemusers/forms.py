@@ -1,3 +1,4 @@
+import os
 import textwrap
 
 from django import forms
@@ -94,9 +95,9 @@ class PermissionForm(forms.Form):
         widget=forms.TextInput(attrs={'size':'70'}), help_text=_("Relative to chosen home."))
     permissions = forms.ChoiceField(label=_("Permissions"), initial='read-write',
         choices=(
-            ('read-write', _("Read and write")),
-            ('read-only', _("Read only")),
-            ('write-only', _("Write only"))
+            ('rw', _("Read and write")),
+            ('r', _("Read only")),
+            ('w', _("Write only"))
         ))
     
     def __init__(self, *args, **kwargs):

@@ -82,8 +82,10 @@ class PHPApp(AppType):
                     options += list(webapp.options.all())
         init_vars = OrderedDict((opt.name, opt.value) for opt in options)
         # Enable functions
-        enable_functions = init_vars.pop('enable_functions', None)
-        if enable_functions:
+        enable_functions = init_vars.pop('enable_functions', '')
+        if enable_functions or self.is_fpm:
+            # FPM: Defining 'disable_functions' or 'disable_classes' will not overwrite previously
+            #      defined php.ini values, but will append the new value
             enable_functions = set(enable_functions.split(','))
             disable_functions = []
             for function in self.PHP_DISABLED_FUNCTIONS:

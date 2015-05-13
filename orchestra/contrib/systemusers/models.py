@@ -4,6 +4,7 @@ import os
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -18,6 +19,12 @@ class SystemUserQuerySet(models.QuerySet):
         user.set_password(password)
         user.save(update_fields=['password'])
         return user
+    
+    def by_is_main(self, is_main=True, **kwargs):
+        if is_main:
+            return self.filter(account__main_systemuser_id=F('id'))
+        else:
+            return self.exclude(account__main_systemuser_id=F('id'))
 
 
 class SystemUser(models.Model):
@@ -111,6 +118,12 @@ class SystemUser(models.Model):
     
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
+    
+    def set_permission(self, base_home, extension, perms='rw', action='grant'):
+        self.set_perm_action = action
+        self.set_perm_base_home = base_home
+        self.set_perm_home_extension = extension
+        self.set_perm_perms = perms
     
     def get_base_home(self):
         context = {

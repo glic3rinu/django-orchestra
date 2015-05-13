@@ -128,20 +128,20 @@ class Resource(models.Model):
     
     def sync_periodic_task(self):
         name = 'monitor.%s' % str(self)
-        if resource.pk and resource.crontab:
+        if self.pk and self.crontab:
             try:
                 task = PeriodicTask.objects.get(name=name)
             except PeriodicTask.DoesNotExist:
-                if resource.is_active:
+                if self.is_active:
                     PeriodicTask.objects.create(
                         name=name,
                         task='resources.Monitor',
-                        args=[resource.pk],
-                        crontab=resource.crontab
+                        args=[self.pk],
+                        crontab=self.crontab
                     )
             else:
-                if task.crontab != resource.crontab:
-                    task.crontab = resource.crontab
+                if task.crontab != self.crontab:
+                    task.crontab = self.crontab
                     task.save(update_fields=['crontab'])
         else:
             PeriodicTask.objects.filter(name=name).delete()

@@ -11,5 +11,4 @@ class OrdersConfig(AppConfig):
     def ready(self):
         from .models import Order
         accounts.register(Order, icon='basket.png')
-        if database_ready():
-            from . import signals
+        from . import signals

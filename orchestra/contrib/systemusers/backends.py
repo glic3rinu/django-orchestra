@@ -32,19 +32,25 @@ class UNIXUserBackend(ServiceController):
         # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
             if [[ $( id %(user)s ) ]]; then
-                usermod %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
+                usermod %(user)s --home %(home)s \\
+                    --password '%(password)s' \\
+                    --shell %(shell)s %(groups_arg)s
             else
-                useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s || {
-                useradd_code=$?
-                # User is logged in, kill and retry
-                if [[ $useradd_code -eq 8 ]]; then
-                    pkill -u %(user)s; sleep 2
-                    pkill -9 -u %(user)s; sleep 1
-                    useradd %(user)s --home %(home)s --password '%(password)s' --shell %(shell)s %(groups_arg)s
-                else
-                    exit $useradd_code
-                fi
-                }
+                useradd %(user)s --home %(home)s \\
+                    --password '%(password)s' \\
+                    --shell %(shell)s %(groups_arg)s || {
+                        useradd_code=$?
+                        # User is logged in, kill and retry
+                        if [[ $useradd_code -eq 8 ]]; then
+                            pkill -u %(user)s; sleep 2
+                            pkill -9 -u %(user)s; sleep 1
+                            useradd %(user)s --home %(home)s \\
+                                --password '%(password)s' \\
+                                --shell %(shell)s %(groups_arg)s
+                        else
+                            exit $useradd_code
+                        fi
+                    }
             fi
             mkdir -p %(base_home)s
             chmod 750 %(base_home)s

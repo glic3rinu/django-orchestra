@@ -7,9 +7,14 @@ from orchestra.contrib.accounts.models import Account
 from orchestra.contrib.miscellaneous.models import MiscService, Miscellaneous
 from orchestra.contrib.plans.models import Plan
 from orchestra.contrib.resources.models import Resource, ResourceData, MonitorData
+from orchestra.contrib.resources.backends import ServiceMonitor
 from orchestra.utils.tests import BaseTestCase
 
 from ...models import Service
+
+
+class FTPTrafficMonitor(ServiceMonitor):
+    model = 'systemusers.SystemUser'
 
 
 class BaseTrafficBillingTest(BaseTestCase):
@@ -25,7 +30,7 @@ class BaseTrafficBillingTest(BaseTestCase):
             is_fee=False,
             metric=self.TRAFFIC_METRIC,
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm='STEP_PRICE',
+            rate_algorithm='orchestra.contrib.plans.ratings.step_price',
             on_cancel=Service.NOTHING,
             payment_style=Service.POSTPAY,
             tax=0,
@@ -45,12 +50,13 @@ class BaseTrafficBillingTest(BaseTestCase):
             unit='GB',
             scale='10**9',
             on_demand=True,
-            monitors='FTPTraffic',
+            # TODO
+            monitors=FTPTrafficMonitor.get_name(),
         )
         return self.resource
     
     def report_traffic(self, account, value):
-        MonitorData.objects.create(monitor='FTPTraffic', content_object=account.systemusers.get(), value=value)
+        MonitorData.objects.create(monitor=FTPTrafficMonitor.get_name(), content_object=account.systemusers.get(), value=value)
         data, __ = ResourceData.get_or_create(account, self.resource)
         data.update()
 
@@ -107,7 +113,7 @@ class TrafficPrepayBillingTest(BaseTrafficBillingTest):
             is_fee=False,
             metric="miscellaneous.amount",
             pricing_period=Service.NEVER,
-            rate_algorithm='STEP_PRICE',
+            rate_algorithm='orchestra.contrib.plans.ratings.step_price',
             on_cancel=Service.NOTHING,
             payment_style=Service.PREPAY,
             tax=0,
@@ -139,7 +145,6 @@ class TrafficPrepayBillingTest(BaseTrafficBillingTest):
             bill = account.orders.bill(proforma=True, new_open=True)[0]
             self.assertEqual(2*10*50 + 0*10, bill.get_total())
         
-        # TODO dateutils.relativedelta is buggy with fakedatetime
         # TODO RuntimeWarning: DateTimeField MetricStorage.updated_on received a naive
         self.report_traffic(account, 10**10)
         with freeze_time(now+relativedelta(months=1)):

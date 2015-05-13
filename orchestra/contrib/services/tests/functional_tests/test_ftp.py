@@ -13,6 +13,12 @@ from ...models import Service
 
 
 class FTPBillingTest(BaseTestCase):
+    DEPENDENCIES = (
+        'orchestra.contrib.orders',
+        'orchestra.contrib.plans',
+        'orchestra.contrib.systemusers',
+    )
+    
     def create_ftp_service(self):
         return Service.objects.create(
             description="FTP Account",
@@ -23,7 +29,7 @@ class FTPBillingTest(BaseTestCase):
             is_fee=False,
             metric='',
             pricing_period=Service.NEVER,
-            rate_algorithm='STEP_PRICE',
+            rate_algorithm='orchestra.contrib.plans.ratings.step_price',
             on_cancel=Service.COMPENSATE,
             payment_style=Service.PREPAY,
             tax=0,
@@ -39,6 +45,7 @@ class FTPBillingTest(BaseTestCase):
     def test_ftp_account_1_year_fiexed(self):
         service = self.create_ftp_service()
         self.create_ftp()
+        self.assertEqual(1, service.orders.count())
         bp = timezone.now().date() + relativedelta(years=1)
         bills = service.orders.bill(billing_point=bp, fixed_point=True)
         self.assertEqual(10, bills[0].get_total())

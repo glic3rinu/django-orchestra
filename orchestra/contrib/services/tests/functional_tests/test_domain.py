@@ -18,7 +18,7 @@ class DomainBillingTest(BaseTestCase):
             is_fee=False,
             metric='',
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm='STEP_PRICE',
+            rate_algorithm='orchestra.contrib.plans.ratings.step_price',
             on_cancel=Service.NOTHING,
             payment_style=Service.PREPAY,
             tax=0,

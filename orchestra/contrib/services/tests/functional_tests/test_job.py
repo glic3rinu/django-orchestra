@@ -18,7 +18,7 @@ class JobBillingTest(BaseTestCase):
             is_fee=False,
             metric='miscellaneous.amount',
             pricing_period=Service.BILLING_PERIOD,
-            rate_algorithm='MATCH_PRICE',
+            rate_algorithm='orchestra.contrib.plans.ratings.match_price',
             on_cancel=Service.NOTHING,
             payment_style=Service.POSTPAY,
             tax=0,

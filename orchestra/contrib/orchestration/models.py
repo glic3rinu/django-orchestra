@@ -8,7 +8,7 @@ from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_ip_address, ValidationError
-from orchestra.models.fields import NullableCharField
+from orchestra.models.fields import NullableCharField, MultiSelectField
 #from orchestra.utils.apps import autodiscover
 
 from . import settings
@@ -157,9 +157,12 @@ class Route(models.Model):
     async = models.BooleanField(default=False,
         help_text=_("Whether or not block the request/response cycle waitting this backend to "
                     "finish its execution. Usually you want slave servers to run asynchronously."))
+    async_actions = MultiSelectField(max_length=256, blank=True,
+        help_text=_("Specify individual actions to be executed asynchronoulsy."))
 #    method = models.CharField(_("method"), max_lenght=32, choices=method_choices,
 #            default=MethodBackend.get_default())
     is_active = models.BooleanField(_("active"), default=True)
+    
     
     class Meta:
         unique_together = ('backend', 'host')
@@ -209,6 +212,9 @@ class Route(models.Model):
             except Exception as exception:
                 name = type(exception).__name__
                 raise ValidationError(': '.join((name, exception)))
+    
+    def action_is_async(self, action):
+        return action in self.async_actions
     
     def matches(self, instance):
         safe_locals = {

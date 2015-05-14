@@ -113,6 +113,7 @@ class ChangeAddFieldsMixin(object):
     add_form = None
     add_prepopulated_fields = {}
     change_readonly_fields = ()
+    change_form = None
     add_inlines = None
     
     def get_prepopulated_fields(self, request, obj=None):
@@ -151,8 +152,12 @@ class ChangeAddFieldsMixin(object):
     def get_form(self, request, obj=None, **kwargs):
         """ Use special form during user creation """
         defaults = {}
-        if obj is None and self.add_form:
-            defaults['form'] = self.add_form
+        if obj is None:
+            if self.add_form:
+                defaults['form'] = self.add_form
+        else:
+            if self.change_form:
+                defaults['form'] = self.change_form
         defaults.update(kwargs)
         return super(ChangeAddFieldsMixin, self).get_form(request, obj, **defaults)
 

@@ -50,7 +50,7 @@ class BillSelectRelatedForm(AdminFormMixin, forms.Form):
     billing_point = forms.DateField(widget=forms.HiddenInput())
     fixed_point = forms.BooleanField(widget=forms.HiddenInput(), required=False)
     proforma = forms.BooleanField(widget=forms.HiddenInput(), required=False)
-    create_new_open = forms.BooleanField(widget=forms.HiddenInput(), required=False)
+    new_open = forms.BooleanField(widget=forms.HiddenInput(), required=False)
     
     def __init__(self, *args, **kwargs):
         super(BillSelectRelatedForm, self).__init__(*args, **kwargs)
@@ -64,4 +64,4 @@ class BillSelectConfirmationForm(AdminFormMixin, forms.Form):
     billing_point = forms.DateField(widget=forms.HiddenInput())
     fixed_point = forms.BooleanField(widget=forms.HiddenInput(), required=False)
     proforma = forms.BooleanField(widget=forms.HiddenInput(), required=False)
-    create_new_open = forms.BooleanField(widget=forms.HiddenInput(), required=False)
+    new_open = forms.BooleanField(widget=forms.HiddenInput(), required=False)

@@ -42,6 +42,7 @@ class BillSelectedOrders(object):
                     proforma=form.cleaned_data['proforma'],
                     new_open=form.cleaned_data['new_open'],
                 )
+                print(self.options)
                 if int(request.POST.get('step')) != 3:
                     return self.select_related(request)
                 else:

@@ -214,6 +214,7 @@ class Service(models.Model):
                     return decimal.Decimal(str(accumulated))
                 ant_counter = counter
                 accumulated += rate['price'] * rate['quantity']
+            raise RuntimeError("Rating algorithm bad result")
         else:
             if metric < position:
                 raise ValueError("Metric can not be less than the position.")
@@ -221,6 +222,7 @@ class Service(models.Model):
                 counter += rate['quantity']
                 if counter >= position:
                     return decimal.Decimal(str(rate['price']))
+            raise RuntimeError("Rating algorithm bad result")
     
     def get_rates(self, account, cache=True):
         # rates are cached per account

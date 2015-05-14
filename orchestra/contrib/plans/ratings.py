@@ -44,24 +44,24 @@ def _compute_steps(rates, metric):
     return value, steps
 
 
-def _prepend_missing(rates):
+def _standardize(rates):
     """
     Support for incomplete rates
     When first rate (quantity=5, price=10) defaults to nominal_price
     """
-    if rates:
-        first = rates[0]
-        if first.quantity == 0:
-            first.quantity = 1
-        elif first.quantity > 1:
-            if not isinstance(rates, list):
-                rates = list(rates)
-            service = first.service
-            rate_class = type(first)
-            rates.insert(0,
-                rate_class(service=service, plan=first.plan, quantity=1, price=service.nominal_price)
+    std_rates = []
+    minimal = rates[0].quantity
+    for rate in rates:
+        if rate.quantity == 0:
+            rate.quantity = 1
+        elif rate.quantity == minimal and rate.quantity > 1:
+            service = rate.service
+            rate_class = type(rate)
+            std_rates.append(
+                rate_class(service=service, plan=rate.plan, quantity=1, price=service.nominal_price)
             )
-    return rates
+        std_rates.append(rate)
+    return std_rates
 
 
 def step_price(rates, metric):
@@ -71,7 +71,7 @@ def step_price(rates, metric):
     group = []
     minimal = (sys.maxsize, [])
     for plan, rates in rates.group_by('plan').items():
-        rates = _prepend_missing(rates)
+        rates = _standardize(rates)
         value, steps = _compute_steps(rates, metric)
         if plan.is_combinable:
             group.append(steps)
@@ -122,7 +122,7 @@ def step_price(rates, metric):
         minimal = min(minimal, (value, result), key=lambda v: v[0])
     return minimal[1]
 step_price.verbose_name = _("Step price")
-step_price.help_text = _("All rates with a quantity lower than the metric are applied. "
+step_price.help_text = _("All rates with a quantity lower or equal than the metric are applied. "
                          "Nominal price will be used when initial block is missing.")
 
 
@@ -132,7 +132,7 @@ def match_price(rates, metric):
     candidates = []
     selected = False
     prev = None
-    rates = _prepend_missing(rates.distinct())
+    rates = _standardize(rates.distinct())
     for rate in rates:
         if prev:
             if prev.plan != rate.plan:
@@ -163,25 +163,42 @@ def best_price(rates, metric):
         raise ValueError("rates queryset should be ordered by 'plan' and 'quantity'")
     candidates = []
     for plan, rates in rates.group_by('plan').items():
-        rates = _prepend_missing(rates)
+        rates = _standardize(rates)
         plan_candidates = []
         for rate in rates:
             if rate.quantity > metric:
                 break
             if plan_candidates:
-                plan_candidates[-1].barrier = rate.quantity
-            plan_candidates.append(AttrDict(
-                price=rate.price,
-                barrier=metric,
-            ))
+                ant = plan_candidates[-1]
+                if ant.price == rate.price:
+                    # Multiple plans support
+                    ant.fold += 1
+                else:
+                    ant.quantity = rate.quantity-1
+                    plan_candidates.append(AttrDict(
+                        price=rate.price,
+                        quantity=metric,
+                        fold=1,
+                    ))
+            else:
+                plan_candidates.append(AttrDict(
+                    price=rate.price,
+                    quantity=metric,
+                    fold=1,
+                ))
         candidates.extend(plan_candidates)
     results = []
     accumulated = 0
     for candidate in sorted(candidates, key=lambda c: c.price):
-        if accumulated+candidate.barrier > metric:
+        if candidate.quantity < accumulated:
+            # Out of barrier
+            continue
+        candidate.quantity *= candidate.fold
+        if accumulated+candidate.quantity > metric:
             quantity = metric - accumulated
         else:
-            quantity = candidate.barrier
+            quantity = candidate.quantity
+        accumulated += quantity
         if quantity:
             if results and results[-1].price == candidate.price:
                 results[-1].quantity += quantity
@@ -192,4 +209,4 @@ def best_price(rates, metric):
                 }))
     return results
 best_price.verbose_name = _("Best price")
-best_price.help_text = _("Produces the best possible price given all active rating lines.")
+best_price.help_text = _("Produces the best possible price given all active rating lines (those with quantity lower or equal to the metric).")

@@ -62,7 +62,9 @@ def generate(operations):
         if operation.routes is None:
             operation.routes = router.get_routes(operation, cache=cache)
         for route in operation.routes:
-            key = (route, operation.backend)
+            # TODO key by action.async
+            async_action = route.action_is_async(operation.action)
+            key = (route, operation.backend, async_action)
             if key not in scripts:
                 backend, operations = (operation.backend(), [operation])
                 scripts[key] = (backend, operations)
@@ -111,13 +113,13 @@ def execute(scripts, serialize=False, async=None):
     threads_to_join = []
     logs = []
     for key, value in scripts.items():
-        route, __ = key
+        route, __, async_action = key
         backend, operations = value
         args = (route.host,)
         if async is None:
-            is_async = not serialize and route.async
+            is_async = not serialize and (route.async or async_action)
         else:
-            is_async = not serialize and async
+            is_async = not serialize and (async or async_action)
         kwargs = {
             'async': is_async,
         }

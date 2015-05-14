@@ -64,7 +64,7 @@ class RateQuerySet(models.QuerySet):
         return self.filter(
             Q(plan__is_default=True) |
             Q(plan__contracts__account=account)
-        ).order_by('plan', 'quantity').select_related('plan')
+        ).order_by('plan', 'quantity').select_related('plan', 'service')
 
 
 class Rate(models.Model):

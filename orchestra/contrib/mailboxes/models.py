@@ -22,7 +22,7 @@ class Mailbox(models.Model):
         related_name='mailboxes')
     filtering = models.CharField(max_length=16,
         default=settings.MAILBOXES_MAILBOX_DEFAULT_FILTERING,
-        choices=[(k, v[0]) for k,v in settings.MAILBOXES_MAILBOX_FILTERINGS.items()])
+        choices=[(k, v[0]) for k,v in sorted(settings.MAILBOXES_MAILBOX_FILTERINGS.items())])
     custom_filtering = models.TextField(_("filtering"), blank=True,
         validators=[validators.validate_sieve],
         help_text=_("Arbitrary email filtering in sieve language. "

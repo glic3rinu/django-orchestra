@@ -27,10 +27,6 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
     
     def to_python(self, value):
         if value:
-#            if isinstance(value, tuple) and value[0].startswith('('):
-#                # Workaround unknown bug on default model values
-#                # [u"('SUPPORT'", u" 'ADMIN'", u" 'BILLING'", u" 'TECH'", u" 'ADDS'", u" 'EMERGENCY')"]
-#                value = list(eval(', '.join(value)))
             if isinstance(value, str):
                 return value.split(',')
             return value
@@ -44,11 +40,12 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
             setattr(cls, 'get_%s_display' % self.name, func)
     
     def validate(self, value, model_instance):
-        arr_choices = self.get_choices_selected(self.get_choices_default())
-        for opt_select in value:
-            if (opt_select not in arr_choices):
-                msg = self.error_messages['invalid_choice'] % value
-                raise exceptions.ValidationError(msg)
+        if self.choices:
+            arr_choices = self.get_choices_selected(self.get_choices_default())
+            for opt_select in value:
+                if (opt_select not in arr_choices):
+                    msg = self.error_messages['invalid_choice'] % {'value': opt_select}
+                    raise exceptions.ValidationError(msg)
     
     def get_choices_selected(self, arr_choices=''):
         if not arr_choices:

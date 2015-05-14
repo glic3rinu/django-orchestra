@@ -174,7 +174,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * allow empty metric pack for default rates? changes on rating algo
 # don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
 
-# lines too long on invoice, double lines or cut, and make margin wider
+# lines too long on invoice, double lines or cut
 
 * payment methods icons
 * use server.name | server.address on python backends, like gitlab instead of settings?
@@ -183,11 +183,11 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * update service orders on a celery task? because it take alot
 
 # FIXME do more test, make sure billed until doesn't get uodated whhen services are billed with les metric, and don't upgrade billed_until when undoing under this circumstances
-    * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
-    * add ini, end dates on bill lines and breakup quanity into size(defaut:1) and metric
-    * threshold for significative metric accountancy on services.handler
-    * http://orchestra.pangea.org/admin/orders/order/6418/
-    * http://orchestra.pangea.org/admin/orders/order/6495/bill_selected_orders/
+#    * line 513: change threshold and one time service metric change should update last value if not billed, only record for recurring invoicing. postpay services should store the last metric for pricing period.
+#    * add ini, end dates on bill lines and breakup quanity into size(defaut:1) and metric
+#    * threshold for significative metric accountancy on services.handler
+#    * http://orchestra.pangea.org/admin/orders/order/6418/
+#    * http://orchestra.pangea.org/admin/orders/order/6495/bill_selected_orders/
 
 * move normurlpath to orchestra.utils from websites.utils
 
@@ -254,8 +254,6 @@ https://code.djangoproject.com/ticket/24576
 * move all tests to django-orchestra/tests
 * *natural keys: those fields that uniquely identify a service, list.name, website.name, webapp.name+account, make sure rest api can not edit thos things
 
-# migrations accounts, bill, orders, auth -> migrate the rest (contacts lambda error)
-
 
 * MultiCHoiceField proper serialization
 
@@ -275,19 +273,14 @@ https://code.djangoproject.com/ticket/24576
 # bill.totals make it 100% computed?
 * joomla: wget https://github.com/joomla/joomla-cms/releases/download/3.4.1/Joomla_3.4.1-Stable-Full_Package.tar.gz -O - | tar xvfz -
 
-
-# bill confirmation: show total
 # Amend lines???
 # orders currency setting
 
 # Determine the difference between data serializer used for validation and used for the rest API!
 # Make PluginApiView that fills metadata and other stuff like modeladmin plugin support
 
-# custom validation for settings
 # TODO orchestra related services code reload: celery/uwsgi reloading find aonther way without root and implement reload
-# insert settings on dashboard dynamically
 
-# convert all complex settings to string
 # size monitor of @002 @003 database names
 # password validation cracklib on change password form=?????
 # reset setting button 
@@ -353,18 +346,20 @@ make django admin taskstate uncollapse fucking traceback, ( if exists ?)
 
 resorce monitoring more efficient, less mem an better queries for calc current data
 
-# test best_price rating method
-
 # bill this https://orchestra.pangea.org/admin/orders/order/8236/ should be already billed, <= vs <
 # Convert rating method from function to PluginClass
 # Tests can not run because django.db.utils.ProgrammingError: relation "accounts_account" does not exist
 
 # autoresponses on mailboxes, not addresses or remove them
 
-# Async specific backend actions? systemusers.set_permission
-
-
+# ACL don't give exec permissions to files!
+# force save and continue on routes (and others?)
 # gevent for python3
 apt-get install cython3
 export CYTHON='cython3'
 pip3 install https://github.com/fantix/gevent/archive/master.zip
+
+
+# SIgnal handler for notify workers to reload stuff, like resource sync: https://docs.python.org/2/library/signal.html
+
+# INVOICE fucking Id based on order ID or what?

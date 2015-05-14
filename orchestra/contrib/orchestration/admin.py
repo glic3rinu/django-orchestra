@@ -3,6 +3,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, admin_date, admin_colored, display_mono
 
 from . import settings, helpers
@@ -23,13 +24,28 @@ STATE_COLORS = {
 }
 
 
-class RouteAdmin(admin.ModelAdmin):
+from django import forms
+from orchestra.forms.widgets import SpanWidget
+from orchestra.forms.widgets import paddingCheckboxSelectMultiple
+class RouteForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(RouteForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['backend'].widget = SpanWidget()
+            self.fields['backend'].required = False
+            self.fields['async_actions'].widget = paddingCheckboxSelectMultiple(45)
+            self.fields['async_actions'].choices = ((action, action) for action in self.instance.backend_class.actions)
+
+
+class RouteAdmin(ExtendedModelAdmin):
     list_display = (
         'backend', 'host', 'match', 'display_model', 'display_actions', 'async', 'is_active'
     )
     list_editable = ('host', 'match', 'async', 'is_active')
     list_filter = ('host', 'is_active', 'async', 'backend')
     ordering = ('backend',)
+    add_fields = ('backend', 'host', 'match', 'async', 'is_active')
+    change_form = RouteForm
     
     BACKEND_HELP_TEXT = helpers.get_backends_help_text(ServiceBackend.get_backends())
     DEFAULT_MATCH = {

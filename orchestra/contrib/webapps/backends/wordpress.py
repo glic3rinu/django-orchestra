@@ -43,7 +43,8 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
                 die("App directory not empty.");
             }
             shell_exec("mkdir -p %(app_path)s
-                rm -f %(app_path)s/index.html
+                # Prevent other backends from writting here
+                touch %(app_path)s/.lock
                 filename=\\$(wget https://wordpress.org/latest.tar.gz --server-response --spider --no-check-certificate 2>&1 | grep filename | cut -d'=' -f2)
                 mkdir -p %(cms_cache_dir)s
                 if [ \\$(basename \\$(readlink %(cms_cache_dir)s/wordpress) 2> /dev/null ) != \\$filename ]; then
@@ -54,7 +55,9 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
                     tar -xzvf %(cms_cache_dir)s/wordpress -C %(app_path)s --strip-components=1
                 fi
                 mkdir %(app_path)s/wp-content/uploads
-                chmod 750 %(app_path)s/wp-content/uploads");
+                chmod 750 %(app_path)s/wp-content/uploads
+                rm %(app_path)s/.lock
+                ");
             
             $config_file = file('%(app_path)s/' . 'wp-config-sample.php');
             $secret_keys = file_get_contents('https://api.wordpress.org/secret-key/1.1/salt/');

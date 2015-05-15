@@ -35,7 +35,7 @@
             <h2><a href="{% url 'admin:accounts_account_change' account.pk %}">{{ account }}</a><span style="float:right">{{ total | floatformat:"-2" }} &euro;</span></h2>
             <table>
             <thead>
-                <tr><th style="width:30%;">Description</th> <th style="width:30%;">Period</th> <th style="width:10%;">Quantity</th> <th style="width:10%;">Price</th></tr>
+                <tr><th style="width:30%;">Description</th> <th style="width:30%;">Period</th> <th style="width:10%;">Size&times;Quantity</th> <th style="width:10%;">Price</th></tr>
             </thead>
             <tbody>
             {% for line in lines %}
@@ -47,7 +47,7 @@
                     {% endfor %}
                 </td>
                 <td>{{ line.ini | date }} to {{ line.end | date }}</td>
-                <td>{{ line.size | floatformat:"-2" }}</td>
+                <td>{{ line.size | floatformat:"-2" }}&times;{{ line.metric | floatformat:"-2"}}</td>
                 <td>
                     &nbsp;{{ line.subtotal | floatformat:"-2" }} &euro;
                     {% for discount in line.discounts %}<br>{{ discount.total | floatformat:"-2" }} &euro;{% endfor %}

@@ -38,35 +38,48 @@ class BilledOrderListFilter(SimpleListFilter):
         return (
             ('yes', _("Billed")),
             ('no', _("Not billed")),
+            ('pending', _("Pending (re-evaluate metric)")),
+            ('not_pending', _("Not pending (re-evaluate metric)")),
         )
+    
+    def get_pending_metric_pks(self, queryset):
+        mindelta = timedelta(days=2) # TODO
+        metric_pks = []
+        prefetch_valid_metrics = Prefetch('metrics', to_attr='valid_metrics',
+            queryset=MetricStorage.objects.filter(created_on__gt=F('order__billed_on'),
+                created_on__lte=(F('updated_on')-mindelta))
+        )
+        prefetch_billed_metric = Prefetch('metrics', to_attr='billed_metric',
+            queryset=MetricStorage.objects.filter(order__billed_on__isnull=False,
+                created_on__lte=F('order__billed_on'), updated_on__gt=F('order__billed_on'))
+        )
+        metric_queryset = queryset.exclude(service__metric='').exclude(billed_on__isnull=True)
+        for order in metric_queryset.prefetch_related(prefetch_valid_metrics, prefetch_billed_metric):
+            if len(order.billed_metric) != 1:
+                raise ValueError("Data inconsistency #metrics %i != 1." % len(order.billed_metric))
+            billed_metric = order.billed_metric[0].value
+            for metric in order.valid_metrics:
+                if metric.created_on <= order.billed_on:
+                    raise ValueError("This value should already be filtered on the prefetch query.")
+                if metric.value > billed_metric:
+                    metric_pks.append(order.pk)
+                    break
+        return metric_pks
     
     def queryset(self, request, queryset):
         if self.value() == 'yes':
             return queryset.filter(billed_until__isnull=False, billed_until__gte=timezone.now())
         elif self.value() == 'no':
-            mindelta = timedelta(days=2) # TODO
-            metric_pks = []
-            prefetch_valid_metrics = Prefetch('metrics', to_attr='valid_metrics',
-                queryset=MetricStorage.objects.filter(created_on__gt=F('order__billed_on'),
-                    created_on__lte=(F('updated_on')-mindelta))
-            )
-            prefetch_billed_metric = Prefetch('metrics', to_attr='billed_metric',
-                queryset=MetricStorage.objects.filter(order__billed_on__isnull=False,
-                    created_on__lte=F('order__billed_on'), updated_on__gt=F('order__billed_on'))
-            )
-            metric_queryset = queryset.exclude(service__metric='').exclude(billed_on__isnull=True)
-            for order in metric_queryset.prefetch_related(prefetch_valid_metrics, prefetch_billed_metric):
-                if len(order.billed_metric) != 1:
-                    raise ValueError("Data inconsistency.")
-                billed_metric = order.billed_metric[0].value
-                for metric in order.valid_metrics:
-                    if metric.created_on <= order.billed_on:
-                        raise ValueError("This value should already be filtered on the prefetch query.")
-                    if metric.value > billed_metric:
-                        metric_pks.append(order.pk)
-                        break
+            return queryset.exclude(billed_until__isnull=False, billed_until__gte=timezone.now())
+        elif self.value() == 'pending':
             return queryset.filter(
-                Q(pk__in=metric_pks) | Q(
+                Q(pk__in=self.get_pending_metric_pks(queryset)) | Q(
+                    Q(billed_until__isnull=True) | Q(billed_until__lt=timezone.now())
+                )
+            )
+        elif self.value() == 'not_pending':
+            return queryset.exclude(
+                Q(pk__in=self.get_pending_metric_pks(queryset)) | Q(
                     Q(billed_until__isnull=True) | Q(billed_until__lt=timezone.now())
                 )
             )

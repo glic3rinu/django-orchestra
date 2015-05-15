@@ -13,7 +13,10 @@
 
 * backend logs with hal logo
 
-* LAST version of this shit http://wkhtmltopdf.org/downloads.h otml
+# LAST version of this shit http://wkhtmltopdf.org/downloads.h otml
+#apt-get install xfonts-75dpi
+#wget http://downloads.sourceforge.net/wkhtmltopdf/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb
+#dpkg -i wkhtmltox-0.12.2.1_linux-jessie-amd64.deb 
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
@@ -363,3 +366,6 @@ pip3 install https://github.com/fantix/gevent/archive/master.zip
 # SIgnal handler for notify workers to reload stuff, like resource sync: https://docs.python.org/2/library/signal.html
 
 # INVOICE fucking Id based on order ID or what?
+
+# user order_id as bill line id 
+# BUG Delete related services also deletes account!

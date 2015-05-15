@@ -1,3 +1,4 @@
+from django.conf import settings as djsettings
 from django.core.mail.backends.base import BaseEmailBackend
 
 from .models import Message
@@ -20,7 +21,7 @@ class EmailBackend(BaseEmailBackend):
                 message = Message.objects.create(
                     priority=priority,
                     to_address=to_email,
-                    from_address=message.from_email,
+                    from_address=getattr(message, 'from_email', djsettings.DEFAULT_FROM_EMAIL),
                     subject=message.subject,
                     content=content,
                 )

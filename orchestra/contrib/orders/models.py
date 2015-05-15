@@ -59,15 +59,15 @@ class OrderQuerySet(models.QuerySet):
     
     def get_related(self, **options):
         """ returns related orders that could have a pricing effect """
+        # TODO for performance reasons get missing from queryset:
+        # TODO optimize this shit, don't get related if all objects are here
         Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
         conflictive = self.filter(service__metric='')
-        conflictive = conflictive.exclude(service__billing_period=Service.NEVER)
-        conflictive = conflictive.select_related('service').group_by('account_id', 'service')
+        conflictive = conflictive.exclude(service__billing_period=Service.NEVER).exclude(service__rates__isnull=True)
+        conflictive = conflictive.select_related('service').distinct().group_by('account_id', 'service')
         qs = Q()
         for account_id, services in conflictive.items():
             for service, orders in services.items():
-                if not service.rates.exists():
-                    continue
                 ini = datetime.date.max
                 end = datetime.date.min
                 bp = None
@@ -265,9 +265,15 @@ class MetricStorage(models.Model):
         except cls.DoesNotExist:
             cls.objects.create(order=order, value=value, updated_on=now)
         else:
-            error = decimal.Decimal(str(settings.ORDERS_METRIC_ERROR))
-            if value > last.value+error or value < last.value-error:
-                cls.objects.create(order=order, value=value, updated_on=now)
-            else:
+            # Metric storage has per-day granularity (last value of the day is what counts)
+            if last.created_on == now.date():
+                last.value = value
                 last.updated_on = now
-                last.save(update_fields=['updated_on'])
+                last.save()
+            else:
+                error = decimal.Decimal(str(settings.ORDERS_METRIC_ERROR))
+                if value > last.value+error or value < last.value-error:
+                    cls.objects.create(order=order, value=value, updated_on=now)
+                else:
+                    last.updated_on = now
+                    last.save(update_fields=['updated_on'])

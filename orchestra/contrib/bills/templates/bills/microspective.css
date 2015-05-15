@@ -4,7 +4,7 @@ body {
     margin: 40 auto !important;
 /*    margin-bottom: 30 !important;*/
     float: none !important;
-    font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;
+    font-family: sans;
 }
 
 a {

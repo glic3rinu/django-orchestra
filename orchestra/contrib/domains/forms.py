@@ -35,8 +35,7 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
         if not cleaned_data['account']:
             account = None
             for name in [cleaned_data['name']] + self.extra_names:
-                domain = Domain(name=name)
-                parent = domain.get_parent()
+                parent = Domain.get_parent_domain(name)
                 if not parent:
                     # Fake an account to make django validation happy
                     account_model = self.fields['account']._queryset.model

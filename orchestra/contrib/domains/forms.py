@@ -9,7 +9,7 @@ from .models import Domain
 
 class BatchDomainCreationAdminForm(forms.ModelForm):
     name = forms.CharField(label=_("Names"), widget=forms.Textarea(attrs={'rows': 5, 'cols': 50}),
-        help_text=_("Domain per line. All domains will share the same attributes."))
+        help_text=_("Domain per line. All domains will have the provided account and records."))
     
     def clean_name(self):
         self.extra_names = []

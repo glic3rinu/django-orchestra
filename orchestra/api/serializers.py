@@ -1,5 +1,6 @@
 import copy
 
+from django.db import models
 from django.forms import widgets
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
@@ -19,6 +20,8 @@ class HyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
     def validate(self, attrs):
         """ calls model.clean() """
         attrs = super(HyperlinkedModelSerializer, self).validate(attrs)
+        if isinstance(attrs, models.Model):
+            return attrs
         validated_data = dict(attrs)
         ModelClass = self.Meta.model
         # Remove many-to-many relationships from validated_data.
@@ -39,9 +42,10 @@ class HyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
     def post_only_cleanning(self, instance, validated_data):
         """ removes postonly_fields from attrs """
         model_attrs = dict(**validated_data)
-        if instance is not None:
+        post_only_fields = getattr(self, 'post_only_fields', None)
+        if instance is not None and post_only_fields:
             for attr, value in validated_data.items():
-                if attr in self.Meta.postonly_fields:
+                if attr in post_only_fields:
                     model_attrs.pop(attr)
         return model_attrs
     
@@ -54,6 +58,21 @@ class HyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
         """ removes postonly_fields from attrs when not posting """
         model_attrs = self.post_only_cleanning(instance, validated_data)
         return super(HyperlinkedModelSerializer, self).partial_update(instance, model_attrs)
+
+
+class RelatedHyperlinkedModelSerializer(HyperlinkedModelSerializer):
+    """ returns object on to_internal_value based on URL """
+    def to_internal_value(self, data):
+        url = data.get('url')
+        if not url:
+            raise ValidationError({
+                'url': "URL is required."
+            })
+        account = self.get_account()
+        queryset = self.Meta.model.objects.filter(account=self.get_account())
+        self.fields['url'].queryset = queryset
+        obj = self.fields['url'].to_internal_value(url)
+        return obj
 
 
 class SetPasswordHyperlinkedSerializer(HyperlinkedModelSerializer):

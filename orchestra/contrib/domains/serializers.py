@@ -36,11 +36,11 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             raise ValidationError(_("Can not create subdomains of other users domains"))
         return attrs
     
-    def full_clean(self, instance):
+    def validate(self, data):
         """ Checks if everything is consistent """
-        instance = super(DomainSerializer, self).full_clean(instance)
-        if instance and instance.name:
-            records = self.init_data.get('records', [])
-            domain = domain_for_validation(instance, records)
+        data = super(DomainSerializer, self).validate(data)
+        if self.instance and data.get('name'):
+            records = data['records']
+            domain = domain_for_validation(self.instance, records)
             validators.validate_zone(domain.render_zone())
-        return instance
+        return data

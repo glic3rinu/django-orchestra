@@ -4,21 +4,17 @@ from django.utils.translation import ugettext_lazy as _
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from orchestra.api.serializers import SetPasswordHyperlinkedSerializer
+from orchestra.api.serializers import SetPasswordHyperlinkedSerializer, RelatedHyperlinkedModelSerializer
 from orchestra.contrib.accounts.serializers import AccountSerializerMixin
 from orchestra.core.validators import validate_password
 
 from .models import List
 
 
-class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class RelatedDomainSerializer(AccountSerializerMixin, RelatedHyperlinkedModelSerializer):
     class Meta:
         model = List.address_domain.field.rel.to
         fields = ('url', 'id', 'name')
-    
-    def from_native(self, data, files=None):
-        queryset = self.opts.model.objects.filter(account=self.account)
-        return get_object_or_404(queryset, name=data['name'])
 
 
 class ListSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):

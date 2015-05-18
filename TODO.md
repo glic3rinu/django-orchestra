@@ -369,3 +369,23 @@ pip3 install https://github.com/fantix/gevent/archive/master.zip
 
 # user order_id as bill line id 
 # BUG Delete related services also deletes account!
+# auto apend trailing slash
+
+# get_related service__rates__isnull=TRue is that correct?
+
+# uwsgi hot reload? http://uwsgi-docs.readthedocs.org/en/latest/articles/TheArtOfGracefulReloading.html
+
+
+# change mailer.message.priority by, queue/sent inmediatelly or rename critical to noq
+
+
+# method(
+    arg, arg, arg)
+
+
+
+# Finish Nested *resource* serializers, like websites.domains: make fields readonly: read_only_fields = ('name',)
+# websites.directives full validation like directive formset: move formset validation out and call it with compat-data from both places
+
+
+# apply normlocation function on unique_location validation

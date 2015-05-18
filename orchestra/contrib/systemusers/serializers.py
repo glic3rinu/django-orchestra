@@ -3,25 +3,21 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.api.serializers import SetPasswordHyperlinkedSerializer
+from orchestra.api.serializers import SetPasswordHyperlinkedSerializer, RelatedHyperlinkedModelSerializer
 from orchestra.contrib.accounts.serializers import AccountSerializerMixin
 
 from .models import SystemUser
 from .validators import validate_home
 
 
-class GroupSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class RelatedGroupSerializer(AccountSerializerMixin, RelatedHyperlinkedModelSerializer):
     class Meta:
         model = SystemUser
         fields = ('url', 'id', 'username',)
-    
-    def from_native(self, data, files=None):
-        queryset = self.opts.model.objects.filter(account=self.account)
-        return get_object_or_404(queryset, username=data['username'])
 
 
 class SystemUserSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):
-    groups = GroupSerializer(many=True, required=False)
+    groups = RelatedGroupSerializer(many=True, required=False)
     
     class Meta:
         model = SystemUser
@@ -36,7 +32,7 @@ class SystemUserSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSeriali
             username=attrs.get('username') or self.instance.username,
             shell=attrs.get('shell') or self.instance.shell,
         )
-        validate_home(user, attrs, self.account)
+        validate_home(user, attrs, self.get_account())
         return attrs
     
     def validate_groups(self, attrs, source):

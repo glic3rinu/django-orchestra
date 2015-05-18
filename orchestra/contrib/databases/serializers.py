@@ -3,20 +3,17 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.api.serializers import HyperlinkedModelSerializer, SetPasswordHyperlinkedSerializer
+from orchestra.api.serializers import (HyperlinkedModelSerializer,
+    SetPasswordHyperlinkedSerializer, RelatedHyperlinkedModelSerializer)
 from orchestra.contrib.accounts.serializers import AccountSerializerMixin
 
 from .models import Database, DatabaseUser
 
 
-class RelatedDatabaseUserSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class RelatedDatabaseUserSerializer(AccountSerializerMixin, RelatedHyperlinkedModelSerializer):
     class Meta:
         model = DatabaseUser
         fields = ('url', 'id', 'username')
-    
-    def from_native(self, data, files=None):
-        queryset = self.opts.model.objects.filter(account=self.account)
-        return get_object_or_404(queryset, username=data['username'])
 
 
 class DatabaseSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
@@ -35,14 +32,10 @@ class DatabaseSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
         return attrs
 
 
-class RelatedDatabaseSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class RelatedDatabaseSerializer(AccountSerializerMixin, RelatedHyperlinkedModelSerializer):
     class Meta:
         model = Database
         fields = ('url', 'id', 'name',)
-    
-    def from_native(self, data, files=None):
-        queryset = self.opts.model.objects.filter(account=self.account)
-        return get_object_or_404(queryset, name=data['name'])
 
 
 class DatabaseUserSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):

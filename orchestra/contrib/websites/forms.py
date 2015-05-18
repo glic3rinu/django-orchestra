@@ -1,8 +1,11 @@
+from collections import defaultdict
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
+from .directives import SiteDirective
 from .validators import validate_domain_protocol
 
 
@@ -24,24 +27,22 @@ class WebsiteAdminForm(forms.ModelForm):
 
 
 class WebsiteDirectiveInlineFormSet(forms.models.BaseInlineFormSet):
-    """ Validate uniqueness """
     def clean(self):
-        values = {}
+        # directives formset cross-validation with contents for unique locations
+        locations = set()
+        for form in self.content_formset.forms:
+            location = form.cleaned_data.get('path')
+            if location is not None:
+                locations.add(location)
+        directives = []
+        
+        values = defaultdict(list)
         for form in self.forms:
-            name = form.cleaned_data.get('name', None)
-            if name is not None:
-                directive = form.instance.directive_class
-                if directive.unique_name and name in values:
-                    form.add_error(None, ValidationError(
-                        _("Only one %s can be defined.") % directive.get_verbose_name()
-                    ))
-                value = form.cleaned_data.get('value', None)
-                if value is not None:
-                    if directive.unique_value and value in values.get(name, []):
-                        form.add_error('value', ValidationError(
-                            _("This value is already used by other %s.") % force_text(directive.get_verbose_name())
-                        ))
+            website = form.instance
+            directive = form.cleaned_data
+            if directive.get('name') is not None:
                 try:
-                    values[name].append(value)
-                except KeyError:
-                    values[name] = [value]
+                    website.directive_instance.validate_uniqueness(directive, values, locations)
+                except ValidationError as err:
+                    for k,v in err.error_dict.items():
+                        form.add_error(k, v)

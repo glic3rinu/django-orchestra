@@ -77,24 +77,32 @@
     <span class="title column-subtotal">{% trans "subtotal" %}</span>
     <br>
     {% for line in lines %}
-    {% with sublines=line.sublines.all %}
-    <span class="{% if not sublines %}last {% endif %}column-id">{{ line.id }}</span>
-    <span class="{% if not sublines %}last {% endif %}column-description">{{ line.description }}</span>
-    <span class="{% if not sublines %}last {% endif %}column-period">{{ line.get_verbose_period }}</span>
-    <span class="{% if not sublines %}last {% endif %}column-quantity">{{ line.get_verbose_quantity|default:"&nbsp;"|safe }}</span>
-    <span class="{% if not sublines %}last {% endif %}column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
-    <span class="{% if not sublines %}last {% endif %}column-subtotal">{{ line.subtotal }} &{{ currency.lower }};</span>
-    <br>
-        {% for subline in sublines %}
-            <span class="{% if forloop.last %}last {% endif %}subline column-id">&nbsp;</span>
-            <span class="{% if forloop.last %}last {% endif %}subline column-description">{{ subline.description }}</span>
-            <span class="{% if forloop.last %}last {% endif %}subline column-period">&nbsp;</span>
-            <span class="{% if forloop.last %}last {% endif %}subline column-quantity">&nbsp;</span>
-            <span class="{% if forloop.last %}last {% endif %}subline column-rate">&nbsp;</span>
-            <span class="{% if forloop.last %}last {% endif %}subline column-subtotal">{{ subline.total }} &{{ currency.lower }};</span>
-            <br>
-        {% endfor %}
-    {% endwith %}
+        {% with sublines=line.sublines.all description=line.description|slice:"40:" %}
+        <span class="{% if not sublines and not description %}last {% endif %}column-id">{% if not line.order_id %}L{% endif %}{{ line.order_id }}</span>
+        <span class="{% if not sublines and not description %}last {% endif %}column-description">{{ line.description|slice:":40" }}</span>
+        <span class="{% if not sublines and not description %}last {% endif %}column-period">{{ line.get_verbose_period }}</span>
+        <span class="{% if not sublines and not description %}last {% endif %}column-quantity">{{ line.get_verbose_quantity|default:"&nbsp;"|safe }}</span>
+        <span class="{% if not sublines and not description %}last {% endif %}column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
+        <span class="{% if not sublines and not description %}last {% endif %}column-subtotal">{{ line.subtotal }} &{{ currency.lower }};</span>
+        <br>
+            {% if description %}
+                <span class="{% if not sublines %}last {% endif %}subline column-id">&nbsp;</span>
+                <span class="{% if not sublines %}last {% endif %}subline column-description">{{ description|truncatechars:41 }}</span>
+                <span class="{% if not sublines %}last {% endif %}subline column-period">&nbsp;</span>
+                <span class="{% if not sublines %}last {% endif %}subline column-quantity">&nbsp;</span>
+                <span class="{% if not sublines %}last {% endif %}subline column-rate">&nbsp;</span>
+                <span class="{% if not sublines %}last {% endif %}subline column-subtotal">&nbsp;</span>
+            {% endif %}
+            {% for subline in sublines %}
+                <span class="{% if forloop.last %}last {% endif %}subline column-id">&nbsp;</span>
+                <span class="{% if forloop.last %}last {% endif %}subline column-description">{{ subline.description|truncatechars:41 }}</span>
+                <span class="{% if forloop.last %}last {% endif %}subline column-period">&nbsp;</span>
+                <span class="{% if forloop.last %}last {% endif %}subline column-quantity">&nbsp;</span>
+                <span class="{% if forloop.last %}last {% endif %}subline column-rate">&nbsp;</span>
+                <span class="{% if forloop.last %}last {% endif %}subline column-subtotal">{{ subline.total }} &{{ currency.lower }};</span>
+                <br>
+            {% endfor %}
+        {% endwith %}
     {% endfor %}
 </div>
 <div id="totals">

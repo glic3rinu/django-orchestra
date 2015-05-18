@@ -16,10 +16,12 @@ class AccountSerializerMixin(object):
     def __init__(self, *args, **kwargs):
         super(AccountSerializerMixin, self).__init__(*args, **kwargs)
         self.account = None
+    
+    def get_account(self):
         request = self.context.get('request')
         if request:
-            self.account = request.user
+            return request.user
     
     def create(self, validated_data):
-        validated_data['account'] = self.account
+        validated_data['account'] = self.get_account()
         return super(AccountSerializerMixin, self).create(validated_data)

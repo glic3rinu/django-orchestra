@@ -3,20 +3,16 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from orchestra.api.serializers import SetPasswordHyperlinkedSerializer
+from orchestra.api.serializers import SetPasswordHyperlinkedSerializer, RelatedHyperlinkedModelSerializer
 from orchestra.contrib.accounts.serializers import AccountSerializerMixin
 
 from .models import Mailbox, Address
 
 
-class RelatedDomainSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class RelatedDomainSerializer(AccountSerializerMixin, RelatedHyperlinkedModelSerializer):
     class Meta:
         model = Address.domain.field.rel.to
         fields = ('url', 'id', 'name')
-    
-    def from_native(self, data, files=None):
-        queryset = self.opts.model.objects.filter(account=self.account)
-        return get_object_or_404(queryset, name=data['name'])
 
 
 class RelatedAddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
@@ -42,14 +38,10 @@ class MailboxSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer
         postonly_fields = ('name', 'password')
 
 
-class RelatedMailboxSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):
+class RelatedMailboxSerializer(AccountSerializerMixin, RelatedHyperlinkedModelSerializer):
     class Meta:
         model = Mailbox
         fields = ('url', 'id', 'name')
-    
-    def from_native(self, data, files=None):
-        queryset = self.opts.model.objects.filter(account=self.account)
-        return get_object_or_404(queryset, name=data['name'])
 
 
 class AddressSerializer(AccountSerializerMixin, serializers.HyperlinkedModelSerializer):

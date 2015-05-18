@@ -170,12 +170,12 @@ a:hover {
 }
 
 #lines .column-id {
-    width: 5%;
+    width: 8%;
     text-align: right;
 }
 
 #lines .column-description {
-    width: 45%;
+    width: 42%;
     text-align: left;
 }
 

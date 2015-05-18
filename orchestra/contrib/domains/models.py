@@ -162,7 +162,9 @@ class Domain(models.Model):
                     type=Record.SOA,
                     value=' '.join(soa)
                 ))
-        is_host = self.is_top or not types or Record.A in types or Record.AAAA in types
+        has_a = Record.A in types
+        has_aaaa = Record.AAAA in types
+        is_host = self.is_top or not types or has_a or has_aaaa
         if is_host:
             if Record.MX not in types:
                 for mx in settings.DOMAINS_DEFAULT_MX:
@@ -170,18 +172,19 @@ class Domain(models.Model):
                         type=Record.MX,
                         value=mx
                     ))
-            default_a = settings.DOMAINS_DEFAULT_A
-            if default_a and Record.A not in types:
-                records.append(AttrDict(
-                    type=Record.A,
-                    value=default_a
-                ))
-            default_aaaa = settings.DOMAINS_DEFAULT_AAAA
-            if default_aaaa and Record.AAAA not in types:
-                records.append(AttrDict(
-                    type=Record.AAAA,
-                    value=default_aaaa
-                ))
+            if not has_a and not has_aaaa:
+                default_a = settings.DOMAINS_DEFAULT_A
+                if default_a:
+                    records.append(AttrDict(
+                        type=Record.A,
+                        value=default_a
+                    ))
+                default_aaaa = settings.DOMAINS_DEFAULT_AAAA
+                if default_aaaa:
+                    records.append(AttrDict(
+                        type=Record.AAAA,
+                        value=default_aaaa
+                    ))
         return records
     
     def render_records(self):

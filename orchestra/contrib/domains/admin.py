@@ -2,7 +2,7 @@ import re
 
 from django import forms
 from django.contrib import admin
-from django.db.models.functions import Concat
+from django.db.models.functions import Concat, Coalesce
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -100,7 +100,10 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
         qs = super(DomainAdmin, self).get_queryset(request)
         qs = qs.select_related('top', 'account')
         if request.method == 'GET':
-            qs = qs.annotate(structured_name=Concat('top__name', 'name')).order_by('structured_name')
+            qs = qs.annotate(
+                structured_id=Coalesce('top__id', 'id'),
+                structured_name=Concat('top__name', 'name')
+            ).order_by('-structured_id', 'structured_name')
         if apps.isinstalled('orchestra.contrib.websites'):
             qs = qs.prefetch_related('websites')
         return qs

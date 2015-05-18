@@ -15,8 +15,8 @@ class ResourceSerializer(serializers.ModelSerializer):
         fields = ('name', 'used', 'allocated', 'unit')
         read_only_fields = ('used',)
     
-    def from_native(self, raw_data, files=None):
-        data = super(ResourceSerializer, self).from_native(raw_data, files=files)
+    def to_internal_value(self, raw_data):
+        data = super(ResourceSerializer, self).to_internal_value(raw_data)
         if not data.resource_id:
             data.resource = Resource.objects.get(name=raw_data['name'])
         return data

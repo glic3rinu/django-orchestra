@@ -21,16 +21,18 @@ class Register(object):
             kwargs['verbose_name'] = model._meta.verbose_name
         if 'verbose_name_plural' not in kwargs:
             kwargs['verbose_name_plural'] = model._meta.verbose_name_plural
-        self._registry[model] = AttrDict(**kwargs)
+        defaults = {
+            'menu': True,
+        }
+        defaults.update(kwargs)
+        self._registry[model] = AttrDict(**defaults)
     
     def register_view(self, view_name, **kwargs):
-        if view_name in self._registry:
-            raise KeyError("%s already registered" % view_name)
         if 'verbose_name' not in kwargs:
             raise KeyError("%s verbose_name is required for views" % view_name)
         if 'verbose_name_plural' not in kwargs:
             kwargs['verbose_name_plural'] = string_concat(kwargs['verbose_name'], 's')
-        self._registry[view_name] = AttrDict(**kwargs)
+        self.register(view_name, **kwargs)
     
     def get(self, *args):
         if args:

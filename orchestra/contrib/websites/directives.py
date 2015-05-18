@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
@@ -19,6 +20,7 @@ class SiteDirective(Plugin):
     help_text = ""
     unique_name = False
     unique_value = False
+    unique_location = False
     
     @classmethod
     @cached
@@ -50,6 +52,37 @@ class SiteDirective(Plugin):
         for group, options in options.items():
             yield (group, [(op.name, op.verbose_name) for op in options])
     
+    def validate_uniqueness(self, directive, values, locations):
+        """ Validates uniqueness location, name and value """
+        errors = defaultdict(list)
+        # location uniqueness
+        location = None
+        if self.unique_location:
+            location = directive['value'].split()[0]
+        if location is not None and location in locations:
+            errors['value'].append(ValidationError(
+                "Location '%s' already in use by other content/directive." % location
+            ))
+        else:
+            locations.add(location)
+        
+        # name uniqueness
+        if self.unique_name and self.name in values:
+            errors[None].append(ValidationError(
+                _("Only one %s can be defined.") % self.get_verbose_name()
+            ))
+        
+        # value uniqueness
+        value = directive.get('value', None)
+        if value is not None:
+            if self.unique_value and value in values.get(self.name, []):
+                errors['value'].append(ValidationError(
+                    _("This value is already used by other %s.") % force_text(self.get_verbose_name())
+                ))
+        values[self.name].append(value)
+        if errors:
+            raise ValidationError(errors)
+    
     def validate(self, website):
         if self.regex and not re.match(self.regex, website.value):
             raise ValidationError({
@@ -68,6 +101,7 @@ class Redirect(SiteDirective):
     regex = r'^[^ ]+\s[^ ]+$'
     group = SiteDirective.HTTPD
     unique_value = True
+    unique_location = True
 
 
 class Proxy(SiteDirective):
@@ -77,6 +111,7 @@ class Proxy(SiteDirective):
     regex = r'^[^ ]+\shttp[^ ]+(timeout=[0-9]{1,3}|retry=[0-9]|\s)*$'
     group = SiteDirective.HTTPD
     unique_value = True
+    unique_location = True
 
 
 class ErrorDocument(SiteDirective):
@@ -125,6 +160,7 @@ class SecRuleRemove(SiteDirective):
     help_text = _("Space separated ModSecurity rule IDs.")
     regex = r'^[0-9\s]+$'
     group = SiteDirective.SEC
+    unique_location = True
 
 
 class SecEngine(SiteDirective):
@@ -143,6 +179,7 @@ class WordPressSaaS(SiteDirective):
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
+    unique_location = True
 
 
 class DokuWikiSaaS(SiteDirective):
@@ -152,6 +189,7 @@ class DokuWikiSaaS(SiteDirective):
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
+    unique_location = True
 
 
 class DrupalSaaS(SiteDirective):
@@ -161,3 +199,4 @@ class DrupalSaaS(SiteDirective):
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
+    unique_location = True

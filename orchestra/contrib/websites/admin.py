@@ -111,6 +111,14 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
                 qset = Q(qset & ~Q(websites__pk=object_id))
             formfield.queryset = formfield.queryset.exclude(qset)
         return formfield
+    
+    def _create_formsets(self, request, obj, change):
+        """ bind contents formset to directive formset for unique location cross-validation """
+        formsets, inline_instances = super(WebsiteAdmin, self)._create_formsets(request, obj, change)
+        if request.method == 'POST':
+            contents, directives = formsets
+            directives.content_formset = contents
+        return formsets, inline_instances
 
 
 admin.site.register(Website, WebsiteAdmin)

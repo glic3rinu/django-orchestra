@@ -1,5 +1,3 @@
-import datetime
-
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.bills.models import Invoice, Fee, ProForma

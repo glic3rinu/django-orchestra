@@ -11,7 +11,7 @@ from django.core.mail import mail_admins
 from django.utils import timezone
 
 from orchestra.utils.db import close_connection
-from orchestra.utils.python import AttrDict, OrderedSet
+from orchestra.utils.python import AttrDict
 
 from .utils import get_name, get_id
 

@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
 from django.contrib import contenttypes 
@@ -121,12 +121,12 @@ class ResourceDataAdmin(ExtendedModelAdmin):
         urls = super(ResourceDataAdmin, self).get_urls()
         admin_site = self.admin_site
         opts = self.model._meta
-        return patterns('',
+        return [
             url('^(\d+)/used-monitordata/$',
                 admin_site.admin_view(self.used_monitordata_view),
                 name='%s_%s_used_monitordata' % (opts.app_label, opts.model_name)
             )
-        ) + urls
+        ] + urls
     
     def display_unit(self, data):
         return data.unit

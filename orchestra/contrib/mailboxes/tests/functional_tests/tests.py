@@ -281,11 +281,6 @@ class RESTMailboxMixin(MailboxMixin):
         self.rest.addresses.delete()
     
     @save_response_on_error
-    def change_password(self, username, password):
-        mailbox = self.rest.mailboxes.retrieve(name=username).get()
-        mailbox.set_password(password=password)
-    
-    @save_response_on_error
     def disable(self, username):
         mailbox = self.rest.mailboxes.retrieve(name=username).get()
         mailbox.update(is_active=False)

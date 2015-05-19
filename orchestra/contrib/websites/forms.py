@@ -2,10 +2,8 @@ from collections import defaultdict
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
 
-from .directives import SiteDirective
+from .utils import normurlpath
 from .validators import validate_domain_protocol
 
 
@@ -33,7 +31,7 @@ class WebsiteDirectiveInlineFormSet(forms.models.BaseInlineFormSet):
         for form in self.content_formset.forms:
             location = form.cleaned_data.get('path')
             if location is not None:
-                locations.add(location)
+                locations.add(normurlpath(location))
         directives = []
         
         values = defaultdict(list)

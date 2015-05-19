@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.core.urlresolvers import reverse
-from django.db.models import Count, Prefetch
+from django.db.models import Count
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 

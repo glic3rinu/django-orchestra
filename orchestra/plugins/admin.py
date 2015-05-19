@@ -1,6 +1,6 @@
 import re
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib.admin.utils import unquote
 from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
@@ -39,12 +39,12 @@ class SelectPluginAdminMixin(object):
         urls = super(SelectPluginAdminMixin, self).get_urls()
         opts = self.model._meta
         info = opts.app_label, opts.model_name
-        select_urls = patterns("",
+        select_urls = [
             url("/select-plugin/$",
                 wrap_admin_view(self, self.select_plugin_view),
                 name='%s_%s_select_plugin' % info),
-        )
-        return select_urls + urls 
+        ]
+        return select_urls + urls
     
     def select_plugin_view(self, request):
         opts = self.model._meta

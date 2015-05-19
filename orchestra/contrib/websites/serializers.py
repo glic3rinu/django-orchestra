@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from orchestra.api.serializers import HyperlinkedModelSerializer, RelatedHyperlinkedModelSerializer
@@ -7,6 +6,7 @@ from orchestra.contrib.accounts.serializers import AccountSerializerMixin
 
 from .directives import SiteDirective
 from .models import Website, Content, WebsiteDirective
+from .utils import normurlpath
 from .validators import validate_domain_protocol
 
 
@@ -66,7 +66,7 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             for content in data.get('content_set', []):
                 location = content.get('path')
                 if location is not None:
-                    locations.add(location)
+                    locations.add(normurlpath(location))
             values = defaultdict(list)
             for name, value in directives.items():
                 directive = {

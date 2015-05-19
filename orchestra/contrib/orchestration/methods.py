@@ -1,13 +1,10 @@
-import hashlib
 import json
 import logging
-import os
 import socket
 import sys
 import select
 
 from celery.datastructures import ExceptionInfo
-from django.conf import settings as djsettings
 
 from orchestra.utils.sys import sshrun
 from orchestra.utils.python import CaptureStdout, import_class

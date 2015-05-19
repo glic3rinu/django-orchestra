@@ -6,10 +6,8 @@ import textwrap
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.domains.models import Domain, Record
 from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
-#from orchestra.utils.humanize import unit_to_bytes
 
 from . import settings
 from .models import Address
@@ -63,9 +61,12 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         context = self.get_context(mailbox)
         self.append(textwrap.dedent("""
             if [[ $( id %(user)s ) ]]; then
-               usermod  %(user)s --password '%(password)s' --shell %(initial_shell)s
+                # Fucking postfix SASL caches credentials
+                old_password=$(grep "^%(user)s:" /etc/shadow|cut -d':' -f2)
+                usermod  %(user)s --password '%(password)s' --shell %(initial_shell)s
+                [[ "$old_password" != "%(password)s" ]] && RESTART_POSTFIX=1
             else
-               useradd %(user)s --home %(home)s --password '%(password)s'
+                useradd %(user)s --home %(home)s --password '%(password)s'
             fi
             mkdir -p %(home)s
             chmod 751 %(home)s
@@ -95,9 +96,14 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         self.append(textwrap.dedent("""
             nohup bash -c '{ sleep 2 && killall -u %(user)s -s KILL; }' &> /dev/null &
             killall -u %(user)s || true
-            userdel %(user)s || true
+            # Fucking postfix SASL caches credentials
+            userdel %(user)s || true && RESTART_POSTFIX=1
             groupdel %(user)s || true""") % context
         )
+    
+    def commit(self):
+        self.append('[[ $RESTART_POSTFIX -eq 1 ]] && service postfix restart')
+        super(UNIXUserMaildirBackend, self).commit()
     
     def get_context(self, mailbox):
         context = {

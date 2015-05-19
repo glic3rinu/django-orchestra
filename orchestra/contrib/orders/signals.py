@@ -1,4 +1,4 @@
-from django.db.models.signals import post_delete, post_save, pre_delete
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from orchestra.core import services

@@ -1,11 +1,9 @@
 import re
-import sys
 from collections import OrderedDict
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.functional import Promise
-from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import validators
 from orchestra.utils.python import import_class, format_exception

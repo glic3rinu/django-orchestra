@@ -20,12 +20,8 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
         return data.get('id')
     
     def create(self, validated_data):
-        validated_data['account'] = self.account
-        return super(AccountSerializerMixin, self).create(validated_data)
-    
-    def create(self, validated_data):
         validated_data['author'] = self.context['request'].user
-        super(MessageSerializer, self).create(validated_data)
+        return super(MessageSerializer, self).create(validated_data)
 
 
 class TicketSerializer(serializers.HyperlinkedModelSerializer):

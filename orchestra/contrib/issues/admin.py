@@ -1,5 +1,5 @@
 from django import forms
-from django.conf.urls import patterns
+from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -244,11 +244,10 @@ class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
     
     def get_urls(self):
         """ add markdown preview url """
-        urls = super(TicketAdmin, self).get_urls()
-        my_urls = patterns('',
-            (r'^preview/$', wrap_admin_view(self, self.message_preview_view))
-        )
-        return my_urls + urls
+        return [
+            url(r'^preview/$',
+                wrap_admin_view(self, self.message_preview_view))
+        ] + super(TicketAdmin, self).get_urls()
     
     def add_view(self, request, form_url='', extra_context=None):
         """ Do not sow message inlines """

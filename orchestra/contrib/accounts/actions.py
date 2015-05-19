@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.html import format_html
 from django.utils.text import capfirst
-from django.utils.translation import ungettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services
 
@@ -69,7 +69,7 @@ def delete_related_services(modeladmin, request, queryset):
     user = request.user
     admin_site = modeladmin.admin_site
     
-    def format(obj):
+    def format(obj, account=False):
         has_admin = obj.__class__ in admin_site._registry
         opts = obj._meta
         no_edit_link = '%s: %s' % (capfirst(opts.verbose_name), force_text(obj))
@@ -87,7 +87,11 @@ def delete_related_services(modeladmin, request, queryset):
             if not user.has_perm(p):
                 perms_needed.add(opts.verbose_name)
             # Display a link to the admin page.
-            return format_html('{}: <a href="{}">{}</a>', capfirst(opts.verbose_name), admin_url, obj)
+            context = (capfirst(opts.verbose_name), admin_url, obj)
+            if account:
+                context += (_("services to delete:"),)
+                return format_html('{} <a href="{}">{}</a> {}', *context)
+            return format_html('{}: <a href="{}">{}</a>', *context)
         else:
             # Don't display link to edit, because it either has no
             # admin or is edited inline.
@@ -102,11 +106,12 @@ def delete_related_services(modeladmin, request, queryset):
         else:
             result.append(format(objs))
     
-    for account in collector.nested():
-        if isinstance(account, list):
+    for nested in collector.nested():
+        if isinstance(nested, list):
+            # Is lists of objects
             current = []
             is_service = False
-            for service in account:
+            for service in nested:
                 if type(service) in registered_services:
                     if service == main_systemuser:
                         continue
@@ -121,10 +126,11 @@ def delete_related_services(modeladmin, request, queryset):
                 else:
                     is_service = False
             related_services.append(current)
-        elif isinstance(account, modeladmin.model):
+        elif isinstance(nested, modeladmin.model):
+            # Is account
             # Prevent the deletion of the main system user, which will delete the account
-            main_systemuser = account.main_systemuser
-            related_services.append(format(account))
+            main_systemuser = nested.main_systemuser
+            related_services.append(format(nested, account=True))
     
     # The user has already confirmed the deletion.
     # Do the deletion and return a None to display the change list view again.

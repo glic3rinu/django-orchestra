@@ -3,7 +3,6 @@ import textwrap
 
 from django import forms
 from django.utils.safestring import mark_safe
-from django.utils.encoding import force_text
 
 from django.contrib.admin.templatetags.admin_static import static
 

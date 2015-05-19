@@ -2,7 +2,6 @@ import logging
 import threading
 import traceback
 from collections import OrderedDict
-from functools import partial
 
 from django.core.mail import mail_admins
 

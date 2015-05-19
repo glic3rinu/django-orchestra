@@ -14,8 +14,9 @@ class EmailBackend(BaseEmailBackend):
             return
         num_sent = 0
         is_bulk = len(email_messages) > 1
+        default_priority = Message.NORMAL if is_bulk else Message.CRITICAL
         for message in email_messages:
-            priority = message.extra_headers.get('X-Mail-Priority', Message.NORMAL)
+            priority = message.extra_headers.get('X-Mail-Priority', default_priority)
             content = message.message().as_string()
             for to_email in message.recipients():
                 message = Message.objects.create(
@@ -25,7 +26,7 @@ class EmailBackend(BaseEmailBackend):
                     subject=message.subject,
                     content=content,
                 )
-                if not is_bulk or priority == Message.CRITICAL:
+                if priority == Message.CRITICAL:
                     # send immidiately
                     send_message.apply_async(message)
             num_sent += 1

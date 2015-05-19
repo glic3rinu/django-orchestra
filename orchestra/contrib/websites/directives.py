@@ -9,6 +9,7 @@ from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from . import settings
+from .utils import normurlpath
 
 
 class SiteDirective(Plugin):
@@ -58,7 +59,7 @@ class SiteDirective(Plugin):
         # location uniqueness
         location = None
         if self.unique_location:
-            location = directive['value'].split()[0]
+            location = normurlpath(directive['value'].split()[0])
         if location is not None and location in locations:
             errors['value'].append(ValidationError(
                 "Location '%s' already in use by other content/directive." % location

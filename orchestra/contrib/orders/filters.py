@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q, Prefetch, F
@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
-from .models import MetricStorage, Order
+from .models import MetricStorage
 
 
 class ActiveOrderListFilter(SimpleListFilter):

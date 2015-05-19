@@ -1,7 +1,6 @@
 import os
 import textwrap
 
-from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController, replace

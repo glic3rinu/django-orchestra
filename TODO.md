@@ -284,11 +284,8 @@ https://code.djangoproject.com/ticket/24576
 
 # TODO orchestra related services code reload: celery/uwsgi reloading find aonther way without root and implement reload
 
-# size monitor of @002 @003 database names
 # password validation cracklib on change password form=?????
 # reset setting button 
-
-# periodic cleaning of spam mailboxes
 
 # admin edit relevant djanog settings
 # django SITE_NAME vs ORCHESTRA_SITE_NAME ?
@@ -365,9 +362,6 @@ pip3 install https://github.com/fantix/gevent/archive/master.zip
 
 # SIgnal handler for notify workers to reload stuff, like resource sync: https://docs.python.org/2/library/signal.html
 
-# INVOICE fucking Id based on order ID or what?
-
-# user order_id as bill line id 
 # BUG Delete related services also deletes account!
 # auto apend trailing slash
 
@@ -375,17 +369,11 @@ pip3 install https://github.com/fantix/gevent/archive/master.zip
 
 # uwsgi hot reload? http://uwsgi-docs.readthedocs.org/en/latest/articles/TheArtOfGracefulReloading.html
 
-
 # change mailer.message.priority by, queue/sent inmediatelly or rename critical to noq
 
 
-# method(
+method(
     arg, arg, arg)
 
 
-
-# Finish Nested *resource* serializers, like websites.domains: make fields readonly: read_only_fields = ('name',)
-# websites.directives full validation like directive formset: move formset validation out and call it with compat-data from both places
-
-
-# apply normlocation function on unique_location validation
+# Restart postfix on user pwd change/disabling

@@ -1,4 +1,3 @@
-import re
 from functools import partial
 
 from django.apps import apps

@@ -1,9 +1,7 @@
-import re
 import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.domains.models import Domain, Record
 from orchestra.contrib.orchestration import ServiceController, replace
 from orchestra.contrib.resources import ServiceMonitor
 

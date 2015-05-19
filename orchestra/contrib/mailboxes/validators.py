@@ -2,7 +2,6 @@ import hashlib
 import os
 import re
 
-from django.core.management.base import CommandError
 from django.core.validators import ValidationError, EmailValidator
 from django.utils.translation import ugettext_lazy as _
 

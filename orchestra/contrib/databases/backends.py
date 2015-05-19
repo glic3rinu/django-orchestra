@@ -150,11 +150,12 @@ class MysqlDisk(ServiceMonitor):
         if db.type != db.MYSQL:
             return
         context = self.get_context(db)
-        self.append('echo %(db_id)s $(monitor "%(db_name)s")' % context)
+        self.append('echo %(db_id)s $(monitor "%(db_dirname)s")' % context)
     
     def get_context(self, db):
         context = {
             'db_name': db.name,
+            'db_dirname': db.name.replace('-', '@003f'),
             'db_id': db.pk,
         }
         return replace(replace(context, "'", '"'), ';', '')

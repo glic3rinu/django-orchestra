@@ -1,12 +1,10 @@
 import os
 
-from django import forms
 from django.contrib import messages, admin
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.utils.translation import ungettext, ugettext_lazy as _
 
-from orchestra.admin.decorators import action_with_confirmation
 from orchestra.contrib.orchestration import Operation, helpers
 
 from .forms import PermissionForm

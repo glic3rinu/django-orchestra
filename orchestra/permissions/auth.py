@@ -1,6 +1,7 @@
 from django.contrib.auth.backends import ModelBackend
 from django.apps import apps
 
+
 class OrchestraPermissionBackend(ModelBackend):
     supports_object_permissions = True
     supports_anonymous_user = False
@@ -43,5 +44,3 @@ class OrchestraPermissionBackend(ModelBackend):
                 if has_perm:
                     return True
         return False
-
-

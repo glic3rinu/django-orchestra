@@ -6,7 +6,6 @@ from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import services, accounts, administration
-from orchestra.utils.apps import isinstalled
 
 
 def api_link(context):

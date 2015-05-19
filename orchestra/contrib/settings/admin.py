@@ -1,14 +1,10 @@
-from functools import partial
-
 from django.contrib import admin, messages
-from django.db import models
 from django.shortcuts import render_to_response
 from django.views import generic
 from django.utils.translation import ngettext, ugettext_lazy as _
 
-from orchestra.admin.dashboard import OrchestraIndexDashboard
 from orchestra.contrib.settings import Setting
-from orchestra.utils import sys, paths
+from orchestra.utils import sys
 
 from . import parser
 from .forms import SettingFormSet
@@ -66,7 +62,8 @@ class SettingView(generic.edit.FormView):
             if not self.request.POST.get('confirmation'):
                 settings_file = parser.get_settings_file()
                 new_content = parser.apply(changes)
-                diff = sys.run("cat <<EOF | diff %s -\n%s\nEOF" % (settings_file, new_content), valid_codes=(1, 0)).stdout
+                cmd = "cat <<EOF | diff %s -\n%s\nEOF" % (settings_file, new_content)
+                diff = sys.run(cmd, valid_codes=(1, 0)).stdout
                 context = self.get_context_data(form=form)
                 context['diff'] = diff
                 return self.render_to_response(context)

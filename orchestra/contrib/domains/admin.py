@@ -1,5 +1,3 @@
-import re
-
 from django import forms
 from django.contrib import admin
 from django.db.models.functions import Concat, Coalesce

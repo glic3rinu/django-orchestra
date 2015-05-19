@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from django.contrib.contenttypes.fields import GenericRelation
 
 from orchestra.core import services
 from orchestra.utils.db import database_ready

@@ -1,5 +1,5 @@
 from django import forms
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.utils import unquote
@@ -68,9 +68,9 @@ class ChangeViewActionsMixin(object):
         urls = super(ChangeViewActionsMixin, self).get_urls()
         admin_site = self.admin_site
         opts = self.model._meta
-        new_urls = patterns('')
+        new_urls = []
         for action in self.get_change_view_actions():
-            new_urls += patterns('',
+            new_urls.append(
                 url('^(\d+)/%s/$' % action.url_name,
                     admin_site.admin_view(action),
                     name='%s_%s_%s' % (opts.app_label, opts.model_name, action.url_name)
@@ -187,11 +187,11 @@ class ChangePasswordAdminMixin(object):
     def get_urls(self):
         opts = self.model._meta
         info = opts.app_label, opts.model_name
-        return patterns('',
+        return [
             url(r'^(\d+)/password/$',
                 self.admin_site.admin_view(self.change_password),
-                name='%s_%s_change_password' % info),
-        ) + super(ChangePasswordAdminMixin, self).get_urls()
+                name='%s_%s_change_password' % info)
+        ] + super(ChangePasswordAdminMixin, self).get_urls()
     
     @sensitive_post_parameters_m
     def change_password(self, request, id, form_url=''):

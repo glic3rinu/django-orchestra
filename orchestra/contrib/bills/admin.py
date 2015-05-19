@@ -1,10 +1,10 @@
 from django import forms
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import F, Sum, Prefetch
+from django.db.models import F, Sum
 from django.db.models.functions import Coalesce
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
@@ -17,7 +17,7 @@ from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
 from . import settings, actions
 from .filters import BillTypeListFilter, HasBillContactListFilter
-from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillSubline, BillContact
+from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillContact
 
 
 PAYMENT_STATE_COLORS = {
@@ -229,11 +229,11 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         """ Hook bill lines management URLs on bill admin """
         urls = super(BillAdmin, self).get_urls()
         admin_site = self.admin_site
-        extra_urls = patterns("",
+        extra_urls = [
             url("^manage-lines/$",
                 admin_site.admin_view(BillLineManagerAdmin(BillLine, admin_site).changelist_view),
                 name='bills_bill_manage_lines'),
-        )
+        ]
         return extra_urls + urls
     
     def get_readonly_fields(self, request, obj=None):

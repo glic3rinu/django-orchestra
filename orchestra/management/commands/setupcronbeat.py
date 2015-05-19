@@ -1,6 +1,6 @@
 import os
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from orchestra.utils.paths import get_site_dir
 from orchestra.utils.sys import run, check_non_root

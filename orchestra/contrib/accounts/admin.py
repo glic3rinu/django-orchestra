@@ -3,7 +3,7 @@ import re
 from urllib.parse import parse_qsl
 
 from django import forms
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import admin as auth
@@ -310,11 +310,11 @@ class SelectAccountAdminMixin(AccountAdminMixin):
         opts = self.model._meta
         info = opts.app_label, opts.model_name
         account_list = AccountListAdmin(Account, admin_site).changelist_view
-        select_urls = patterns("",
+        select_urls = [
             url("/select-account/$",
                 wrap_admin_view(self, account_list),
                 name='%s_%s_select_account' % info),
-        )
+        ]
         return select_urls + urls 
     
     def add_view(self, request, form_url='', extra_context=None):

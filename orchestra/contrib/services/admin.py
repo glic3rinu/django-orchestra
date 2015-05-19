@@ -1,5 +1,5 @@
 from django import forms
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.template.response import TemplateResponse
@@ -46,12 +46,12 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         urls = super(ServiceAdmin, self).get_urls()
         admin_site = self.admin_site
         opts = self.model._meta
-        return patterns('',
+        return [
             url('^add/help/$',
                 admin_site.admin_view(self.help_view),
                 name='%s_%s_help' % (opts.app_label, opts.model_name)
             )
-        ) + urls
+        ] + urls
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Improve performance of account field and filter by account """

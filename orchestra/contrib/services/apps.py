@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from orchestra.core import administration, accounts
+from orchestra.core import administration
 from orchestra.core.translations import ModelTranslation
 
 

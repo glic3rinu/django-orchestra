@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.conf import settings
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 
 from . import api
 from .utils.apps import isinstalled
@@ -10,7 +10,7 @@ admin.autodiscover()
 api.autodiscover()
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     # Admin
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin_tools/', include('admin_tools.urls')),
@@ -26,11 +26,11 @@ urlpatterns = patterns('',
         'document_root': settings.MEDIA_ROOT,
         'show_indexes': True
     })
-)
+]
 
 
 if isinstalled('debug_toolbar'):
     import debug_toolbar
-    urlpatterns += patterns('',
+    urlpatterns.append(
         url(r'^__debug__/', include(debug_toolbar.urls)),
     )

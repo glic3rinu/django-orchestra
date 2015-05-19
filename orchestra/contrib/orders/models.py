@@ -10,7 +10,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core import services
 from orchestra.models import queryset
 from orchestra.utils.python import import_class
 

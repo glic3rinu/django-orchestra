@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from django.core.checks import register, Error
 from django.core.exceptions import ValidationError
-from django.utils.translation import ngettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import administration
 

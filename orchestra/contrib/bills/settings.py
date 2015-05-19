@@ -1,4 +1,3 @@
-from django.conf import settings
 from django_countries import data
 
 from orchestra.contrib.settings import Setting

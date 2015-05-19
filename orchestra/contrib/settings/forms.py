@@ -6,6 +6,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.formsets import formset_factory
 from django.utils.functional import Promise
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.forms import ReadOnlyFormMixin, widgets
@@ -13,18 +14,17 @@ from orchestra.utils.python import format_exception
 
 from . import parser
 
-from django import forms
-from django.utils.safestring import mark_safe
-
 
 class SettingForm(ReadOnlyFormMixin, forms.Form):
-    TEXTAREA = partial(forms.CharField,
+    TEXTAREA = partial(
+        forms.CharField,
         widget=forms.Textarea(attrs={
             'cols': 65,
             'rows': 2,
             'style': 'font-family: monospace',
         }))
-    CHARFIELD = partial(forms.CharField,
+    CHARFIELD = partial(
+        forms.CharField,
         widget=forms.TextInput(attrs={
             'size': 65,
             'style': 'font-family: monospace',
@@ -66,7 +66,9 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
                 field = forms.ChoiceField
                 multiple = setting.multiple
                 if multiple:
-                    field = partial(forms.MultipleChoiceField, widget=forms.CheckboxSelectMultiple)
+                    field = partial(
+                        forms.MultipleChoiceField,
+                        widget=forms.CheckboxSelectMultiple)
                 if choices:
                     # Lazy loading
                     if callable(choices):
@@ -75,7 +77,8 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
                         choices = tuple((parser.serialize(val), verb) for val, verb in choices)
                     field = partial(field, choices=choices)
                 else:
-                    field = self.FORMFIELD_FOR_SETTING_TYPE.get(self.setting_type, self.NON_EDITABLE)
+                    field = self.FORMFIELD_FOR_SETTING_TYPE.get(
+                        self.setting_type, self.NON_EDITABLE)
                     field = deepcopy(field)
             real_field = field
             while isinstance(real_field, partial):

@@ -1,4 +1,4 @@
-from django.conf.urls import patterns
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
@@ -103,10 +103,10 @@ class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, Exten
     
     def get_urls(self):
         useradmin = UserAdmin(DatabaseUser, self.admin_site)
-        return patterns('',
-            (r'^(\d+)/password/$',
-             self.admin_site.admin_view(useradmin.user_change_password))
-        ) + super(DatabaseUserAdmin, self).get_urls()
+        return [
+            url(r'^(\d+)/password/$',
+                self.admin_site.admin_view(useradmin.user_change_password))
+        ] + super(DatabaseUserAdmin, self).get_urls()
     
     def save_model(self, request, obj, form, change):
         """ set password """

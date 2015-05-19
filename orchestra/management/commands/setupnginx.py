@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from orchestra.utils import paths
-from orchestra.utils.sys import run, check_root, get_default_celeryd_username
+from orchestra.utils.sys import run, check_root
 
 
 class Command(BaseCommand):

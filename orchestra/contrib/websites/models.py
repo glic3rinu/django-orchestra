@@ -31,7 +31,7 @@ class Website(models.Model):
 #    port = models.PositiveIntegerField(_("port"),
 #            choices=settings.WEBSITES_PORT_CHOICES,
 #            default=settings.WEBSITES_DEFAULT_PORT)
-    domains = models.ManyToManyField(settings.WEBSITES_DOMAIN_MODEL,
+    domains = models.ManyToManyField(settings.WEBSITES_DOMAIN_MODEL, blank=True,
         related_name='websites', verbose_name=_("domains"))
     contents = models.ManyToManyField('webapps.WebApp', through='websites.Content')
     is_active = models.BooleanField(_("active"), default=True)

@@ -247,7 +247,8 @@ class Record(models.Model):
         help_text=_("Record TTL, defaults to %s") % settings.DOMAINS_DEFAULT_TTL,
         validators=[validators.validate_zone_interval])
     type = models.CharField(_("type"), max_length=32, choices=TYPE_CHOICES)
-    value = models.CharField(_("value"), max_length=256)
+    value = models.CharField(_("value"), max_length=256, help_text=_("MX, NS and CNAME records "
+        "sould end with a dot."))
     
     def __str__(self):
         return "%s %s IN %s %s" % (self.domain, self.get_ttl(), self.type, self.value)

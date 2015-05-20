@@ -376,4 +376,5 @@ method(
     arg, arg, arg)
 
 
-# Restart postfix on user pwd change/disabling
+# dovecot sieve only allolws one fucking active script. refactor mailbox shit to replace active script symlink by orchestra. Create a generic wrapper that includes al filters (rc, imp and orchestra)
+http://wiki2.dovecot.org/Pigeonhole/Sieve/Examples

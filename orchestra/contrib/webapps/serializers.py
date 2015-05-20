@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import serializers
 
 from orchestra.api.serializers import HyperlinkedModelSerializer
@@ -18,13 +19,26 @@ class OptionSerializer(serializers.ModelSerializer):
         return data
 
 
+class DataField(serializers.Field):
+    def to_representation(self, data):
+        return data
+
+
 class WebAppSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     options = OptionSerializer(required=False)
+    data = DataField()
     
     class Meta:
         model = WebApp
-        fields = ('url', 'id', 'name', 'type', 'options')
+        fields = ('url', 'id', 'name', 'type', 'options', 'data')
         postonly_fields = ('name', 'type')
+    
+    def __init__(self, *args, **kwargs):
+        super(WebAppSerializer, self).__init__(*args, **kwargs)
+        if isinstance(self.instance, models.Model):
+            type_serializer = self.instance.type_instance.serializer
+            if type_serializer:
+                self.fields['data'] = type_serializer()
     
     def create(self, validated_data):
         options_data = validated_data.pop('options')

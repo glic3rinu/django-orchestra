@@ -31,12 +31,14 @@ class SieveFilteringMixin(object):
                 """) % context
             )
         context['filtering_path'] = settings.MAILBOXES_SIEVE_PATH % context
+        context['filtering_cpath'] = re.sub(r'\.sieve$', '.svbin', context['filtering_path'])
         if content:
             context['filtering'] = ('# %(banner)s\n' + content) % context
             self.append(textwrap.dedent("""\
                 mkdir -p $(dirname '%(filtering_path)s')
                 echo '%(filtering)s' > %(filtering_path)s
-                chown %(user)s:%(group)s %(filtering_path)s
+                sievec %(filtering_path)s
+                chown %(user)s:%(group)s {%(filtering_path)s,%(filtering_cpath)s}
                 """) % context
             )
         else:

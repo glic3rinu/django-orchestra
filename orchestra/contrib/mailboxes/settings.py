@@ -28,8 +28,11 @@ MAILBOXES_HOME = Setting('MAILBOXES_HOME',
 
 
 MAILBOXES_SIEVE_PATH = Setting('MAILBOXES_SIEVE_PATH',
-    os.path.join('%(home)s/Maildir/sieve/orchestra.sieve'),
-    help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),
+    os.path.join('%(home)s/sieve/orchestra.sieve'),
+    help_text="If you are using Dovecot you can use "
+        "<a href='http://wiki2.dovecot.org/Pigeonhole/Sieve/Configuration#line-130'>"
+        "<tt>sieve_before</tt></a> in order to make sure orchestra sieve script is exectued."
+        "<br>Available fromat names: <tt>%s</tt>" % ', '.join(_names),
     validators=[Setting.string_format_validator(_backend_names)],
 )
 
@@ -83,14 +86,14 @@ MAILBOXES_MAILBOX_FILTERINGS = Setting('MAILBOXES_MAILBOX_FILTERINGS',
         # value: (verbose_name, filter)
         'DISABLE': (_("Disable"), ''),
         'REJECT': (mark_safe_lazy(_("Reject spam (Score&ge;9)")), textwrap.dedent("""\
-             require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-             if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
+            require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
+            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
                 discard;
                 stop;
             }""")),
         'REJECT5': (mark_safe_lazy(_("Reject spam (Score&ge;5)")), textwrap.dedent("""\
-             require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-             if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "5" {
+            require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
+            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "5" {
                 discard;
                 stop;
             }""")),

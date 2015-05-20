@@ -1,4 +1,4 @@
-django==1.8.1
+django==1.8.2
 django-celery-email==1.0.4
 django-fluent-dashboard==0.5
 https://github.com/glic3rinu/django-admin-tools/archive/master.zip

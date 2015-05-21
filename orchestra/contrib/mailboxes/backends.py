@@ -23,6 +23,7 @@ class SieveFilteringMixin(object):
             # create mailboxes if fileinfo is provided witout ':create' option
             context['box'] = box
             self.append(textwrap.dedent("""
+                # Create %(box)s mailbox
                 mkdir -p %(maildir)s/.%(box)s
                 chown %(user)s:%(group)s %(maildir)s/.%(box)s
                 if [[ ! $(grep '%(box)s' %(maildir)s/subscriptions) ]]; then
@@ -34,13 +35,15 @@ class SieveFilteringMixin(object):
         context['filtering_cpath'] = re.sub(r'\.sieve$', '.svbin', context['filtering_path'])
         if content:
             context['filtering'] = ('# %(banner)s\n' + content) % context
-            self.append(textwrap.dedent("""
+            self.append(textwrap.dedent("""\
+                # Create and compile orchestra sieve filtering
                 mkdir -p $(dirname '%(filtering_path)s')
                 cat << 'EOF' > %(filtering_path)s
                 %(filtering)s
                 EOF
                 sievec %(filtering_path)s
-                chown %(user)s:%(group)s {%(filtering_path)s,%(filtering_cpath)s}
+                chown %(user)s:%(group)s %(filtering_path)s
+                chown %(user)s:%(group)s %(filtering_cpath)s
                 """) % context
             )
         else:
@@ -64,15 +67,20 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
     def save(self, mailbox):
         context = self.get_context(mailbox)
         self.append(textwrap.dedent("""
+            # Update/create %(user)s user state
             if [[ $( id %(user)s ) ]]; then
-                # Fucking postfix SASL caches credentials
-                old_password=$(grep "^%(user)s:" /etc/shadow|cut -d':' -f2)
-                usermod  %(user)s --password '%(password)s' --shell %(initial_shell)s
-                if [[ "$old_password" != "%(password)s" ]]; then
+                old_password=$(getent shadow %(user)s | cut -d':' -f2)
+                usermod  %(user)s \\
+                    --shell %(initial_shell)s \\
+                    --password '%(password)s'
+                if [[ "$old_password" != '%(password)s' ]]; then
+                    # Postfix SASL caches passwords
                     RESTART_POSTFIX=1
                 fi
             else
-                useradd %(user)s --home %(home)s --password '%(password)s'
+                useradd %(user)s \\
+                    --home %(home)s \\
+                    --password '%(password)s'
             fi
             mkdir -p %(home)s
             chmod 751 %(home)s
@@ -86,6 +94,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         context['quota'] = mailbox.resources.disk.allocated * mailbox.resources.disk.resource.get_scale()
         #unit_to_bytes(mailbox.resources.disk.unit)
         self.append(textwrap.dedent("""
+            # Set Maildir quota for %(user)s
             mkdir -p %(maildir)s
             chown %(user)s:%(group)s %(maildir)s
             if [[ ! -f %(maildir)s/maildirsize ]]; then
@@ -137,7 +146,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
     
     def set_user(self, context):
         self.append(textwrap.dedent("""
-            if [[ $( grep "^%(user)s:" %(passwd_path)s ) ]]; then
+            if [[ $( grep '^%(user)s:' %(passwd_path)s ) ]]; then
                sed -i 's#^%(user)s:.*#%(passwd)s#' %(passwd_path)s
             else
                echo '%(passwd)s' >> %(passwd_path)s
@@ -148,7 +157,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
     
     def set_mailbox(self, context):
         self.append(textwrap.dedent("""
-            if [[ ! $(grep "^%(user)s@%(mailbox_domain)s\s" %(virtual_mailbox_maps)s) ]]; then
+            if [[ ! $(grep '^%(user)s@%(mailbox_domain)s\s' %(virtual_mailbox_maps)s) ]]; then
                 echo "%(user)s@%(mailbox_domain)s\tOK" >> %(virtual_mailbox_maps)s
                 UPDATED_VIRTUAL_MAILBOX_MAPS=1
             fi""") % context
@@ -240,6 +249,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         domain = context['domain']
         if domain.name != context['local_domain'] and self.is_local_domain(domain):
             self.append(textwrap.dedent("""
+                # %(domain)s is a virtual domain belonging to this server
                 if [[ ! $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]]; then
                     echo '%(domain)s' >> %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
@@ -253,6 +263,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         domain = context['domain']
         if self.is_last_domain(domain):
             self.append(textwrap.dedent("""
+                # Delete %(domain)s virtual domain
                 if [[ $(grep '^%(domain)s\s*$' %(virtual_alias_domains)s) ]]; then
                     sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
@@ -271,7 +282,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
     
     def commit(self):
         context = self.get_context_files()
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && {
                 service postfix reload
             }
@@ -309,6 +320,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
         if destination:
             context['destination'] = destination
             self.append(textwrap.dedent("""
+                # Set virtual alias entry for %(email)s
                 LINE='%(email)s\t%(destination)s'
                 if [[ ! $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
                     # Add new line
@@ -323,12 +335,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
                 fi""") % context)
         else:
             logger.warning("Address %i is empty" % address.pk)
-            self.append(textwrap.dedent("""
-                if [[ $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
-                    sed -i '/^%(email)s\s/d' %(virtual_alias_maps)s
-                    UPDATED_VIRTUAL_ALIAS_MAPS=1
-                fi""") % context
-            )
+            self.exclude_virtual_alias_maps(context)
         # Virtual mailbox stuff
 #        destination = []
 #        for mailbox in address.get_mailboxes():
@@ -340,10 +347,12 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
     
     def exclude_virtual_alias_maps(self, context):
         self.append(textwrap.dedent("""
-            sed -i '/^%(email)s\s.*$/d;{!q0;q1}' %(virtual_alias_maps)s && \\
+            # Remove %(email)s virtual alias entry
+            if [[ $(grep '^%(email)s\s' %(virtual_alias_maps)s) ]]; then
+                sed -i '/^%(email)s\s/d' %(virtual_alias_maps)s
                 UPDATED_VIRTUAL_ALIAS_MAPS=1
-            """) % context
-        )     
+            fi""") % context
+        )
     
     def save(self, address):
         context = super(PostfixAddressBackend, self).save(address)
@@ -356,6 +365,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
     def commit(self):
         context = self.get_context_files()
         self.append(textwrap.dedent("""\
+            # Apply changes if needed
             [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && {
                 service postfix reload
             }

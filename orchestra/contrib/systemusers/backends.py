@@ -31,6 +31,7 @@ class UNIXUserBackend(ServiceController):
         context['groups_arg'] = '--groups %s' % groups if groups else ''
         # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
+            # Update/create %(user)s user state
             if [[ $( id %(user)s ) ]]; then
                 usermod %(user)s --home %(home)s \\
                     --password '%(password)s' \\
@@ -58,6 +59,7 @@ class UNIXUserBackend(ServiceController):
         )
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""
+                # Set extra permissions since %(user)s home is inside %(mainuser)s home
                 if [[ $(mount | grep "^$(df %(home)s|grep '^/')\s" | grep acl) ]]; then
                     # Accountn group as the owner
                     chown %(mainuser)s:%(mainuser)s %(home)s
@@ -83,7 +85,8 @@ class UNIXUserBackend(ServiceController):
         context = self.get_context(user)
         if not context['user']:
             return
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
+            # Delete %(user)s user
             nohup bash -c 'sleep 2 && killall -u %(user)s -s KILL' &> /dev/null &
             killall -u %(user)s || true
             userdel %(user)s || exit_code=$?

@@ -67,8 +67,7 @@ class Apache2Backend(ServiceController):
                 SuexecUserGroup {{ user }} {{ group }}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
-            </VirtualHost>
-            """)
+            </VirtualHost>""")
         ).render(Context(context))
     
     def render_redirect_https(self, context):
@@ -85,8 +84,7 @@ class Apache2Backend(ServiceController):
                 RewriteEngine On
                 RewriteCond %{HTTPS} off
                 RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
-            </VirtualHost>
-            """)
+            </VirtualHost>""")
         ).render(Context(context))
     
     def save(self, site):
@@ -99,8 +97,9 @@ class Apache2Backend(ServiceController):
                 apache_conf += self.render_virtual_host(site, context, ssl=True)
             if site.protocol == site.HTTPS_ONLY:
                 apache_conf += self.render_redirect_https(context)
-            context['apache_conf'] = apache_conf
-            self.append(textwrap.dedent("""\
+            context['apache_conf'] = apache_conf.strip()
+            self.append(textwrap.dedent("""
+                # Generate %(site_name)s Apache site config
                 read -r -d '' apache_conf << 'EOF' || true
                 %(apache_conf)s
                 EOF
@@ -113,6 +112,7 @@ class Apache2Backend(ServiceController):
             )
         if context['server_name'] and site.active:
             self.append(textwrap.dedent("""\
+                # Enable %(site_name)s site
                 if [[ ! -f %(sites_enabled)s ]]; then
                     a2ensite %(site_unique_name)s.conf
                     UPDATED_APACHE=1
@@ -120,6 +120,7 @@ class Apache2Backend(ServiceController):
             )
         else:
             self.append(textwrap.dedent("""\
+                # Disable %(site_name)s site
                 if [[ -f %(sites_enabled)s ]]; then
                     a2dissite %(site_unique_name)s.conf;
                     UPDATED_APACHE=1
@@ -128,22 +129,26 @@ class Apache2Backend(ServiceController):
     
     def delete(self, site):
         context = self.get_context(site)
-        self.append("a2dissite %(site_unique_name)s.conf && UPDATED_APACHE=1" % context)
-        self.append("rm -f %(sites_available)s" % context)
+        self.append(textwrap.dedent("""
+            # Remove %(site_name)s site configuration
+            a2dissite %(site_unique_name)s.conf && UPDATED_APACHE=1
+            rm -f %(sites_available)s\
+            """) % context
+        )
     
     def prepare(self):
         super(Apache2Backend, self).prepare()
         # Coordinate apache restart with php backend in order not to overdo it
         self.append(textwrap.dedent("""\
             backend="Apache2Backend"
-            echo "$backend" >> /dev/shm/restart.apache2
+            echo "$backend" >> /dev/shm/restart.apache2\
             """)
         )
     
     def commit(self):
         """ reload Apache2 if necessary """
         self.append(textwrap.dedent("""
-            # Coordinate Apache restart with other concurrent backends (i.e. Apache2Backend)
+            # Coordinate Apache restart with other concurrent backends (e.g. PHPBackend)
             is_last=0
             mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked || {
                 sleep 0.2
@@ -161,6 +166,7 @@ class Apache2Backend(ServiceController):
             else
                 echo -n "$state" > /dev/shm/restart.apache2.locked
                 if [[ $UPDATED_APACHE -eq 1 ]]; then
+                    echo -e "Apache will be restarted by another backend:\\n${state}"
                     echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
                 fi
                 mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2

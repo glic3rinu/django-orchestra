@@ -379,3 +379,6 @@ http://wiki2.dovecot.org/Pigeonhole/Sieve/Examples
 
 
 # orders ignorign default filter is not very effective, because of selecting all orders for billing will select ignored too
+
+
+# mail system users group? which one is more convinient? if main group does not exists, backend will fail!

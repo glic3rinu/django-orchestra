@@ -126,7 +126,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 service php5-fpm reload
             fi
             
-            # Coordinate Apache restart with other concurrent backends (i.e. Apache2Backend)
+            # Coordinate Apache restart with other concurrent backends (e.g. Apache2Backend)
             is_last=0
             mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked || {
                 sleep 0.2
@@ -144,6 +144,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             else
                 echo -n "$state" > /dev/shm/restart.apache2.locked
                 if [[ $UPDATED_APACHE -eq 1 ]]; then
+                    echo -e "Apache will be restarted by another backend:\\n${state}"
                     echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
                 fi
                 mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2

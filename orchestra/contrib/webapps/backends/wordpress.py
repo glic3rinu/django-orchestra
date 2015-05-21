@@ -46,10 +46,13 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             shell_exec("mkdir -p %(app_path)s
                 # Prevent other backends from writting here
                 touch %(app_path)s/.lock
-                filename=\\$(wget https://wordpress.org/latest.tar.gz --server-response --spider --no-check-certificate 2>&1 | grep filename | cut -d'=' -f2)
+                filename=\\$(wget https://wordpress.org/latest.tar.gz --server-response --spider --no-check-certificate 2>&1 \\
+                    | grep filename | cut -d'=' -f2)
                 mkdir -p %(cms_cache_dir)s
-                if [ \\$(basename \\$(readlink %(cms_cache_dir)s/wordpress) 2> /dev/null ) != \\$filename ]; then
-                    wget https://wordpress.org/latest.tar.gz -O - --no-check-certificate | tee %(cms_cache_dir)s/\\$filename | tar -xzvf - -C %(app_path)s --strip-components=1
+                if [ ! -e %(cms_cache_dir)s/wordpress ] || [ \\$(basename \\$(readlink %(cms_cache_dir)s/wordpress) 2> /dev/null ) != \\$filename ]; then
+                    wget https://wordpress.org/latest.tar.gz -O - --no-check-certificate \\
+                        | tee %(cms_cache_dir)s/\\$filename \\
+                        | tar -xzvf - -C %(app_path)s --strip-components=1
                     rm -f %(cms_cache_dir)s/wordpress
                     ln -s %(cms_cache_dir)s/\\$filename %(cms_cache_dir)s/wordpress
                 else

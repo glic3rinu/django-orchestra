@@ -185,12 +185,17 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             listen = {{ fpm_listen | safe }}
             listen.owner = {{ user }}
             listen.group = {{ group }}
+            
             pm = ondemand
             pm.max_requests = {{ max_requests }}
             pm.max_children = {{ max_children }}
-            {% if request_terminate_timeout %}request_terminate_timeout = {{ request_terminate_timeout }}{% endif %}
-            {% for name, value in init_vars.items %}
-            php_admin_value[{{ name | safe }}] = {{ value | safe }}{% endfor %}
+            
+            {% if request_terminate_timeout %}\
+            request_terminate_timeout = {{ request_terminate_timeout }}\
+            {% endif %}
+            {% for name, value in init_vars.items %}\
+            php_admin_value[{{ name | safe }}] = {{ value | safe }}\
+            {% endfor %}
             """
         ))
         return fpm_config.render(Context(context))

@@ -44,6 +44,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def save_fpm(self, webapp, context):
         self.append(textwrap.dedent("""
+            # Generate FPM configuration
             read -r -d '' fpm_config << 'EOF' || true
             %(fpm_config)s
             EOF
@@ -58,7 +59,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def save_fcgid(self, webapp, context):
         self.append("mkdir -p %(wrapper_dir)s" % context)
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
+            # Generate FCGID configuration
             read -r -d '' wrapper << 'EOF' || true
             %(wrapper)s
             EOF
@@ -78,6 +80,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         self.append("chown -R %(user)s:%(group)s %(wrapper_dir)s" % context)
         if context['cmd_options']:
             self.append(textwrap.dedent("""\
+                # FCGID options
                 read -r -d '' cmd_options << 'EOF' || true
                 %(cmd_options)s
                 EOF
@@ -122,6 +125,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def commit(self):
         self.append(textwrap.dedent("""
+            # Apply changes if needed
             if [[ $UPDATED_FPM -eq 1 ]]; then
                 service php5-fpm reload
             fi

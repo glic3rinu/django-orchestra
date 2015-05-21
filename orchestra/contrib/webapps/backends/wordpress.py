@@ -42,6 +42,7 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             if (count(glob("%(app_path)s/*")) > 1) {
                 die("App directory not empty.");
             }
+            // Download and untar wordpress (with caching system)
             shell_exec("mkdir -p %(app_path)s
                 # Prevent other backends from writting here
                 touch %(app_path)s/.lock
@@ -67,6 +68,7 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             }
             array_pop($secret_keys);
             
+            // setup wordpress database and keys config
             $config_file = str_replace('database_name_here', "%(db_name)s", $config_file);
             $config_file = str_replace('username_here', "%(db_user)s", $config_file);
             $config_file = str_replace('password_here', "%(password)s", $config_file);
@@ -89,6 +91,8 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
                 fwrite($fw, $line);
             }
             exc('chown -R %(user)s:%(group)s %(app_path)s');
+            
+            // Execute wordpress installation process
             
             define('WP_CONTENT_DIR', 'wp-content/');
             define('WP_LANG_DIR', WP_CONTENT_DIR . '/languages' );

@@ -1,3 +1,4 @@
+import textwrap
 from functools import partial
 
 from django.apps import apps
@@ -207,10 +208,10 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
         hook for executing something at the beging
         define functions or initialize state
         """
-        self.append(
-            'set -e\n'
-            'set -o pipefail\n'
-            'exit_code=0;\n'
+        self.append(textwrap.dedent("""\
+            set -e
+            set -o pipefail
+            exit_code=0""")
         )
     
     def commit(self):

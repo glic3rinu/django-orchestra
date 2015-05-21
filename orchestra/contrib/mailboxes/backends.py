@@ -364,7 +364,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
     
     def commit(self):
         context = self.get_context_files()
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             # Apply changes if needed
             [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]] && {
                 service postfix reload

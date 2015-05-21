@@ -23,20 +23,21 @@ class MySQLBackend(ServiceController):
         if database.type != database.MYSQL:
             return
         context = self.get_context(database)
-        self.append(
-            "mysql -e 'CREATE DATABASE `%(database)s`;' || true" % context
-        )
         # Not available on delete()
         context['owner'] = database.owner
-        # clean previous privileges
-        self.append("""mysql mysql -e 'DELETE FROM db WHERE db = "%(database)s";'""" % context)
+        self.append(textwrap.dedent("""
+            # Create database and re-set permissions
+            mysql -e 'CREATE DATABASE `%(database)s`;' || true
+            mysql mysql -e 'DELETE FROM db WHERE db = "%(database)s";'\
+            """) % context
+        )
         for user in database.users.all():
             context.update({
                 'username': user.username,
                 'grant': 'WITH GRANT OPTION' if user == context['owner'] else ''
             })
             self.append(textwrap.dedent("""\
-                mysql -e 'GRANT ALL PRIVILEGES ON `%(database)s`.* TO "%(username)s"@"%(host)s" %(grant)s;' \
+                mysql -e 'GRANT ALL PRIVILEGES ON `%(database)s`.* TO "%(username)s"@"%(host)s" %(grant)s;'\
                 """) % context
             )
     
@@ -44,11 +45,19 @@ class MySQLBackend(ServiceController):
         if database.type != database.MYSQL:
             return
         context = self.get_context(database)
-        self.append("mysql -e 'DROP DATABASE `%(database)s`;' || exit_code=$?" % context)
-        self.append("mysql mysql -e 'DELETE FROM db WHERE db = \"%(database)s\";'" % context)
-        
+        self.append(textwrap.dedent("""
+            # Remove database %(database)s
+            mysql -e 'DROP DATABASE `%(database)s`;' || exit_code=$?
+            mysql mysql -e 'DELETE FROM db WHERE db = "%(database)s";'\
+            """) % context
+        )
+    
     def commit(self):
-        self.append("mysql -e 'FLUSH PRIVILEGES;'")
+        self.append(textwrap.dedent("""
+            # Apply permissions
+            mysql -e 'FLUSH PRIVILEGES;'\
+            """)
+        )
         super(MySQLBackend, self).commit()
     
     def get_context(self, database):
@@ -75,11 +84,9 @@ class MySQLUserBackend(ServiceController):
             return
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
-            mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true \
-            """) % context
-        )
-        self.append(textwrap.dedent("""\
-            mysql -e 'UPDATE mysql.user SET Password="%(password)s" WHERE User="%(username)s";' \
+            # Create user %(username)s
+            mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true
+            mysql -e 'UPDATE mysql.user SET Password="%(password)s" WHERE User="%(username)s";'\
             """) % context
         )
     
@@ -87,12 +94,14 @@ class MySQLUserBackend(ServiceController):
         if user.type != user.MYSQL:
             return
         context = self.get_context(user)
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
+            # Delete user %(username)s
             mysql -e 'DROP USER "%(username)s"@"%(host)s";' || exit_code=$? \
             """) % context
         )
     
     def commit(self):
+        self.append("# Apply permissions")
         self.append("mysql -e 'FLUSH PRIVILEGES;'")
     
     def get_context(self, user):

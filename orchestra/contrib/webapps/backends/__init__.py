@@ -15,17 +15,19 @@ class WebAppServiceMixin(object):
     )
     
     def create_webapp_dir(self, context):
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
+            # Create webapp dir
             CREATED=0
             [[ ! -e %(app_path)s ]] && CREATED=1
             mkdir -p %(app_path)s
-            chown %(user)s:%(group)s %(app_path)s
+            chown %(user)s:%(group)s %(app_path)s\
             """) % context
         )
     
     def set_under_construction(self, context):
         if context['under_construction_path']:
-            self.append(textwrap.dedent("""\
+            self.append(textwrap.dedent("""
+                # Set under construction if needed
                 if [[ $CREATED == 1 && ! $(ls -A %(app_path)s) ]]; then
                     # Async wait 2 more seconds for other backends to lock app_path or cp under construction
                     nohup bash -c '

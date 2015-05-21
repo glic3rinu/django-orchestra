@@ -31,27 +31,26 @@ class UNIXUserBackend(ServiceController):
         context['groups_arg'] = '--groups %s' % groups if groups else ''
         # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
-            # Update/create %(user)s user state
+            # Update/create user state for %(user)s
             if [[ $( id %(user)s ) ]]; then
                 usermod %(user)s --home %(home)s \\
                     --password '%(password)s' \\
                     --shell %(shell)s %(groups_arg)s
             else
+                useradd_code=0
                 useradd %(user)s --home %(home)s \\
                     --password '%(password)s' \\
-                    --shell %(shell)s %(groups_arg)s || {
-                        useradd_code=$?
-                        # User is logged in, kill and retry
-                        if [[ $useradd_code -eq 8 ]]; then
-                            pkill -u %(user)s; sleep 2
-                            pkill -9 -u %(user)s; sleep 1
-                            useradd %(user)s --home %(home)s \\
-                                --password '%(password)s' \\
-                                --shell %(shell)s %(groups_arg)s
-                        else
-                            exit $useradd_code
-                        fi
-                    }
+                    --shell %(shell)s %(groups_arg)s || useradd_code=$?
+                if [[ $useradd_code -eq 8 ]]; then
+                    # User is logged in, kill and retry
+                    pkill -u %(user)s; sleep 2
+                    pkill -9 -u %(user)s; sleep 1
+                    useradd %(user)s --home %(home)s \\
+                        --password '%(password)s' \\
+                        --shell %(shell)s %(groups_arg)s
+                elif [[ $useradd_code -ne 0 ]]; then
+                    exit $useradd_code
+                fi
             fi
             mkdir -p %(base_home)s
             chmod 750 %(base_home)s
@@ -59,7 +58,7 @@ class UNIXUserBackend(ServiceController):
         )
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""
-                # Set extra permissions since %(user)s home is inside %(mainuser)s home
+                # Set extra permissions: %(user)s home is inside %(mainuser)s home
                 if [[ $(mount | grep "^$(df %(home)s|grep '^/')\s" | grep acl) ]]; then
                     # Accountn group as the owner
                     chown %(mainuser)s:%(mainuser)s %(home)s
@@ -90,7 +89,7 @@ class UNIXUserBackend(ServiceController):
             nohup bash -c 'sleep 2 && killall -u %(user)s -s KILL' &> /dev/null &
             killall -u %(user)s || true
             userdel %(user)s || exit_code=$?
-            groupdel %(group)s || exit_code=$?
+            groupdel %(group)s || exit_code=$?\
             """) % context
         )
         if context['deleted_home']:
@@ -132,14 +131,14 @@ class UNIXUserBackend(ServiceController):
                 self.append(textwrap.dedent("""\
                     # Grant access to main user
                     find '%(perm_to)s' -type d %(exclude_acl)s \\
-                        -exec setfacl -m d:u:%(mainuser)s:rwx {} \\;
+                        -exec setfacl -m d:u:%(mainuser)s:rwx {} \\;\
                     """) % context
                 )
         elif user.set_perm_action == 'revoke':
             self.append(textwrap.dedent("""\
                 # Revoke permissions
                 find '%(perm_to)s' %(exclude_acl)s \\
-                    -exec setfacl -m u:%(user)s:%(perm_perms)s {} \\;
+                    -exec setfacl -m u:%(user)s:%(perm_perms)s {} \\;\
                 """) % context
             )
         else:
@@ -149,11 +148,10 @@ class UNIXUserBackend(ServiceController):
         context = {
             'path': user.path_to_validate,
         }
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             if [[ ! -e '%(path)s' ]]; then
                 echo "%(path)s path does not exists." >&2
-            fi
-            """) % context
+            fi""") % context
         )
     
     def get_groups(self, user):

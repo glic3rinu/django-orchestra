@@ -45,19 +45,21 @@ class Bind9MasterDomainBackend(ServiceController):
     def update_zone(self, domain, context):
         context['zone'] = ';; %(banner)s\n' % context
         context['zone'] += domain.render_zone()
-        self.append(textwrap.dedent("""
+        self.append(textwrap.dedent("""\
+            # Generate %(name)s zone file
             cat << 'EOF' > %(zone_path)s.tmp
             %(zone)s
             EOF
             diff -N -I'^\s*;;' %(zone_path)s %(zone_path)s.tmp || UPDATED=1
             # Because bind reload will not display any fucking error
             named-checkzone -k fail -n fail %(name)s %(zone_path)s.tmp
-            mv %(zone_path)s.tmp %(zone_path)s
+            mv %(zone_path)s.tmp %(zone_path)s\
             """) % context
         )
     
     def update_conf(self, context):
         self.append(textwrap.dedent("""
+            # Update bind config file for %(name)s
             read -r -d '' conf << 'EOF' || true
             %(conf)s
             EOF
@@ -68,8 +70,8 @@ class Bind9MasterDomainBackend(ServiceController):
                 UPDATED=1
             }""") % context
         )
-        # Delete ex-top-domains that are now subdomains
         self.append(textwrap.dedent("""\
+            # Delete ex-top-domains that are now subdomains
             sed -i -e '/zone\s\s*".*\.%(name)s".*/,/^\s*};\s*$/d' \\
                    -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s""") % context
         )
@@ -79,6 +81,7 @@ class Bind9MasterDomainBackend(ServiceController):
     
     def delete(self, domain):
         context = self.get_context(domain)
+        self.append('# Delete zone file for %(name)s' % context)
         self.append('rm -f %(zone_path)s;' % context)
         self.delete_conf(context)
     
@@ -87,6 +90,7 @@ class Bind9MasterDomainBackend(ServiceController):
             # These can never be top level domains
             return
         self.append(textwrap.dedent("""
+            # Delete config for %(name)s
             sed -e '/zone\s\s*"%(name)s".*/,/^\s*};\s*$/d' \\
                 -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s > %(conf_path)s.tmp""") % context
         )
@@ -95,7 +99,12 @@ class Bind9MasterDomainBackend(ServiceController):
     
     def commit(self):
         """ reload bind if needed """
-        self.append('if [[ $UPDATED == 1 ]]; then service bind9 reload; fi')
+        self.append(textwrap.dedent("""
+            # Apply changes
+            if [[ $UPDATED == 1 ]]; then
+                service bind9 reload
+            fi""")
+        )
     
     def get_servers(self, domain, backend):
         """ Get related server IPs from registered backend routes """
@@ -180,12 +189,12 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
         self.delete_conf(context)
     
     def commit(self):
-        """ ideally slave should be restarted after master """
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
+            # Apply changes
             if [[ $UPDATED == 1 ]]; then
+                # Async restart, ideally after master
                 nohup bash -c 'sleep 1 && service bind9 reload' &> /dev/null &
-            fi
-            """)
+            fi""")
         )
     
     def get_context(self, domain):
@@ -196,7 +205,7 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
             'masters': '; '.join(self.get_masters_ips(domain)) or 'none',
             'conf_path': self.CONF_PATH,
         }
-        context['conf'] = textwrap.dedent("""
+        context['conf'] = textwrap.dedent("""\
             zone "%(name)s" {
                 // %(banner)s
                 type slave;

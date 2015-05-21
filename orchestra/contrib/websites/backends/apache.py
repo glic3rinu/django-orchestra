@@ -99,7 +99,7 @@ class Apache2Backend(ServiceController):
                 apache_conf += self.render_redirect_https(context)
             context['apache_conf'] = apache_conf.strip()
             self.append(textwrap.dedent("""
-                # Generate %(site_name)s Apache site config
+                # Generate Apache site config for %(site_name)s
                 read -r -d '' apache_conf << 'EOF' || true
                 %(apache_conf)s
                 EOF
@@ -112,7 +112,7 @@ class Apache2Backend(ServiceController):
             )
         if context['server_name'] and site.active:
             self.append(textwrap.dedent("""\
-                # Enable %(site_name)s site
+                # Enable site %(site_name)s
                 if [[ ! -f %(sites_enabled)s ]]; then
                     a2ensite %(site_unique_name)s.conf
                     UPDATED_APACHE=1
@@ -120,7 +120,7 @@ class Apache2Backend(ServiceController):
             )
         else:
             self.append(textwrap.dedent("""\
-                # Disable %(site_name)s site
+                # Disable site %(site_name)s
                 if [[ -f %(sites_enabled)s ]]; then
                     a2dissite %(site_unique_name)s.conf;
                     UPDATED_APACHE=1
@@ -130,7 +130,7 @@ class Apache2Backend(ServiceController):
     def delete(self, site):
         context = self.get_context(site)
         self.append(textwrap.dedent("""
-            # Remove %(site_name)s site configuration
+            # Remove site configuration for %(site_name)s
             a2dissite %(site_unique_name)s.conf && UPDATED_APACHE=1
             rm -f %(sites_available)s\
             """) % context

@@ -27,6 +27,7 @@ class MailmanVirtualDomainBackend(ServiceController):
         domain = context['address_domain']
         if domain and self.is_local_domain(domain):
             self.append(textwrap.dedent("""
+                # Add virtual domain %(address_domain)s
                 [[ $(grep '^\s*%(address_domain)s\s*$' %(virtual_alias_domains)s) ]] || {
                     echo '%(address_domain)s' >> %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
@@ -39,7 +40,11 @@ class MailmanVirtualDomainBackend(ServiceController):
     def exclude_virtual_alias_domain(self, context):
         domain = context['address_domain']
         if domain and self.is_last_domain(domain):
-            self.append("sed -i '/^%(address_domain)s\s*$/d' %(virtual_alias_domains)s" % context)
+            self.append(textwrap.dedent("""
+                # Remove %(address_domain)s from virtual domains
+                sed -i '/^%(address_domain)s\s*$/d' %(virtual_alias_domains)s\
+                """) % context
+            )
     
     def save(self, mail_list):
         context = self.get_context(mail_list)
@@ -52,10 +57,12 @@ class MailmanVirtualDomainBackend(ServiceController):
     def commit(self):
         context = self.get_context_files()
         self.append(textwrap.dedent("""
+            # Apply changes if needed
             if [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]]; then
                 service postfix reload
             fi""") % context
         )
+        super(MailmanVirtualDomainBackend, self).commit()
     
     def get_context_files(self):
         return {
@@ -108,15 +115,16 @@ class MailmanBackend(MailmanVirtualDomainBackend):
     def save(self, mail_list):
         context = self.get_context(mail_list)
         # Create list
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
+            # Create list %(name)s
             [[ ! -e '%(mailman_root)s/lists/%(name)s' ]] && {
                 newlist --quiet --emailhost='%(domain)s' '%(name)s' '%(admin)s' '%(password)s'
             }""") % context)
         # Custom domain
         if mail_list.address:
             context['aliases'] = self.get_virtual_aliases(context)
-            # Preserve indentation
             self.append(textwrap.dedent("""\
+                # Create list alias for custom domain
                 aliases='%(aliases)s'
                 if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
                     echo "${aliases}" >> %(virtual_alias)s
@@ -128,27 +136,25 @@ class MailmanBackend(MailmanVirtualDomainBackend):
                         echo "${aliases}" >> %(virtual_alias)s
                         UPDATED_VIRTUAL_ALIAS=1
                     fi
-                fi""") % context
-            )
-            self.append(
-                'echo "require_explicit_destination = 0" | '
-                '%(mailman_root)s/bin/config_list -i /dev/stdin %(name)s' % context
-            )
-            self.append(textwrap.dedent("""\
-                echo "host_name = '%(address_domain)s'" | \
+                fi
+                echo "require_explicit_destination = 0" | \\
+                    %(mailman_root)s/bin/config_list -i /dev/stdin %(name)s
+                echo "host_name = '%(address_domain)s'" | \\
                     %(mailman_root)s/bin/config_list -i /dev/stdin %(name)s""") % context
             )
         else:
-            # Cleanup shit
             self.append(textwrap.dedent("""\
+                # Cleanup possible ex-custom domain
                 if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
                     sed -i "/^.*\s%(name)s\s*$/d" %(virtual_alias)s
                 fi""") % context
             )
         # Update
         if context['password'] is not None:
-            self.append(
-                '%(mailman_root)s/bin/change_pw --listname="%(name)s" --password="%(password)s"' % context
+            self.append(textwrap.dedent("""\
+                # Re-set password
+                %(mailman_root)s/bin/change_pw --listname="%(name)s" --password="%(password)s"\
+                """) % context
             )
         self.include_virtual_alias_domain(context)
         if mail_list.active:
@@ -160,10 +166,9 @@ class MailmanBackend(MailmanVirtualDomainBackend):
         context = self.get_context(mail_list)
         self.exclude_virtual_alias_domain(context)
         self.append(textwrap.dedent("""
+            # Remove list %(name)s
             sed -i -e '/^.*\s%(name)s\(%(suffixes_regex)s\)\s*$/d' \\
-                   -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s""") % context
-        )
-        self.append(textwrap.dedent("""
+                   -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s
             # Non-existent list archives produce exit code 1
             exit_code=0
             rmlist -a %(name)s || exit_code=$?
@@ -175,12 +180,14 @@ class MailmanBackend(MailmanVirtualDomainBackend):
     def commit(self):
         context = self.get_context_files()
         self.append(textwrap.dedent("""
+            # Apply changes if needed
             if [[ $UPDATED_VIRTUAL_ALIAS == 1 ]]; then
                 postmap %(virtual_alias)s
             fi
             if [[ $UPDATED_VIRTUAL_ALIAS_DOMAINS == 1 ]]; then
                 service postfix reload
-            fi""") % context
+            fi
+            exit $exit_code""") % context
         )
     
     def get_context_files(self):

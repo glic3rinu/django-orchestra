@@ -3,7 +3,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController, replace
+from orchestra.contrib.orchestration import ServiceController
 
 from .. import settings
 
@@ -26,7 +26,9 @@ class WebalizerBackend(ServiceController):
             if [[ ! -e %(webalizer_path)s/index.html ]]; then
                 echo 'Webstats are coming soon' > %(webalizer_path)s/index.html
             fi
-            echo '%(webalizer_conf)s' > %(webalizer_conf_path)s
+            cat << 'EOF' > %(webalizer_conf_path)s
+            %(webalizer_conf)s
+            EOF
             chown %(user)s:www-data %(webalizer_path)s
             chmod g+xr %(webalizer_path)s
             """) % context
@@ -98,4 +100,4 @@ class WebalizerBackend(ServiceController):
             SearchEngine   alltheweb.com   query=
             
             DumpSites      yes""") % context
-        return replace(context, "'", '"')
+        return context

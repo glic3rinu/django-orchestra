@@ -5,7 +5,7 @@ from collections import OrderedDict
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController, replace
+from orchestra.contrib.orchestration import ServiceController
 
 from . import WebAppServiceMixin
 from .. import settings
@@ -43,8 +43,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         self.set_under_construction(context)
     
     def save_fpm(self, webapp, context):
-        self.append(textwrap.dedent("""\
-            fpm_config='%(fpm_config)s'
+        self.append(textwrap.dedent("""
+            read -r -d '' fpm_config << 'EOF' || true
+            %(fpm_config)s
+            EOF
             {
                 echo -e "${fpm_config}" | diff -N -I'^\s*;;' %(fpm_path)s -
             } || {
@@ -57,7 +59,9 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     def save_fcgid(self, webapp, context):
         self.append("mkdir -p %(wrapper_dir)s" % context)
         self.append(textwrap.dedent("""\
-            wrapper='%(wrapper)s'
+            read -r -d '' wrapper << 'EOF' || true
+            %(wrapper)s
+            EOF
             {
                 echo -e "${wrapper}" | diff -N -I'^\s*#' %(wrapper_path)s -
             } || {
@@ -73,8 +77,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         self.append("chmod 550 %(wrapper_path)s" % context)
         self.append("chown -R %(user)s:%(group)s %(wrapper_dir)s" % context)
         if context['cmd_options']:
-            self.append(textwrap.dedent("""
-                cmd_options='%(cmd_options)s'
+            self.append(textwrap.dedent("""\
+                read -r -d '' cmd_options << 'EOF' || true
+                %(cmd_options)s
+                EOF
                 {
                     echo -e "${cmd_options}" | diff -N -I'^\s*#' %(cmd_options_path)s -
                 } || {
@@ -233,7 +239,6 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             'wrapper_path': wrapper_path,
             'wrapper_dir': os.path.dirname(wrapper_path),
         })
-        replace(context, "'", '"')
         context.update({
             'cmd_options': self.get_fcgid_cmd_options(webapp, context),
             'cmd_options_path': settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH % context,
@@ -255,7 +260,5 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             'max_requests': settings.WEBAPPS_PHP_MAX_REQUESTS,
         })
         self.update_fpm_context(webapp, context)
-        # Fcgid context do contain special charactes
-        replace(context, "'", '"')
         self.update_fcgid_context(webapp, context)
         return context

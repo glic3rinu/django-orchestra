@@ -8,6 +8,7 @@ from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import admin as auth
 from django.http import HttpResponseRedirect
+from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -160,11 +161,11 @@ class AccountAdminMixin(object):
     
     def display_active(self, instance):
         if not instance.is_active:
-            return '<img src="/static/admin/img/icon-no.gif" alt="False">'
+            return '<img src="%s" alt="False">' % static('admin/img/icon-no.gif')
         elif not instance.account.is_active:
             msg = _("Account disabled")
-            return '<img src="/static/admin/img/icon-unknown.gif" alt="False" title="%s">' % msg
-        return '<img src="/static/admin/img/icon-yes.gif" alt="True">'
+            return '<img src="%s" alt="False" title="%s">' % (static('admin/img/icon-unknown.gif'), msg)
+        return '<img src="%s" alt="False">' % static('admin/img/icon-yes.gif')
     display_active.short_description = _("active")
     display_active.allow_tags = True
     display_active.admin_order_field = 'is_active'

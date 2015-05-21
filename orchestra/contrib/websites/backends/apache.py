@@ -5,7 +5,7 @@ import textwrap
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController, replace
+from orchestra.contrib.orchestration import ServiceController
 from orchestra.contrib.resources import ServiceMonitor
 
 from .. import settings
@@ -99,9 +99,11 @@ class Apache2Backend(ServiceController):
                 apache_conf += self.render_virtual_host(site, context, ssl=True)
             if site.protocol == site.HTTPS_ONLY:
                 apache_conf += self.render_redirect_https(context)
-            context['apache_conf'] = apache_conf.replace("'", '"')
+            context['apache_conf'] = apache_conf
             self.append(textwrap.dedent("""\
-                apache_conf='%(apache_conf)s'
+                read -r -d '' apache_conf << 'EOF' || true
+                %(apache_conf)s
+                EOF
                 {
                     echo -e "${apache_conf}" | diff -N -I'^\s*#' %(sites_available)s -
                 } || {
@@ -376,7 +378,7 @@ class Apache2Backend(ServiceController):
         }
         if not context['ips']:
             raise ValueError("WEBSITES_DEFAULT_IPS is empty.")
-        return replace(context, "'", '"')
+        return context
     
     def set_content_context(self, content, context):
         content_context = {
@@ -385,7 +387,6 @@ class Apache2Backend(ServiceController):
             'app_name': content.webapp.name,
             'app_path': content.webapp.get_path(),
         }
-        content_context = replace(content_context, "'", '"')
         context.update(content_context)
 
 
@@ -458,4 +459,4 @@ class Apache2Traffic(ServiceMonitor):
             'last_date': self.get_last_date(site.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': site.pk,
         }
-        return replace(context, "'", '"')
+        return context

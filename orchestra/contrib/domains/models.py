@@ -107,7 +107,7 @@ class Domain(models.Model):
                 zone += subdomain.render_records()
         for subdomain in sorted(tail, key=lambda x: len(x.name), reverse=True):
             zone += subdomain.render_records()
-        return zone
+        return zone.strip()
     
     def refresh_serial(self):
         """ Increases the domain serial number by one """

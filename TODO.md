@@ -284,7 +284,6 @@ https://code.djangoproject.com/ticket/24576
 
 # TODO orchestra related services code reload: celery/uwsgi reloading find aonther way without root and implement reload
 
-# password validation cracklib on change password form=?????
 # reset setting button 
 
 # admin edit relevant djanog settings
@@ -301,8 +300,7 @@ https://code.djangoproject.com/ticket/24576
 # TASK_BEAT_BACKEND = ('cron', 'celerybeat', 'uwsgi')
 # Ship orchestra production-ready (no DEBUG etc)
 
-# import module and sed
-# if setting.value == default. remove
+# Settings.parser.changes: if setting.value == default. remove
 # reload generic admin view ?redirect=http...
 # inspecting django db connection for asserting db readines? or performing a query
 # wake up django mailer on send_mail
@@ -363,7 +361,6 @@ pip3 install https://github.com/fantix/gevent/archive/master.zip
 # SIgnal handler for notify workers to reload stuff, like resource sync: https://docs.python.org/2/library/signal.html
 
 # BUG Delete related services also deletes account!
-# auto apend trailing slash
 
 # get_related service__rates__isnull=TRue is that correct?
 
@@ -378,3 +375,7 @@ method(
 
 # dovecot sieve only allolws one fucking active script. refactor mailbox shit to replace active script symlink by orchestra. Create a generic wrapper that includes al filters (rc, imp and orchestra)
 http://wiki2.dovecot.org/Pigeonhole/Sieve/Examples
+
+
+
+# orders ignorign default filter is not very effective, because of selecting all orders for billing will select ignored too

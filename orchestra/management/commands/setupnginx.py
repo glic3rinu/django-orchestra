@@ -152,6 +152,7 @@ class Command(BaseCommand):
             'project_dir': paths.get_project_dir(),
             'site_dir': paths.get_site_dir(),
             'static_root': settings.STATIC_ROOT,
+            'static_url': (settings.STATIC_URL or '/static').rstrip('/')
             'user': user,
             'group': options.get('group') or user,
             'home': expanduser("~%s" % options.get('user')),
@@ -178,7 +179,7 @@ class Command(BaseCommand):
                     uwsgi_pass unix:///var/run/uwsgi/app/%(project_name)s/socket;
                     include uwsgi_params;
                 }
-                location /static {
+                location %(static_url)s {
                     alias %(static_root)s;
                     expires 30d;
                 }

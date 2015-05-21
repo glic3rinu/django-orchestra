@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.templatetags.static import static
 from markdown import markdown
 
 from orchestra.forms.widgets import SpanWidget
@@ -13,7 +14,7 @@ from .models import Queue, Ticket
 class MarkDownWidget(forms.Textarea):
     """ MarkDown textarea widget with syntax preview """
     
-    markdown_url = '/static/issues/markdown_syntax.html'
+    markdown_url = static('issues/markdown_syntax.html')
     markdown_help_text = (
         '<a href="%s" onclick=\'window.open("%s", "", "resizable=yes, '
         'location=no, width=300, height=640, menubar=no, status=no, scrollbars=yes"); '

@@ -284,7 +284,7 @@ class Exim4Traffic(ServiceMonitor):
             'object_id': user.pk,
             'last_date': self.get_last_date(user.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
-        return replace(context, "'", '"')
+        return context
 
 
 class VsFTPdTraffic(ServiceMonitor):

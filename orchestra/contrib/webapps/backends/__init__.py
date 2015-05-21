@@ -1,8 +1,6 @@
 import pkgutil
 import textwrap
 
-from orchestra.contrib.orchestration.backends import replace
-
 from .. import settings
 
 
@@ -57,7 +55,7 @@ class WebAppServiceMixin(object):
             'is_mounted': webapp.content_set.exists(),
         }
         context['deleted_app_path'] = settings.WEBAPPS_MOVE_ON_DELETE_PATH % context
-        return replace(context, "'", '"')
+        return context
 
 
 for __, module_name, __ in pkgutil.walk_packages(__path__):

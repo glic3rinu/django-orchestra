@@ -4,7 +4,7 @@ import textwrap
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController, replace
+from orchestra.contrib.orchestration import ServiceController
 from orchestra.contrib.orchestration import Operation
 from orchestra.utils.python import OrderedSet
 
@@ -44,9 +44,11 @@ class Bind9MasterDomainBackend(ServiceController):
     
     def update_zone(self, domain, context):
         context['zone'] = ';; %(banner)s\n' % context
-        context['zone'] += domain.render_zone().replace("'", '"')
-        self.append(textwrap.dedent("""\
-            echo -e '%(zone)s' > %(zone_path)s.tmp
+        context['zone'] += domain.render_zone()
+        self.append(textwrap.dedent("""
+            cat << 'EOF' > %(zone_path)s.tmp
+            %(zone)s
+            EOF
             diff -N -I'^\s*;;' %(zone_path)s %(zone_path)s.tmp || UPDATED=1
             # Because bind reload will not display any fucking error
             named-checkzone -k fail -n fail %(name)s %(zone_path)s.tmp
@@ -55,8 +57,10 @@ class Bind9MasterDomainBackend(ServiceController):
         )
     
     def update_conf(self, context):
-        self.append(textwrap.dedent("""\
-            conf='%(conf)s'
+        self.append(textwrap.dedent("""
+            read -r -d '' conf << 'EOF' || true
+            %(conf)s
+            EOF
             sed '/zone "%(name)s".*/,/^\s*};\s*$/!d' %(conf_path)s | diff -B -I"^\s*//" - <(echo "${conf}") || {
                 sed -i -e '/zone\s\s*"%(name)s".*/,/^\s*};/d' \\
                        -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s
@@ -82,7 +86,7 @@ class Bind9MasterDomainBackend(ServiceController):
         if context['name'][0] in ('*', '_'):
             # These can never be top level domains
             return
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             sed -e '/zone\s\s*"%(name)s".*/,/^\s*};\s*$/d' \\
                 -e 'N; /^\s*\\n\s*$/d; P; D' %(conf_path)s > %(conf_path)s.tmp""") % context
         )
@@ -141,7 +145,7 @@ class Bind9MasterDomainBackend(ServiceController):
             'also_notify': '; '.join(slaves) + ';' if slaves else '',
             'conf_path': self.CONF_PATH,
         }
-        context['conf'] = textwrap.dedent("""
+        context['conf'] = textwrap.dedent("""\
             zone "%(name)s" {
                 // %(banner)s
                 type master;
@@ -150,7 +154,7 @@ class Bind9MasterDomainBackend(ServiceController):
                 also-notify { %(also_notify)s };
                 notify yes;
             };""") % context
-        return replace(context, "'", '"')
+        return context
 
 
 class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
@@ -200,4 +204,4 @@ class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
                 masters { %(masters)s; };
                 allow-notify { %(masters)s; };
             };""") % context
-        return replace(context, "'", '"')
+        return context

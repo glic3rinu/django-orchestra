@@ -6,7 +6,7 @@ import textwrap
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController, replace
+from orchestra.contrib.orchestration import ServiceController
 from orchestra.contrib.resources import ServiceMonitor
 
 from . import settings
@@ -22,7 +22,7 @@ class SieveFilteringMixin(object):
         for box in re.findall(r'fileinto\s+"([^"]+)"', content):
             # create mailboxes if fileinfo is provided witout ':create' option
             context['box'] = box
-            self.append(textwrap.dedent("""\
+            self.append(textwrap.dedent("""
                 mkdir -p %(maildir)s/.%(box)s
                 chown %(user)s:%(group)s %(maildir)s/.%(box)s
                 if [[ ! $(grep '%(box)s' %(maildir)s/subscriptions) ]]; then
@@ -34,9 +34,11 @@ class SieveFilteringMixin(object):
         context['filtering_cpath'] = re.sub(r'\.sieve$', '.svbin', context['filtering_path'])
         if content:
             context['filtering'] = ('# %(banner)s\n' + content) % context
-            self.append(textwrap.dedent("""\
+            self.append(textwrap.dedent("""
                 mkdir -p $(dirname '%(filtering_path)s')
-                echo '%(filtering)s' > %(filtering_path)s
+                cat << 'EOF' > %(filtering_path)s
+                %(filtering)s
+                EOF
                 sievec %(filtering_path)s
                 chown %(user)s:%(group)s {%(filtering_path)s,%(filtering_cpath)s}
                 """) % context
@@ -66,7 +68,9 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
                 # Fucking postfix SASL caches credentials
                 old_password=$(grep "^%(user)s:" /etc/shadow|cut -d':' -f2)
                 usermod  %(user)s --password '%(password)s' --shell %(initial_shell)s
-                [[ "$old_password" != "%(password)s" ]] && RESTART_POSTFIX=1
+                if [[ "$old_password" != "%(password)s" ]]; then
+                    RESTART_POSTFIX=1
+                fi
             else
                 useradd %(user)s --home %(home)s --password '%(password)s'
             fi
@@ -118,7 +122,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
             'initial_shell': self.SHELL,
             'banner': self.get_banner(),
         }
-        return replace(context, "'", '"')
+        return context
 
 
 class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceController):
@@ -158,7 +162,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
     
     def delete(self, mailbox):
         context = self.get_context(mailbox)
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             nohup bash -c 'sleep 2 && killall -u %(uid)s -s KILL' &> /dev/null &
             killall -u %(uid)s || true
             sed -i '/^%(user)s:.*/d' %(passwd_path)s
@@ -186,7 +190,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
         context = {
             'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH
         }
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             [[ $UPDATED_VIRTUAL_MAILBOX_MAPS == 1 ]] && {
                 postmap %(virtual_mailbox_maps)s
             }""") % context
@@ -212,7 +216,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
             'passwd': '{user}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context),
             'deleted_home': settings.MAILBOXES_MOVE_ON_DELETE_PATH % context,
         })
-        return replace(context, "'", '"')
+        return context
 
 
 class PostfixAddressVirtualDomainBackend(ServiceController):
@@ -248,7 +252,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
     def exclude_virtual_alias_domain(self, context):
         domain = context['domain']
         if self.is_last_domain(domain):
-            self.append(textwrap.dedent("""\
+            self.append(textwrap.dedent("""
                 if [[ $(grep '^%(domain)s\s*$' %(virtual_alias_domains)s) ]]; then
                     sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
@@ -288,7 +292,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
             'email': address.email,
             'local_domain': settings.MAILBOXES_LOCAL_DOMAIN,
         })
-        return replace(context, "'", '"')
+        return context
 
 
 class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
@@ -401,7 +405,7 @@ class DovecotMaildirDisk(ServiceMonitor):
             'object_id': mailbox.pk
         }
         context['maildir_path'] = settings.MAILBOXES_MAILDIRSIZE_PATH % context
-        return replace(context, "'", '"')
+        return context
 
 
 class PostfixMailscannerTraffic(ServiceMonitor):
@@ -552,4 +556,4 @@ class PostfixMailscannerTraffic(ServiceMonitor):
             'object_id': mailbox.pk,
             'last_date': self.get_last_date(mailbox.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
-        return replace(context, "'", '"')
+        return context

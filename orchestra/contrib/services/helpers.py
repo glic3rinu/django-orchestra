@@ -54,7 +54,7 @@ class Interval(object):
         return remaining
     
     def __repr__(self):
-        return "Start: {ini}    End: {end}".format(
+        return "<ini:{ini}/end:{end}>".format(
             ini=self.ini.strftime('%Y-%-m-%-d'),
             end=self.end.strftime('%Y-%-m-%-d')
         )
@@ -87,8 +87,7 @@ def get_intersections(order_intervals, compensations):
         for intersection_interval in intersection:
             length += len(intersection_interval)
         intersections.append((length, compensation))
-    intersections.sort()
-    return intersections
+    return sorted(intersections, key=lambda i: i[0])
 
 
 def intersect(compensation, order_intervals):

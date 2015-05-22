@@ -205,8 +205,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         # Format PHP init vars
         init_vars = opt.get_php_init_vars(merge=self.MERGE)
         if init_vars:
-            init_vars = [ "-d %s='%s'" % (k, v.replace("'", '"')) for k,v in init_vars.items() ]
-        init_vars = ' \\\n    '.join(init_vars)
+            init_vars = [ " \\\n    -d %s='%s'" % (k, v.replace("'", '"')) for k,v in init_vars.items() ]
+        init_vars = ''.join(init_vars)
         context.update({
             'php_binary_path': os.path.normpath(settings.WEBAPPS_PHP_CGI_BINARY_PATH % context),
             'php_rc': os.path.normpath(settings.WEBAPPS_PHP_CGI_RC_DIR % context),
@@ -220,7 +220,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             export PHPRC=%(php_rc)s
             export PHP_INI_SCAN_DIR=%(php_ini_scan)s
             export PHP_FCGI_MAX_REQUESTS=%(max_requests)s
-            exec %(php_binary_path)s %(php_init_vars)s""") % context
+            exec %(php_binary_path)s%(php_init_vars)s""") % context
     
     def get_fcgid_cmd_options(self, webapp, context):
         options = self.get_options(webapp)

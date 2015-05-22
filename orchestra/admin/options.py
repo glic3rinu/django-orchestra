@@ -34,7 +34,6 @@ class ChangeListDefaultFilter(object):
     default_changelist_filters = ()
     
     def changelist_view(self, request, extra_context=None):
-        """ Default filter as 'my_nodes=True' """
         defaults = []
         for key, value in self.default_changelist_filters:
             set_url_query(request, key, value)
@@ -45,6 +44,22 @@ class ChangeListDefaultFilter(object):
         if hasattr(response, 'context_data') and 'cl' in response.context_data:
             response.context_data['cl'].default_changelist_filters = defaults
         return response
+        
+        
+        defaults = []
+        querystring = request.META['QUERY_STRING']
+        redirect = False
+        for field, value in self.default_changelist_filters:
+            if field not in queryseting:
+                redirect = True
+                querystring[field] = value
+        if redirect:
+            raise
+            if not request.META.get('HTTP_REFERER', '').startswith(request.build_absolute_uri()):
+                querystring = '&'.join('%s=%s' % filed, value in querystring.items())
+                from django.http import HttpResponseRedirect
+                return HttpResponseRedirect(request.path + '?%s' % querystring)
+        return super(ChangeListDefaultFilter, self).changelist_view(request, extra_context=extra_context)
 
 
 class AtLeastOneRequiredInlineFormSet(BaseInlineFormSet):
@@ -162,7 +177,7 @@ class ChangeAddFieldsMixin(object):
         return super(ChangeAddFieldsMixin, self).get_form(request, obj, **defaults)
 
 
-class ExtendedModelAdmin(ChangeViewActionsMixin, ChangeAddFieldsMixin, admin.ModelAdmin):
+class ExtendedModelAdmin(ChangeViewActionsMixin, ChangeAddFieldsMixin, ChangeListDefaultFilter, admin.ModelAdmin):
     list_prefetch_related = None
     
     def get_queryset(self, request):

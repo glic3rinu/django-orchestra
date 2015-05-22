@@ -91,7 +91,9 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         self.generate_filter(mailbox, context)
     
     def set_quota(self, mailbox, context):
-        context['quota'] = mailbox.resources.disk.allocated * mailbox.resources.disk.resource.get_scale()
+        allocated = mailbox.resources.disk.allocated
+        scale = mailbox.resources.disk.resource.get_scale()
+        context['quota'] = allocated * scale
         #unit_to_bytes(mailbox.resources.disk.unit)
         self.append(textwrap.dedent("""
             # Set Maildir quota for %(user)s
@@ -121,9 +123,10 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         super(UNIXUserMaildirBackend, self).commit()
     
     def get_context(self, mailbox):
+        account_as_group = settings.MAILBOXES_USE_ACCOUNT_AS_GROUP
         context = {
             'user': mailbox.name,
-            'group': mailbox.account.username if settings.MAILBOXES_USE_ACCOUNT_AS_GROUP else mailbox.name,
+            'group': mailbox.account.username if account_as_group else mailbox.name,
             'name': mailbox.name,
             'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
             'home': mailbox.get_home(),
@@ -311,9 +314,11 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
     Addresses based on Postfix virtual alias domains, includes <tt>PostfixAddressVirtualDomainBackend</tt>.
     """
     verbose_name = _("Postfix address")
-    doc_settings = (settings,
-        ('MAILBOXES_LOCAL_DOMAIN', 'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH', 'MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH')
-    )
+    doc_settings = (settings, (
+        'MAILBOXES_LOCAL_DOMAIN',
+        'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH',
+        'MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH'
+    ))
     
     def update_virtual_alias_maps(self, address, context):
         destination = address.destination

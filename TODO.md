@@ -384,3 +384,6 @@ http://wiki2.dovecot.org/Pigeonhole/Sieve/Examples
 # mail system users group? which one is more convinient? if main group does not exists, backend will fail!
 
 Bash/Python/PHPBackend
+
+
+# Gandi sync domains cancelled

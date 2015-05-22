@@ -9,7 +9,7 @@ from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 from markdown import markdown
 
-from orchestra.admin import ChangeListDefaultFilter, ExtendedModelAdmin#, ChangeViewActions
+from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, admin_colored, wrap_admin_view, admin_date
 from orchestra.contrib.contacts.models import Contact
 
@@ -118,7 +118,7 @@ class TicketInline(admin.TabularInline):
     ticket_id.allow_tags = True
 
 
-class TicketAdmin(ChangeListDefaultFilter, ExtendedModelAdmin):
+class TicketAdmin(ExtendedModelAdmin):
     list_display = (
         'unbold_id', 'bold_subject', 'display_creator', 'display_owner',
         'display_queue', 'display_priority', 'display_state', 'updated'

@@ -95,7 +95,7 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             }
             exc('chown -R %(user)s:%(group)s %(app_path)s');
             
-            // Execute wordpress installation process
+            // Run wordpress installation process
             
             define('WP_CONTENT_DIR', 'wp-content/');
             define('WP_LANG_DIR', WP_CONTENT_DIR . '/languages' );

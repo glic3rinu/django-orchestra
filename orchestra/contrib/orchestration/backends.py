@@ -217,8 +217,8 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
     def commit(self):
         """
         hook for executing something at the end
-        apply the configuration, usually reloading a service 
-        reloading a service is done in a separated method in order to reload 
+        apply the configuration, usually reloading a service
+        reloading a service is done in a separated method in order to reload
         the service once in bulk operations
         """
         self.append('exit $exit_code')

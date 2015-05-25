@@ -24,7 +24,7 @@ def _compute_steps(rates, metric):
             quantity = metric - accumulated
             next_barrier = quantity
         else:
-            quantity = rates[ix+1].quantity - rates[ix].quantity
+            quantity = rates[ix+1].quantity - max(rates[ix].quantity, 1)
             next_barrier = quantity
             if rates[ix+1].price > rates[ix].price:
                 quantity *= fold
@@ -52,13 +52,13 @@ def _standardize(rates):
     std_rates = []
     minimal = rates[0].quantity
     for rate in rates:
-        if rate.quantity == 0:
-            rate.quantity = 1
-        elif rate.quantity == minimal and rate.quantity > 1:
+        #if rate.quantity == 0:
+        #    rate.quantity = 1
+        if rate.quantity == minimal and rate.quantity > 0:
             service = rate.service
             rate_class = type(rate)
             std_rates.append(
-                rate_class(service=service, plan=rate.plan, quantity=1, price=service.nominal_price)
+                rate_class(service=service, plan=rate.plan, quantity=0, price=service.nominal_price)
             )
         std_rates.append(rate)
     return std_rates

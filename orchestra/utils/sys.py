@@ -212,6 +212,6 @@ class LockFile(object):
             self.release()
 
 
-def touch_wsgi(delay=5):
+def touch_wsgi(delay=0):
     from . import paths
     run('{ sleep %i && touch %s/wsgi.py; } &' % (delay, paths.get_project_dir()), async=True)

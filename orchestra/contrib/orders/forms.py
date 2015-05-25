@@ -44,6 +44,7 @@ class BillSelectRelatedForm(AdminFormMixin, forms.Form):
 #            initial=False, required=False, help_text=_("The price may vary "
 #                "depending on the billed orders. This options designates whether "
 #                "all existing orders will be used for price computation or not."))
+    select_all = forms.BooleanField(label=_("Select all"), required=False)
     selected_related = forms.ModelMultipleChoiceField(label=_("Related orders"),
         queryset=Order.objects.none(), widget=forms.CheckboxSelectMultiple,
         required=False)

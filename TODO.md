@@ -60,7 +60,7 @@
 
 * print open invoices as proforma?
 
-* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python3 manage.py test orchestra.contrib.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture
+* env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python3 manage.py test orchestra.contrib.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture --keepdb
 
 * ForeignKey.swappable
 * Field.editable
@@ -386,4 +386,26 @@ http://wiki2.dovecot.org/Pigeonhole/Sieve/Examples
 Bash/Python/PHPBackend
 
 
-# Gandi sync domains cancelled
+# bill action view on a separate process. check memory consumption without debug (236m)
+
+# services.handler as generator in order to save memory? not swell like a balloon
+# mailboxes group username instead of mainuser
+
+import uwsgi
+from uwsgidecorators import timer
+from django.utils import autoreload
+
+@timer(3)
+def change_code_gracefull_reload(sig):
+    if autoreload.code_changed():
+        uwsgi.reload()
+# using kill to send the signal
+kill -HUP `cat /tmp/project-master.pid`
+# or the convenience option --reload
+uwsgi --reload /tmp/project-master.pid
+# or if uwsgi was started with touch-reload=/tmp/somefile
+touch /tmp/somefile
+
+
+
+# Pending vs bill(): get_billing_point() returns the next billing point, no matter if nbp > now(). pending filter filters by billed_until < now()

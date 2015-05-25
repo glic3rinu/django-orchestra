@@ -60,9 +60,6 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
     
     verbose_name = _("UNIX maildir user")
     model = 'mailboxes.Mailbox'
-    doc_settings = (settings,
-        ('MAILBOXES_USE_ACCOUNT_AS_GROUP',)
-    )
     
     def save(self, mailbox):
         context = self.get_context(mailbox)
@@ -123,10 +120,9 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         super(UNIXUserMaildirBackend, self).commit()
     
     def get_context(self, mailbox):
-        account_as_group = settings.MAILBOXES_USE_ACCOUNT_AS_GROUP
         context = {
             'user': mailbox.name,
-            'group': mailbox.account.username if account_as_group else mailbox.name,
+            'group': mailbox.name,
             'name': mailbox.name,
             'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
             'home': mailbox.get_home(),

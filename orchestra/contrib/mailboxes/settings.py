@@ -48,12 +48,6 @@ MAILBOXES_SIEVETEST_BIN_PATH = Setting('MAILBOXES_SIEVETEST_BIN_PATH',
 )
 
 
-MAILBOXES_USE_ACCOUNT_AS_GROUP = Setting('MAILBOXES_USE_ACCOUNT_AS_GROUP',
-    False,
-    help_text="Group used for system user based mailboxes. If <tt>False</tt> mailbox.name will be used as group."
-)
-
-
 MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH = Setting('MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH',
     '/etc/postfix/virtual_mailboxes'
 )
@@ -81,34 +75,99 @@ MAILBOXES_PASSWD_PATH = Setting('MAILBOXES_PASSWD_PATH',
 )
 
 
+MAILBOXES_SPAM_SCORE_HEADER = Setting('MAILBOXES_SPAM_SCORE_HEADER',
+    'X-Spam-Score'
+)
+
+
+MAILBOXES_SPAM_SCORE_SYMBOL = Setting('MAILBOXES_SPAM_SCORE_SYMBOL',
+    '',
+    help_text="Blank for numeric spam score.",
+)
+
+
 MAILBOXES_MAILBOX_FILTERINGS = Setting('MAILBOXES_MAILBOX_FILTERINGS',
     {
         # value: (verbose_name, filter)
         'DISABLE': (_("Disable"), ''),
-        'REJECT': (mark_safe_lazy(_("Reject spam (Score&ge;9)")), textwrap.dedent("""\
-            require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
-                discard;
-                stop;
-            }""")),
-        'REJECT5': (mark_safe_lazy(_("Reject spam (Score&ge;5)")), textwrap.dedent("""\
-            require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "5" {
-                discard;
-                stop;
-            }""")),
-        'REDIRECT': (mark_safe_lazy(_("Archive spam (Score&ge;9)")), textwrap.dedent("""\
-            require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "9" {
-                fileinto "Spam";
-                stop;
-            }""")),
-        'REDIRECT5': (mark_safe_lazy(_("Archive spam (Score&ge;5)")), textwrap.dedent("""\
-            require ["fileinto","regex","envelope","vacation","reject","relational","comparator-i;ascii-numeric"];
-            if header :value "ge" :comparator "i;ascii-numeric" "X-Spam-Score" "5" {
-                fileinto "Spam";
-                stop;
-            }""")),
+        'REJECT': (mark_safe_lazy(_("Reject spam (Score&ge;8)")), (
+            textwrap.dedent("""\
+                if header :contains "%(score_header)s" "%(score_value)s" {
+                    discard;
+                    stop;
+                }""") if MAILBOXES_SPAM_SCORE_SYMBOL else
+            textwrap.dedent("""\
+                require ["relational","comparator-i;ascii-numeric"];
+                if allof (
+                   not header :matches "%(score_header)s" "-*",
+                   header :value "ge" :comparator "i;ascii-numeric" "%(score_header)s" "8" )
+                {
+                    discard;
+                    stop;
+                }""")) % {
+                    'score_header': MAILBOXES_SPAM_SCORE_HEADER,
+                    'score_value': MAILBOXES_SPAM_SCORE_SYMBOL*8
+                }
+            ),
+        'REJECT5': (mark_safe_lazy(_("Reject spam (Score&ge;5)")), (
+            textwrap.dedent("""\
+                if header :contains "%(score_header)s" "%(score_value)s" {
+                    discard;
+                    stop;
+                }""") if MAILBOXES_SPAM_SCORE_SYMBOL else
+            textwrap.dedent("""\
+                require ["relational","comparator-i;ascii-numeric"];
+                if allof (
+                   not header :matches "%(score_header)s" "-*",
+                   header :value "ge" :comparator "i;ascii-numeric" "%(score_header)s" "5" )
+                {
+                    discard;
+                    stop;
+                }""")) % {
+                    'score_header': MAILBOXES_SPAM_SCORE_HEADER,
+                    'score_value': MAILBOXES_SPAM_SCORE_SYMBOL*5
+                }
+            ),
+        'REDIRECT': (mark_safe_lazy(_("Archive spam (Score&ge;8)")), (
+            textwrap.dedent("""\
+                require "fileinto";
+                if header :contains "%(score_header)s" "%(score_value)s" {
+                    fileinto "Spam";
+                    stop;
+                }""") if MAILBOXES_SPAM_SCORE_SYMBOL else
+            textwrap.dedent("""\
+                require ["fileinto","relational","comparator-i;ascii-numeric"];
+                if allof (
+                   not header :matches "%(score_header)s" "-*",
+                   header :value "ge" :comparator "i;ascii-numeric" "%(score_header)s" "8" )
+                {
+                    fileinto "Spam";
+                    stop;
+                }""")) % {
+                    'score_header': MAILBOXES_SPAM_SCORE_HEADER,
+                    'score_value': MAILBOXES_SPAM_SCORE_SYMBOL*8
+                }
+            ),
+        'REDIRECT5': (mark_safe_lazy(_("Archive spam (Score&ge;5)")), (
+            textwrap.dedent("""\
+                require "fileinto";
+                if header :contains "%(score_header)s" "%(score_value)s" {
+                    fileinto "Spam";
+                    stop;
+                }""") if MAILBOXES_SPAM_SCORE_SYMBOL else
+            textwrap.dedent("""\
+                require ["fileinto","relational","comparator-i;ascii-numeric"];
+                if allof (
+                   not header :matches "%(score_header)s" "-*",
+                   header :value "ge" :comparator "i;ascii-numeric" "%(score_header)s" "5" )
+                {
+                    fileinto "Spam";
+                    stop;
+                }""")) % {
+                    'score_header': MAILBOXES_SPAM_SCORE_HEADER,
+                    'score_value': MAILBOXES_SPAM_SCORE_SYMBOL*5
+                }
+            ),
         'CUSTOM': (_("Custom filtering"), lambda mailbox: mailbox.custom_filtering),
     }
 )

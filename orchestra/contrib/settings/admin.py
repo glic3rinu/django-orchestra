@@ -67,11 +67,10 @@ class SettingView(generic.edit.FormView):
                 context = self.get_context_data(form=form)
                 context['diff'] = diff
                 return self.render_to_response(context)
-            
+            n = len(changes)
             # Save changes
             parser.save(changes)
             sys.touch_wsgi()
-            n = len(changes)
             context = {
                 'message': ngettext(
                     _("One change successfully applied, orchestra is being restarted."),

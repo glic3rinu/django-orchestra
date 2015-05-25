@@ -1,4 +1,5 @@
 import ast
+import copy
 import os
 import re
 
@@ -98,6 +99,7 @@ def apply(changes, settings_file=get_settings_file()):
     """ returns settings_file content with applied changes """
     updates = _find_updates(changes, settings_file)
     content = []
+    _changes = copy.copy(changes)
     inside = False
     lineno = None
     if updates:
@@ -107,7 +109,7 @@ def apply(changes, settings_file=get_settings_file()):
         for num, line in enumerate(handler.readlines(), 1):
             line = line.rstrip()
             if num == lineno:
-                value = changes.pop(name)
+                value = _changes.pop(name)
                 line = _format_setting(name, value)
                 if line:
                     content.append(line)
@@ -134,7 +136,7 @@ def apply(changes, settings_file=get_settings_file()):
                     inside = False
     
     # insert new variables at the end of file
-    for name, value in changes.items():
+    for name, value in _changes.items():
         content.append(_format_setting(name, value))
     return '\n'.join(content)
 

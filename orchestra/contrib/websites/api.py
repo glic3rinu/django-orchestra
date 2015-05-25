@@ -11,7 +11,7 @@ from .serializers import WebsiteSerializer
 class WebsiteViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
     queryset = Website.objects.prefetch_related('domains', 'content_set__webapp', 'directives').all()
     serializer_class = WebsiteSerializer
-    filter_fields = ('name',)
+    filter_fields = ('name', 'domains__name')
     
     def options(self, request):
         metadata = super(WebsiteViewSet, self).options(request)

@@ -25,7 +25,7 @@ class DomainBillingTest(BaseTestCase):
             nominal_price=10
         )
         plan = Plan.objects.create(is_default=True, name='Default')
-        service.rates.create(plan=plan, quantity=1, price=0)
+        service.rates.create(plan=plan, quantity=0, price=0)
         service.rates.create(plan=plan, quantity=2, price=10)
         service.rates.create(plan=plan, quantity=4, price=9)
         service.rates.create(plan=plan, quantity=6, price=6)

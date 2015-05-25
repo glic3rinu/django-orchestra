@@ -136,8 +136,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             return eval(self.order_description, safe_locals)
     
     def get_billing_point(self, order, bp=None, **options):
-        not_cachable = self.billing_point == self.FIXED_DATE and options.get('fixed_point')
-        if not_cachable or bp is None:
+        cachable = bool(self.billing_point == self.FIXED_DATE and not options.get('fixed_point'))
+        if not cachable or bp is None:
             bp = options.get('billing_point') or timezone.now().date()
             if not options.get('fixed_point'):
                 msg = ("Support for '%s' period and '%s' point is not implemented"

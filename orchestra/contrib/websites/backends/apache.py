@@ -67,7 +67,8 @@ class Apache2Backend(ServiceController):
                 SuexecUserGroup {{ user }} {{ group }}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
-            </VirtualHost>""")
+            </VirtualHost>
+            """)
         ).render(Context(context))
     
     def render_redirect_https(self, context):
@@ -84,7 +85,8 @@ class Apache2Backend(ServiceController):
                 RewriteEngine On
                 RewriteCond %{HTTPS} off
                 RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
-            </VirtualHost>""")
+            </VirtualHost>
+            """)
         ).render(Context(context))
     
     def save(self, site):
@@ -111,7 +113,7 @@ class Apache2Backend(ServiceController):
                 }""") % context
             )
         if context['server_name'] and site.active:
-            self.append(textwrap.dedent("""\
+            self.append(textwrap.dedent("""
                 # Enable site %(site_name)s
                 if [[ ! -f %(sites_enabled)s ]]; then
                     a2ensite %(site_unique_name)s.conf
@@ -119,7 +121,7 @@ class Apache2Backend(ServiceController):
                 fi""") % context
             )
         else:
-            self.append(textwrap.dedent("""\
+            self.append(textwrap.dedent("""
                 # Disable site %(site_name)s
                 if [[ -f %(sites_enabled)s ]]; then
                     a2dissite %(site_unique_name)s.conf;
@@ -160,7 +162,11 @@ class Apache2Backend(ServiceController):
             }
             if [[ $is_last -eq 1 ]]; then
                 if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
-                    service apache2 status && service apache2 reload || service apache2 start
+                    if [[ $(service apache2 status) ]]; then
+                        service apache2 reload
+                    else
+                        service apache2 start
+                    fi
                 fi
                 rm /dev/shm/restart.apache2.locked
             else

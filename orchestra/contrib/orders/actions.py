@@ -29,7 +29,10 @@ class BillSelectedOrders(object):
             'queryset': queryset,
             'action_checkbox_name': admin.helpers.ACTION_CHECKBOX_NAME,
         }
-        return self.set_options(request)
+        ret = self.set_options(request)
+        del(self.queryset)
+        del(self.context)
+        return ret
     
     def set_options(self, request):
         form = BillSelectedOptionsForm()
@@ -42,7 +45,6 @@ class BillSelectedOrders(object):
                     proforma=form.cleaned_data['proforma'],
                     new_open=form.cleaned_data['new_open'],
                 )
-                print(self.options)
                 if int(request.POST.get('step')) != 3:
                     return self.select_related(request)
                 else:
@@ -142,4 +144,3 @@ def mark_as_not_ignored(modeladmin, request, queryset):
         _("%i selected orders have been marked as not ignored.") % num,
         num)
     modeladmin.message_user(request, msg)
-

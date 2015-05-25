@@ -19,6 +19,7 @@ class FTPTrafficMonitor(ServiceMonitor):
 
 class BaseTrafficBillingTest(BaseTestCase):
     TRAFFIC_METRIC = 'account.resources.traffic.used'
+    DEPENDENCIES = ('orchestra.contrib.resources',)
     
     def create_traffic_service(self):
         service = Service.objects.create(

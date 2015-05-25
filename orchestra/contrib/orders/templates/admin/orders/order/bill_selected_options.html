@@ -12,6 +12,20 @@
 </style>
 {% endblock %}
 
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static "admin/js/jquery.min.js" %}" type="text/javascript"></script>
+<script src="{% static "admin/js/jquery.init.js" %}" type="text/javascript"></script>
+<script>
+var $ = django.jQuery;
+
+$(document).ready( function () {
+  $('#id_select_all').click( function() {
+    $(":checkbox").attr('checked', $(this).is(':checked'));
+  });
+});
+</script>
+{% endblock %}
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">

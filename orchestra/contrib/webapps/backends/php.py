@@ -142,7 +142,11 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             }
             if [[ $is_last -eq 1 ]]; then
                 if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
-                    service apache2 status && service apache2 reload || service apache2 start
+                    if [[ $(service apache2 status) ]]; then
+                        service apache2 reload
+                    else
+                        service apache2 start
+                    fi
                 fi
                 rm /dev/shm/restart.apache2.locked
             else

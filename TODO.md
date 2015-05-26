@@ -408,4 +408,8 @@ touch /tmp/somefile
 
 
 
-# Pending vs bill(): get_billing_point() returns the next billing point, no matter if nbp > now(). pending filter filters by billed_until < now()
+# Change zone ttl
+# batch zone edditing
+# inherit registers from parent?
+
+# Bill metric disk 5 GB: unialber

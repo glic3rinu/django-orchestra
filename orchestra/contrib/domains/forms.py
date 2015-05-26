@@ -15,10 +15,15 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
     def clean_name(self):
         self.extra_names = []
         target = None
+        existing = set(Domain.objects.values_list('name', flat=True))
+        errors = []
         for name in self.cleaned_data['name'].strip().splitlines():
             name = name.strip()
             if not name:
                 continue
+            if name in existing:
+                 errors.append(ValidationError(_("%s domain name already exists.") % name))
+            existing.add(name)
             if target is None:
                 target = name
             else:
@@ -28,6 +33,8 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
                 except ValidationError as e:
                     raise ValidationError(e.error_dict['name'])
                 self.extra_names.append(name)
+        if errors:
+            raise ValidationError(errors)
         return target
     
     def clean(self):

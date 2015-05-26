@@ -117,7 +117,7 @@ class Bill(models.Model):
     def payment_state(self):
         if self.is_open or self.get_type() == self.PROFORMA:
             return self.OPEN
-        secured = self.transactions.secured().amount()
+        secured = self.transactions.secured().amount() or 0
         if secured >= self.total:
             return self.PAID
         elif self.transactions.exclude_rejected().exists():
@@ -140,6 +140,7 @@ class Bill(models.Model):
         bill_type = self.get_type()
         if bill_type == self.BILL:
             raise TypeError('This method can not be used on BILL instances')
+        bill_type = bill_type.replace('AMENDMENT', 'AMENDMENT_')
         prefix = getattr(settings, 'BILLS_%s_NUMBER_PREFIX' % bill_type)
         if self.is_open:
             prefix = 'O{}'.format(prefix)

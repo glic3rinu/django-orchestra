@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db.models import Count
@@ -23,8 +24,8 @@ COLORS = {
 
 class MessageAdmin(admin.ModelAdmin):
     list_display = (
-        'display_subject', 'colored_state', 'priority', 'to_address', 'from_address', 'created_at_delta',
-        'retries', 'last_retry_delta', 'num_logs',
+        'display_subject', 'colored_state', 'priority', 'to_address', 'from_address',
+        'created_at_delta', 'retries', 'last_retry_delta', 'num_logs',
     )
     list_filter = ('state', 'priority', 'retries')
     list_prefetch_related = ('logs__id')
@@ -56,7 +57,9 @@ class MessageAdmin(admin.ModelAdmin):
         urls = super(MessageAdmin, self).get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         urls.insert(0,
-            url(r'^send-pending/$', wrap_admin_view(self, self.send_pending_view), name='%s_%s_send_pending' % info)
+            url(r'^send-pending/$',
+                wrap_admin_view(self, self.send_pending_view),
+                name='%s_%s_send_pending' % info)
         )
         return urls
     
@@ -68,7 +71,11 @@ class MessageAdmin(admin.ModelAdmin):
         task(send_pending).apply_async()
         self.message_user(request, _("Pending messages are being sent on the background."))
         return redirect('..')
-
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.name == 'subject':
+            kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
+        return super(MessageAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 class SMTPLogAdmin(admin.ModelAdmin):
     list_display = (

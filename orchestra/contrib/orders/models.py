@@ -3,7 +3,7 @@ import decimal
 import logging
 
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F, Q, Sum
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -58,11 +58,11 @@ class OrderQuerySet(models.QuerySet):
     
     def get_related(self, **options):
         """ returns related orders that could have a pricing effect """
-        # TODO for performance reasons get missing from queryset:
-        # TODO optimize this shit, don't get related if all objects are here
         Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
         conflictive = self.filter(service__metric='')
-        conflictive = conflictive.exclude(service__billing_period=Service.NEVER).exclude(service__rates__isnull=True)
+        conflictive = conflictive.exclude(service__billing_period=Service.NEVER)
+        # Exclude rates null or all rates with quantity 0
+        conflictive = conflictive.annotate(quantity_sum=Sum('service__rates__quantity')).exclude(quantity_sum=0)
         conflictive = conflictive.select_related('service').distinct().group_by('account_id', 'service')
         qs = Q()
         for account_id, services in conflictive.items():

@@ -23,7 +23,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     
     Relax and enjoy the journey.
     """
-    _VOLUME = 'volume'
+    _PLAN = 'plan'
     _COMPENSATION = 'compensation'
     
     model = None
@@ -276,7 +276,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             discounted += dprice
         subtotal += discounted
         if subtotal > price:
-            self.generate_discount(line, self._VOLUME, price-subtotal)
+            self.generate_discount(line, self._PLAN, price-subtotal)
         return line
     
     def assign_compensations(self, givers, receivers, **options):

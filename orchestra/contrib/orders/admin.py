@@ -51,7 +51,7 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'id', 'service_link', 'account_link', 'content_object_link',
         'display_registered_on', 'display_billed_until', 'display_cancelled_on', 'display_metric'
     )
-    list_filter = (ActiveOrderListFilter, IgnoreOrderListFilter, 'service', BilledOrderListFilter)
+    list_filter = (ActiveOrderListFilter, IgnoreOrderListFilter, BilledOrderListFilter, 'service')
     default_changelist_filters = (
         ('ignore', '0'),
     )

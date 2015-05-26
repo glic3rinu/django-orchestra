@@ -80,7 +80,10 @@ class OperationsMiddleware(object):
         type(self).thread_locals.transaction.__enter__()
     
     def leave_transaction_management(self, exception=None):
-        type(self).thread_locals.transaction.__exit__(exception, None, None)
+        locals = type(self).thread_locals
+        if hasattr(locals, 'transaction'):
+            # Don't fucking know why sometimes thread_locals does not contain a transaction
+            locals.transaction.__exit__(exception, None, None)
     
     def process_request(self, request):
         """ Store request on a thread local variable """

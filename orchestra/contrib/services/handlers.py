@@ -497,20 +497,25 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     # Recharge
                     if self.payment_style == self.PREPAY and order.billed_on:
                         rini = order.billed_on
-                        charged = None
+                        cmetric = None
                         new_metric, new_price = 0, 0
-                        for cini, cend, metric in order.get_metric(rini, bp, changes=True):
-                            if charged is None:
-                                charged = metric
-                            size = self.get_price_size(cini, cend)
-                            new_price += self.get_price(account, metric) * size
-                            new_metric += metric
-                        size = self.get_price_size(rini, bp)
-                        old_price = self.get_price(account, charged) * size
-                        if new_price > old_price:
-                            metric = new_metric - charged
-                            price = new_price - old_price
-                            lines.append(self.generate_line(order, price, rini, bp, metric=metric, computed=True))
+                        for cini, cend, metric in order.get_metric(rini, min(bp, order.billed_until), changes=True):
+                            if cmetric is None:
+                                cmetric = metric
+                                cprice = self.get_price(account, cmetric)
+                            if metric > cmetric:
+                                size = self.get_price_size(cini, cend)
+                                rprice = self.get_price(account, metric)
+                                if rprice > cprice:
+                                    price = (rprice-cprice) * size
+                                    prepay_discount = cprice*size
+                                    discounts = ()
+                                    if prepay_discount:
+                                        discounts = (
+                                            ('prepay', -prepay_discount),
+                                        )
+                                    lines.append(self.generate_line(order, price, cini, cend,
+                                        metric=metric, computed=True, discounts=discounts))
             if order.billed_until and order.cancelled_on and order.cancelled_on >= order.billed_until:
                 continue
             if self.billing_period != self.NEVER:

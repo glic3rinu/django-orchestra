@@ -497,23 +497,21 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     # Recharge
                     if self.payment_style == self.PREPAY and order.billed_on:
                         rini = order.billed_on
+                        rend = min(bp, order.billed_until)
                         cmetric = None
-                        acc_discount = 0
-                        for cini, cend, metric in order.get_metric(rini, min(bp, order.billed_until), changes=True):
+                        for cini, cend, metric in order.get_metric(rini, rend, changes=True):
                             if cmetric is None:
                                 cmetric = metric
-                                cprice = self.get_price(account, cmetric)
                                 csize = self.get_price_size(rini, order.billed_until)
-                                acc_discount += cprice*csize
+                                cprice = self.get_price(account, cmetric) * csize
                             size = self.get_price_size(cini, cend)
-                            rprice = self.get_price(account, metric)
-                            price = (rprice-cprice) * size
+                            price = self.get_price(account, metric) * size
                             discounts = ()
-                            pre_discount = min(price, max(acc_discount, 0))
+                            discount = min(price, max(cprice, 0))
                             if pre_discount:
-                                acc_discount -= price
+                                cprice -= price
                                 discounts = (
-                                    ('prepay', -pre_discount),
+                                    ('prepay', -discount),
                                 )
                             # if price-pre_discount:
                             lines.append(self.generate_line(order, price, cini, cend, metric=metric,

@@ -16,7 +16,7 @@ from orchestra.contrib.accounts.admin import AccountAdminMixin, AccountAdmin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
 from . import settings, actions
-from .filters import BillTypeListFilter, HasBillContactListFilter
+from .filters import BillTypeListFilter, HasBillContactListFilter, PositivePriceListFilter
 from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillContact
 
 
@@ -165,7 +165,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'number', 'type_link', 'account_link', 'created_on_display',
         'num_lines', 'display_total', 'display_payment_state', 'is_open', 'is_sent'
     )
-    list_filter = (BillTypeListFilter, 'is_open', 'is_sent')
+    list_filter = (BillTypeListFilter, 'is_open', 'is_sent', PositivePriceListFilter)
     add_fields = ('account', 'type', 'is_open', 'due_on', 'comments')
     fieldsets = (
         (None, {
@@ -188,7 +188,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
     inlines = [BillLineInline, ClosedBillLineInline]
     
-    created_on_display = admin_date('created_on')
+    created_on_display = admin_date('created_on', short_description=_("Created"))
     
     def num_lines(self, bill):
         return bill.lines__count

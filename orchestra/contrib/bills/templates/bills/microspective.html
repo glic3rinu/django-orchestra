@@ -40,7 +40,7 @@
 
 {% block summary %}
 <div id="bill-number">
-        {% trans bill.get_type_display.capitalize %}<br>
+        {% filter title %}{% trans bill.get_type_display %}{% endfilter %}<br>
         <span class="value">{{ bill.number }}</span><br>
 </div>
 <div id="bill-summary">
@@ -54,7 +54,7 @@
         <psan class="value">{{ bill.get_total }} &{{ currency.lower }};</span>
     </div>
     <div id="bill-date">
-        <span class="title">{% blocktrans with bill_type=bill.get_type_display %}{{ bill_type|upper }} DATE {% endblocktrans %}</span><br>
+        <span class="title">{% blocktrans with bill_type=bill.get_type_display.upper %}{{ bill_type }} DATE {% endblocktrans %}</span><br>
         <psan class="value">{{ bill.closed_on | default:now | date }}</span>
     </div>
 </div>
@@ -137,9 +137,9 @@
                 {% if payment.message %}
                     {{ payment.message | safe }}
                 {% else %}
-                    {% blocktrans with type=bill.get_type_display %}
-                    You can pay our {{ type }} by bank transfer. <br>
-                    Please make sure to state your name and the {{ type }} number.
+                    {% blocktrans with type=bill.get_type_display.lower %}
+                    You can pay our <i>{{ type }}</i> by bank transfer. <br>
+                    Please make sure to state your name and the <i>{{ type }}</i> number.
                     Our bank account number is <br>
                     {% endblocktrans %}
                     <strong>{{ seller_info.bank_account }}</strong>
@@ -148,7 +148,7 @@
         <div id="questions">
             <span class="title">{% trans "QUESTIONS" %}</span>
             {% blocktrans with type=bill.get_type_display.lower %}
-            If you have any question about your {{ type }}, please
+            If you have any question about your <i>{{ type }}</i>, please
             feel free to contact us at your convinience. We will reply as soon as we get
             your message.
             {% endblocktrans %}

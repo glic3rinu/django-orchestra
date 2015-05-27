@@ -244,18 +244,14 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             'total': price,
         }))
     
-    def generate_line(self, order, price, *dates, **kwargs):
+    def generate_line(self, order, price, *dates, metric=1, discounts=None, computed=False):
         if len(dates) == 2:
             ini, end = dates
         elif len(dates) == 1:
             ini, end = dates[0], dates[0]
         else:
-            raise AttributeError
-        metric = kwargs.pop('metric', 1)
-        discounts = kwargs.pop('discounts', ())
-        computed = kwargs.pop('computed', False)
-        if kwargs:
-            raise AttributeError
+            raise AttributeError("WTF is '%s'?" % str(dates))
+        discounts = discounts or ()
         
         size = self.get_price_size(ini, end)
         if not computed:
@@ -274,6 +270,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         for dtype, dprice in discounts:
             self.generate_discount(line, dtype, dprice)
             discounted += dprice
+        # TODO this is needed for all discounts?
         subtotal += discounted
         if subtotal > price:
             self.generate_discount(line, self._PLAN, price-subtotal)
@@ -490,6 +487,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         lines = []
         bp = None
         for order in orders:
+            recharges = []
             bp = self.get_billing_point(order, bp=bp, **options)
             if (self.billing_period != self.NEVER and
                 self.get_pricing_period() == self.NEVER and
@@ -508,14 +506,20 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                             price = self.get_price(account, metric) * size
                             discounts = ()
                             discount = min(price, max(cprice, 0))
-                            if pre_discount:
+                            if discount:
                                 cprice -= price
+                                price -= discount
                                 discounts = (
                                     ('prepay', -discount),
                                 )
-                            # if price-pre_discount:
-                            lines.append(self.generate_line(order, price, cini, cend, metric=metric,
-                                computed=True, discounts=discounts))
+                            # if price-discount:
+                            recharges.append((order, price, cini, cend, metric, discounts))
+                        # only recharge when appropiate in order to preserve bigger prepays.
+                        if cmetric < metric or bp > order.billed_until:
+                            for order, price, cini, cend, metric, discounts in recharges:
+                                line = self.generate_line(order, price, cini, cend, metric=metric,
+                                    computed=True, discounts=discounts)
+                                lines.append(line)
             if order.billed_until and order.cancelled_on and order.cancelled_on >= order.billed_until:
                 continue
             if self.billing_period != self.NEVER:

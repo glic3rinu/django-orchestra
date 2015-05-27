@@ -1,4 +1,5 @@
 import zipfile
+from datetime import date
 from io import StringIO
 
 from django.contrib import messages
@@ -128,21 +129,53 @@ def undo_billing(modeladmin, request, queryset):
                 group[line.order].append(line)
             except KeyError:
                 group[line.order] = [line]
-    # TODO force incomplete info
+    
+    # Validate
     for order, lines in group.items():
-        # Find path from ini to end
-        for attr in ('order_id', 'order_billed_on', 'order_billed_until'):
-            if not getattr(self, attr):
-                raise ValidationError(_("Not enough information stored for undoing"))
-        sorted(lines, key=lambda l: l.created_on)
-        if 'a' != order.billed_on:
-            raise ValidationError(_("Dates don't match"))
-        prev = order.billed_on
-        for ix in range(0, len(lines)):
-            if lines[ix].order_b: # TODO we need to look at the periods here
-                pass
-        order.billed_until = self.order_billed_until
-        order.billed_on = self.order_billed_on
+        prev = None
+        billed_on = date.max
+        billed_until = date.max
+        for line in sorted(lines, key=lambda l: l.start_on):
+            if billed_on is not None:
+                if line.order_billed_on is None:
+                    billed_on = line.order_billed_on
+                else:
+                    billed_on = min(billed_on, line.order_billed_on)
+            if billed_until is not None:
+                if line.order_billed_until is None:
+                    billed_until = line.order_billed_until
+                else:
+                    billed_until = min(billed_until, line.order_billed_until)
+            if prev:
+                if line.start_on != prev:
+                    messages.error(request, "Line dates doesn't match.")
+                    return
+            else:
+                # First iteration
+                if order.billed_on < line.start_on:
+                    messages.error(request, "billed on is smaller than first line start_on.")
+                    return
+            prev = line.end_on
+            nlines += 1
+        if not prev:
+            messages.error(request, "Order does not have lines!.")
+        order.billed_until = billed_until
+        order.billed_on = billed_on
+    
+    # Commit changes
+    norders, nlines = 0, 0
+    for order, lines in group.items():
+        for line in lines:
+            nlines += 1
+            line.delete()
+        order.save(update_fields=('billed_until', 'billed_on'))
+        norders += 1
+    
+    messages.success(request, _("%(norders)s orders and %(nlines)s lines undoed.") % {
+        'nlines': nlines,
+        'norders': norders
+    })
+
 
 # TODO son't check for account equality
 def move_lines(modeladmin, request, queryset):

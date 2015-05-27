@@ -37,6 +37,23 @@ class BillTypeListFilter(SimpleListFilter):
             }
 
 
+class PositivePriceListFilter(SimpleListFilter):
+    title = _("positive price")
+    parameter_name = 'positive_price'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('True', _("Yes")),
+            ('False', _("No")),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'True':
+            return queryset.filter(computed_total__gt=0)
+        if self.value() == 'False':
+            return queryset.filter(computed_total__lte=0)
+
+
 class HasBillContactListFilter(SimpleListFilter):
     """ Filter Nodes by group according to request.user """
     title = _("has bill contact")

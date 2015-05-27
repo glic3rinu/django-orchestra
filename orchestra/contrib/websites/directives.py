@@ -56,9 +56,10 @@ class SiteDirective(Plugin):
     def validate_uniqueness(self, directive, values, locations):
         """ Validates uniqueness location, name and value """
         errors = defaultdict(list)
+        value = directive.get('value', None)
         # location uniqueness
         location = None
-        if self.unique_location:
+        if self.unique_location and value is not None:
             location = normurlpath(directive['value'].split()[0])
         if location is not None and location in locations:
             errors['value'].append(ValidationError(
@@ -74,7 +75,6 @@ class SiteDirective(Plugin):
             ))
         
         # value uniqueness
-        value = directive.get('value', None)
         if value is not None:
             if self.unique_value and value in values.get(self.name, []):
                 errors['value'].append(ValidationError(

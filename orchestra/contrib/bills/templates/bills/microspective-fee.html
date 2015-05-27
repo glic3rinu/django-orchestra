@@ -1,4 +1,6 @@
 {% extends 'bills/microspective.html' %}
+{% load i18n %}
+
 {% block head %}
 <style type="text/css">
     {% with color="#809708" %}
@@ -91,36 +93,37 @@ hr {
     {{ buyer.vat }}<br>
     {{ buyer.address }}<br>
     {{ buyer.zipcode }} - {{ buyer.city }}<br>
-    {{ buyer.country }}<br>
+    {{ buyer.get_country_display }}<br>
 </div>
 
 <div id="number" class="column-1">
-    <span id="number-title">Membership Fee</span><br>
+    <span id="number-title">{% filter title %}{% trans bill.get_type_display %}{% endfilter %}</span><br>
     <span id="number-value">{{ bill.number }}</span><br>
-    <span id="number-date">{{ bill.closed_on | default:now | date }}</span><br>
+    <span id="number-date">{{ bill.closed_on | default:now | date | capfirst }}</span><br>
 </div>
 
 <div id="amount" class="column-2">
-    <span id="amount-value">{{ bill.get_total }} &euro;</span><br>
-    <span id="amount-note">Due date {{ payment.due_date | default:default_due_date | date }}<br>
-    {% if not payment.message %}On {{ seller_info.bank_account }}{% endif %}<br>
+    <span id="amount-value">{{ bill.get_total }} &{{ currency.lower }};</span><br>
+    <span id="amount-note">{% trans "Due date" %} {{ payment.due_date| default:default_due_date | date }}<br>
+    {% if not payment.message %}{% blocktrans with bank_account=seller_info.bank_account %}On {{ bank_account }}{% endblocktrans %}{% endif %}<br>
     </span>
 </div>
 
 <div id="date" class="column-2">
-From {{ bill.lines.get.get_verbose_period }}
+{% blocktrans with period=bill.lines.get.get_verbose_period %}From {{ period }}{% endblocktrans %}
 </div>
 {% endblock %}
 {% block content %}
 <div id="text">
+{% blocktrans %}
 <strong>Con vuestras cuotas</strong>, ademas de obtener conexion y multitud de servicios, estais<br>
     Con vuestras cuotas, ademas de obtener conexion y multitud de servicios,<br>
         Con vuestras cuotas, ademas de obtener conexion <br>
             Con vuestras cuotas, ademas de obtener <br>
+{% endblocktrans %}
 </div>
 {% endblock %}
 {% block footer %}
 <hr>
 {{ block.super }}
 {% endblock %}
-

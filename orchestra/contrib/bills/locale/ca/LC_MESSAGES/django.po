@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-20 11:02+0000\n"
+"POT-Creation-Date: 2015-05-27 13:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,112 +18,113 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: actions.py:36
+#: actions.py:37
 msgid "Download"
 msgstr "Descarrega"
 
-#: actions.py:46
+#: actions.py:47
 msgid "View"
 msgstr "Vista"
 
-#: actions.py:54
+#: actions.py:55
 msgid "Selected bills should be in open state"
 msgstr ""
 
-#: actions.py:72
+#: actions.py:73
 msgid "Selected bills have been closed"
-msgstr ""
-
-#: actions.py:81
-#, python-format
-msgid "<a href=\"%s\">One related transaction</a> has been created"
 msgstr ""
 
 #: actions.py:82
 #, python-format
+msgid "<a href=\"%s\">One related transaction</a> has been created"
+msgstr ""
+
+#: actions.py:83
+#, python-format
 msgid "<a href=\"%s\">%i related transactions</a> have been created"
 msgstr ""
 
-#: actions.py:88
+#: actions.py:89
 msgid "Are you sure about closing the following bills?"
 msgstr ""
 
-#: actions.py:89
+#: actions.py:90
 msgid ""
 "Once a bill is closed it can not be further modified.</p><p>Please select a "
 "payment source for the selected bills"
 msgstr ""
 
-#: actions.py:102
+#: actions.py:103
 msgid "Close"
 msgstr ""
 
-#: actions.py:113
+#: actions.py:114
 msgid "Resend"
 msgstr ""
 
-#: actions.py:130 models.py:312
-msgid "Not enough information stored for undoing"
+#: actions.py:174
+#, python-format
+msgid "%(norders)s orders and %(nlines)s lines undoed."
 msgstr ""
 
-#: actions.py:133 models.py:314
-msgid "Dates don't match"
+#: actions.py:187
+msgid "Can not move lines from a closed bill."
 msgstr ""
 
-#: actions.py:148
-msgid "Can not move lines which are not in open state."
-msgstr ""
-
-#: actions.py:153
+#: actions.py:192
 msgid "Can not move lines from different accounts"
 msgstr ""
 
-#: actions.py:161
+#: actions.py:201
 msgid "Target account different than lines account."
 msgstr ""
 
-#: actions.py:168
+#: actions.py:208
 msgid "Lines moved"
 msgstr ""
 
-#: admin.py:43 admin.py:86 forms.py:11
+#: admin.py:48 admin.py:92 admin.py:121 forms.py:11
 msgid "Total"
 msgstr ""
 
-#: admin.py:73
+#: admin.py:79
 msgid "Description"
 msgstr "Descripció"
 
-#: admin.py:81
+#: admin.py:87
 msgid "Subtotal"
 msgstr ""
 
-#: admin.py:113
-msgid "Manage bill lines of multiple bills."
+#: admin.py:116
+msgid "Subline"
 msgstr ""
 
-#: admin.py:118
+#: admin.py:153
 #, python-format
 msgid "Manage %s bill lines."
 msgstr ""
 
-#: admin.py:138
+#: admin.py:155
+msgid "Manage bill lines of multiple bills."
+msgstr ""
+
+#: admin.py:175
 msgid "Raw"
 msgstr ""
 
-#: admin.py:157
+#: admin.py:196
 msgid "lines"
 msgstr ""
 
-#: admin.py:162 templates/bills/microspective.html:107
+#: admin.py:201 templates/bills/microspective.html:118
 msgid "total"
 msgstr ""
 
-#: admin.py:170 models.py:87 models.py:342
+#: admin.py:209 models.py:88 models.py:340
 msgid "type"
 msgstr "tipus"
 
-#: admin.py:187
+#: admin.py:226
 msgid "Payment"
 msgstr "Pagament"
 
@@ -131,15 +132,15 @@ msgstr "Pagament"
 msgid "All"
 msgstr "Tot"
 
-#: filters.py:18 models.py:77
+#: filters.py:18 models.py:78
 msgid "Invoice"
 msgstr "Factura"
 
-#: filters.py:19 models.py:78
+#: filters.py:19 models.py:79
 msgid "Amendment invoice"
 msgstr "Factura rectificativa"
 
-#: filters.py:20 models.py:79
+#: filters.py:20 models.py:80
 msgid "Fee"
 msgstr "Quota de soci"
 
@@ -151,17 +152,21 @@ msgstr "Rectificació de quota de soci"
 msgid "Pro-forma"
 msgstr ""
 
-#: filters.py:42
-msgid "has bill contact"
+#: filters.py:41
+msgid "positive price"
 msgstr ""
 
-#: filters.py:47
+#: filters.py:46 filters.py:64
 msgid "Yes"
 msgstr "Si"
 
-#: filters.py:48
+#: filters.py:47 filters.py:65
 msgid "No"
 msgstr "No"
+
+#: filters.py:59
+msgid "has bill contact"
+msgstr ""
 
 #: forms.py:9
 msgid "Number"
@@ -193,163 +198,200 @@ msgstr ""
 msgid "Main"
 msgstr ""
 
-#: models.py:22 models.py:85
+#: models.py:23 models.py:86
 msgid "account"
 msgstr ""
 
-#: models.py:24
+#: models.py:25
 msgid "name"
 msgstr ""
 
-#: models.py:25
+#: models.py:26
 msgid "Account full name will be used when left blank."
 msgstr ""
 
-#: models.py:26
+#: models.py:27
 msgid "address"
 msgstr ""
 
-#: models.py:27
+#: models.py:28
 msgid "city"
 msgstr ""
 
-#: models.py:29
+#: models.py:30
 msgid "zip code"
 msgstr ""
 
-#: models.py:30
+#: models.py:31
 msgid "Enter a valid zipcode."
 msgstr ""
 
-#: models.py:31
+#: models.py:32
 msgid "country"
 msgstr ""
 
-#: models.py:34
+#: models.py:35
 msgid "VAT number"
 msgstr "NIF"
 
-#: models.py:66
+#: models.py:67
 msgid "Paid"
 msgstr ""
 
-#: models.py:67
+#: models.py:68
 msgid "Pending"
 msgstr ""
 
-#: models.py:68
+#: models.py:69
 msgid "Bad debt"
 msgstr ""
 
-#: models.py:80
+#: models.py:81
 msgid "Amendment Fee"
 msgstr ""
 
-#: models.py:81
+#: models.py:82
 msgid "Pro forma"
 msgstr ""
 
-#: models.py:84
+#: models.py:85
 msgid "number"
 msgstr ""
 
-#: models.py:88
+#: models.py:89
 msgid "created on"
 msgstr ""
 
-#: models.py:89
+#: models.py:90
 msgid "closed on"
 msgstr ""
 
-#: models.py:90
+#: models.py:91
 msgid "open"
 msgstr ""
 
-#: models.py:91
+#: models.py:92
 msgid "sent"
 msgstr ""
 
-#: models.py:92
+#: models.py:93
 msgid "due on"
 msgstr ""
 
-#: models.py:93
+#: models.py:94
 msgid "updated on"
 msgstr ""
 
-#: models.py:96
+#: models.py:97
 msgid "comments"
 msgstr "comentaris"
 
-#: models.py:97
+#: models.py:98
 msgid "HTML"
 msgstr ""
 
-#: models.py:273
+#: models.py:280
 msgid "bill"
 msgstr ""
 
-#: models.py:274 models.py:339 templates/bills/microspective.html:73
+#: models.py:281 models.py:338 templates/bills/microspective.html:73
 msgid "description"
 msgstr "descripció"
 
-#: models.py:275
+#: models.py:282
 msgid "rate"
 msgstr "tarifa"
 
-#: models.py:276
+#: models.py:283
 msgid "quantity"
 msgstr "quantitat"
 
-#: models.py:277
+#: models.py:284
 #, fuzzy
 #| msgid "quantity"
 msgid "Verbose quantity"
 msgstr "quantitat"
 
-#: models.py:278 templates/bills/microspective.html:76
-#: templates/bills/microspective.html:100
+#: models.py:285 templates/bills/microspective.html:77
+#: templates/bills/microspective.html:111
 msgid "subtotal"
 msgstr ""
 
-#: models.py:279
+#: models.py:286
 msgid "tax"
 msgstr "impostos"
 
-#: models.py:284
+#: models.py:287
+msgid "start"
+msgstr ""
+
+#: models.py:288
+msgid "end"
+msgstr ""
+
+#: models.py:290
 msgid "Informative link back to the order"
 msgstr ""
 
-#: models.py:285
+#: models.py:291
 msgid "order billed"
 msgstr ""
 
-#: models.py:286
+#: models.py:292
 msgid "order billed until"
 msgstr ""
 
-#: models.py:287
+#: models.py:293
 msgid "created"
 msgstr ""
 
-#: models.py:289
+#: models.py:295
 msgid "amended line"
 msgstr ""
 
-#: models.py:332
+#: models.py:316
+msgid "{ini} to {end}"
+msgstr ""
+
+#: models.py:331
 msgid "Volume"
 msgstr ""
 
-#: models.py:333
+#: models.py:332
 msgid "Compensation"
 msgstr ""
 
-#: models.py:334
+#: models.py:333
 msgid "Other"
 msgstr ""
 
-#: models.py:338
+#: models.py:337
 msgid "bill line"
+msgstr ""
+
+#: templates/bills/microspective-fee.html:107
+msgid "Due date"
+msgstr ""
+
+#: templates/bills/microspective-fee.html:108
+#, python-format
+msgid "On %(bank_account)s"
+msgstr ""
+
+#: templates/bills/microspective-fee.html:113
+#, python-format
+msgid "From %(period)s"
+msgstr ""
+
+#: templates/bills/microspective-fee.html:118
+msgid ""
+"\n"
+"<strong>Con vuestras cuotas</strong>, ademas de obtener conexion y multitud "
+"de servicios, estais<br>\n"
+"    Con vuestras cuotas, ademas de obtener conexion y multitud de servicios,"
+"<br>\n"
+"        Con vuestras cuotas, ademas de obtener conexion <br>\n"
+"            Con vuestras cuotas, ademas de obtener <br>\n"
 msgstr ""
 
 #: templates/bills/microspective.html:49
@@ -366,52 +408,57 @@ msgid "%(bill_type|upper)s DATE "
 msgstr "DATA %(bill_type|upper)s"
 
 #: templates/bills/microspective.html:74
+msgid "period"
+msgstr ""
+
+#: templates/bills/microspective.html:75
 msgid "hrs/qty"
 msgstr "hrs/quant"
 
-#: templates/bills/microspective.html:75
+#: templates/bills/microspective.html:76
 msgid "rate/price"
 msgstr "tarifa/preu"
 
-#: templates/bills/microspective.html:100
-#: templates/bills/microspective.html:103
+#: templates/bills/microspective.html:111
+#: templates/bills/microspective.html:114
 msgid "VAT"
 msgstr "IVA"
 
-#: templates/bills/microspective.html:103
+#: templates/bills/microspective.html:114
 msgid "taxes"
 msgstr "impostos"
 
-#: templates/bills/microspective.html:119
+#: templates/bills/microspective.html:130
 msgid "COMMENTS"
 msgstr "COMENTARIS"
 
-#: templates/bills/microspective.html:125
+#: templates/bills/microspective.html:136
 msgid "PAYMENT"
 msgstr "PAGAMENT"
 
-#: templates/bills/microspective.html:129
+#: templates/bills/microspective.html:140
+#, python-format
 msgid ""
 "\n"
-"                    You can pay our %(type)s by bank transfer. <br>\n"
-"                    Please make sure to state your name and the %(type)s "
-"number.\n"
+"                    You can pay our <i>%(type)s</i> by bank transfer. <br>\n"
+"                    Please make sure to state your name and the <i>%(type)s</"
+"i> number.\n"
 "                    Our bank account number is <br>\n"
 "                    "
 msgstr ""
 "\n"
-"Pots pagar aquesta %(type)s per transferencia banacaria.<br>Inclou el teu "
-"nom i el numero de %(type)s. El nostre compte bancari és"
+"Pots pagar aquesta <i>%(type)s</i> per transferencia banacaria.<br>Inclou el "
+"teu nom i el numero de <i>%(type)s</i>. El nostre compte bancari és"
 
-#: templates/bills/microspective.html:138
+#: templates/bills/microspective.html:149
 msgid "QUESTIONS"
 msgstr "PREGUNTES"
 
-#: templates/bills/microspective.html:139
+#: templates/bills/microspective.html:150
 #, python-format
 msgid ""
 "\n"
-"            If you have any question about your %(type)s, please\n"
+"            If you have any question about your <i>%(type)s</i>, please\n"
 "            feel free to contact us at your convinience. We will reply as "
 "soon as we get\n"
 "            your message.\n"

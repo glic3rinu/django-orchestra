@@ -1,8 +1,9 @@
 from django.contrib.auth import models as auth
+from django.conf import settings as djsettings
 from django.core import validators
 from django.db import models
 from django.apps import apps
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
@@ -91,10 +92,18 @@ class Account(auth.AbstractBaseUser):
                 for obj in getattr(self, rel.get_accessor_name()).all():
                     OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=[])
     
-    def send_email(self, template, context, contacts=[], attachments=[], html=None):
+    def send_email(self, template, context, email_from=None, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)
         email_to = contacts.values_list('email', flat=True)
-        send_email_template(template, context, email_to, html=html, attachments=attachments)
+        extra_context = {
+            'account': self,
+            'email_from': email_from or djsettings.SERVER_EMAIL,
+        }
+        extra_context.update(context)
+        with translation.override(self.language):
+            send_email_template(
+                template, extra_context, ('marcay@pangea.org',), email_from=email_from, html=html,
+                attachments=attachments)
     
     def get_full_name(self):
         return self.full_name or self.short_name or self.username

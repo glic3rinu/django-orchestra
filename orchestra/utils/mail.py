@@ -30,7 +30,7 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
     
     #subject cannot have new lines
     subject = render_to_string(template, {'subject': True}, context).strip()
-    message = render_to_string(template, {'message': True}, context)
+    message = render_to_string(template, {'message': True}, context).strip()
     msg = EmailMultiAlternatives(subject, message, email_from, to, attachments=attachments)
     if html:
         html_message = render_to_string(html, {'message': True}, context)

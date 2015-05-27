@@ -113,7 +113,7 @@ class BillSelectedOrders(object):
             'title': _("Confirmation for billing selected orders"),
             'step': 3,
             'form': form,
-            'bills': bills_with_total,
+            'bills': sorted(bills_with_total, key=lambda i: -i[1]),
         })
         return render(request, self.template, self.context)
 

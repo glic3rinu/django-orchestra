@@ -128,6 +128,9 @@ class Bill(models.Model):
         value = self.payment_state
         return force_text(dict(self.PAYMENT_STATES).get(value, value))
     
+    def get_current_transaction(self):
+        return self.transactions.exclude_rejected().first()
+    
     @classmethod
     def get_class_type(cls):
         return cls.__name__.upper()
@@ -187,7 +190,9 @@ class Bill(models.Model):
             template=settings.BILLS_EMAIL_NOTIFICATION_TEMPLATE,
             context={
                 'bill': self,
+                'settings': settings,
             },
+            email_from=settings.BILLS_SELLER_EMAIL,
             contacts=(Contact.BILLING,),
             attachments=[
                 ('%s.pdf' % self.number, html_to_pdf(html), 'application/pdf')
@@ -288,7 +293,7 @@ class BillLine(models.Model):
     created_on = models.DateField(_("created"), auto_now_add=True)
     # Amendment
     amended_line = models.ForeignKey('self', verbose_name=_("amended line"),
-            related_name='amendment_lines', null=True, blank=True)
+        related_name='amendment_lines', null=True, blank=True)
     
     def __str__(self):
         return "#%i" % self.pk
@@ -302,24 +307,22 @@ class BillLine(models.Model):
         return self.verbose_quantity or self.quantity
     
     def get_verbose_period(self):
-        ini = self.start_on.strftime("%b, %Y")
+        from django.template.defaultfilters import date
+        date_format = "N 'y"
+        if self.start_on.day != 1 or self.end_on.day != 1:
+            date_format = "N j, 'y"
+            end = date(self.end_on, date_format)
+#            .strftime(date_format)
+        else:
+            end = date((self.end_on - datetime.timedelta(days=1)), date_format)
+#            ).strftime(date_format)
+        ini = date(self.start_on, date_format)
+        #.strftime(date_format)
         if not self.end_on:
             return ini
-        end = (self.end_on - datetime.timedelta(seconds=1)).strftime("%b, %Y")
         if ini == end:
             return ini
-        return _("{ini} to {end}").format(ini=ini, end=end)
-    
-    def undo(self):
-        # TODO warn user that undoing bills with compensations lead to compensation lost
-        for attr in ['order_id', 'order_billed_on', 'order_billed_until']:
-            if not getattr(self, attr):
-                raise ValidationError(_("Not enough information stored for undoing"))
-        if self.created_on != self.order.billed_on:
-            raise ValidationError(_("Dates don't match"))
-        self.order.billed_until = self.order_billed_until
-        self.order.billed_on = self.order_billed_on
-        self.delete()
+        return "{ini} / {end}".format(ini=ini, end=end)
     
 #    def save(self, *args, **kwargs):
 #        super(BillLine, self).save(*args, **kwargs)
@@ -342,7 +345,6 @@ class BillSubline(models.Model):
     # TODO: order info for undoing
     line = models.ForeignKey(BillLine, verbose_name=_("bill line"), related_name='sublines')
     description = models.CharField(_("description"), max_length=256)
-    # TODO rename to subtotal
     total = models.DecimalField(max_digits=12, decimal_places=2)
     type = models.CharField(_("type"), max_length=16, choices=TYPES, default=OTHER)
     

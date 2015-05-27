@@ -73,12 +73,18 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_cancelled_on = admin_date('cancelled_on')
     
     def display_billed_until(self, order):
-        value = order.billed_until
-        color = ''
-        if value and value < timezone.now().date():
-            color = 'style="color:red;"'
+        billed_until = order.billed_until
+        red = False
+        if billed_until:
+            if order.service.payment_style == order.service.POSTPAY:
+                boundary = order.service.handler.get_billing_point(order)
+                if billed_until < boundary:
+                    red = True
+            elif billed_until < timezone.now().date():
+                red = True
+        color = 'style="color:red;"' if red else ''
         return '<span title="{raw}" {color}>{human}</span>'.format(
-            raw=escape(str(value)), color=color, human=escape(naturaldate(value)),
+            raw=escape(str(billed_until)), color=color, human=escape(naturaldate(billed_until)),
         )
     display_billed_until.short_description = _("billed until")
     display_billed_until.allow_tags = True

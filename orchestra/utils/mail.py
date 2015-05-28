@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.template import Context
 
 
-def send_email_template(template, context, to, email_from=None, html=None, attachments=[]):
+def render_email_template(template, context):
     """
     Renders an email template with this format:
         {% if subject %}Subject{% endif %}
@@ -13,7 +13,6 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
     
     context can be a dictionary or a template.Context instance
     """
-    
     if isinstance(context, dict):
         context = Context(context)
     if isinstance(to, str):
@@ -27,13 +26,16 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
             'scheme': url.scheme,
             'domain': url.netloc,
         }
-    
-    #subject cannot have new lines
     subject = render_to_string(template, {'subject': True}, context).strip()
     message = render_to_string(template, {'message': True}, context).strip()
+    return subject, message
+
+
+def send_email_template(template, context, to, email_from=None, html=None, attachments=[]):
+    subject, message = render_email_template(template, context)
     msg = EmailMultiAlternatives(subject, message, email_from, to, attachments=attachments)
     if html:
-        html_message = render_to_string(html, {'message': True}, context)
+        subject, html_message = render_email_template(html, context)
         msg.attach_alternative(html_message, "text/html")
     msg.send()
 

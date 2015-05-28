@@ -5,7 +5,6 @@ from orchestra.utils.sys import run
 
 def html_to_pdf(html, pagination=False):
     """ converts HTL to PDF using wkhtmltopdf """
-    print(pagination)
     context = {
         'pagination': textwrap.dedent("""\
             --footer-center "Page [page] of [topage]"\\

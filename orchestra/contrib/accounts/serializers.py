@@ -15,7 +15,7 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
 class AccountSerializerMixin(object):
     def __init__(self, *args, **kwargs):
         super(AccountSerializerMixin, self).__init__(*args, **kwargs)
-        self.account = None
+        self.account = self.get_account()
     
     def get_account(self):
         request = self.context.get('request')

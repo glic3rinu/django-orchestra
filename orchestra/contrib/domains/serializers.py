@@ -39,9 +39,13 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     def validate(self, data):
         """ Checks if everything is consistent """
         data = super(DomainSerializer, self).validate(data)
-        if self.instance and data.get('name'):
+        name = data.get('name')
+        if name:
+            instance = self.instance
+            if instance is None:
+                instance = Domain(name=name, account=self.account)
             records = data['records']
-            domain = domain_for_validation(self.instance, records)
+            domain = domain_for_validation(instance, records)
             validators.validate_zone(domain.render_zone())
         return data
     
@@ -52,9 +56,9 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             domain.records.create(type=record['type'], value=record['value'])
         return domain
     
-    def update(self, validated_data):
+    def update(self, instance, validated_data):
         precords = validated_data.pop('records')
-        domain = super(DomainSerializer, self).update(validated_data)
+        domain = super(DomainSerializer, self).update(instance, validated_data)
         to_delete = []
         for erecord in domain.records.all():
             match = False
@@ -63,7 +67,7 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
                     match = True
                     break
             if match:
-                precords.remove(ix)
+                precords.pop(ix)
             else:
                 to_delete.append(erecord)
         for precord in precords:

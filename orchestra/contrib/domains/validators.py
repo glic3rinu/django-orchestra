@@ -120,7 +120,10 @@ def validate_zone(zone):
         # Don't use /dev/stdin becuase the 'argument list is too long' error
         check = run(' '.join([checkzone, zone_name, zone_path]), valid_codes=(0,1,127), display=False)
     finally:
-        os.unlink(zone_path)
+        try:
+            os.unlink(zone_path)
+        except FileNotFoundError:
+            pass
     if check.exit_code == 127:
         logger.error("Cannot validate domain zone: %s not installed." % checkzone)
     elif check.exit_code == 1:

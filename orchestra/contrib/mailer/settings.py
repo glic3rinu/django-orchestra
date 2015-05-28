@@ -1,3 +1,5 @@
+from django.utils.translation import ugettext_lazy as _
+
 from orchestra.contrib.settings import Setting
 
 
@@ -8,4 +10,10 @@ MAILER_DEFERE_SECONDS = Setting('MAILER_DEFERE_SECONDS',
 
 MAILER_MESSAGES_CLEANUP_DAYS = Setting('MAILER_MESSAGES_CLEANUP_DAYS',
     7
+)
+
+
+MAILER_NON_QUEUED_MAILS_PER_REQUEST_THRESHOLD = Setting('MAILER_NON_QUEUED_MAILS_PER_REQUEST_THRESHOLD',
+    2,
+    help_text=_("Number of emails that will be sent directly before starting to queue them."),
 )

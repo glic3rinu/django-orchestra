@@ -27,11 +27,19 @@ def get_request_cache():
 
 class RequestCacheMiddleware(object):
     def process_request(self, request):
-        cache = _request_cache.get(currentThread(), RequestCache())
-        _request_cache[currentThread()] = cache
+        current_thread = currentThread()
+        cache = _request_cache.get(current_thread, RequestCache())
+        _request_cache[current_thread] = cache
         cache.clear()
     
-    def process_response(self, request, response):
+    def clear_cache(self):
+        current_thread = currentThread()
         if currentThread() in _request_cache:
-            _request_cache[currentThread()].clear()
+            _request_cache[current_thread].clear()
+    
+    def process_exception(self, request, exception):
+        self.clear_cache()
+    
+    def process_response(self, request, response):
+        self.clear_cache()
         return response

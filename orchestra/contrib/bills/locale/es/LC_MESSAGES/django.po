@@ -20,11 +20,11 @@ msgstr ""
 
 #: actions.py:37
 msgid "Download"
-msgstr "Descarrega"
+msgstr ""
 
 #: actions.py:47
 msgid "View"
-msgstr "Vista"
+msgstr ""
 
 #: actions.py:55
 msgid "Selected bills should be in open state"
@@ -86,7 +86,7 @@ msgstr ""
 
 #: admin.py:80
 msgid "Description"
-msgstr "Descripció"
+msgstr ""
 
 #: admin.py:88
 msgid "Subtotal"
@@ -139,31 +139,31 @@ msgstr ""
 
 #: admin.py:226 models.py:88 models.py:352
 msgid "type"
-msgstr "tipus"
+msgstr ""
 
 #: admin.py:243
 msgid "Payment"
-msgstr "Pagament"
+msgstr ""
 
 #: filters.py:17
 msgid "All"
-msgstr "Tot"
+msgstr ""
 
 #: filters.py:18 models.py:78
 msgid "Invoice"
-msgstr "Factura"
+msgstr ""
 
 #: filters.py:19 models.py:79
 msgid "Amendment invoice"
-msgstr "Factura rectificativa"
+msgstr ""
 
 #: filters.py:20 models.py:80
 msgid "Fee"
-msgstr "Quota de soci"
+msgstr ""
 
 #: filters.py:21
 msgid "Amendment fee"
-msgstr "Rectificació de quota de soci"
+msgstr ""
 
 #: filters.py:22
 msgid "Pro-forma"
@@ -175,11 +175,11 @@ msgstr ""
 
 #: filters.py:46 filters.py:64
 msgid "Yes"
-msgstr "Si"
+msgstr ""
 
 #: filters.py:47 filters.py:65
 msgid "No"
-msgstr "No"
+msgstr ""
 
 #: filters.py:59
 msgid "has bill contact"
@@ -249,7 +249,7 @@ msgstr ""
 
 #: models.py:35
 msgid "VAT number"
-msgstr "NIF"
+msgstr ""
 
 #: models.py:67
 msgid "Paid"
@@ -301,7 +301,7 @@ msgstr ""
 
 #: models.py:97
 msgid "comments"
-msgstr "comentaris"
+msgstr ""
 
 #: models.py:98
 msgid "HTML"
@@ -313,21 +313,19 @@ msgstr ""
 
 #: models.py:286 models.py:350 templates/bills/microspective.html:73
 msgid "description"
-msgstr "descripció"
+msgstr ""
 
 #: models.py:287
 msgid "rate"
-msgstr "tarifa"
+msgstr ""
 
 #: models.py:288
 msgid "quantity"
-msgstr "quantitat"
+msgstr ""
 
 #: models.py:289
-#, fuzzy
-#| msgid "quantity"
 msgid "Verbose quantity"
-msgstr "quantitat"
+msgstr ""
 
 #: models.py:290 templates/bills/microspective.html:77
 #: templates/bills/microspective.html:111
@@ -336,7 +334,7 @@ msgstr ""
 
 #: models.py:291
 msgid "tax"
-msgstr "impostos"
+msgstr ""
 
 #: models.py:292
 msgid "start"
@@ -404,17 +402,16 @@ msgstr ""
 
 #: templates/bills/microspective.html:49
 msgid "DUE DATE"
-msgstr "VENCIMENT"
+msgstr ""
 
 #: templates/bills/microspective.html:53
 msgid "TOTAL"
-msgstr "TOTAL"
+msgstr ""
 
 #: templates/bills/microspective.html:57
-#, fuzzy, python-format
-#| msgid "%(bill_type|upper)s DATE "
+#, python-format
 msgid "%(bill_type)s DATE"
-msgstr "DATA %(bill_type|upper)s"
+msgstr ""
 
 #: templates/bills/microspective.html:74
 msgid "period"
@@ -422,39 +419,31 @@ msgstr ""
 
 #: templates/bills/microspective.html:75
 msgid "hrs/qty"
-msgstr "hrs/quant"
+msgstr ""
 
 #: templates/bills/microspective.html:76
 msgid "rate/price"
-msgstr "tarifa/preu"
+msgstr ""
 
 #: templates/bills/microspective.html:111
 #: templates/bills/microspective.html:114
 msgid "VAT"
-msgstr "IVA"
+msgstr ""
 
 #: templates/bills/microspective.html:114
 msgid "taxes"
-msgstr "impostos"
+msgstr ""
 
 #: templates/bills/microspective.html:130
 msgid "COMMENTS"
-msgstr "COMENTARIS"
+msgstr ""
 
 #: templates/bills/microspective.html:136
 msgid "PAYMENT"
-msgstr "PAGAMENT"
+msgstr ""
 
 #: templates/bills/microspective.html:140
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                    You can pay our <i>%(type)s</i> by bank transfer. "
-#| "<br>\n"
-#| "                    Please make sure to state your name and the <i>"
-#| "%(type)s</i> number.\n"
-#| "                    Our bank account number is <br>\n"
-#| "                    "
+#, python-format
 msgid ""
 "\n"
 "                    You can pay our <i>%(type)s</i> by bank transfer.<br>\n"
@@ -463,13 +452,10 @@ msgid ""
 "                    Our bank account number is <br>\n"
 "                    "
 msgstr ""
-"\n"
-"Pots pagar aquesta <i>%(type)s</i> per transferencia banacaria.<br>Inclou el "
-"teu nom i el numero de <i>%(type)s</i>. El nostre compte bancari és"
 
 #: templates/bills/microspective.html:149
 msgid "QUESTIONS"
-msgstr "PREGUNTES"
+msgstr ""
 
 #: templates/bills/microspective.html:150
 #, python-format

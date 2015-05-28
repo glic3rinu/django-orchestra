@@ -1,6 +1,6 @@
 from django import forms
 from django.conf.urls import url
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -9,6 +9,7 @@ from django.db.models.functions import Coalesce
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import redirect
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_date, insertattr, admin_link
@@ -101,15 +102,21 @@ class ClosedBillLineInline(BillLineInline):
 
 class BillLineAdmin(admin.ModelAdmin):
     list_display = (
-        'description', 'bill_link', 'rate', 'quantity', 'tax', 'subtotal', 'display_sublinetotal',
-        'display_total'
+        'description', 'bill_link', 'display_is_open', 'account_link', 'rate', 'quantity', 'tax',
+        'subtotal', 'display_sublinetotal', 'display_total'
     )
     actions = (actions.undo_billing, actions.move_lines, actions.copy_lines,)
-    list_filter = ('tax', ('bill', admin.RelatedOnlyFieldListFilter))
+    list_filter = ('tax', ('bill', admin.RelatedOnlyFieldListFilter), 'bill__is_open')
     list_select_related = ('bill',)
     search_fields = ('description', 'bill__number')
     
+    account_link = admin_link('bill__account')
     bill_link = admin_link('bill')
+    
+    def display_is_open(self, instance):
+        return instance.bill.is_open
+    display_is_open.short_description = _("Is open")
+    display_is_open.boolean = True
     
     def display_sublinetotal(self, instance):
         return instance.subline_total or ''
@@ -140,18 +147,26 @@ class BillLineManagerAdmin(BillLineAdmin):
         return qset
     
     def changelist_view(self, request, extra_context=None):
-        GET = request.GET.copy()
-        bill_ids = GET.pop('ids', None)
+        GET_copy = request.GET.copy()
+        bill_ids = GET_copy.pop('ids', None)
         if bill_ids:
-            request.GET = GET
-            bill_ids = list(map(int, bill_ids))
+            bill_ids = bill_ids[0]
+            request.GET = GET_copy
+            bill_ids = list(map(int, bill_ids.split(',')))
+        else:
+            messages.error(request, _("No bills selected."))
+            return redirect('..')
         self.bill_ids = bill_ids
-        if bill_ids and len(bill_ids) == 1:
+        if len(bill_ids) == 1:
             bill_url = reverse('admin:bills_bill_change', args=(bill_ids[0],))
             bill = Bill.objects.get(pk=bill_ids[0])
             bill_link = '<a href="%s">%s</a>' % (bill_url, bill.number)
             title = mark_safe(_("Manage %s bill lines.") % bill_link)
+            if not bill.is_open:
+                messages.warning(request, _("Bill not in open state."))
         else:
+            if Bill.objects.filter(id__in=bill_ids, is_open=False).exists():
+                messages.warning(request, _("Not all bills are in open state."))
             title = _("Manage bill lines of multiple bills.")
         context = {
             'title': title,
@@ -177,13 +192,15 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('html',),
         }),
     )
+    list_prefetch_related = ('transactions',)
+    search_fields = ('number', 'account__username', 'comments')
     change_view_actions = [
         actions.manage_lines, actions.view_bill, actions.download_bills, actions.send_bills,
         actions.close_bills
     ]
-    list_prefetch_related = ('transactions',)
-    search_fields = ('number', 'account__username', 'comments')
-    actions = [actions.download_bills, actions.close_bills, actions.send_bills]
+    actions = [
+        actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills
+    ]
     change_readonly_fields = ('account_link', 'type', 'is_open')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
     inlines = [BillLineInline, ClosedBillLineInline]

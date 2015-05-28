@@ -99,30 +99,31 @@ hr {
 <div id="number" class="column-1">
     <span id="number-title">{% filter title %}{% trans bill.get_type_display %}{% endfilter %}</span><br>
     <span id="number-value">{{ bill.number }}</span><br>
-    <span id="number-date">{{ bill.closed_on | default:now | date | capfirst }}</span><br>
+    <span id="number-date">{{ bill.closed_on | default:now | date:"F j, Y" | capfirst }}</span><br>
 </div>
 
 <div id="amount" class="column-2">
     <span id="amount-value">{{ bill.get_total }} &{{ currency.lower }};</span><br>
-    <span id="amount-note">{% trans "Due date" %} {{ payment.due_date| default:default_due_date | date }}<br>
+    <span id="amount-note">{% trans "Due date" %} {{ payment.due_date| default:default_due_date | date:"F j, Y" }}<br>
     {% if not payment.message %}{% blocktrans with bank_account=seller_info.bank_account %}On {{ bank_account }}{% endblocktrans %}{% endif %}<br>
     </span>
 </div>
 
 <div id="date" class="column-2">
-{% blocktrans with period=bill.lines.get.get_verbose_period %}From {{ period }}{% endblocktrans %}
+{% with line=bill.lines.get %}
+{% blocktrans with ini=line.start_on|date:"F j, Y" end=line.end_on|date:"F j, Y" %}From {{ ini }} to {{ end }}{% endblocktrans %}
+{% endwith %}
 </div>
 {% endblock %}
+
 {% block content %}
 <div id="text">
 {% blocktrans %}
-<strong>Con vuestras cuotas</strong>, ademas de obtener conexion y multitud de servicios, estais<br>
-    Con vuestras cuotas, ademas de obtener conexion y multitud de servicios,<br>
-        Con vuestras cuotas, ademas de obtener conexion <br>
-            Con vuestras cuotas, ademas de obtener <br>
+<strong>With your membership</strong> you are supporting ...
 {% endblocktrans %}
 </div>
 {% endblock %}
+
 {% block footer %}
 <hr>
 {{ block.super }}

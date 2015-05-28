@@ -32,7 +32,7 @@ def download_bills(modeladmin, request, queryset):
         response['Content-Disposition'] = 'attachment; filename="orchestra-bills.zip"'
         return response
     bill = queryset.get()
-    pdf = html_to_pdf(bill.html or bill.render())
+    pdf = html_to_pdf(bill.html or bill.render(), pagination=bill.has_multiple_pages)
     return HttpResponse(pdf, content_type='application/pdf')
 download_bills.verbose_name = _("Download")
 download_bills.url_name = 'download'
@@ -78,9 +78,13 @@ def close_bills(modeladmin, request, queryset):
                 else:
                     url = reverse('admin:transactions_transaction_changelist')
                     url += 'id__in=%s' % ','.join(map(str, transactions))
+                context = {
+                    'url': url,
+                    'num': num,
+                }
                 message = ungettext(
-                    _('<a href="%s">One related transaction</a> has been created') % url,
-                    _('<a href="%s">%i related transactions</a> have been created') % (url, num),
+                    _('<a href="%(url)s">One related transaction</a> has been created') % context,
+                    _('<a href="%(url)s">%(num)i related transactions</a> have been created') % context,
                     num)
                 messages.success(request, mark_safe(message))
             return
@@ -105,12 +109,22 @@ close_bills.url_name = 'close'
 
 
 def send_bills(modeladmin, request, queryset):
+    num = 0
     for bill in queryset:
         if not validate_contact(request, bill):
             return
-    for bill in queryset:
+        num += 1
+    if num == 1:
         bill.send()
+    else:
+        # Batch email
+        queryset.send()
+    for bill in queryset:
         modeladmin.log_change(request, bill, 'Sent')
+    messages.success(request, ungetetx(
+        _("One bill has been sent."),
+        _("%i bills have been sent.") % num,
+        num))
 send_bills.verbose_name = lambda bill: _("Resend" if getattr(bill, 'is_sent', False) else "Send")
 send_bills.url_name = 'send'
 
@@ -153,7 +167,7 @@ def undo_billing(modeladmin, request, queryset):
             else:
                 # First iteration
                 if order.billed_on < line.start_on:
-                    messages.error(request, "billed on is smaller than first line start_on.")
+                    messages.error(request, "Billed on is smaller than first line start_on.")
                     return
             prev = line.end_on
             nlines += 1
@@ -168,6 +182,7 @@ def undo_billing(modeladmin, request, queryset):
         for line in lines:
             nlines += 1
             line.delete()
+        # TODO update order history undo billing
         order.save(update_fields=('billed_until', 'billed_on'))
         norders += 1
     
@@ -177,29 +192,14 @@ def undo_billing(modeladmin, request, queryset):
     })
 
 
-# TODO son't check for account equality
-def move_lines(modeladmin, request, queryset):
+def move_lines(modeladmin, request, queryset, action=None):
     # Validate
-    account = None
-    for line in queryset.select_related('bill'):
-        bill = line.bill
-        if not bill.is_open:
-            messages.error(request, _("Can not move lines from a closed bill."))
-            return 
-        elif not account:
-            account = bill.account
-        elif bill.account != account:
-            messages.error(request, _("Can not move lines from different accounts"))
-            return
     target = request.GET.get('target')
     if not target:
         # select target
         context = {}
         return render(request, 'admin/orchestra/generic_confirmation.html', context)
     target = Bill.objects.get(pk=int(pk))
-    if target.account != account:
-        messages.error(request, _("Target account different than lines account."))
-        return
     if request.POST.get('post') == 'generic_confirmation':
         for line in queryset:
             line.bill = target
@@ -212,9 +212,4 @@ def move_lines(modeladmin, request, queryset):
 
 def copy_lines(modeladmin, request, queryset):
     # same as move, but changing action behaviour
-    pass
-
-
-def delete_lines(modeladmin, request, queryset):
-    # Call contrib.admin delete action if all lines in open bill
-    pass
+    return move_lines(modeladmin, request, queryset)

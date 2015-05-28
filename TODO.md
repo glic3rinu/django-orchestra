@@ -412,5 +412,4 @@ touch /tmp/somefile
 # batch zone edditing
 # inherit registers from parent?
 
-# Bill metric disk 5 GB: unialber: include not include 5, unialbert recheck period
-
+# Disable pagination on membership fees (allways one page)

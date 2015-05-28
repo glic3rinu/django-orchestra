@@ -124,6 +124,10 @@ class Bill(models.Model):
             return self.PENDING
         return self.BAD_DEBT
     
+    @property
+    def has_multiple_pages(self):
+        return self.type != self.FEE
+    
     def get_payment_state_display(self):
         value = self.payment_state
         return force_text(dict(self.PAYMENT_STATES).get(value, value))
@@ -186,6 +190,7 @@ class Bill(models.Model):
     
     def send(self):
         html = self.html or self.render()
+        pdf = html_to_pdf(html, pagination=self.has_multiple_pages)
         self.account.send_email(
             template=settings.BILLS_EMAIL_NOTIFICATION_TEMPLATE,
             context={
@@ -195,7 +200,7 @@ class Bill(models.Model):
             email_from=settings.BILLS_SELLER_EMAIL,
             contacts=(Contact.BILLING,),
             attachments=[
-                ('%s.pdf' % self.number, html_to_pdf(html), 'application/pdf')
+                ('%s.pdf' % self.number, pdf, 'application/pdf')
             ]
         )
         self.is_sent = True
@@ -312,12 +317,10 @@ class BillLine(models.Model):
         if self.start_on.day != 1 or self.end_on.day != 1:
             date_format = "N j, 'y"
             end = date(self.end_on, date_format)
-#            .strftime(date_format)
         else:
             end = date((self.end_on - datetime.timedelta(days=1)), date_format)
-#            ).strftime(date_format)
-        ini = date(self.start_on, date_format)
-        #.strftime(date_format)
+        ini = date(self.start_on, date_format).capitalize()
+        end = end.capitalize()
         if not self.end_on:
             return ini
         if ini == end:

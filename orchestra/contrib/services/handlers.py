@@ -245,6 +245,10 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         }))
     
     def generate_line(self, order, price, *dates, metric=1, discounts=None, computed=False):
+        """
+        discounts: already applied discounts on price
+        computed: price = price*size already performed
+        """
         if len(dates) == 2:
             ini, end = dates
         elif len(dates) == 1:
@@ -377,7 +381,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     size = self.get_price_size(order.new_billed_until, new_end)
                     price += price*size
                     order.new_billed_until = new_end
-            line = self.generate_line(order, price, ini, new_end or end, discounts=discounts, computed=True)
+            line = self.generate_line(
+                order, price, ini, new_end or end, discounts=discounts, computed=True)
             lines.append(line)
         return lines
     

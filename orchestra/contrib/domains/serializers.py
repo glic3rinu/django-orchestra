@@ -21,7 +21,7 @@ class RecordSerializer(serializers.ModelSerializer):
 
 class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     """ Validates if this zone generates a correct zone file """
-    records = RecordSerializer(required=False, many=True) #allow_add_remove=True)
+    records = RecordSerializer(required=False, many=True)
     
     class Meta:
         model = Domain
@@ -44,3 +44,35 @@ class DomainSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
             domain = domain_for_validation(self.instance, records)
             validators.validate_zone(domain.render_zone())
         return data
+    
+    def create(self, validated_data):
+        records = validated_data.pop('records')
+        domain = super(DomainSerializer, self).create(validated_data)
+        for record in records:
+            domain.records.create(type=record['type'], value=record['value'])
+        return domain
+    
+    def update(self, validated_data):
+        precords = validated_data.pop('records')
+        domain = super(DomainSerializer, self).update(validated_data)
+        to_delete = []
+        for erecord in domain.records.all():
+            match = False
+            for ix, precord in enumerate(precords):
+                if erecord.type == precord['type'] and erecord.value == precord['value']:
+                    match = True
+                    break
+            if match:
+                precords.remove(ix)
+            else:
+                to_delete.append(erecord)
+        for precord in precords:
+            try:
+                recycled = to_delete.pop()
+            except IndexError:
+                domain.records.create(type=precord['type'], value=precord['value'])
+            else:
+                recycled.type = precord['type']
+                recycled.value = precord['value']
+                recycled.save()
+        return domain

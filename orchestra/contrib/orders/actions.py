@@ -92,7 +92,7 @@ class BillSelectedOrders(object):
                     url = change_url(bills[0])
                 else:
                     url = reverse('admin:bills_bill_changelist')
-                    ids = ','.join(map(str, bills))
+                    ids = ','.join([str(b.id) for b in bills])
                     url += '?id__in=%s' % ids
                 msg = ungettext(
                     '<a href="{url}">One bill</a> has been created.',

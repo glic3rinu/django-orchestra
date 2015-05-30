@@ -76,8 +76,8 @@ def close_bills(modeladmin, request, queryset):
                 if num == 1:
                     url = change_url(transactions[0])
                 else:
-                    url = reverse('admin:transactions_transaction_changelist')
-                    url += 'id__in=%s' % ','.join(map(str, transactions))
+                    url = reverse('admin:payments_transaction_changelist')
+                    url += 'id__in=%s' % ','.join([str(t.id) for t in transactions])
                 context = {
                     'url': url,
                     'num': num,
@@ -109,19 +109,15 @@ close_bills.url_name = 'close'
 
 
 def send_bills(modeladmin, request, queryset):
-    num = 0
     for bill in queryset:
         if not validate_contact(request, bill):
             return
-        num += 1
-    if num == 1:
-        bill.send()
-    else:
-        # Batch email
-        queryset.send()
+    num = 0
     for bill in queryset:
+        bill.send()
         modeladmin.log_change(request, bill, 'Sent')
-    messages.success(request, ungetetx(
+        num += 1
+    messages.success(request, ungettext(
         _("One bill has been sent."),
         _("%i bills have been sent.") % num,
         num))

@@ -41,8 +41,8 @@ class SystemUserAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, Extende
     add_form = SystemUserCreationForm
     form = SystemUserChangeForm
     ordering = ('-id',)
-    actions = (delete_selected, set_permission, disable)
-    change_view_actions = actions
+    change_view_actions = (set_permission, disable)
+    actions = (delete_selected,) + change_view_actions
     
     def display_main(self, user):
         return user.is_main

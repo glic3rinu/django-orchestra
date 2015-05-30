@@ -31,10 +31,10 @@ class SystemUser(models.Model):
     """
     System users
     
-    Username max_length determined by LINUX system user lentgh: 32
+    Username max_length determined by LINUX system user/group lentgh: 32
     """
     username = models.CharField(_("username"), max_length=32, unique=True,
-        help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
+        help_text=_("Required. 32 characters or fewer. Letters, digits and ./-/_ only."),
         validators=[validators.validate_username])
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),

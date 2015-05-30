@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-28 09:23+0000\n"
+"POT-Creation-Date: 2015-05-29 09:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,61 +28,63 @@ msgstr "Vista"
 
 #: actions.py:55
 msgid "Selected bills should be in open state"
-msgstr ""
+msgstr "Les factures seleccionades han d'estar en estat obert"
 
 #: actions.py:73
 msgid "Selected bills have been closed"
-msgstr ""
+msgstr "Les factures seleccionades han estat tancades"
 
 #: actions.py:86
 #, python-format
 msgid "<a href=\"%(url)s\">One related transaction</a> has been created"
-msgstr ""
+msgstr "S'ha creat una <a href=\"%(url)s\">transacció</a>"
 
 #: actions.py:87
 #, python-format
 msgid "<a href=\"%(url)s\">%(num)i related transactions</a> have been created"
-msgstr ""
+msgstr "S'han creat les <a href=\"%(url)s\">%(num)i següents transaccions</a>"
 
 #: actions.py:93
 msgid "Are you sure about closing the following bills?"
-msgstr ""
+msgstr "Estàs a punt de tancar les següents factures, estàs segur?"
 
 #: actions.py:94
 msgid ""
 "Once a bill is closed it can not be further modified.</p><p>Please select a "
 "payment source for the selected bills"
 msgstr ""
+"Una vegada la factura estigui tancada no podrà ser modificada.</p><p>Si us "
+"plau selecciona un mètode de pagament per les factures seleccionades"
 
 #: actions.py:107
 msgid "Close"
-msgstr ""
+msgstr "Tanca"
 
 #: actions.py:125
 msgid "One bill has been sent."
-msgstr ""
+msgstr "S'ha creat una factura"
 
 #: actions.py:126
 #, python-format
 msgid "%i bills have been sent."
-msgstr ""
+msgstr "S'han enviat %i factures."
 
 #: actions.py:128
 msgid "Resend"
-msgstr ""
+msgstr "Reenviat"
 
 #: actions.py:189
 #, python-format
 msgid "%(norders)s orders and %(nlines)s lines undoed."
-msgstr ""
+msgstr "%(norders)s ordres i %(nlines)s línies desfetes."
 
 #: actions.py:208
 msgid "Lines moved"
-msgstr ""
+msgstr "Línies mogudes"
 
 #: admin.py:49 admin.py:93 admin.py:128 forms.py:11
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #: admin.py:80
 msgid "Description"
@@ -90,52 +92,52 @@ msgstr "Descripció"
 
 #: admin.py:88
 msgid "Subtotal"
-msgstr ""
+msgstr "Subtotal"
 
 #: admin.py:118
 msgid "Is open"
-msgstr ""
+msgstr "És oberta"
 
 #: admin.py:123
 msgid "Subline"
-msgstr ""
+msgstr "Sublínia"
 
 #: admin.py:157
 msgid "No bills selected."
-msgstr ""
+msgstr "No hi ha factures seleccionades"
 
 #: admin.py:164
 #, python-format
 msgid "Manage %s bill lines."
-msgstr ""
+msgstr "Gestiona %s línies de factura."
 
 #: admin.py:166
 msgid "Bill not in open state."
-msgstr ""
+msgstr "La factura no està en estat obert"
 
 #: admin.py:169
 msgid "Not all bills are in open state."
-msgstr ""
+msgstr "No totes les factures estan en estat obert"
 
 #: admin.py:170
 msgid "Manage bill lines of multiple bills."
-msgstr ""
+msgstr "Gestiona línies de factura de multiples factures."
 
 #: admin.py:190
 msgid "Raw"
-msgstr ""
+msgstr "Raw"
 
 #: admin.py:208
 msgid "Created"
-msgstr ""
+msgstr "Creada"
 
 #: admin.py:213
 msgid "lines"
-msgstr ""
+msgstr "línies"
 
 #: admin.py:218 templates/bills/microspective.html:118
 msgid "total"
-msgstr ""
+msgstr "total"
 
 #: admin.py:226 models.py:88 models.py:352
 msgid "type"
@@ -167,11 +169,11 @@ msgstr "Rectificació de quota de soci"
 
 #: filters.py:22
 msgid "Pro-forma"
-msgstr ""
+msgstr "Pro-forma"
 
 #: filters.py:41
 msgid "positive price"
-msgstr ""
+msgstr "preu positiu"
 
 #: filters.py:46 filters.py:64
 msgid "Yes"
@@ -183,69 +185,71 @@ msgstr "No"
 
 #: filters.py:59
 msgid "has bill contact"
-msgstr ""
+msgstr "té contacte de facturació"
 
 #: forms.py:9
 msgid "Number"
-msgstr ""
+msgstr "Número"
 
 #: forms.py:10
 msgid "Account"
-msgstr ""
+msgstr "Compte"
 
 #: forms.py:12
 msgid "Type"
-msgstr ""
+msgstr "Tipus"
 
 #: forms.py:13
 msgid "Source"
-msgstr ""
+msgstr "Font"
 
 #: helpers.py:10
 msgid ""
 "{relation} account \"{account}\" does not have a declared invoice contact. "
 "You should <a href=\"{url}#invoicecontact-group\">provide one</a>"
 msgstr ""
+"{relation} compte \"{account}\" no te un contacte de facturació. Hauries de "
+"<a href=\"{url}#invoicecontact-group\">proporcionar un</a>"
 
 #: helpers.py:17
 msgid "Related"
-msgstr ""
+msgstr "Relacionat"
 
 #: helpers.py:24
 msgid "Main"
-msgstr ""
+msgstr "Principal"
 
 #: models.py:23 models.py:86
 msgid "account"
-msgstr ""
+msgstr "compte"
 
 #: models.py:25
 msgid "name"
-msgstr ""
+msgstr "nom"
 
 #: models.py:26
 msgid "Account full name will be used when left blank."
-msgstr ""
+msgstr "S'emprarà el nom complet del compte quan es deixi en blanc."
 
 #: models.py:27
 msgid "address"
-msgstr ""
+msgstr "adreça"
 
 #: models.py:28
 msgid "city"
-msgstr ""
+msgstr "ciutat"
 
 #: models.py:30
 msgid "zip code"
-msgstr ""
+msgstr "codi postal"
 
 #: models.py:31
 msgid "Enter a valid zipcode."
-msgstr ""
+msgstr "Introdueix un codi postal vàlid."
 
 #: models.py:32
 msgid "country"
-msgstr ""
+msgstr "país"
 
 #: models.py:35
 msgid "VAT number"
@@ -253,51 +257,51 @@ msgstr "NIF"
 
 #: models.py:67
 msgid "Paid"
-msgstr ""
+msgstr "Pagat"
 
 #: models.py:68
 msgid "Pending"
-msgstr ""
+msgstr "Pendent"
 
 #: models.py:69
 msgid "Bad debt"
-msgstr ""
+msgstr "Incobrable"
 
 #: models.py:81
 msgid "Amendment Fee"
-msgstr ""
+msgstr "Rectificació de quota de soci"
 
 #: models.py:82
 msgid "Pro forma"
-msgstr ""
+msgstr "Pro forma"
 
 #: models.py:85
 msgid "number"
-msgstr ""
+msgstr "número"
 
 #: models.py:89
 msgid "created on"
-msgstr ""
+msgstr "creat el"
 
 #: models.py:90
 msgid "closed on"
-msgstr ""
+msgstr "tancat el"
 
 #: models.py:91
 msgid "open"
-msgstr ""
+msgstr "obert"
 
 #: models.py:92
 msgid "sent"
-msgstr ""
+msgstr "enviat"
 
 #: models.py:93
 msgid "due on"
-msgstr ""
+msgstr "es deu"
 
 #: models.py:94
 msgid "updated on"
-msgstr ""
+msgstr "actualitzada el"
 
 #: models.py:97
 msgid "comments"
@@ -305,11 +309,11 @@ msgstr "comentaris"
 
 #: models.py:98
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: models.py:285
 msgid "bill"
-msgstr ""
+msgstr "factura"
 
 #: models.py:286 models.py:350 templates/bills/microspective.html:73
 msgid "description"
@@ -332,7 +336,7 @@ msgstr "quantitat"
 #: models.py:290 templates/bills/microspective.html:77
 #: templates/bills/microspective.html:111
 msgid "subtotal"
-msgstr ""
+msgstr "subtotal"
 
 #: models.py:291
 msgid "tax"
@@ -340,67 +344,69 @@ msgstr "impostos"
 
 #: models.py:292
 msgid "start"
-msgstr ""
+msgstr "iniciar"
 
 #: models.py:293
 msgid "end"
-msgstr ""
+msgstr "finalitzar"
 
 #: models.py:295
 msgid "Informative link back to the order"
-msgstr ""
+msgstr "Enllaç informatiu de l'ordre"
 
 #: models.py:296
 msgid "order billed"
-msgstr ""
+msgstr "ordre facturada"
 
 #: models.py:297
 msgid "order billed until"
-msgstr ""
+msgstr "ordre facturada fins a"
 
 #: models.py:298
 msgid "created"
-msgstr ""
+msgstr "creada"
 
 #: models.py:300
 msgid "amended line"
-msgstr ""
+msgstr "línia rectificada"
 
 #: models.py:343
 msgid "Volume"
-msgstr ""
+msgstr "Volum"
 
 #: models.py:344
 msgid "Compensation"
-msgstr ""
+msgstr "Compensació"
 
 #: models.py:345
 msgid "Other"
-msgstr ""
+msgstr "Altre"
 
 #: models.py:349
 msgid "bill line"
-msgstr ""
+msgstr "línia de factura"
 
 #: templates/bills/microspective-fee.html:107
 msgid "Due date"
-msgstr ""
+msgstr "Data de pagament"
 
 #: templates/bills/microspective-fee.html:108
 #, python-format
 msgid "On %(bank_account)s"
-msgstr ""
+msgstr "Al %(bank_account)s"
 
 #: templates/bills/microspective-fee.html:114
 #, python-format
 msgid "From %(ini)s to %(end)s"
-msgstr ""
+msgstr "De %(ini)s a %(end)s"
 
 #: templates/bills/microspective-fee.html:121
 msgid ""
 "\n"
 "<strong>With your membership</strong> you are supporting ...\n"
 msgstr ""
+"\n"
+"<strong>Amb la teva quota de soci</strong> estàs donant suport ...\n"
 
 #: templates/bills/microspective.html:49
 msgid "DUE DATE"
@@ -411,18 +417,17 @@ msgid "TOTAL"
 msgstr "TOTAL"
 
 #: templates/bills/microspective.html:57
-#, fuzzy, python-format
-#| msgid "%(bill_type|upper)s DATE "
+#, python-format
 msgid "%(bill_type)s DATE"
-msgstr "DATA %(bill_type|upper)s"
+msgstr "DATA %(bill_type)s"
 
 #: templates/bills/microspective.html:74
 msgid "period"
-msgstr ""
+msgstr "període"
 
 #: templates/bills/microspective.html:75
 msgid "hrs/qty"
-msgstr "hrs/quant"
+msgstr "hrs/qnt"
 
 #: templates/bills/microspective.html:76
 msgid "rate/price"
@@ -446,15 +451,6 @@ msgid "PAYMENT"
 msgstr "PAGAMENT"
 
 #: templates/bills/microspective.html:140
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                    You can pay our <i>%(type)s</i> by bank transfer. "
-#| "<br>\n"
-#| "                    Please make sure to state your name and the <i>"
-#| "%(type)s</i> number.\n"
-#| "                    Our bank account number is <br>\n"
-#| "                    "
 msgid ""
 "\n"
 "                    You can pay our <i>%(type)s</i> by bank transfer.<br>\n"
@@ -464,8 +460,8 @@ msgid ""
 "                    "
 msgstr ""
 "\n"
-"Pots pagar aquesta <i>%(type)s</i> per transferencia banacaria.<br>Inclou el "
-"teu nom i el numero de <i>%(type)s</i>. El nostre compte bancari és"
+"Pots pagar aquesta <i>%(type)s</i> per transferència bancaria.<br>Inclou el "
+"teu nom i el número de <i>%(type)s</i>. El nostre compte bancari és"
 
 #: templates/bills/microspective.html:149
 msgid "QUESTIONS"
@@ -481,3 +477,9 @@ msgid ""
 "            your message.\n"
 "            "
 msgstr ""
+"\n"
+"            Si tens algun dubte o pregunta sobre la teva <i>%(type)s</i>, si "
+"us plau\n"
+"            contacta amb nosaltres a %(email)s. Et respondrem el més "
+"ràpidament possible.\n"
+"            "

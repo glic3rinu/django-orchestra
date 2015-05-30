@@ -99,7 +99,7 @@ class Transaction(models.Model):
         related_name='transactions')
     source = models.ForeignKey(PaymentSource, null=True, blank=True,
         verbose_name=_("source"), related_name='transactions')
-    process = models.ForeignKey('payments.TransactionProcess', null=True,
+    process = models.ForeignKey('payments.TransactionProcess', null=True, on_delete=models.SET_NULL,
         blank=True, verbose_name=_("process"), related_name='transactions')
     state = models.CharField(_("state"), max_length=32, choices=STATES,
         default=WAITTING_PROCESSING)
@@ -111,7 +111,7 @@ class Transaction(models.Model):
     objects = TransactionQuerySet.as_manager()
     
     def __str__(self):
-        return "Transaction #{}".format(self.id)
+        return "#%i" % self.id
     
     @property
     def account(self):

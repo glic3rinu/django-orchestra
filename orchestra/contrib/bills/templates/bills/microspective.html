@@ -135,7 +135,7 @@
         <div id="payment">
             <span class="title">{% trans "PAYMENT" %}</span>
                 {% if payment.message %}
-                    {{ payment.message | safe }}
+                    {{ payment.message|safe }}
                 {% else %}
                     {% blocktrans with type=bill.get_type_display.lower %}
                     You can pay our <i>{{ type }}</i> by bank transfer.<br>

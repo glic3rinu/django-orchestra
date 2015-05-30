@@ -1,6 +1,7 @@
 from functools import partial
 
 from django.contrib import messages
+from django.contrib.admin import actions
 from django.db import transaction
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
@@ -18,23 +19,25 @@ from .models import Transaction
 def process_transactions(modeladmin, request, queryset):
     processes = []
     if queryset.exclude(state=Transaction.WAITTING_PROCESSING).exists():
-        msg = _("Selected transactions must be on '{state}' state")
-        messages.error(request, msg.format(state=Transaction.WAITTING_PROCESSING))
+        messages.error(request,
+            _("Selected transactions must be on '{state}' state").format(
+                state=Transaction.WAITTING_PROCESSING)
+        )
         return
     for method, transactions in queryset.group_by('source__method').items():
         if method is not None:
             method = PaymentMethod.get(method)
             procs = method.process(transactions)
             processes += procs
-            for trans in transactions:
-                modeladmin.log_change(request, trans, _("Processed"))
+            for transaction in transactions:
+                modeladmin.log_change(request, transaction, _("Processed"))
     if not processes:
         return
     opts = modeladmin.model._meta
     num = len(queryset)
     context = {
         'title': ungettext(
-            _("Selected transaction has been processed."),
+            _("One selected transaction has been processed."),
             _("%s Selected transactions have been processed.") % num,
             num),
         'content_message': ungettext(
@@ -54,9 +57,9 @@ def process_transactions(modeladmin, request, queryset):
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_executed(modeladmin, request, queryset):
-    for trans in queryset:
-        trans.mark_as_executed()
-        modeladmin.log_change(request, trans, _("Executed"))
+    for transaction in queryset:
+        transaction.mark_as_executed()
+        modeladmin.log_change(request, transaction, _("Executed"))
     num = len(queryset)
     msg = ungettext(
         _("One selected transaction has been marked as executed."),
@@ -70,9 +73,9 @@ mark_as_executed.verbose_name = _("Mark as executed")
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_secured(modeladmin, request, queryset):
-    for trans in queryset:
-        trans.mark_as_secured()
-        modeladmin.log_change(request, trans, _("Secured"))
+    for transaction in queryset:
+        transaction.mark_as_secured()
+        modeladmin.log_change(request, transaction, _("Secured"))
     num = len(queryset)
     msg = ungettext(
         _("One selected transaction has been marked as secured."),
@@ -86,9 +89,9 @@ mark_as_secured.verbose_name = _("Mark as secured")
 @transaction.atomic
 @action_with_confirmation()
 def mark_as_rejected(modeladmin, request, queryset):
-    for trans in queryset:
-        trans.mark_as_rejected()
-        modeladmin.log_change(request, trans, _("Rejected"))
+    for transaction in queryset:
+        transaction.mark_as_rejected()
+        modeladmin.log_change(request, transaction, _("Rejected"))
     num = len(queryset)
     msg = ungettext(
         _("One selected transaction has been marked as rejected."),
@@ -157,9 +160,9 @@ abort.verbose_name = _("Abort")
 @transaction.atomic
 @action_with_confirmation(extra_context=_format_commit)
 def commit(modeladmin, request, queryset):
-    for trans in queryset:
-        trans.mark_as_rejected()
-        modeladmin.log_change(request, trans, _("Rejected"))
+    for transaction in queryset:
+        transaction.mark_as_rejected()
+        modeladmin.log_change(request, transaction, _("Rejected"))
     num = len(queryset)
     msg = ungettext(
         _("One selected transaction has been marked as rejected."),
@@ -168,3 +171,29 @@ def commit(modeladmin, request, queryset):
     modeladmin.message_user(request, msg)
 commit.url_name = 'commit'
 commit.verbose_name = _("Commit")
+
+
+def delete_selected(modeladmin, request, queryset):
+    """ Has to have same name as admin.actions.delete_selected """
+    if not queryset:
+        messages.warning(request, "No transaction process selected.")
+        return
+    if queryset.exclude(transactions__state=Transaction.WAITTING_EXECUTION).exists():
+        messages.error(request, "Done nothing. Not all related transactions in waitting execution.")
+        return
+    # Store before deleting
+    related_transactions = []
+    for process in queryset:
+        related_transactions.extend(process.transactions.filter(state=Transaction.WAITTING_EXECUTION))
+    response = actions.delete_selected(modeladmin, request, queryset)
+    if response is None:    
+        # Confirmation
+        num = 0
+        for transaction in related_transactions:
+            transaction.state = Transaction.WAITTING_PROCESSING
+            transaction.save(update_fields=('state',))
+            num += 1
+            modeladmin.log_change(request, transaction, _("Unprocessed"))
+        messages.success(request, "%i related transactions marked as waitting for processing." % num)
+    return response
+delete_selected.short_description = actions.delete_selected.short_description

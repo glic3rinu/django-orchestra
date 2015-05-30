@@ -142,7 +142,7 @@ class Bill(models.Model):
     def get_type(self):
         return self.type or self.get_class_type()
     
-    def set_number(self):
+    def get_number(self):
         cls = type(self)
         bill_type = self.get_type()
         if bill_type == self.BILL:
@@ -162,7 +162,7 @@ class Bill(models.Model):
         number_length = settings.BILLS_NUMBER_LENGTH
         zeros = (number_length - len(str(number))) * '0'
         number = zeros + str(number)
-        self.number = '{prefix}{year}{number}'.format(prefix=prefix, year=year, number=number)
+        return '{prefix}{year}{number}'.format(prefix=prefix, year=year, number=number)
     
     def get_due_date(self, payment=None):
         now = timezone.now()
@@ -178,13 +178,14 @@ class Bill(models.Model):
         if not self.due_on:
             self.due_on = self.get_due_date(payment=payment)
         self.total = self.get_total()
-        self.html = self.render(payment=payment)
         transaction = None
         if self.get_type() != self.PROFORMA:
             transaction = self.transactions.create(bill=self, source=payment, amount=self.total)
         self.closed_on = timezone.now()
         self.is_open = False
         self.is_sent = False
+        self.number = self.get_number()
+        self.html = self.render(payment=payment)
         self.save()
         return transaction
     
@@ -207,37 +208,37 @@ class Bill(models.Model):
         self.save(update_fields=['is_sent'])
     
     def render(self, payment=False, language=None):
-        if payment is False:
-            payment = self.account.paymentsources.get_default()
-        context = Context({
-            'bill': self,
-            'lines': self.lines.all().prefetch_related('sublines'),
-            'seller': self.seller,
-            'buyer': self.buyer,
-            'seller_info': {
-                'phone': settings.BILLS_SELLER_PHONE,
-                'website': settings.BILLS_SELLER_WEBSITE,
-                'email': settings.BILLS_SELLER_EMAIL,
-                'bank_account': settings.BILLS_SELLER_BANK_ACCOUNT,
-            },
-            'currency': settings.BILLS_CURRENCY,
-            'payment': payment and payment.get_bill_context(),
-            'default_due_date': self.get_due_date(payment=payment),
-            'now': timezone.now(),
-        })
-        template_name = 'BILLS_%s_TEMPLATE' % self.get_type()
-        template = getattr(settings, template_name, settings.BILLS_DEFAULT_TEMPLATE)
-        bill_template = loader.get_template(template)
         with translation.override(language or self.account.language):
+            if payment is False:
+                payment = self.account.paymentsources.get_default()
+            context = Context({
+                'bill': self,
+                'lines': self.lines.all().prefetch_related('sublines'),
+                'seller': self.seller,
+                'buyer': self.buyer,
+                'seller_info': {
+                    'phone': settings.BILLS_SELLER_PHONE,
+                    'website': settings.BILLS_SELLER_WEBSITE,
+                    'email': settings.BILLS_SELLER_EMAIL,
+                    'bank_account': settings.BILLS_SELLER_BANK_ACCOUNT,
+                },
+                'currency': settings.BILLS_CURRENCY,
+                'payment': payment and payment.get_bill_context(),
+                'default_due_date': self.get_due_date(payment=payment),
+                'now': timezone.now(),
+            })
+            template_name = 'BILLS_%s_TEMPLATE' % self.get_type()
+            template = getattr(settings, template_name, settings.BILLS_DEFAULT_TEMPLATE)
+            bill_template = loader.get_template(template)
             html = bill_template.render(context)
-        html = html.replace('-pageskip-', '<pdf:nextpage />')
+            html = html.replace('-pageskip-', '<pdf:nextpage />')
         return html
     
     def save(self, *args, **kwargs):
         if not self.type:
             self.type = self.get_type()
-        if not self.number or (self.number.startswith('O') and not self.is_open):
-            self.set_number()
+        if not self.number:
+            self.number = self.get_number()
         super(Bill, self).save(*args, **kwargs)
     
     def get_subtotals(self):

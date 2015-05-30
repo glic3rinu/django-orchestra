@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-28 09:23+0000\n"
+"POT-Creation-Date: 2015-05-28 12:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,47 +20,49 @@ msgstr ""
 
 #: actions.py:37
 msgid "Download"
-msgstr ""
+msgstr "Descarga"
 
 #: actions.py:47
 msgid "View"
-msgstr ""
+msgstr "Vista"
 
 #: actions.py:55
 msgid "Selected bills should be in open state"
-msgstr ""
+msgstr "Las facturas seleccionadas están en estado abierto"
 
 #: actions.py:73
 msgid "Selected bills have been closed"
-msgstr ""
+msgstr "Las facturas seleccionadas han sido cerradas"
 
 #: actions.py:86
 #, python-format
 msgid "<a href=\"%(url)s\">One related transaction</a> has been created"
-msgstr ""
+msgstr "Se ha creado una <a href=\"%(url)s\">transacción</a>"
 
 #: actions.py:87
 #, python-format
 msgid "<a href=\"%(url)s\">%(num)i related transactions</a> have been created"
-msgstr ""
+msgstr "Se han creado <a href=\"%(url)s\">%(num)i transacciones</a>"
 
 #: actions.py:93
 msgid "Are you sure about closing the following bills?"
-msgstr ""
+msgstr "Estás a punto de cerrar las sigüientes facturas. ¿Estás seguro?"
 
 #: actions.py:94
 msgid ""
 "Once a bill is closed it can not be further modified.</p><p>Please select a "
 "payment source for the selected bills"
 msgstr ""
+"Una vez cerrada la factura ya no se podrá modificar.</p><p>Por favor "
+"seleciona un metodo de pago para las facturas seleccionadas"
 
 #: actions.py:107
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
 
 #: actions.py:125
 msgid "One bill has been sent."
-msgstr ""
+msgstr "Se ha enviado una factura"
 
 #: actions.py:126
 #, python-format
@@ -143,7 +145,7 @@ msgstr ""
 
 #: admin.py:243
 msgid "Payment"
-msgstr ""
+msgstr "Pago"
 
 #: filters.py:17
 msgid "All"
@@ -151,19 +153,19 @@ msgstr ""
 
 #: filters.py:18 models.py:78
 msgid "Invoice"
-msgstr ""
+msgstr "Factura"
 
 #: filters.py:19 models.py:79
 msgid "Amendment invoice"
-msgstr ""
+msgstr "Factura rectificative"
 
 #: filters.py:20 models.py:80
 msgid "Fee"
-msgstr ""
+msgstr "Quota de socio"
 
 #: filters.py:21
 msgid "Amendment fee"
-msgstr ""
+msgstr "Quota rectificativa"
 
 #: filters.py:22
 msgid "Pro-forma"
@@ -382,17 +384,17 @@ msgstr ""
 
 #: templates/bills/microspective-fee.html:107
 msgid "Due date"
-msgstr ""
+msgstr "Fecha de pago"
 
 #: templates/bills/microspective-fee.html:108
 #, python-format
 msgid "On %(bank_account)s"
-msgstr ""
+msgstr "En %(bank_account)s"
 
 #: templates/bills/microspective-fee.html:114
 #, python-format
 msgid "From %(ini)s to %(end)s"
-msgstr ""
+msgstr "Desde %(ini)s hasta %(end)s"
 
 #: templates/bills/microspective-fee.html:121
 msgid ""
@@ -402,45 +404,45 @@ msgstr ""
 
 #: templates/bills/microspective.html:49
 msgid "DUE DATE"
-msgstr ""
+msgstr "VENCIMIENTO"
 
 #: templates/bills/microspective.html:53
 msgid "TOTAL"
-msgstr ""
+msgstr "TOTAL"
 
 #: templates/bills/microspective.html:57
 #, python-format
 msgid "%(bill_type)s DATE"
-msgstr ""
+msgstr "FECHA %(bill_type)s"
 
 #: templates/bills/microspective.html:74
 msgid "period"
-msgstr ""
+msgstr "periodo"
 
 #: templates/bills/microspective.html:75
 msgid "hrs/qty"
-msgstr ""
+msgstr "hrs/cant"
 
 #: templates/bills/microspective.html:76
 msgid "rate/price"
-msgstr ""
+msgstr "tarifa/precio"
 
 #: templates/bills/microspective.html:111
 #: templates/bills/microspective.html:114
 msgid "VAT"
-msgstr ""
+msgstr "IVA"
 
 #: templates/bills/microspective.html:114
 msgid "taxes"
-msgstr ""
+msgstr "impuestos"
 
 #: templates/bills/microspective.html:130
 msgid "COMMENTS"
-msgstr ""
+msgstr "COMENTARIOS"
 
 #: templates/bills/microspective.html:136
 msgid "PAYMENT"
-msgstr ""
+msgstr "PAGO"
 
 #: templates/bills/microspective.html:140
 #, python-format
@@ -452,6 +454,9 @@ msgid ""
 "                    Our bank account number is <br>\n"
 "                    "
 msgstr ""
+"\n"
+"Puedes pagar esta <i>%(type)s</i> por transferencia bancaria.<br>Incloye tu "
+"nombre y el número de <i>%(type)s</i>. Nuestra cuenta bancaria es"
 
 #: templates/bills/microspective.html:149
 msgid "QUESTIONS"
@@ -467,3 +472,9 @@ msgid ""
 "            your message.\n"
 "            "
 msgstr ""
+"\n"
+"            Si tienes alguna duda o pregunta sobre tu <i>%(type)s</i>, por "
+"favor\n"
+"            contacta con nosotros en %(email)s. Te responderemos lo más "
+"rapidamente posible.\n"
+"            "

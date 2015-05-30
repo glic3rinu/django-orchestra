@@ -14,9 +14,9 @@ from . import settings
 
 
 class Account(auth.AbstractBaseUser):
-    # Username max_length determined by LINUX system user lentgh: 32
+    # Username max_length determined by LINUX system user/group lentgh: 32
     username = models.CharField(_("username"), max_length=32, unique=True,
-        help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
+        help_text=_("Required. 32 characters or fewer. Letters, digits and ./-/_ only."),
         validators=[
             validators.RegexValidator(r'^[\w.-]+$', _("Enter a valid username."), 'invalid')
         ])
@@ -102,7 +102,7 @@ class Account(auth.AbstractBaseUser):
         extra_context.update(context)
         with translation.override(self.language):
             send_email_template(
-                template, extra_context, ('marcay@pangea.org',), email_from=email_from, html=html,
+                template, extra_context, email_to, email_from=email_from, html=html,
                 attachments=attachments)
     
     def get_full_name(self):

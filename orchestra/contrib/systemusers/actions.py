@@ -94,4 +94,3 @@ def delete_selected(modeladmin, request, queryset):
             return
     return admin.actions.delete_selected(modeladmin, request, queryset)
 delete_selected.short_description = _("Delete selected %(verbose_name_plural)s")
-

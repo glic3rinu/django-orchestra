@@ -1,0 +1,250 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-05-28 16:40+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: actions.py:21
+msgid "Selected transactions must be on '{state}' state"
+msgstr ""
+
+#: actions.py:30
+msgid "Processed"
+msgstr ""
+
+#: actions.py:37
+msgid "Selected transaction has been processed."
+msgstr ""
+
+#: actions.py:38
+#, python-format
+msgid "%s Selected transactions have been processed."
+msgstr ""
+
+#: actions.py:41
+msgid ""
+"The following transaction process has been generated, you may want to save "
+"it on your computer now."
+msgstr ""
+
+#: actions.py:43
+#, python-format
+msgid ""
+"The following %s transaction processes have been generated, you may want to "
+"save it on your computer now."
+msgstr ""
+
+#: actions.py:46
+msgid "Process"
+msgstr ""
+
+#: actions.py:59 actions.py:130 models.py:93 models.py:161
+msgid "Executed"
+msgstr ""
+
+#: actions.py:62
+msgid "One selected transaction has been marked as executed."
+msgstr ""
+
+#: actions.py:63
+#, python-format
+msgid "%s selected transactions have been marked as executed."
+msgstr ""
+
+#: actions.py:67 actions.py:138
+msgid "Mark as executed"
+msgstr ""
+
+#: actions.py:75 models.py:94
+msgid "Secured"
+msgstr ""
+
+#: actions.py:78
+msgid "One selected transaction has been marked as secured."
+msgstr ""
+
+#: actions.py:79
+#, python-format
+msgid "%s selected transactions have been marked as secured."
+msgstr ""
+
+#: actions.py:83
+msgid "Mark as secured"
+msgstr ""
+
+#: actions.py:91 actions.py:162 models.py:95
+msgid "Rejected"
+msgstr ""
+
+#: actions.py:94 actions.py:165
+msgid "One selected transaction has been marked as rejected."
+msgstr ""
+
+#: actions.py:95 actions.py:166
+#, python-format
+msgid "%s selected transactions have been marked as rejected."
+msgstr ""
+
+#: actions.py:99
+msgid "Mark as rejected"
+msgstr ""
+
+#: actions.py:133
+msgid "One selected process has been marked as executed."
+msgstr ""
+
+#: actions.py:134
+#, python-format
+msgid "%s selected processes have been marked as executed."
+msgstr ""
+
+#: actions.py:146 models.py:162
+msgid "Aborted"
+msgstr ""
+
+#: actions.py:149
+msgid "One selected process has been aborted."
+msgstr ""
+
+#: actions.py:150
+#, python-format
+msgid "%s selected processes have been aborted."
+msgstr ""
+
+#: actions.py:154
+msgid "Abort"
+msgstr ""
+
+#: actions.py:170
+msgid "Commit"
+msgstr ""
+
+#: admin.py:42
+msgid "ID"
+msgstr ""
+
+#: admin.py:101
+msgid "proc"
+msgstr ""
+
+#: admin.py:152
+msgid "Transactions"
+msgstr ""
+
+#: methods/creditcard.py:11
+msgid "Label"
+msgstr ""
+
+#: methods/creditcard.py:12
+msgid "Use a name such as \"Jo's Visa\" to remember which card it is."
+msgstr ""
+
+#: methods/creditcard.py:30
+msgid "Credit card"
+msgstr ""
+
+#: methods/sepadirectdebit.py:23 methods/sepadirectdebit.py:30
+msgid "Name"
+msgstr ""
+
+#: methods/sepadirectdebit.py:39
+msgid "SEPA Direct Debit"
+msgstr ""
+
+#: methods/sepadirectdebit.py:48
+msgid ""
+"This bill will be automatically charged to your bank account  with IBAN "
+"number<br><strong>%s</strong>."
+msgstr ""
+"Aquesta factura es cobrarà automaticament en el teu compte bancari amb IBAN "
+"<br><strong>%s</strong>."
+
+#: models.py:19
+msgid "account"
+msgstr ""
+
+#: models.py:21
+msgid "method"
+msgstr ""
+
+#: models.py:23 models.py:166
+msgid "data"
+msgstr ""
+
+#: models.py:24
+msgid "active"
+msgstr ""
+
+#: models.py:91
+msgid "Waitting processing"
+msgstr ""
+
+#: models.py:92
+msgid "Waitting execution"
+msgstr ""
+
+#: models.py:98
+msgid "bill"
+msgstr ""
+
+#: models.py:101
+msgid "source"
+msgstr ""
+
+#: models.py:103
+msgid "process"
+msgstr ""
+
+#: models.py:104 models.py:168
+msgid "state"
+msgstr ""
+
+#: models.py:106
+msgid "amount"
+msgstr ""
+
+#: models.py:108 models.py:169
+msgid "created"
+msgstr ""
+
+#: models.py:109
+msgid "modified"
+msgstr ""
+
+#: models.py:124
+msgid "New transactions can not be allocated for this bill."
+msgstr ""
+
+#: models.py:160
+msgid "Created"
+msgstr ""
+
+#: models.py:163
+msgid "Commited"
+msgstr ""
+
+#: models.py:167
+msgid "file"
+msgstr ""
+
+#: models.py:170
+msgid "updated"
+msgstr ""
+
+#: models.py:173
+msgid "Transaction processes"
+msgstr ""

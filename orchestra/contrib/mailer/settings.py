@@ -13,7 +13,7 @@ MAILER_MESSAGES_CLEANUP_DAYS = Setting('MAILER_MESSAGES_CLEANUP_DAYS',
 )
 
 
-MAILER_NON_QUEUED_MAILS_PER_REQUEST_THRESHOLD = Setting('MAILER_NON_QUEUED_MAILS_PER_REQUEST_THRESHOLD',
+MAILER_NON_QUEUED_PER_REQUEST_THRESHOLD = Setting('MAILER_NON_QUEUED_PER_REQUEST_THRESHOLD',
     2,
-    help_text=_("Number of emails that will be sent directly before starting to queue them."),
+    help_text=_("Number of emails that will be sent immediately before starting to queue them."),
 )

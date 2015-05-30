@@ -15,8 +15,6 @@ def render_email_template(template, context):
     """
     if isinstance(context, dict):
         context = Context(context)
-    if isinstance(to, str):
-        to = [to]
     
     if not 'site' in context:
         from orchestra import settings
@@ -32,6 +30,8 @@ def render_email_template(template, context):
 
 
 def send_email_template(template, context, to, email_from=None, html=None, attachments=[]):
+    if isinstance(to, str):
+        to = [to]
     subject, message = render_email_template(template, context)
     msg = EmailMultiAlternatives(subject, message, email_from, to, attachments=attachments)
     if html:

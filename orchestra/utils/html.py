@@ -7,7 +7,6 @@ def html_to_pdf(html, pagination=False):
     """ converts HTL to PDF using wkhtmltopdf """
     context = {
         'pagination': textwrap.dedent("""\
-            --footer-center "Page [page] of [topage]"\\
             --footer-center "Page [page] of [topage]" \\
             --footer-font-name sans \\
             --footer-font-size 7 \\
@@ -20,6 +19,6 @@ def html_to_pdf(html, pagination=False):
             --use-xserver \\
             %(pagination)s \\
             --margin-bottom 22 \\
-            --margin-top 20 - -\
+            --margin-top 20 - - \
         """) % context
     return run(cmd, stdin=html.encode('utf-8')).stdout

@@ -50,7 +50,7 @@ class Message(models.Model):
     
     def sent(self):
         self.state = self.SENT
-        self.save()
+        self.save(update_fiields=('state',))
     
     def log(self, error):
         result = SMTPLog.SUCCESS

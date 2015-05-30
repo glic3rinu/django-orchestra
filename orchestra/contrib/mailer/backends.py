@@ -12,11 +12,10 @@ class EmailBackend(BaseEmailBackend):
     """
     A wrapper that manages a queued SMTP system.
     """
-    messages = 0
-    
     def send_messages(self, email_messages):
         if not email_messages:
             return
+        # Count messages per request
         cache = get_request_cache()
         key = 'mailer.sent_messages'
         sent_messages = cache.get(key) or 0
@@ -24,7 +23,7 @@ class EmailBackend(BaseEmailBackend):
         cache.set(key, sent_messages)
         
         is_bulk = len(email_messages) > 1
-        if sent_messages > settings.MAILER_NON_QUEUED_MAILS_PER_REQUEST_THRESHOLD:
+        if sent_messages > settings.MAILER_NON_QUEUED_PER_REQUEST_THRESHOLD:
             is_bulk = True
         default_priority = Message.NORMAL if is_bulk else Message.CRITICAL
         num_sent = 0

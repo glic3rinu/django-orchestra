@@ -45,7 +45,7 @@ class SEPADirectDebit(PaymentMethod):
     due_delta = datetime.timedelta(days=5)
     
     def get_bill_message(self):
-        return _("This bill will been automatically charged to your bank account "
+        return _("This bill will be automatically charged to your bank account "
                  " with IBAN number<br><strong>%s</strong>.") % self.instance.number
     
     @classmethod
@@ -211,7 +211,7 @@ class SEPADirectDebit(PaymentMethod):
                 ),
                 E.DbtrAcct(                                 # Debtor Account
                     E.Id(
-                        E.IBAN(data['iban'])
+                        E.IBAN(data['iban'].replace(' ', ''))
                     ),
                 ),
             )
@@ -246,7 +246,7 @@ class SEPADirectDebit(PaymentMethod):
                 ),
                 E.CdtrAcct(                                 # Creditor Account
                     E.Id(
-                        E.IBAN(data['iban'])
+                        E.IBAN(data['iban'].replace(' ', ''))
                     ),
                 ),
             )
@@ -279,7 +279,8 @@ class SEPADirectDebit(PaymentMethod):
         xsd_path = os.path.join(path, xsd)
         schema_doc = etree.parse(xsd_path)
         schema = etree.XMLSchema(schema_doc)
-        sepa = etree.parse(StringIO(etree.tostring(sepa)))
+        sepa = StringIO(etree.tostring(sepa).decode('utf8'))
+        sepa = etree.parse(sepa)
         schema.assertValid(sepa)
         process.file = file_name
         process.save(update_fields=['file'])

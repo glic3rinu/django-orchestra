@@ -122,8 +122,8 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     fields = ('data', 'file_url', 'created_at')
     readonly_fields = ('data', 'file_url', 'display_transactions', 'created_at')
     inlines = [TransactionInline]
-    actions = (actions.mark_process_as_executed, actions.abort, actions.commit)
-    change_view_actions = actions
+    change_view_actions = (actions.mark_process_as_executed, actions.abort, actions.commit)
+    actions = change_view_actions + (actions.delete_selected,)
     
     def file_url(self, process):
         if process.file:
@@ -138,7 +138,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         # Because of values_list this query doesn't benefit from prefetch_related
         tx_ids = process.transactions.values_list('id', flat=True)
         for tx_id in tx_ids:
-            ids.append('#%i' % tx_id)
+            ids.append(str(tx_id))
             counter += 1
             if counter > 10:
                 counter = 0

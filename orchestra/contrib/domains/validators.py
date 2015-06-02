@@ -49,21 +49,19 @@ def validate_zone_interval(value):
 
 def validate_zone_label(value):
     """
-    http://www.ietf.org/rfc/rfc1035.txt
-    The labels must follow the rules for ARPANET host names. They must
-    start with a letter, end with a letter or digit, and have as interior
-    characters only letters, digits, and hyphen. There are also some
-    restrictions on the length. Labels must be 63 characters or less.
+    Allowable characters in a label for a host name are only ASCII letters, digits, and the `-' character.
+    Labels may not be all numbers, but may have a leading digit (e.g., 3com.com).
+    Labels must end and begin only with a letter or digit. See [RFC 1035] and [RFC 1123].
     """
-    if not re.match(r'^[a-z][\.\-0-9a-z]*[\.0-9a-z]$', value):
-        msg = _("Labels must start with a letter, end with a letter or digit, "
-                "and have as interior characters only letters, digits, and hyphen")
+    if not re.match(r'^[a-z0-9][\.\-0-9a-z]*[\.0-9a-z]$', value):
+        msg = _("Labels must start and end with a letter or digit, "
+                "and have as interior characters only letters, digits, and hyphen.")
         raise ValidationError(msg)
     if not value.endswith('.'):
-        msg = _("Use a fully expanded domain name ending with a dot")
+        msg = _("Use a fully expanded domain name ending with a dot.")
         raise ValidationError(msg)
     if len(value) > 63:
-        raise ValidationError(_("Labels must be 63 characters or less"))
+        raise ValidationError(_("Labels must be 63 characters or less."))
 
 
 def validate_mx_record(value):

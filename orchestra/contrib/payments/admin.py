@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeViewActionsMixin, ExtendedModelAdmin
@@ -7,7 +8,7 @@ from orchestra.admin.utils import admin_colored, admin_link
 from orchestra.contrib.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
-from . import actions
+from . import actions, helpers
 from .methods import PaymentMethod
 from .models import PaymentSource, Transaction, TransactionProcess
 
@@ -166,6 +167,14 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
             elif obj.state == TransactionProcess.ABORTED:
                 exclude = ['mark_process_as_executed', 'abort', 'commit']
         return [action for action in actions if action.__name__ not in exclude]
+    
+    def delete_view(self, request, object_id, extra_context=None):
+        queryset = self.model.objects.filter(id=object_id)
+        related_transactions = helpers.pre_delete_processes(self, request, queryset)
+        response = super(TransactionProcessAdmin, self).delete_view(request, object_id, extra_context)
+        if isinstance(response, HttpResponseRedirect):
+            helpers.post_delete_processes(self, request, related_transactions)
+        return response
 
 
 admin.site.register(PaymentSource, PaymentSourceAdmin)

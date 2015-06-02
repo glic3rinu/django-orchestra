@@ -4,6 +4,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
+from orchestra.models.fields import PrivateFileField
 from orchestra.models.queryset import group_by
 
 from . import settings
@@ -164,7 +165,7 @@ class TransactionProcess(models.Model):
     )
     
     data = JSONField(_("data"), blank=True)
-    file = models.FileField(_("file"), blank=True)
+    file = PrivateFileField(_("file"), blank=True)
     state = models.CharField(_("state"), max_length=16, choices=STATES, default=CREATED)
     created_at = models.DateTimeField(_("created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated"), auto_now=True)

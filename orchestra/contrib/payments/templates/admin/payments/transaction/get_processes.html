@@ -6,7 +6,7 @@
     <p>{{ content_message }}</p>
     <ul>
     {% for proc in processes %}
-        <li> <a href="{% url admin:payments_transactionprocess_change' proc.pk|admin_urlquote %}">Process #{{ proc.id }}</a>
+        <li> <a href="{% url 'admin:payments_transactionprocess_change' proc.pk|admin_urlquote %}">Process #{{ proc.id }}</a>
         {% if proc.file %}
             <ul><li>File: <a href="{{ proc.file.url }}">{{ proc.file }}</a></li></ul>
         {% endif %}

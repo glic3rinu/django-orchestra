@@ -107,7 +107,7 @@
 </div>
 <div id="totals">
     <br>&nbsp;<br>
-    {% for tax, subtotal in bill.get_subtotals.items %}
+    {% for tax, subtotal in bill.compute_subtotals.items %}
         <span class="subtotal column-title">{% trans "subtotal" %} {{ tax }}% {% trans "VAT" %}</span>
         <span class="subtotal column-value">{{ subtotal | first }} &{{ currency.lower }};</span>
         <br>

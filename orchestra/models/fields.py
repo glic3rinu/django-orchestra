@@ -1,5 +1,9 @@
+import os
+
 from django.core import exceptions
+from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models.fields.files import FileField, FieldFile
 from django.utils.text import capfirst
 
 from ..forms.fields import MultiSelectFormField
@@ -58,7 +62,32 @@ class NullableCharField(models.CharField):
          return value or None
 
 
-if isinstalled('south'):
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^orchestra\.models\.fields\.MultiSelectField"])
-    add_introspection_rules([], ["^orchestra\.models\.fields\.NullableCharField"])
+class PrivateFieldFile(FieldFile):
+    @property
+    def url(self):
+        self._require_file()
+        app_label = self.instance._meta.app_label
+        model_name  = self.instance._meta.object_name.lower()
+        field_name = self.field.name
+        pk = self.instance.pk
+        filename = os.path.basename(self.path)
+        args = [app_label, model_name, field_name, pk, filename]
+        return reverse('private-media', args=args)
+    
+    @property
+    def condition(self):
+        return self.field.condition
+    
+    @property
+    def attachment(self):
+        return self.field.attachment
+
+
+class PrivateFileField(FileField):
+    attr_class = PrivateFieldFile
+    
+    def __init__(self, verbose_name=None, name=None, upload_to='', storage=None, attachment=True,
+                 condition=lambda request, instance: request.user.is_superuser, **kwargs):
+        super(PrivateFileField, self).__init__(verbose_name, name, upload_to, storage, **kwargs)
+        self.condition = condition
+        self.attachment = attachment

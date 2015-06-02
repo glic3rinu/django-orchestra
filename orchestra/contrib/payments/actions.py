@@ -11,6 +11,7 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 from orchestra.admin.decorators import action_with_confirmation
 from orchestra.admin.utils import change_url
 
+from . import helpers
 from .methods import PaymentMethod
 from .models import Transaction
 
@@ -175,25 +176,9 @@ commit.verbose_name = _("Commit")
 
 def delete_selected(modeladmin, request, queryset):
     """ Has to have same name as admin.actions.delete_selected """
-    if not queryset:
-        messages.warning(request, "No transaction process selected.")
-        return
-    if queryset.exclude(transactions__state=Transaction.WAITTING_EXECUTION).exists():
-        messages.error(request, "Done nothing. Not all related transactions in waitting execution.")
-        return
-    # Store before deleting
-    related_transactions = []
-    for process in queryset:
-        related_transactions.extend(process.transactions.filter(state=Transaction.WAITTING_EXECUTION))
+    related_transactions = helpers.pre_delete_processes(modelamdin, request, queryset)
     response = actions.delete_selected(modeladmin, request, queryset)
-    if response is None:    
-        # Confirmation
-        num = 0
-        for transaction in related_transactions:
-            transaction.state = Transaction.WAITTING_PROCESSING
-            transaction.save(update_fields=('state',))
-            num += 1
-            modeladmin.log_change(request, transaction, _("Unprocessed"))
-        messages.success(request, "%i related transactions marked as waitting for processing." % num)
+    if response is None:
+        helpers.post_delete_processes(modelamdin, request, related_transactions)
     return response
 delete_selected.short_description = actions.delete_selected.short_description

@@ -161,6 +161,9 @@ STATIC_URL = '/static/'
 # Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Path used for database translations files
 LOCALE_PATHS = (

@@ -14,8 +14,6 @@ from .models import Message
 
 
 def send_message(message, num=0, connection=None, bulk=100):
-    if not message.pk:
-        message.save()
     if num >= bulk:
         connection.close()
         connection = None

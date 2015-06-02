@@ -21,11 +21,10 @@ urlpatterns = [
         'rest_framework.authtoken.views.obtain_auth_token',
         name='api-token-auth'
     ),
-    # TODO make this private
-    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root': settings.MEDIA_ROOT,
-        'show_indexes': True
-    })
+    url(r'^media/(.+)/(.+)/(.+)/(.+)/(.+)$',
+        'orchestra.views.serve_private_media',
+        name='private-media'
+    ),
 ]
 
 

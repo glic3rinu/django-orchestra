@@ -93,7 +93,7 @@ class Bill(models.Model):
     due_on = models.DateField(_("due on"), null=True, blank=True)
     updated_on = models.DateField(_("updated on"), auto_now=True)
     # TODO allways compute total or what?
-    total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=12, decimal_places=2, null=True)
     comments = models.TextField(_("comments"), blank=True)
     html = models.TextField(_("HTML"), blank=True)
     
@@ -105,6 +105,10 @@ class Bill(models.Model):
     def __str__(self):
         return self.number
     
+    @classmethod
+    def get_class_type(cls):
+        return cls.__name__.upper()
+    
     @cached_property
     def seller(self):
         return Account.get_main().billcontact
@@ -113,20 +117,29 @@ class Bill(models.Model):
     def buyer(self):
         return self.account.billcontact
     
+    @property
+    def has_multiple_pages(self):
+        return self.type != self.FEE
+    
     @cached_property
     def payment_state(self):
         if self.is_open or self.get_type() == self.PROFORMA:
             return self.OPEN
         secured = self.transactions.secured().amount() or 0
-        if secured >= self.total:
+        if abs(secured) >= abs(self.get_total()):
             return self.PAID
         elif self.transactions.exclude_rejected().exists():
             return self.PENDING
         return self.BAD_DEBT
     
-    @property
-    def has_multiple_pages(self):
-        return self.type != self.FEE
+    def get_total(self):
+        if not self.is_open:
+            return self.total
+        try:
+            return self.computed_total
+        except AttributeError:
+            self.computed_total = self.compute_total()
+            return self.computed_total
     
     def get_payment_state_display(self):
         value = self.payment_state
@@ -134,10 +147,6 @@ class Bill(models.Model):
     
     def get_current_transaction(self):
         return self.transactions.exclude_rejected().first()
-    
-    @classmethod
-    def get_class_type(cls):
-        return cls.__name__.upper()
     
     def get_type(self):
         return self.type or self.get_class_type()
@@ -177,7 +186,7 @@ class Bill(models.Model):
             payment = self.account.paymentsources.get_default()
         if not self.due_on:
             self.due_on = self.get_due_date(payment=payment)
-        self.total = self.get_total()
+        self.total = self.compute_total()
         transaction = None
         if self.get_type() != self.PROFORMA:
             transaction = self.transactions.create(bill=self, source=payment, amount=self.total)
@@ -241,7 +250,7 @@ class Bill(models.Model):
             self.number = self.get_number()
         super(Bill, self).save(*args, **kwargs)
     
-    def get_subtotals(self):
+    def compute_subtotals(self):
         subtotals = {}
         lines = self.lines.annotate(totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)))
         for tax, total in lines.values_list('tax', 'totals'):
@@ -250,7 +259,7 @@ class Bill(models.Model):
             subtotals[tax] = (subtotal, round(tax/100*subtotal, 2))
         return subtotals
     
-    def get_total(self):
+    def compute_total(self):
         totals = self.lines.annotate(
             totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100))
         return round(totals.aggregate(Sum('totals'))['totals__sum'], 2)
@@ -304,7 +313,7 @@ class BillLine(models.Model):
     def __str__(self):
         return "#%i" % self.pk
     
-    def get_total(self):
+    def compute_total(self):
         """ Computes subline discounts """
         if self.pk:
             return self.subtotal + sum([sub.total for sub in self.sublines.all()])

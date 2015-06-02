@@ -407,20 +407,17 @@ uwsgi --reload /tmp/project-master.pid
 touch /tmp/somefile
 
 
-
 # Change zone ttl
 # batch zone edditing
 # inherit registers from parent?
-
-# Disable pagination on membership fees (allways one page)
 
 # datetime metric storage granularity: otherwise innacurate detection of billed metric on order.billed_on
 
 # Serializers.validation migration to DRF3: grep -r 'attrs, source' *|grep -v '~'
 serailzer self.instance on create.
 
-# generate Direct debit q19 on a protected path, or store it on the transaction.proc
-# regenerate direct debit q19
-# add transproc.method for regeneration
+# set_password serializer: "just-the-password" not {"password": "password"}
 
-# TODO wrapp admin delete: delete proc undo processing on related transactions
+# use namedtuples!
+
+# Negative transactionsx

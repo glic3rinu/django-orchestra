@@ -185,7 +185,9 @@ class SEPADirectDebit(PaymentMethod):
             data = transaction.source.data
             yield E.DrctDbtTxInf(                           # Direct Debit Transaction Info
                 E.PmtId(                                    # Payment Id
-                    E.EndToEndId(str(transaction.id))       # Payment Id/End to End
+                    E.EndToEndId(                           # Payment Id/End to End
+                        str(transaction.bill.number)+'-'+str(transaction.id)
+                    )
                 ),
                 E.InstdAmt(                                 # Instructed Amount
                     str(abs(transaction.amount)),
@@ -207,7 +209,7 @@ class SEPADirectDebit(PaymentMethod):
                     )
                 ),
                 E.Dbtr(                                     # Debtor
-                    E.Nm(account.name),                     # Name
+                    E.Nm(account.billcontact.get_name()),         # Name
                 ),
                 E.DbtrAcct(                                 # Debtor Account
                     E.Id(

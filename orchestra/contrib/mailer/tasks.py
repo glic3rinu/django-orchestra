@@ -10,6 +10,7 @@ from . import engine, settings
 
 @task
 def send_message(message):
+    message.save()
     engine.send_message(message)
 
 

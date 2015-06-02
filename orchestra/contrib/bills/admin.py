@@ -17,7 +17,7 @@ from orchestra.contrib.accounts.admin import AccountAdminMixin, AccountAdmin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
 from . import settings, actions
-from .filters import BillTypeListFilter, HasBillContactListFilter, PositivePriceListFilter
+from .filters import BillTypeListFilter, HasBillContactListFilter, TotalListFilter, PaymentStateListFilter
 from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillContact
 
 
@@ -39,7 +39,7 @@ class BillLineInline(admin.TabularInline):
     order_link = admin_link('order', display='pk')
     
     def display_total(self, line):
-        total = line.get_total()
+        total = line.compute_total()
         sublines = line.sublines.all()
         if sublines:
             content = '\n'.join(['%s: %s' % (sub.description, sub.total) for sub in sublines])
@@ -89,7 +89,7 @@ class ClosedBillLineInline(BillLineInline):
     display_subtotal.allow_tags = True
     
     def display_total(self, line):
-        return line.get_total()
+        return line.compute_total()
     display_total.short_description = _("Total")
     display_total.allow_tags = True
     
@@ -180,7 +180,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'number', 'type_link', 'account_link', 'created_on_display',
         'num_lines', 'display_total', 'display_payment_state', 'is_open', 'is_sent'
     )
-    list_filter = (BillTypeListFilter, 'is_open', 'is_sent', PositivePriceListFilter)
+    list_filter = (BillTypeListFilter, 'is_open', 'is_sent', TotalListFilter, PaymentStateListFilter)
     add_fields = ('account', 'type', 'is_open', 'due_on', 'comments')
     fieldsets = (
         (None, {
@@ -238,7 +238,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         state = bill.get_payment_state_display().upper()
         color = PAYMENT_STATE_COLORS.get(bill.payment_state, 'grey')
         return '<a href="{url}" style="color:{color}">{name}</a>'.format(
-                url=url, color=color, name=state)
+            url=url, color=color, name=state)
     display_payment_state.allow_tags = True
     display_payment_state.short_description = _("Payment")
     

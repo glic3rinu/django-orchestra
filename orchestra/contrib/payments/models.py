@@ -131,22 +131,22 @@ class Transaction(models.Model):
     def mark_as_processed(self):
         self.check_state(self.WAITTING_PROCESSING)
         self.state = self.WAITTING_EXECUTION
-        self.save(update_fields=['state'])
+        self.save(update_fields=['state', 'modified_at'])
     
     def mark_as_executed(self):
         self.check_state(self.WAITTING_EXECUTION)
         self.state = self.EXECUTED
-        self.save(update_fields=['state'])
+        self.save(update_fields=['state', 'modified_at'])
     
     def mark_as_secured(self):
         self.check_state(self.EXECUTED)
         self.state = self.SECURED
-        self.save(update_fields=['state'])
+        self.save(update_fields=['state', 'modified_at'])
     
     def mark_as_rejected(self):
         self.check_state(self.EXECUTED)
         self.state = self.REJECTED
-        self.save(update_fields=['state'])
+        self.save(update_fields=['state', 'modified_at'])
 
 
 class TransactionProcess(models.Model):

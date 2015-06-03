@@ -182,3 +182,15 @@ def delete_selected(modeladmin, request, queryset):
         helpers.post_delete_processes(modelamdin, request, related_transactions)
     return response
 delete_selected.short_description = actions.delete_selected.short_description
+
+
+def report(modeladmin, request, queryset):
+    if queryset.model == Transaction:
+        transactions = queryset
+    else:
+        transactions = queryset.values_list('transactions__id', flat=True).distinct()
+        transactions = Transaction.objects.filter(id__in=transactions)
+    context = {
+        'transactions': transactions
+    }
+    return render(request, 'admin/payments/transaction/report.html', context)

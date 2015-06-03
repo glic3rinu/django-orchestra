@@ -109,7 +109,7 @@ class BackendOperationInline(admin.TabularInline):
     
     def instance_link(self, operation):
         link = admin_link('instance')(self, operation)
-        if not link.startswith('<a'):
+        if link == '---':
             return _("Deleted {0}").format(operation.instance_repr or '-'.join(
                 (escape(operation.content_type), escape(operation.object_id))))
         return link

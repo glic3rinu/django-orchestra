@@ -87,11 +87,11 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
             )
         }),
     )
-    actions = (
-        actions.process_transactions, actions.mark_as_executed,
-        actions.mark_as_secured, actions.mark_as_rejected
+    change_view_actions = (
+        actions.process_transactions, actions.mark_as_executed, actions.mark_as_secured,
+        actions.mark_as_rejected,
     )
-    change_view_actions = actions
+    actions = change_view_actions + (actions.report,)
     filter_by_account_fields = ('bill', 'source')
     change_readonly_fields = ('amount', 'currency')
     readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link', 'source_link')
@@ -123,7 +123,9 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     fields = ('data', 'file_url', 'created_at')
     readonly_fields = ('data', 'file_url', 'display_transactions', 'created_at')
     inlines = [TransactionInline]
-    change_view_actions = (actions.mark_process_as_executed, actions.abort, actions.commit)
+    change_view_actions = (
+        actions.mark_process_as_executed, actions.abort, actions.commit, actions.report
+    )
     actions = change_view_actions + (actions.delete_selected,)
     
     def file_url(self, process):

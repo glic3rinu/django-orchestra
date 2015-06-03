@@ -5,7 +5,7 @@ from functools import wraps
 from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models
 from django.shortcuts import redirect
 import importlib
@@ -107,12 +107,16 @@ def admin_link(*args, **kwargs):
             return '---'
     if not getattr(obj, 'pk', None):
         return '---'
-    url = change_url(obj)
     display = kwargs.get('display')
     if display:
         display = getattr(obj, display, 'merda')
     else:
         display = obj
+    try:
+        url = change_url(obj)
+    except NoReverseMatch:
+        # Does not has admin
+        return str(display)
     extra = ''
     if kwargs['popup']:
         extra = 'onclick="return showAddAnotherPopup(this);"'

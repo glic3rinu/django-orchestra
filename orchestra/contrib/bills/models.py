@@ -136,7 +136,7 @@ class Bill(models.Model):
         if not self.is_open:
             return self.total
         try:
-            return self.computed_total
+            return round(self.computed_total, 2)
         except AttributeError:
             self.computed_total = self.compute_total()
             return self.computed_total
@@ -199,8 +199,7 @@ class Bill(models.Model):
         return transaction
     
     def send(self):
-        html = self.html or self.render()
-        pdf = html_to_pdf(html, pagination=self.has_multiple_pages)
+        pdf = self.as_pdf()
         self.account.send_email(
             template=settings.BILLS_EMAIL_NOTIFICATION_TEMPLATE,
             context={
@@ -242,6 +241,10 @@ class Bill(models.Model):
             html = bill_template.render(context)
             html = html.replace('-pageskip-', '<pdf:nextpage />')
         return html
+    
+    def as_pdf(self):
+        html = self.html or self.render()
+        return html_to_pdf(html, pagination=self.has_multiple_pages)
     
     def save(self, *args, **kwargs):
         if not self.type:

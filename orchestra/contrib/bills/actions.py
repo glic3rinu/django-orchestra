@@ -1,6 +1,6 @@
+import io
 import zipfile
 from datetime import date
-from io import StringIO
 
 from django.contrib import messages
 from django.contrib.admin import helpers
@@ -22,17 +22,17 @@ from .helpers import validate_contact
 
 def download_bills(modeladmin, request, queryset):
     if queryset.count() > 1:
-        stringio = StringIO()
-        archive = zipfile.ZipFile(stringio, 'w')
+        bytesio = io.BytesIO()
+        archive = zipfile.ZipFile(bytesio, 'w')
         for bill in queryset:
-            pdf = html_to_pdf(bill.html or bill.render())
+            pdf = bill.as_pdf()
             archive.writestr('%s.pdf' % bill.number, pdf)
         archive.close()
-        response = HttpResponse(stringio.getvalue(), content_type='application/pdf')
+        response = HttpResponse(bytesio.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="orchestra-bills.zip"'
         return response
     bill = queryset.get()
-    pdf = html_to_pdf(bill.html or bill.render(), pagination=bill.has_multiple_pages)
+    pdf = bill.as_pdf()
     return HttpResponse(pdf, content_type='application/pdf')
 download_bills.verbose_name = _("Download")
 download_bills.url_name = 'download'

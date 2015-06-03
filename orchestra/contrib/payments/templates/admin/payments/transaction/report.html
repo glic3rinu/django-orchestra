@@ -1,0 +1,54 @@
+{% load i18n %}
+
+<html>
+<head>
+    <title>Transaction Report</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+    @page {
+       size: 11.69in 8.27in;
+    }
+    table {
+       font-family: sans;
+       font-size: 10px;
+       max-width: 10in;
+    }
+    table tr:nth-child(even) {
+        background-color: #eee;
+    }
+    table tr:nth-child(odd) {
+        background-color: #fff;
+    }
+    table th {
+        color: white;
+        background-color: grey;
+    }
+    </style>
+</head>
+<body>
+<table>
+<tr id="transaction">
+    <th class="title column-id">ID</th>
+    <th class="title column-bill">{% trans "Bill" %}</th>
+    <th class="title column-billcontant">{% trans "Contact" %}</th>
+    <th class="title column-iban">IBAN</th>
+    <th class="title column-amount">{% trans "Amount" %}</th>
+    <th class="title column-state">{% trans "State" %}</th>
+    <th class="title column-created">{% trans "Created" %}</th>
+    <th class="title column-updated">{% trans "Updated" %}</th>
+</tr>
+{% for transaction in transactions %}
+<tr>
+    <td class="item column-id">{{ transaction.id }}</td>
+    <td class="item column-bill">{{ transaction.bill.number }}</td>
+    <td class="item column-billcontant">{{ transaction.bill.buyer.get_name }}</td>
+    <td class="item column-iban">{{ transaction.source.data.iban }}</td>
+    <td class="item column-amount">{{ transaction.amount }}</td>
+    <td class="item column-state">{{ transaction.get_state_display }}</td>
+    <td class="item column-state">{{ transaction.created_at|date }}</td>
+    <td class="item column-state">{{ transaction.modified_at|date }}</td>
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>

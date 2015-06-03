@@ -76,7 +76,7 @@ class Command(BaseCommand):
         servers = []
         # Print scripts
         for key, value in scripts.items():
-            route, __ = key
+            route, __, __ = key
             backend, operations = value
             servers.append(str(route.host))
             self.stdout.write('# Execute on %s' % route.host)

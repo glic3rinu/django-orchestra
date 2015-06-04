@@ -59,28 +59,22 @@ class PHPApp(AppType):
     def get_detail(self):
         return self.instance.data.get('php_version', '')
     
-    @cached
-    def get_php_options(self):
-        php_version = float(self.get_php_version_number())
-        php_options = AppOption.get_option_groups()[AppOption.PHP]
-        return [op for op in php_options if (op.deprecated or 999) > php_version]
-    
-    def get_php_init_vars(self, merge=False):
+    def get_php_init_vars(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
         """
         process php options for inclusion on php.ini
-        per_account=True merges all (account, webapp.type) options
         """
         init_vars = OrderedDict()
-        options = self.instance.options.all().order_by('name')
-        if merge:
-            # Get options from the same account and php_version webapps
-            options = []
-            php_version = self.get_php_version()
-            webapps = self.instance.account.webapps.filter(type=self.instance.type)
-            for webapp in webapps:
-                if webapp.type_instance.get_php_version() == php_version:
-                    options += list(webapp.options.all())
-        init_vars = OrderedDict((opt.name, opt.value) for opt in options)
+        options = self.instance.get_options(merge=merge)
+        php_version_number = float(self.get_php_version_number())
+        timeout = None
+        for name, value in options.items():
+            if name == 'timeout':
+                timeout = value
+            else:
+                opt = AppOption.get(name)
+                # Filter non-deprecated PHP options
+                if opt.group == opt.PHP and (opt.deprecated or 999) > php_version_number:
+                    init_vars[name] = value
         # Enable functions
         if self.PHP_DISABLED_FUNCTIONS:
             enable_functions = init_vars.pop('enable_functions', '')
@@ -94,10 +88,9 @@ class PHPApp(AppType):
                         disable_functions.append(function)
                 init_vars['disable_functions'] = ','.join(disable_functions)
         # process timeout
-        timeout = self.instance.options.filter(name='timeout').first()
         if timeout:
             # Give a little slack here
-            timeout = str(int(timeout.value)-2)
+            timeout = str(int(timeout)-2)
             init_vars['max_execution_time'] = timeout
         # Custom error log
         if self.PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:

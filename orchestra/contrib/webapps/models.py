@@ -56,12 +56,17 @@ class WebApp(models.Model):
         self.data = apptype.clean_data()
     
     @cached
-    def get_options(self, **kwargs):
-        options = OrderedDict()
-        if not kwargs:
+    def get_options(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
+        kwargs = {
+            'webapp_id': self.pk,
+        }
+        if merge:
             kwargs = {
-                'webapp_id': self.pk,
+                'webapp__account': self.account_id,
+                'webapp__type': self.type,
+                'webapp__data__contains': '"php_version":"%s"' % self.data['php_version'],
             }
+        options = OrderedDict()
         qs = WebAppOption.objects.filter(**kwargs)
         for name, value in qs.values_list('name', 'value').order_by('name'):
             if name in options:

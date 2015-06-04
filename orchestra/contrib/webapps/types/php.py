@@ -60,9 +60,7 @@ class PHPApp(AppType):
         return self.instance.data.get('php_version', '')
     
     def get_php_init_vars(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
-        """
-        process php options for inclusion on php.ini
-        """
+        """ Prepares PHP options for inclusion on php.ini """
         init_vars = OrderedDict()
         options = self.instance.get_options(merge=merge)
         php_version_number = float(self.get_php_version_number())
@@ -75,7 +73,7 @@ class PHPApp(AppType):
                 # Filter non-deprecated PHP options
                 if opt.group == opt.PHP and (opt.deprecated or 999) > php_version_number:
                     init_vars[name] = value
-        # Enable functions
+        # Disable functions
         if self.PHP_DISABLED_FUNCTIONS:
             enable_functions = init_vars.pop('enable_functions', '')
             if enable_functions or self.is_fpm:
@@ -87,7 +85,7 @@ class PHPApp(AppType):
                     if function not in enable_functions:
                         disable_functions.append(function)
                 init_vars['disable_functions'] = ','.join(disable_functions)
-        # process timeout
+        # Process timeout
         if timeout:
             # Give a little slack here
             timeout = str(int(timeout)-2)
@@ -97,7 +95,7 @@ class PHPApp(AppType):
             context = self.get_directive_context()
             error_log_path = os.path.normpath(self.PHP_ERROR_LOG_PATH % context)
             init_vars['error_log'] = error_log_path
-        # auto update max_post_size
+        # Auto update max_post_size
         if 'upload_max_filesize' in init_vars:
             upload_max_filesize = init_vars['upload_max_filesize']
             post_max_size = init_vars.get('post_max_size', '0')

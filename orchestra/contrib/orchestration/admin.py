@@ -8,6 +8,7 @@ from orchestra.admin.utils import admin_link, admin_date, admin_colored, display
 
 from . import settings, helpers
 from .backends import ServiceBackend
+from .forms import RouteForm
 from .models import Server, Route, BackendLog, BackendOperation
 from .widgets import RouteBackendSelect
 
@@ -22,19 +23,6 @@ STATE_COLORS = {
     BackendLog.REVOKED: 'magenta',
     BackendLog.NOTHING: 'green',
 }
-
-
-from django import forms
-from orchestra.forms.widgets import SpanWidget
-from orchestra.forms.widgets import paddingCheckboxSelectMultiple
-class RouteForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(RouteForm, self).__init__(*args, **kwargs)
-        if self.instance:
-            self.fields['backend'].widget = SpanWidget()
-            self.fields['backend'].required = False
-            self.fields['async_actions'].widget = paddingCheckboxSelectMultiple(45)
-            self.fields['async_actions'].choices = ((action, action) for action in self.instance.backend_class.actions)
 
 
 class RouteAdmin(ExtendedModelAdmin):
@@ -131,6 +119,7 @@ class BackendLogAdmin(admin.ModelAdmin):
     )
     list_display_links = ('id', 'backend')
     list_filter = ('state', 'backend')
+    date_hierarchy = 'created_at'
     inlines = (BackendOperationInline,)
     fields = (
         'backend', 'server_link', 'state', 'mono_script', 'mono_stdout',

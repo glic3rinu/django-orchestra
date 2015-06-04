@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.core.exceptions import ValidationError
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -25,7 +26,7 @@ class DatabaseUserCreationForm(forms.ModelForm):
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             msg = _("The two password fields didn't match.")
-            raise forms.ValidationError(msg)
+            raise ValidationError(msg)
         return password2
 
 
@@ -45,29 +46,34 @@ class DatabaseCreationForm(DatabaseUserCreationForm):
     
     def __init__(self, *args, **kwargs):
         super(DatabaseCreationForm, self).__init__(*args, **kwargs)
-        account_id = self.initial.get('account', None)
+        account_id = self.initial.get('account', self.initial_account)
         if account_id:
             qs = self.fields['user'].queryset.filter(account=account_id)
             choices = [ (u.pk, "%s (%s)" % (u, u.get_type_display())) for u in qs ]
             self.fields['user'].queryset = qs
             self.fields['user'].choices = [(None, '--------'),] + choices
     
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if DatabaseUser.objects.filter(username=username).exists():
+            raise ValidationError("Provided username already exists.")
+    
     def clean_password2(self):
         username = self.cleaned_data.get('username')
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
         if username and not (password1 and password2):
-            raise forms.ValidationError(_("Missing password"))
+            raise ValidationError(_("Missing password"))
         if password1 and password2 and password1 != password2:
             msg = _("The two password fields didn't match.")
-            raise forms.ValidationError(msg)
+            raise ValidationError(msg)
         return password2
     
     def clean_user(self):
         user = self.cleaned_data.get('user')
         if user and user.type != self.cleaned_data.get('type'):
             msg = _("Database type and user type doesn't match")
-            raise forms.ValidationError(msg)
+            raise ValidationError(msg)
         return user
     
     def clean(self):
@@ -75,9 +81,9 @@ class DatabaseCreationForm(DatabaseUserCreationForm):
         if 'user' in cleaned_data and 'username' in cleaned_data:
             msg = _("Use existing user or create a new one?")
             if cleaned_data['user'] and self.cleaned_data['username']:
-                raise forms.ValidationError(msg)
+                raise ValidationError(msg)
             elif not (cleaned_data['username'] or cleaned_data['user']):
-                raise forms.ValidationError(msg)
+                raise ValidationError(msg)
         return cleaned_data
 
 

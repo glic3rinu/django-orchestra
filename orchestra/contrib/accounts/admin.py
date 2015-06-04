@@ -193,6 +193,8 @@ class AccountAdminMixin(object):
             if obj and not obj.account.is_active:
                 help_text += "<br><b style='color:red;'>This user's account is dissabled</b>"
             field.help_text = _(help_text)
+        # Not available in POST
+        form.initial_account = self.get_changeform_initial_data(request).get('account')
         return form
     
     def get_fields(self, request, obj=None):

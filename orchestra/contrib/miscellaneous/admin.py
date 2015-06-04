@@ -94,8 +94,8 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
         def clean_identifier(self, service=service):
             identifier = self.cleaned_data['identifier']
             validator_path = settings.MISCELLANEOUS_IDENTIFIER_VALIDATORS.get(service.name, None)
-            validator = import_class(validator_path)
-            if validator:
+            if validator_path:
+                validator = import_class(validator_path)
                 validator(identifier)
             return identifier
         
@@ -116,6 +116,7 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
             }
             setattr(obj, self.plugin_field, plugin.model.objects.get(**kwargs))
         obj.save()
+
 
 admin.site.register(MiscService, MiscServiceAdmin)
 admin.site.register(Miscellaneous, MiscellaneousAdmin)

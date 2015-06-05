@@ -39,7 +39,7 @@ class AppType(plugins.Plugin):
     
     @classmethod
     @cached
-    def get_options(cls):
+    def get_group_options(cls):
         """ Get enabled options based on cls.option_groups """
         groups = AppOption.get_option_groups()
         options = []
@@ -52,11 +52,11 @@ class AppType(plugins.Plugin):
         return options
     
     @classmethod
-    def get_options_choices(cls):
+    def get_group_options_choices(cls):
         """ Generates grouped choices ready to use in Field.choices """
         # generators can not be @cached
         yield (None, '-------')
-        for group, options in cls.get_options():
+        for group, options in cls.get_group_options():
             if group is None:
                 for option in options:
                     yield (option.name, option.verbose_name)

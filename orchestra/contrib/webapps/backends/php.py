@@ -163,7 +163,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         super(PHPBackend, self).commit()
     
     def get_fpm_config(self, webapp, context):
-        options = webapp.get_options(merge=self.MERGE)
+        options = webapp.type_instance.get_options()
         context.update({
             'init_vars': webapp.type_instance.get_php_init_vars(merge=self.MERGE),
             'max_children': options.get('processes', settings.WEBAPPS_FPM_DEFAULT_MAX_CHILDREN),
@@ -217,7 +217,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             exec %(php_binary_path)s%(php_init_vars)s""") % context
     
     def get_fcgid_cmd_options(self, webapp, context):
-        options = webapp.get_options(merge=self.MERGE)
+        options = webapp.type_instance.get_options()
         maps = OrderedDict(
             MaxProcesses=options.get('processes', None),
             IOTimeout=options.get('timeout', None),

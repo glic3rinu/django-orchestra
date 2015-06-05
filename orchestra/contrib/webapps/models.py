@@ -55,17 +55,7 @@ class WebApp(models.Model):
         a = apptype.clean_data()
         self.data = apptype.clean_data()
     
-    @cached
-    def get_options(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
-        kwargs = {
-            'webapp_id': self.pk,
-        }
-        if merge:
-            kwargs = {
-                'webapp__account': self.account_id,
-                'webapp__type': self.type,
-                'webapp__data__contains': '"php_version":"%s"' % self.data['php_version'],
-            }
+    def get_options(self, **kwargs):
         options = OrderedDict()
         qs = WebAppOption.objects.filter(**kwargs)
         for name, value in qs.values_list('name', 'value').order_by('name'):
@@ -102,7 +92,7 @@ class WebApp(models.Model):
 class WebAppOption(models.Model):
     webapp = models.ForeignKey(WebApp, verbose_name=_("Web application"),
         related_name='options')
-    name = models.CharField(_("name"), max_length=128, choices=AppType.get_options_choices())
+    name = models.CharField(_("name"), max_length=128, choices=AppType.get_group_options_choices())
     value = models.CharField(_("value"), max_length=256)
     
     class Meta:

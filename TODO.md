@@ -421,3 +421,6 @@ serailzer self.instance on create.
 # use namedtuples!
 
 # Negative transactionsx
+
+
+# check certificate: websites directive ssl + domains search on miscellaneous

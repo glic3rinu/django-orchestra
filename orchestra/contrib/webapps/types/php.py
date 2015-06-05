@@ -59,10 +59,24 @@ class PHPApp(AppType):
     def get_detail(self):
         return self.instance.data.get('php_version', '')
     
+    @cached
+    def get_options(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
+        """ adapter to webapp.get_options that performs merging of PHP options """
+        kwargs = {
+            'webapp_id': self.instance.pk,
+        }
+        if merge:
+            kwargs = {
+                # webapp__type is not used because wordpress != php != symlink...
+                'webapp__account': self.instance.account_id,
+                'webapp__data__contains': '"php_version":"%s"' % self.instance.data['php_version'],
+            }
+        return self.instance.get_options(**kwargs)
+    
     def get_php_init_vars(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
         """ Prepares PHP options for inclusion on php.ini """
         init_vars = OrderedDict()
-        options = self.instance.get_options(merge=merge)
+        options = self.get_options(merge=merge)
         php_version_number = float(self.get_php_version_number())
         timeout = None
         for name, value in options.items():

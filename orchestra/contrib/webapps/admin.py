@@ -40,7 +40,7 @@ class WebAppOptionInline(admin.TabularInline):
                 webapp_modeladmin = get_modeladmin(self.parent_model)
                 plugin_value = webapp_modeladmin.get_plugin_value(request)
                 plugin = AppType.get(plugin_value)
-            kwargs['choices'] = plugin.get_options_choices()
+            kwargs['choices'] = plugin.get_group_options_choices()
             # Help text based on select widget
             target = 'this.id.replace("name", "value")'
             kwargs['widget'] = DynamicHelpTextSelect(target, self.OPTIONS_HELP_TEXT)

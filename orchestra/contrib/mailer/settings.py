@@ -17,3 +17,8 @@ MAILER_NON_QUEUED_PER_REQUEST_THRESHOLD = Setting('MAILER_NON_QUEUED_PER_REQUEST
     2,
     help_text=_("Number of emails that will be sent immediately before starting to queue them."),
 )
+
+
+MAILER_BULK_MESSAGES = Setting('MAILER_BULK_MESSAGES',
+    500,
+)

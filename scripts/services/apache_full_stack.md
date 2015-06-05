@@ -37,10 +37,7 @@ The goal of this setup is having a high-performance state-of-the-art deployment 
     a2enmod ssl
     #a2enmod auth_pam
     a2enmod proxy_fcgi
-    a2emmod userdir
     ```
-    * TODO compat module
-    https://httpd.apache.org/docs/trunk/mod/mod_access_compat.html
 
 
 3. Configure `suexec-custom`
@@ -55,9 +52,6 @@ The goal of this setup is having a high-performance state-of-the-art deployment 
     mkdir -p /var/log/apache2/virtual/
     chown -R www-data:www-data /var/log/apache2
     ```
-
-
-
 
 
 5. Restart Apache

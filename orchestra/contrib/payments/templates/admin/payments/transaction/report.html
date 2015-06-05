@@ -30,6 +30,7 @@
 <tr id="transaction">
     <th class="title column-id">ID</th>
     <th class="title column-bill">{% trans "Bill" %}</th>
+    <th class="title column-account">{% trans "Account" %}</th>
     <th class="title column-billcontant">{% trans "Contact" %}</th>
     <th class="title column-iban">IBAN</th>
     <th class="title column-amount">{% trans "Amount" %}</th>
@@ -41,6 +42,7 @@
 <tr>
     <td class="item column-id">{{ transaction.id }}</td>
     <td class="item column-bill">{{ transaction.bill.number }}</td>
+    <td class="item column-account">{{ transaction.bill.account.username }}</td>
     <td class="item column-billcontant">{{ transaction.bill.buyer.get_name }}</td>
     <td class="item column-iban">{{ transaction.source.data.iban }}</td>
     <td class="item column-amount">{{ transaction.amount }}</td>

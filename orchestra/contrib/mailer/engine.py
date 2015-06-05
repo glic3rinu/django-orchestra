@@ -14,7 +14,7 @@ from .models import Message
 
 
 def send_message(message, num=0, connection=None, bulk=100):
-    if num >= bulk:
+    if num >= bulk and connection is not None:
         connection.close()
         connection = None
     if connection is None:

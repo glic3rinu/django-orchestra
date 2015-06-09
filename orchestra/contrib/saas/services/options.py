@@ -56,7 +56,7 @@ class SoftwareServiceForm(PluginDataForm):
         else:
             site_link = '&lt;site_name&gt;.%s' % self.plugin.site_base_domain
         self.fields['site_url'].widget.display = site_link
-        self.fields['name'].label = _("Username")
+        self.fields['name'].label = _("Site name") if self.plugin.site_base_domain else _("Username")
     
     def clean_password2(self):
         if not self.is_change:

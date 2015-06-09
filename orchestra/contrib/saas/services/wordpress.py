@@ -7,10 +7,6 @@ from .options import SoftwareService, SoftwareServiceForm
 
 class WordPressForm(SoftwareServiceForm):
     email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size':'40'}))
-    
-    def __init__(self, *args, **kwargs):
-        super(WordPressForm, self).__init__(*args, **kwargs)
-        self.fields['name'].label = _("Site name")
 
 
 class WordPressDataSerializer(serializers.Serializer):
@@ -18,9 +14,14 @@ class WordPressDataSerializer(serializers.Serializer):
 
 
 class WordPressService(SoftwareService):
+    name = 'wordpress'
     verbose_name = "WordPress"
     form = WordPressForm
     serializer = WordPressDataSerializer
     icon = 'orchestra/icons/apps/WordPress.png'
-    site_base_domain = 'blogs.orchestra.lan'
     change_readonly_fileds = ('email',)
+    
+    @property
+    def site_base_domain(self):
+        from .. import settings
+        return settings.SAAS_WORDPRESS_BASE_DOMAIN

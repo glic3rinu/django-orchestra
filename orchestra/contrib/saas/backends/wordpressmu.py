@@ -13,8 +13,8 @@ class WordpressMuBackend(ServiceController):
     Creates a wordpress site on a WordPress MultiSite installation.
     """
     verbose_name = _("Wordpress multisite")
-    model = 'webapps.WebApp'
-    default_route_match = "webapp.type == 'wordpress-mu'"
+    model = 'saas.SaaS'
+    default_route_match = "saas.service == 'wordpress'"
     doc_settings = (settings,
         ('SAAS_WORDPRESS_ADMIN_PASSWORD', 'SAAS_WORDPRESS_BASE_URL')
     )

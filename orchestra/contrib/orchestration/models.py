@@ -211,7 +211,7 @@ class Route(models.Model):
                 bool(self.matches(obj))
             except Exception as exception:
                 name = type(exception).__name__
-                raise ValidationError(': '.join((name, exception)))
+                raise ValidationError(': '.join((name, str(exception))))
     
     def action_is_async(self, action):
         return action in self.async_actions

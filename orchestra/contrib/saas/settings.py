@@ -32,6 +32,11 @@ SAAS_WORDPRESS_BASE_URL = Setting('SAAS_WORDPRESS_BASE_URL',
 )
 
 
+SAAS_WORDPRESS_BASE_DOMAIN = Setting('SAAS_WORDPRESS_BASE_DOMAIN',
+    'blogs.{}'.format(ORCHESTRA_BASE_DOMAIN),
+)
+
+
 SAAS_DOKUWIKI_TEMPLATE_PATH = Setting('SAAS_DOKUWIKI_TEMPLATE_PATH',
     '/home/httpd/htdocs/wikifarm/template.tar.gz'
 )
@@ -42,9 +47,32 @@ SAAS_DOKUWIKI_FARM_PATH = Setting('WEBSITES_DOKUWIKI_FARM_PATH',
 )
 
 
+SAAS_DOKUWIKI_BASE_DOMAIN = Setting('SAAS_DOKUWIKI_BASE_DOMAIN',
+    'dokuwiki.{}'.format(ORCHESTRA_BASE_DOMAIN),
+)
+
+
+SAAS_DOKUWIKI_TEMPLATE_PATH = Setting('SAAS_DOKUWIKI_TEMPLATE_PATH',
+    '/var/www/wikifarm/template.tar.gz',
+)
+
+SAAS_DOKUWIKI_FARM_PATH = Setting('SAAS_DOKUWIKI_FARM_PATH',
+    '/var/www/wikifarm/farm'
+)
+
+
+SAAS_DOKUWIKI_USER = Setting('SAAS_DOKUWIKI_USER',
+    'orchestra'
+)
+
+
+SAAS_DOKUWIKI_GROUP = Setting('SAAS_DOKUWIKI_GROUP',
+    'orchestra'
+)
+
+
 SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
     '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s',
-    
 )
 
 

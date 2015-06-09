@@ -13,7 +13,8 @@ class DrupalMuBackend(ServiceController):
     Creates a Drupal site on a Drupal multisite installation
     """
     verbose_name = _("Drupal multisite")
-    model = 'webapps.WebApp'
+    model = 'saas.SaaS'
+    default_route_match = "saas.service == 'drupal'"
     doc_settings = (settings,
         ('SAAS_DRUPAL_SITES_PATH',)
     )

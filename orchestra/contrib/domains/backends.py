@@ -111,7 +111,7 @@ class Bind9MasterDomainBackend(ServiceController):
         from orchestra.contrib.orchestration.manager import router
         operation = Operation(backend, domain, Operation.SAVE)
         servers = []
-        for routes in router.get_routes(operation):
+        for route in router.get_routes(operation):
             servers.append(route.host.get_ip())
         return servers
     
@@ -125,6 +125,7 @@ class Bind9MasterDomainBackend(ServiceController):
         ips = []
         masters_ips = self.get_masters_ips(domain)
         records = domain.get_records()
+        # Slaves from NS
         for record in records.by_type(Record.NS):
             hostname = record.value.rstrip('.')
             # First try with a DNS query, a more reliable source
@@ -141,6 +142,10 @@ class Bind9MasterDomainBackend(ServiceController):
                     addr = records.by_type(Record.A)[0].value
             if addr not in masters_ips:
                 ips.append(addr)
+        # Slaves from internal networks
+        if not settings.DOMAINS_MASTERS:
+            for server in self.get_servers(domain, Bind9SlaveDomainBackend):
+                ips.append(server)
         return OrderedSet(sorted(ips))
     
     def get_context(self, domain):

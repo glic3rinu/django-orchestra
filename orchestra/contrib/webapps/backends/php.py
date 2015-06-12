@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.contrib.orchestration import ServiceController
 
 from . import WebAppServiceMixin
-from .. import settings
+from .. import settings, utils
 
 
 class PHPBackend(WebAppServiceMixin, ServiceController):
@@ -36,10 +36,13 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         self.create_webapp_dir(context)
         if webapp.type_instance.is_fpm:
             self.save_fpm(webapp, context)
-            self.delete_fcgid(webapp, context)
         elif webapp.type_instance.is_fcgid:
             self.save_fcgid(webapp, context)
-            self.delete_fpm(webapp, context)
+        else:
+            raise TypeError("Unknown PHP execution type")
+        # Clean php fcgid/fpm apps in order to effectively support change of php-version
+        self.delete_fcgid(webapp, context, preserve=True)
+        self.delete_fpm(webapp, context, preserve=True)
         self.set_under_construction(context)
     
     def save_fpm(self, webapp, context):
@@ -103,16 +106,39 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             self.delete_fcgid(webapp, context)
         self.delete_webapp_dir(context)
     
-    def delete_fpm(self, webapp, context):
-        # Better not delete a pool used by other apps
-        if not self.MERGE:
-            self.append("rm -f %(fpm_path)s" % context)
+    def has_sibilings(self, webapp, context):
+        return type(webapp).objects.filter(
+            account=webapp.account_id,
+            data__contains='"php_version":"%s"' % context['php_version'],
+        ).exclude(id=webapp.pk).exists()
     
-    def delete_fcgid(self, webapp, context):
-        # Better not delete a wrapper used by other apps
-        if not self.MERGE:
-            self.append("rm -f %(wrapper_path)s" % context)
-            self.append("rm -f %(cmd_options_path)s" % context)
+    def delete_fpm(self, webapp, context, preserve=False):
+        """ delete all pools in order to efectively support changing php-fpm version """
+        context_copy = dict(context)
+        for php_version, verbose in settings.WEBAPPS_PHP_VERSIONS:
+            if preserve and php_version == context['php_version']:
+                continue
+            php_version_number = utils.extract_version_number(php_version)
+            context_copy['php_version_number'] = php_version_number
+            if not self.MERGE or not self.has_sibilings(webapp, context_copy):
+                context_copy['fpm_path'] = settings.WEBAPPS_PHPFPM_POOL_PATH % context_copy
+                self.append("rm -f %(fpm_path)s" % context_copy)
+    
+    def delete_fcgid(self, webapp, context, preserve=False):
+        """ delete all pools in order to efectively support changing php-fcgid version """
+        context_copy = dict(context)
+        for php_version, verbose in settings.WEBAPPS_PHP_VERSIONS:
+            if preserve and php_version == context['php_version']:
+                continue
+            php_version_number = utils.extract_version_number(php_version)
+            context_copy['php_version_number'] = php_version_number
+            if not self.MERGE or not self.has_sibilings(webapp, context_copy):
+                context_copy.update({
+                    'wrapper_path': settings.WEBAPPS_FCGID_WRAPPER_PATH % context_copy,
+                    'cmd_options_path': settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH % context_copy,
+                })
+                self.append("rm -f %(wrapper_path)s" % context_copy)
+                self.append("rm -f %(cmd_options_path)s" % context_copy)
     
     def prepare(self):
         super(PHPBackend, self).prepare()
@@ -237,7 +263,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             return ' \\\n    '.join(cmd_options)
     
     def update_fcgid_context(self, webapp, context):
-        wrapper_path = webapp.type_instance.FCGID_WRAPPER_PATH % context
+        wrapper_path = settings.WEBAPPS_FCGID_WRAPPER_PATH % context
         context.update({
             'wrapper': self.get_fcgid_wrapper(webapp, context),
             'wrapper_path': wrapper_path,

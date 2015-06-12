@@ -30,7 +30,7 @@ WEBAPPS_FPM_DEFAULT_MAX_CHILDREN = Setting('WEBAPPS_FPM_DEFAULT_MAX_CHILDREN',
 
 
 WEBAPPS_PHPFPM_POOL_PATH = Setting('WEBAPPS_PHPFPM_POOL_PATH',
-    '/etc/php5/fpm/pool.d/%(user)s-%(app_name)s.conf',
+    '/etc/php%(php_version_number)s/fpm/pool.d/%(user)s-%(app_name)s.conf',
     help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_php_names),
     validators=[Setting.string_format_validator(_php_names)],
 )
@@ -84,6 +84,8 @@ WEBAPPS_TYPES = Setting('WEBAPPS_TYPES', (
 
 
 WEBAPPS_PHP_VERSIONS = Setting('WEBAPPS_PHP_VERSIONS', (
+        ('5.6-fpm', 'PHP 5.6 FPM'),
+        ('5.6-cgi', 'PHP 5.6 FCGID'),
         ('5.4-fpm', 'PHP 5.4 FPM'),
         ('5.4-cgi', 'PHP 5.4 FCGID'),
         ('5.3-cgi', 'PHP 5.3 FCGID'),
@@ -96,7 +98,7 @@ WEBAPPS_PHP_VERSIONS = Setting('WEBAPPS_PHP_VERSIONS', (
 
 
 WEBAPPS_DEFAULT_PHP_VERSION = Setting('WEBAPPS_DEFAULT_PHP_VERSION',
-    '5.4-cgi',
+    '5.6-fpm',
     choices=WEBAPPS_PHP_VERSIONS
 )
 
@@ -223,6 +225,7 @@ WEBAPPS_ENABLED_OPTIONS = Setting('WEBAPPS_ENABLED_OPTIONS', (
         'orchestra.contrib.webapps.options.PHPDefaultSocketTimeout',
         'orchestra.contrib.webapps.options.PHPDisplayErrors',
         'orchestra.contrib.webapps.options.PHPExtension',
+        'orchestra.contrib.webapps.options.PHPIncludePath',
         'orchestra.contrib.webapps.options.PHPMagicQuotesGPC',
         'orchestra.contrib.webapps.options.PHPMagicQuotesRuntime',
         'orchestra.contrib.webapps.options.PHPMaginQuotesSybase',

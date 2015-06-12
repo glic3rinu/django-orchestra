@@ -1,5 +1,4 @@
 import os
-import re
 from collections import OrderedDict
 
 from django import forms
@@ -9,7 +8,7 @@ from rest_framework import serializers
 from orchestra.plugins.forms import PluginDataForm
 from orchestra.utils.functional import cached
 
-from .. import settings
+from .. import settings, utils
 from ..options import AppOption
 
 from . import AppType
@@ -146,9 +145,5 @@ class PHPApp(AppType):
     
     def get_php_version_number(self):
         php_version = self.get_php_version()
-        number = re.findall(r'[0-9]+\.?[0-9]?', php_version)
-        if not number:
-            raise ValueError("No version number matches for '%s'" % php_version)
-        if len(number) > 1:
-            raise ValueError("Multiple version number matches for '%s'" % php_version)
-        return number[0]
+        return utils.extract_version_number(php_version)
+

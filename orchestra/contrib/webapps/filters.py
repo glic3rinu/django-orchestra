@@ -1,6 +1,8 @@
 from django.contrib.admin import SimpleListFilter
 from django.utils.translation import ugettext_lazy as _
 
+from . import settings
+
 
 class HasWebsiteListFilter(SimpleListFilter):
     title = _("Has website")
@@ -20,3 +22,15 @@ class HasWebsiteListFilter(SimpleListFilter):
         return queryset
 
 
+class PHPVersionListFilter(SimpleListFilter):
+    title = _("PHP version")
+    parameter_name = 'php_version'
+    
+    def lookups(self, request, model_admin):
+        return settings.WEBAPPS_PHP_VERSIONS
+    
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value:
+            return queryset.filter(data__contains='"php_version":"%s"' % value)
+        return queryset

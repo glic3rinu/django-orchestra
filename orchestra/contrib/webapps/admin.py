@@ -10,7 +10,7 @@ from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
-from .filters import HasWebsiteListFilter
+from .filters import HasWebsiteListFilter, PHPVersionListFilter
 from .models import WebApp, WebAppOption
 from .options import AppOption
 from .types import AppType
@@ -49,7 +49,7 @@ class WebAppOptionInline(admin.TabularInline):
 
 class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_detail', 'display_websites', 'account_link')
-    list_filter = ('type', HasWebsiteListFilter)
+    list_filter = ('type', HasWebsiteListFilter, PHPVersionListFilter)
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link', )
     change_readonly_fields = ('name', 'type', 'display_websites')

@@ -152,7 +152,7 @@ class Command(BaseCommand):
             'project_dir': paths.get_project_dir(),
             'site_dir': paths.get_site_dir(),
             'static_root': settings.STATIC_ROOT,
-            'static_url': (settings.STATIC_URL or '/static').rstrip('/')
+            'static_url': (settings.STATIC_URL or '/static').rstrip('/'),
             'user': user,
             'group': options.get('group') or user,
             'home': expanduser("~%s" % options.get('user')),

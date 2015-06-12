@@ -159,6 +159,12 @@ class PHPExtension(PHPAppOption):
     regex = r'^[^ ]+$'
 
 
+class PHPIncludePath(PHPAppOption):
+    name = 'include_path'
+    verbose_name = _("Include path")
+    regex = r'^[^ ]+$'
+
+
 class PHPMagicQuotesGPC(PHPAppOption):
     name = 'magic_quotes_gpc'
     verbose_name = _("Magic quotes GPC")

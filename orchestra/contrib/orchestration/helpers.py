@@ -2,10 +2,13 @@ import textwrap
 
 from django.contrib import messages
 from django.core.mail import mail_admins
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
+
+from orchestra import settings as orchestra_settings
+from orchestra.admin.utils import change_url
 
 
 def get_backends_help_text(backends):
@@ -44,17 +47,29 @@ def get_backends_help_text(backends):
     return help_texts
 
 
+def get_instance_url(operation):
+    try:
+        url = change_url(operation.instance)
+    except NoReverseMatch:
+        return _("Deleted {0}").format(operation.instance_repr or '-'.join(
+            (escape(operation.content_type), escape(operation.object_id))))
+    return orchestra_settings.ORCHESTRA_SITE_URL + url
+
+
 def send_report(method, args, log):
     server = args[0]
     backend = method.__self__.__class__.__name__
     subject = '[Orchestra] %s execution %s on %s'  % (backend, log.state, server)
     separator = "\n%s\n\n" % ('~ '*40,)
+    print(log.operations.all())
+    operations = '\n'.join([' '.join((op.action, get_instance_url(op))) for op in log.operations.all()])
     message = separator.join([
         "[EXIT CODE] %s" % log.exit_code,
         "[STDERR]\n%s" % log.stderr,
         "[STDOUT]\n%s" % log.stdout,
         "[SCRIPT]\n%s" % log.script,
         "[TRACEBACK]\n%s" % log.traceback,
+        "[OPERATIONS]\n%s" % operations,
     ])
     html_message = '\n\n'.join([
         '<h4 style="color:#505050;">Exit code %s</h4>' % log.exit_code,
@@ -66,6 +81,8 @@ def send_report(method, args, log):
             '<pre style="margin-left:20px;font-size:11px">%s</pre>' % escape(log.script),
         '<h4 style="color:#505050;">Traceback</h4>'
             '<pre style="margin-left:20px;font-size:11px">%s</pre>' % escape(log.traceback),
+        '<h4 style="color:#505050;">Operations</h4>'
+            '<pre style="margin-left:20px;font-size:11px">%s</pre>' % escape(operations),
     ])
     mail_admins(subject, message, html_message=html_message)
 
@@ -77,6 +94,7 @@ def get_backend_url(ids):
         url = reverse('admin:orchestration_backendlog_changelist')
         return url + '?id__in=%s' % ','.join(map(str, ids))
     return ''
+
 
 def message_user(request, logs):
     total, successes, async = 0, 0, 0

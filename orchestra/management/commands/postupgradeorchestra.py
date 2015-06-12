@@ -56,7 +56,7 @@ class Command(BaseCommand):
             version = int(str(major) + "%02d" % int(major2) + "%02d" % int(minor))
             
             # Pre version specific upgrade operations
-            if version < 001:
+            if version < '001':
                 pass
         
         if not options.get('specifics_only'):
@@ -80,7 +80,7 @@ class Command(BaseCommand):
             return
         
         # Post version specific operations
-        if version <= 001:
+        if version <= '001':
             pass
         
         if upgrade_notes and options.get('print_upgrade_notes'):

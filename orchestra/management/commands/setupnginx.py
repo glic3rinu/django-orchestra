@@ -220,12 +220,13 @@ class Command(BaseCommand):
             'conf': uwsgi_conf
         }
         
+        interactive = options.get('interactive')
         for extra_context in (nginx, uwsgi):
             context.update(extra_context)
-            diff = run("echo '%(conf)s' | diff - %(file)s" % context, valid_codes=(0,1,2))
+            diff = run("cat << 'EOF' | diff - %(file)s\n%(conf)s\nEOF" % context, valid_codes=(0,1,2))
             if diff.exit_code == 2:
                 # File does not exist
-                run("echo '%(conf)s' > %(file)s" % context, display=True)
+                run("cat << 'EOF' > %(file)s\n%(conf)s\nEOF" % context, display=True)
             elif diff.exit_code == 1:
                 # File is different, save the old one
                 if interactive:
@@ -240,7 +241,7 @@ class Command(BaseCommand):
                             return
                         break
                 run("cp %(file)s %(file)s.save" % context, display=True)
-                run("echo '%(conf)s' > %(file)s" % context, display=True)
+                run("cat << 'EOF' > %(file)s\n%(conf)s\nEOF" % context, display=True)
                 self.stdout.write("\033[1;31mA new version of %(file)s has been installed.\n "
                     "The old version has been placed at %(file)s.save\033[m" % context)
         

@@ -8,7 +8,7 @@ from django.db import models
 
 
 def create_initial_superuser(**kwargs):
-    if '--noinput' not in sys.argv and '--fake' not in sys.argv and '--fake-initial' not in sys.argv and 'accounts' in sys.argv:
+    if '--noinput' not in sys.argv and '--fake' not in sys.argv and '--fake-initial' not in sys.argv:
         model = get_user_model()
         if not model.objects.filter(is_superuser=True).exists():
             sys.stdout.write(textwrap.dedent("""

@@ -427,6 +427,6 @@ serailzer self.instance on create.
 
 
 # IF modsecurity... and Merge websites locations
-# backend email error log with links to instances
-# PHP backend multiple FPM directories support
+# backend email error log with link to backend log on admin
+# ValueError: Unable to configure handler 'file': [Errno 13] Permission denied: '/home/orchestra/panel/orchestra.log'
 

@@ -55,10 +55,6 @@ class Account(auth.AbstractBaseUser):
     def is_staff(self):
         return self.is_superuser
     
-#    @property
-#    def main_systemuser(self):
-#        return self.systemusers.get(is_main=True)
-    
     @classmethod
     def get_main(cls):
         return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
@@ -70,8 +66,8 @@ class Account(auth.AbstractBaseUser):
         super(Account, self).save(*args, **kwargs)
         if created:
             self.main_systemuser = self.systemusers.create(account=self, username=self.username,
-                    password=self.password, is_active=active_systemuser)
-            self.save(update_fields=['main_systemuser'])
+                password=self.password, is_active=active_systemuser)
+            self.save(update_fields=('main_systemuser',))
         elif was_active != self.is_active:
             self.notify_related()
     

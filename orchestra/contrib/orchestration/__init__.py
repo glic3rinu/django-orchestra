@@ -17,6 +17,9 @@ class Operation():
     def __str__(self):
         return '%s.%s(%s)' % (self.backend, self.action, self.instance)
     
+    def __repr__(self):
+        return str(self)
+    
     def __hash__(self):
         """ set() """
         return hash(self.backend) + hash(self.instance) + hash(self.action)

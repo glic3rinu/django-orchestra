@@ -74,7 +74,10 @@ class SystemUser(models.Model):
     
     @cached_property
     def main(self):
-        return self.account.main_systemuser
+        # On account creation main_systemuser_id is still None
+        if self.account.main_systemuser_id:
+            return self.account.main_systemuser
+        return type(self).objects.get(username=self.account.username)
     
     @property
     def has_shell(self):

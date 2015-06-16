@@ -1,11 +1,13 @@
 from datetime import timedelta
 
+from django.apps import apps
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q, Prefetch, F
 from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
+from . import settings
 from .models import MetricStorage
 
 
@@ -56,8 +58,13 @@ class BilledOrderListFilter(SimpleListFilter):
         metric_queryset = queryset.exclude(service__metric='').exclude(billed_on__isnull=True)
         for order in metric_queryset.prefetch_related(prefetch_valid_metrics, prefetch_billed_metric):
             if len(order.billed_metric) != 1:
-                raise ValueError("Data inconsistency #metrics %i != 1." % len(order.billed_metric))
-            billed_metric = order.billed_metric[0].value
+                # corner case of prefetch_billed_metric: Does not always work with latests metrics
+                latest = order.metrics.latest()
+                if not latest:
+                    raise ValueError("Data inconsistency #metrics %i != 1." % len(order.billed_metric))
+                billed_metric = latest.value
+            else:
+                billed_metric = order.billed_metric[0].value
             for metric in order.valid_metrics:
                 if metric.created_on <= order.billed_on:
                     raise ValueError("This value should already be filtered on the prefetch query.")
@@ -72,15 +79,18 @@ class BilledOrderListFilter(SimpleListFilter):
         elif self.value() == 'no':
             return queryset.exclude(billed_until__isnull=False, billed_until__gte=timezone.now())
         elif self.value() == 'pending':
+            Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
             return queryset.filter(
                 Q(pk__in=self.get_pending_metric_pks(queryset)) | Q(
-                    Q(billed_until__isnull=True) | Q(billed_until__lt=timezone.now())
+                    Q(billed_until__isnull=True) | Q(~Q(service__billing_period=Service.NEVER) &
+                        Q(billed_until__lt=timezone.now()))
                 )
             )
         elif self.value() == 'not_pending':
             return queryset.exclude(
                 Q(pk__in=self.get_pending_metric_pks(queryset)) | Q(
-                    Q(billed_until__isnull=True) | Q(billed_until__lt=timezone.now())
+                    Q(billed_until__isnull=True) | Q(~Q(service__billing_period=Service.NEVER) &
+                        Q(billed_until__lt=timezone.now()))
                 )
             )
         return queryset

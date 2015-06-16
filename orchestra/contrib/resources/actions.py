@@ -12,7 +12,7 @@ def run_monitor(modeladmin, request, queryset):
     for resource in queryset:
         rlogs = resource.monitor()
         if not async:
-            logs = logs.union(set(map(str, rlogs)))
+            logs = logs.union(set([str(log.pk) for log in rlogs]))
         modeladmin.log_change(request, resource, _("Run monitors"))
     if async:
         num = len(queryset)

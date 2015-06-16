@@ -225,8 +225,8 @@ class ResourceData(models.Model):
     def monitor(self, async=False):
         ids = (self.object_id,)
         if async:
-            return tasks.monitor.delay(self.resource_id, ids=ids, async=async)
-        return tasks.monitor(self.resource_id, ids=ids, async=async)
+            return tasks.monitor.delay(self.resource_id, ids=ids)
+        return tasks.monitor(self.resource_id, ids=ids)
     
     def get_monitor_datasets(self):
         resource = self.resource

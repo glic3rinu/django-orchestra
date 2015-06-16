@@ -75,8 +75,11 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def display_billed_until(self, order):
         billed_until = order.billed_until
         red = False
+        human = escape(naturaldate(billed_until))
         if billed_until:
-            if order.service.payment_style == order.service.POSTPAY:
+            if order.service.billing_period == order.service.NEVER:
+                human = _("Forever")
+            elif order.service.payment_style == order.service.POSTPAY:
                 boundary = order.service.handler.get_billing_point(order)
                 if billed_until < boundary:
                     red = True
@@ -84,7 +87,7 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 red = True
         color = 'style="color:red;"' if red else ''
         return '<span title="{raw}" {color}>{human}</span>'.format(
-            raw=escape(str(billed_until)), color=color, human=escape(naturaldate(billed_until)),
+            raw=escape(str(billed_until)), color=color, human=human,
         )
     display_billed_until.short_description = _("billed until")
     display_billed_until.allow_tags = True

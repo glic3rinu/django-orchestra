@@ -1,3 +1,5 @@
+from urllib.parse import parse_qs
+
 from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
@@ -16,6 +18,7 @@ from orchestra.utils import db, sys
 from orchestra.utils.functional import cached
 
 from .actions import run_monitor
+from .filters import ResourceDataListFilter
 from .forms import ResourceForm
 from .models import Resource, ResourceData, MonitorData
 
@@ -147,25 +150,14 @@ class ResourceDataAdmin(ExtendedModelAdmin):
         return False
     
     def used_monitordata_view(self, request, object_id):
-        """
-        Does the redirect on a separated view for performance reassons
-        (calculate this on a changelist is expensive)
-        """
-        data = self.get_object(request, object_id)
-        ids = []
-        for dataset in data.get_monitor_datasets():
-            if isinstance(dataset, MonitorData):
-                ids.append(dataset.id)
-            else:
-                ids += dataset.values_list('id', flat=True)
         url = reverse('admin:resources_monitordata_changelist')
-        url += '?id__in=%s' % ','.join(map(str, ids))
+        url += '?resource_data=%s' % object_id
         return redirect(url)
 
 
 class MonitorDataAdmin(ExtendedModelAdmin):
     list_display = ('id', 'monitor', 'display_created', 'value', 'content_object_link')
-    list_filter = ('monitor',)
+    list_filter = ('monitor', ResourceDataListFilter)
     add_fields = ('monitor', 'content_type', 'object_id', 'created_at', 'value')
     fields = ('monitor', 'content_type', 'content_object_link', 'display_created', 'value')
     change_readonly_fields = fields
@@ -173,8 +165,23 @@ class MonitorDataAdmin(ExtendedModelAdmin):
     content_object_link = admin_link('content_object')
     display_created = admin_date('created_at', short_description=_("Created"))
     
+    def filter_used_monitordata(self, request, queryset):
+        query_string = parse_qs(request.META['QUERY_STRING'])
+        resource_data = query_string.get('resource_data')
+        if resource_data:
+            data = ResourceData.objects.get(pk=int(resource_data[0]))
+            ids = []
+            for dataset in data.get_monitor_datasets():
+                if isinstance(dataset, MonitorData):
+                    ids.append(dataset.id)
+                else:
+                    ids += dataset.values_list('id', flat=True)
+            return queryset.filter(id__in=ids)
+        return queryset
+    
     def get_queryset(self, request):
         queryset = super(MonitorDataAdmin, self).get_queryset(request)
+        queryset = self.filter_used_monitordata(request, queryset)
         return queryset.prefetch_related('content_object')
 
 

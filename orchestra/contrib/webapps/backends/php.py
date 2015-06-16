@@ -72,8 +72,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             } || {
                 echo -e "${wrapper}" > %(wrapper_path)s
                 if [[ %(is_mounted)i -eq 1 ]]; then
-                    # Reload fcgid wrapper
-                    pkill -SIGHUP -U %(user)s "^%(php_binary)s$" || true
+                    # Reload fcgid wrapper (all versions to support version changing)
+                    pkill -SIGHUP -U %(user)s "^php[0-9\.]+-cgi$" || true
                 fi
             }
             """) % context
@@ -112,33 +112,32 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             data__contains='"php_version":"%s"' % context['php_version'],
         ).exclude(id=webapp.pk).exists()
     
-    def delete_fpm(self, webapp, context, preserve=False):
-        """ delete all pools in order to efectively support changing php-fpm version """
+    def all_versions_to_delete(self, webapp, context, preserve=False):
         context_copy = dict(context)
         for php_version, verbose in settings.WEBAPPS_PHP_VERSIONS:
             if preserve and php_version == context['php_version']:
                 continue
             php_version_number = utils.extract_version_number(php_version)
+            context_copy['php_version'] = php_version
             context_copy['php_version_number'] = php_version_number
             if not self.MERGE or not self.has_sibilings(webapp, context_copy):
-                context_copy['fpm_path'] = settings.WEBAPPS_PHPFPM_POOL_PATH % context_copy
-                self.append("rm -f %(fpm_path)s" % context_copy)
+                yield context_copy
+    
+    def delete_fpm(self, webapp, context, preserve=False):
+        """ delete all pools in order to efectively support changing php-fpm version """
+        for context_copy in self.all_versions_to_delete(webapp, context, preserve):
+            context_copy['fpm_path'] = settings.WEBAPPS_PHPFPM_POOL_PATH % context_copy
+            self.append("rm -f %(fpm_path)s" % context_copy)
     
     def delete_fcgid(self, webapp, context, preserve=False):
         """ delete all pools in order to efectively support changing php-fcgid version """
-        context_copy = dict(context)
-        for php_version, verbose in settings.WEBAPPS_PHP_VERSIONS:
-            if preserve and php_version == context['php_version']:
-                continue
-            php_version_number = utils.extract_version_number(php_version)
-            context_copy['php_version_number'] = php_version_number
-            if not self.MERGE or not self.has_sibilings(webapp, context_copy):
-                context_copy.update({
-                    'wrapper_path': settings.WEBAPPS_FCGID_WRAPPER_PATH % context_copy,
-                    'cmd_options_path': settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH % context_copy,
-                })
-                self.append("rm -f %(wrapper_path)s" % context_copy)
-                self.append("rm -f %(cmd_options_path)s" % context_copy)
+        for context_copy in self.all_versions_to_delete(webapp, context, preserve):
+            context_copy.update({
+                'wrapper_path': settings.WEBAPPS_FCGID_WRAPPER_PATH % context_copy,
+                'cmd_options_path': settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH % context_copy,
+            })
+            self.append("rm -f %(wrapper_path)s" % context_copy)
+            self.append("rm -f %(cmd_options_path)s" % context_copy)
     
     def prepare(self):
         super(PHPBackend, self).prepare()

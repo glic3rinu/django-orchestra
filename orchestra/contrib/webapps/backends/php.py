@@ -40,7 +40,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             self.save_fcgid(webapp, context)
         else:
             raise TypeError("Unknown PHP execution type")
-        # Clean php fcgid/fpm apps in order to effectively support change of php-version
+        self.append("# Clean non-used PHP FCGID wrappers and FPM pools")
         self.delete_fcgid(webapp, context, preserve=True)
         self.delete_fpm(webapp, context, preserve=True)
         self.set_under_construction(context)
@@ -72,15 +72,14 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             } || {
                 echo -e "${wrapper}" > %(wrapper_path)s
                 if [[ %(is_mounted)i -eq 1 ]]; then
-                    # Reload fcgid wrapper (all versions to support version changing)
+                    # Reload fcgid wrapper (All PHP versions, because of version changing support)
                     pkill -SIGHUP -U %(user)s "^php[0-9\.]+-cgi$" || true
                 fi
             }
-            """) % context
+            chmod 550 %(wrapper_dir)s
+            chmod 550 %(wrapper_path)s
+            chown -R %(user)s:%(group)s %(wrapper_dir)s""") % context
         )
-        self.append("chmod 550 %(wrapper_dir)s" % context)
-        self.append("chmod 550 %(wrapper_path)s" % context)
-        self.append("chown -R %(user)s:%(group)s %(wrapper_dir)s" % context)
         if context['cmd_options']:
             self.append(textwrap.dedent("""\
                 # FCGID options
@@ -96,7 +95,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 """ ) % context
             )
         else:
-            self.append("rm -f %(cmd_options_path)s" % context)
+            self.append("rm -f %(cmd_options_path)s\n" % context)
     
     def delete(self, webapp):
         context = self.get_context(webapp)

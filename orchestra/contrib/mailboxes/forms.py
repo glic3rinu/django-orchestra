@@ -37,7 +37,8 @@ class MailboxForm(forms.ModelForm):
             return mark_safe(output)
         self.fields['addresses'].widget.render = render
         queryset = self.fields['addresses'].queryset
-        self.fields['addresses'].queryset = queryset.filter(account=self.modeladmin.account.pk)
+        realted_addresses = queryset.filter(account=self.modeladmin.account.pk).order_by('name')
+        self.fields['addresses'].queryset = realted_addresses
         
         if self.instance and self.instance.pk:
             self.fields['addresses'].initial = self.instance.addresses.all()

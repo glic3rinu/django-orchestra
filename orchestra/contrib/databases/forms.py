@@ -48,7 +48,7 @@ class DatabaseCreationForm(DatabaseUserCreationForm):
         super(DatabaseCreationForm, self).__init__(*args, **kwargs)
         account_id = self.initial.get('account', self.initial_account)
         if account_id:
-            qs = self.fields['user'].queryset.filter(account=account_id)
+            qs = self.fields['user'].queryset.filter(account=account_id).order_by('username')
             choices = [ (u.pk, "%s (%s)" % (u, u.get_type_display())) for u in qs ]
             self.fields['user'].queryset = qs
             self.fields['user'].choices = [(None, '--------'),] + choices

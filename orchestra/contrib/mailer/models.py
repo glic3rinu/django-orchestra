@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from . import settings
@@ -31,12 +32,12 @@ class Message(models.Model):
     priority = models.PositiveIntegerField(_("Priority"), choices=PRIORITIES, default=NORMAL)
     to_address = models.CharField(max_length=256)
     from_address = models.CharField(max_length=256)
-    subject = models.CharField(_("subject"), max_length=256)
+    subject = models.TextField(_("subject"))
     content = models.TextField(_("content"))
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     retries = models.PositiveIntegerField(_("retries"), default=0)
     # TODO rename to last_try
-    last_retry = models.DateTimeField(_("last try"), auto_now=True)
+    last_retry = models.DateTimeField(_("last try"), null=True)
     
     def __str__(self):
         return '%s to %s' % (self.subject, self.to_address)
@@ -46,6 +47,8 @@ class Message(models.Model):
         # Max tries
         if self.retries >= len(settings.MAILER_DEFERE_SECONDS):
             self.state = self.FAILED
+        self.retries += 1
+        self.last_retry = timezone.now()
         self.save(update_fields=('state', 'retries', 'last_retry'))
     
     def sent(self):

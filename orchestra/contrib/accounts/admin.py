@@ -234,11 +234,19 @@ class AccountAdminMixin(object):
                 formfield.widget.render = render
                 # Filter related object by account
                 formfield.queryset = formfield.queryset.filter(account=self.account)
+                # Apply heuristic order by
+                if not formfield.queryset.query.order_by:
+                    related_fields = db_field.related_model._meta.get_all_field_names()
+                    if 'name' in related_fields:
+                        formfield.queryset = formfield.queryset.order_by('name')
+                    elif 'username' in related_fields:
+                        formfield.queryset = formfield.queryset.order_by('username')
         elif db_field.name == 'account':
             if self.account:
                 formfield.initial = self.account.pk
             elif Account.objects.count() == 1:
                 formfield.initial = 1
+            formfield.queryset = formfield.queryset.order_by('username')
         return formfield
     
     def get_formset(self, request, obj=None, **kwargs):

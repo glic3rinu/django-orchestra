@@ -434,3 +434,5 @@ serailzer self.instance on create.
 * backendLog store method and language... and use it for display_script with correct lexer
 
 # process monitor data to represent state, or maybe create new resource datas when period expires?
+
+# DNS when AAAA is specified include default A register?

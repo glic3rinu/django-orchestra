@@ -60,7 +60,10 @@ class WebApp(models.Model):
         qs = WebAppOption.objects.filter(**kwargs)
         for name, value in qs.values_list('name', 'value').order_by('name'):
             if name in options:
-                options[name] = max(options[name], value)
+                if AppOption.get(name).comma_separated:
+                    options[name] = options[name].rstrip(',') + ',' + value.lstrip(',')
+                else:
+                    options[name] = max(options[name], value)
             else:
                 options[name] = value
         return options

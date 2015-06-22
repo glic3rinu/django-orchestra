@@ -40,7 +40,7 @@ class Apache2Backend(ServiceController):
     
     def render_virtual_host(self, site, context, ssl=False):
         context['port'] = self.HTTPS_PORT if ssl else self.HTTP_PORT
-        context['vhost_wrapper_dirs'] = []
+        context['vhost_set_fcgid'] = False
         extra_conf = self.get_content_directives(site, context)
         directives = site.get_directives()
         if ssl:
@@ -238,10 +238,11 @@ class Apache2Backend(ServiceController):
         directives = ''
         # This Action trick is used instead of FcgidWrapper because we don't want to define
         # a new fcgid process class each time an app is mounted (num proc limits enforcement).
-        context['wrapper_dir'] = os.path.dirname(wrapper_path)
-        if context['wrapper_dir'] not in context['vhost_wrapper_dirs']:
+        if not context['vhost_set_fcgid']:
             # fcgi-bin only needs to be defined once per vhots
             # We assume that all account wrapper paths will share the same dir
+            context['wrapper_dir'] = os.path.dirname(wrapper_path)
+            context['vhost_set_fcgid'] = True
             directives = textwrap.dedent("""\
                 Alias /fcgi-bin/ %(wrapper_dir)s/
                 <Location /fcgi-bin/>
@@ -249,7 +250,6 @@ class Apache2Backend(ServiceController):
                     Options +ExecCGI
                 </Location>
                 """) % context
-            context['vhost_wrapper_dirs'].append(context['wrapper_dir'])
         directives += self.get_location_filesystem_map(context)
         directives += textwrap.dedent("""
             ProxyPass %(location)s/ !

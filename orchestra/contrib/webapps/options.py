@@ -17,6 +17,7 @@ class AppOption(Plugin):
     
     help_text = ""
     group = None
+    comma_separated = False
     
     @classmethod
     @cached
@@ -100,6 +101,7 @@ class PHPEnableFunctions(PHPAppOption):
                 for i in range(0, len(settings.WEBAPPS_PHP_DISABLED_FUNCTIONS), 10)
         ])
     regex = r'^[\w\.,-]+$'
+    comma_separated = True
 
 
 class PHPAllowURLInclude(PHPAppOption):

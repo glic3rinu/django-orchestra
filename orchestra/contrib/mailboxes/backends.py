@@ -240,13 +240,13 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         ('MAILBOXES_LOCAL_DOMAIN', 'MAILBOXES_VIRTUAL_ALIAS_DOMAINS_PATH')
     )
     
-    def is_local_domain(self, domain):
+    def is_hosted_domain(self, domain):
         """ whether or not domain MX points to this server """
         return domain.has_default_mx()
     
     def include_virtual_alias_domain(self, context):
         domain = context['domain']
-        if domain.name != context['local_domain'] and self.is_local_domain(domain):
+        if domain.name != context['local_domain'] and self.is_hosted_domain(domain):
             self.append(textwrap.dedent("""
                 # %(domain)s is a virtual domain belonging to this server
                 if [[ ! $(grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ]]; then

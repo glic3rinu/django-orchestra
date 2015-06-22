@@ -96,6 +96,7 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     change_readonly_fields = ('amount', 'currency')
     readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link', 'source_link')
     list_select_related = ('source', 'bill__account')
+    date_hierarchy = 'created_at'
     
     bill_link = admin_link('bill')
     source_link = admin_link('source')

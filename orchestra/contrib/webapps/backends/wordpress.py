@@ -33,6 +33,9 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
                     echo "ERROR: execution returned non-zero code: $exit_code. cmd was:\\n$cmd\\n";
                     exit($exit_code);
                 }
+            }
+            function wp_new_blog_notification($blog_title, $blog_url, $user_id, $password){
+                // do nothing
             }""")
         )
     
@@ -113,9 +116,6 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
             $_POST['admin_password'] = "%(password)s";
             $_POST['admin_password2'] = "%(password)s";
             
-            function wp_new_blog_notification($blog_title, $blog_url, $user_id, $password){
-                // do nothing
-            }
             ob_start();
             require_once('%(app_path)s/wp-admin/install.php');
             $response = ob_get_contents();

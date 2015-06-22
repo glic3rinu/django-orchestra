@@ -40,6 +40,7 @@ class Apache2Backend(ServiceController):
     
     def render_virtual_host(self, site, context, ssl=False):
         context['port'] = self.HTTPS_PORT if ssl else self.HTTP_PORT
+        context['vhost_wrapper_dirs'] = []
         extra_conf = self.get_content_directives(site, context)
         directives = site.get_directives()
         if ssl:
@@ -141,10 +142,9 @@ class Apache2Backend(ServiceController):
     def prepare(self):
         super(Apache2Backend, self).prepare()
         # Coordinate apache restart with php backend in order not to overdo it
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             backend="Apache2Backend"
-            echo "$backend" >> /dev/shm/restart.apache2\
-            """)
+            echo "$backend" >> /dev/shm/restart.apache2""")
         )
     
     def commit(self):
@@ -187,8 +187,8 @@ class Apache2Backend(ServiceController):
         try:
             method = getattr(self, 'get_%s_directives' % method)
         except AttributeError:
-            raise AttributeError("%s does not has suport for '%s' directive." %
-                    (self.__class__.__name__, method))
+            context = (self.__class__.__name__, method)
+            raise AttributeError("%s does not has suport for '%s' directive." % context)
         return method(context, *args)
     
     def get_content_directives(self, site, context):
@@ -238,10 +238,10 @@ class Apache2Backend(ServiceController):
         directives = ''
         # This Action trick is used instead of FcgidWrapper because we don't want to define
         # a new fcgid process class each time an app is mounted (num proc limits enforcement).
-        if 'wrapper_dir' not in context:
+        context['wrapper_dir'] = os.path.dirname(wrapper_path)
+        if context['wrapper_dir'] not in context['vhost_wrapper_dirs']:
             # fcgi-bin only needs to be defined once per vhots
             # We assume that all account wrapper paths will share the same dir
-            context['wrapper_dir'] = os.path.dirname(wrapper_path)
             directives = textwrap.dedent("""\
                 Alias /fcgi-bin/ %(wrapper_dir)s/
                 <Location /fcgi-bin/>
@@ -249,6 +249,7 @@ class Apache2Backend(ServiceController):
                     Options +ExecCGI
                 </Location>
                 """) % context
+            context['vhost_wrapper_dirs'].append(context['wrapper_dir'])
         directives += self.get_location_filesystem_map(context)
         directives += textwrap.dedent("""
             ProxyPass %(location)s/ !
@@ -279,26 +280,35 @@ class Apache2Backend(ServiceController):
             ca = [settings.WEBSITES_DEFAULT_SSL_CA]
             if not (cert and key):
                 return []
-        config = "SSLEngine on\n"
-        config += "SSLCertificateFile %s\n" % cert[0]
-        config += "SSLCertificateKeyFile %s\n" % key[0]
+        ssl_config = [
+            "SSLEngine on",
+            "SSLCertificateFile %s" % cert[0],
+            "SSLCertificateKeyFile %s" % key[0],
+        ]
         if ca:
-           config += "SSLCACertificateFile %s\n" % ca[0]
+           ssl_config.append("SSLCACertificateFile %s" % ca[0])
         return [
-            ('', config),
+            ('', '\n'.join(ssl_config)),
         ]
         
     def get_security(self, directives):
-        security = []
+        remove_rules = []
         for values in directives.get('sec-rule-remove', []):
             for rule in values.split():
-                sec_rule = "SecRuleRemoveById %i" % int(rule)
-                security.append(('', sec_rule))
+                sec_rule = "    SecRuleRemoveById %i" % int(rule)
+                remove_rules.append(sec_rule)
+        security = []
+        if remove_rules:
+            remove_rules.insert(0, '<IfModule mod_security2.c>')
+            remove_rules.append('</IfModule>')
+            security.append(('', '\n'.join(remove_rules)))
         for location in directives.get('sec-engine', []):
             sec_rule = textwrap.dedent("""\
-                <Location %s>
-                    SecRuleEngine off
-                </Location>""") % location
+                <IfModule mod_security2.c>
+                    <Location %s>
+                        SecRuleEngine Off
+                    </Location>
+                </IfModule>""") % location
             security.append((location, sec_rule))
         return security
     
@@ -466,9 +476,8 @@ class Apache2Traffic(ServiceMonitor):
         self.append('monitor {object_id} "{last_date}" {log_file}'.format(**context))
     
     def get_context(self, site):
-        context = {
+        return {
             'log_file': '%s{,.1}' % site.get_www_access_log_path(),
             'last_date': self.get_last_date(site.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
             'object_id': site.pk,
         }
-        return context

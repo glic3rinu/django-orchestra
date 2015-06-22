@@ -36,7 +36,10 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         'name', 'account_link', 'display_filtering', 'display_addresses', 'display_active',
     )
     list_filter = (IsActiveListFilter, HasAddressListFilter, 'filtering')
-    search_fields = ('account__username', 'account__short_name', 'account__full_name', 'name')
+    search_fields = (
+        'account__username', 'account__short_name', 'account__full_name', 'name',
+        'addresses__name', 'addresses__domain__name',
+    )
     add_fieldsets = (
         (None, {
             'fields': ('account_link', 'name', 'password1', 'password2', 'filtering'),
@@ -110,6 +113,13 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         form = super(MailboxAdmin, self).get_form(*args, **kwargs)
         form.modeladmin = self
         return form
+    
+    def get_search_results(self, request, queryset, search_term):
+        # Remove local domain from the search term if present (implicit local addreç)
+        search_term = search_term.replace('@'+settings.MAILBOXES_LOCAL_DOMAIN, '')
+        # Split address name from domain in order to support address searching
+        search_term = search_term.replace('@', ' ')
+        return super(MailboxAdmin, self).get_search_results(request, queryset, search_term)
     
     def save_model(self, request, obj, form, change):
         """ save hacky mailbox.addresses """

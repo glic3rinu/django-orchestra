@@ -35,6 +35,10 @@ WEBAPPS_PHPFPM_POOL_PATH = Setting('WEBAPPS_PHPFPM_POOL_PATH',
     validators=[Setting.string_format_validator(_php_names)],
 )
 
+WEBAPPS_PHPFPM_RELOAD_POOL = Setting('WEBAPPS_PHPFPM_RELOAD_POOL',
+    'service php5-fpm reload'
+)
+
 
 WEBAPPS_FCGID_WRAPPER_PATH = Setting('WEBAPPS_FCGID_WRAPPER_PATH',
     '/home/httpd/fcgi-bin.d/%(user)s/%(app_name)s-wrapper',

@@ -65,10 +65,11 @@ class PHPApp(AppType):
             'webapp_id': self.instance.pk,
         }
         if merge:
+            php_version = self.instance.data.get('php_version', self.DEFAULT_PHP_VERSION)
             kwargs = {
                 # webapp__type is not used because wordpress != php != symlink...
                 'webapp__account': self.instance.account_id,
-                'webapp__data__contains': '"php_version":"%s"' % self.instance.data['php_version'],
+                'webapp__data__contains': '"php_version":"%s"' % php_version,
             }
         return self.instance.get_options(**kwargs)
     

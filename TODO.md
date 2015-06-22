@@ -418,15 +418,19 @@ serailzer self.instance on create.
 
 # set_password serializer: "just-the-password" not {"password": "password"}
 
-# use namedtuples!
+# use namedtuples?
 
 # Negative transactionsx
 
 
-# check certificate: websites directive ssl + domains search on miscellaneous
+* check certificate: websites directive ssl + domains search on miscellaneous
 
 
-# IF modsecurity... and Merge websites locations
-# backend email error log with link to backend log on admin
+# Merge websites locations
 # ValueError: Unable to configure handler 'file': [Errno 13] Permission denied: '/home/orchestra/panel/orchestra.log'
 
+# billing invoice link on related invoices not overflow nginx GET vars
+
+* backendLog store method and language... and use it for display_script with correct lexer
+
+# process monitor data to represent state, or maybe create new resource datas when period expires?

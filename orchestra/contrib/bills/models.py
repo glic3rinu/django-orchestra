@@ -60,10 +60,17 @@ class BillManager(models.Manager):
 
 class Bill(models.Model):
     OPEN = ''
+    CREATED = 'CREATED'
+    PROCESSED = 'PROCESSED'
+    AMENDED = 'AMENDED'
     PAID = 'PAID'
     PENDING = 'PENDING'
     BAD_DEBT = 'BAD_DEBT'
     PAYMENT_STATES = (
+        (OPEN, _("Open")),
+        (CREATED, _("Created")),
+        (PROCESSED, _("Processed")),
+        (AMENDED, _("Amended")),
         (PAID, _("Paid")),
         (PENDING, _("Pending")),
         (BAD_DEBT, _("Bad debt")),
@@ -84,7 +91,8 @@ class Bill(models.Model):
     
     number = models.CharField(_("number"), max_length=16, unique=True, blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
-         related_name='%(class)s')
+        related_name='%(class)s')
+#    amend_of = models.ForeignKey('self', null=True, blank=True, verbose_name=_("amend of"), related_name='amends')
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
     created_on = models.DateField(_("created on"), auto_now_add=True)
     closed_on = models.DateField(_("closed on"), blank=True, null=True)
@@ -125,6 +133,9 @@ class Bill(models.Model):
     def payment_state(self):
         if self.is_open or self.get_type() == self.PROFORMA:
             return self.OPEN
+#        elif self.amends.filter(is_open=False).exists():
+#            return self.AMENDED
+        # TODO optimize this with a single query
         secured = self.transactions.secured().amount() or 0
         if abs(secured) >= abs(self.get_total()):
             return self.PAID
@@ -150,6 +161,16 @@ class Bill(models.Model):
     
     def get_type(self):
         return self.type or self.get_class_type()
+    
+    def get_amend_type(self):
+        amend_map = {
+            self.INVOICE: self.AMENDMENTINVOICE,
+            self.FEE: self.AMENDMENTFEE,
+        }
+        amend_type = amend_map.get(self.type)
+        if amend_type is None:
+            raise TypeError("%s has no associated amend type." % self.type)
+        return amend_type
     
     def get_number(self):
         cls = type(self)
@@ -298,7 +319,8 @@ class BillLine(models.Model):
     bill = models.ForeignKey(Bill, verbose_name=_("bill"), related_name='lines')
     description = models.CharField(_("description"), max_length=256)
     rate = models.DecimalField(_("rate"), blank=True, null=True, max_digits=12, decimal_places=2)
-    quantity = models.DecimalField(_("quantity"), max_digits=12, decimal_places=2)
+    quantity = models.DecimalField(_("quantity"), blank=True, null=True, max_digits=12,
+        decimal_places=2)
     verbose_quantity = models.CharField(_("Verbose quantity"), max_length=16)
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.DecimalField(_("tax"), max_digits=4, decimal_places=2)

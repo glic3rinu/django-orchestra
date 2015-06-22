@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.utils import translation
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 
@@ -18,6 +19,7 @@ from orchestra.utils.html import html_to_pdf
 
 from .forms import SelectSourceForm
 from .helpers import validate_contact
+from .models import Bill, BillLine
 
 
 def download_bills(modeladmin, request, queryset):
@@ -209,3 +211,44 @@ def move_lines(modeladmin, request, queryset, action=None):
 def copy_lines(modeladmin, request, queryset):
     # same as move, but changing action behaviour
     return move_lines(modeladmin, request, queryset)
+
+
+def amend_bills(modeladmin, request, queryset):
+    if queryset.filter(is_open=True).exists():
+        messages.warning(request, _("Selected bills should be in closed state"))
+        return
+    ids = []
+    for bill in queryset:
+        with translation.override(bill.account.language):
+            amend_type = bill.get_amend_type()
+            context = {
+                'related_type': _(bill.get_type_display()),
+                'number': bill.number,
+                'date': bill.created_on,
+            }
+            amend = Bill.objects.create(
+                account=bill.account,
+                type=amend_type
+            )
+            context['type'] = _(amend.get_type_display())
+            amend.comments = _("%(type)s of %(related_type)s %(number)s and creation date %(date)s") % context
+            amend.save(update_fields=('comments',))
+            for tax, subtotals in bill.compute_subtotals().items():
+                context['tax'] = tax
+                line = BillLine.objects.create(
+                    bill=amend,
+                    start_on=bill.created_on,
+                    description=_("Amend of %(related_type)s %(number)s, tax %(tax)s%%") % context,
+                    subtotal=subtotals[0],
+                    tax=tax
+                )
+            ids.append(bill.pk)
+    amend_url = reverse('admin:bills_bill_changelist')
+    amend_url += '?id=%s' % ','.join(map(str, ids))
+    messages.success(request, mark_safe(ungettext(
+        _('<a href="%s">One amendment bill</a> have been generated.') % amend_url,
+        _('<a href="%s">%i amendment bills</a> have been generated.') % (amend_url, len(ids)),
+        len(ids)
+    )))
+amend_bills.verbose_name = _("Amend")
+amend_bills.url_name = 'amend'

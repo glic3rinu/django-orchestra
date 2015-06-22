@@ -63,7 +63,11 @@ class Command(BaseCommand):
                     server = Server(name=server, address=server)
                     server.full_clean()
                     server.save()
-                routes.append(AttrDict(host=server, async=False))
+                routes.append(AttrDict(
+                    host=server,
+                    async=False,
+                    action_is_async=lambda self: False,
+                ))
             # Generate operations for the given backend
             for instance in queryset:
                 for backend in backends:
@@ -79,7 +83,7 @@ class Command(BaseCommand):
             route, __, __ = key
             backend, operations = value
             servers.append(str(route.host))
-            self.stdout.write('# Execute on %s' % route.host)
+            self.stdout.write('# Execute %s on %s' % (backend.get_name(), route.host))
             for method, commands in backend.scripts:
                 script = '\n'.join(commands)
                 self.stdout.write(script)

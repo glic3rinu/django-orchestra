@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import admin_link, admin_date, admin_colored, display_mono
+from orchestra.admin.utils import admin_link, admin_date, admin_colored, display_mono, display_code
 
 from . import settings, helpers
 from .backends import ServiceBackend
@@ -122,7 +122,7 @@ class BackendLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     inlines = (BackendOperationInline,)
     fields = (
-        'backend', 'server_link', 'state', 'mono_script', 'mono_stdout',
+        'backend', 'server_link', 'state', 'display_script', 'mono_stdout',
         'mono_stderr', 'mono_traceback', 'exit_code', 'task_id', 'display_created',
         'execution_time'
     )
@@ -131,10 +131,15 @@ class BackendLogAdmin(admin.ModelAdmin):
     server_link = admin_link('server')
     display_created = admin_date('created_at', short_description=_("Created"))
     display_state = admin_colored('state', colors=STATE_COLORS)
-    mono_script = display_mono('script')
+    display_script = display_code('script')
     mono_stdout = display_mono('stdout')
     mono_stderr = display_mono('stderr')
     mono_traceback = display_mono('traceback')
+    
+    class Media:
+        css = {
+            'all': ('orchestra/css/pygments/github.css',)
+        }
     
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """

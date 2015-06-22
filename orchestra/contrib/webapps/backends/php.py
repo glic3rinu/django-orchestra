@@ -141,17 +141,19 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     def prepare(self):
         super(PHPBackend, self).prepare()
         # Coordinate apache restart with php backend in order not to overdo it
-        self.append(textwrap.dedent("""\
+        self.append(textwrap.dedent("""
             backend="PHPBackend"
-            echo "$backend" >> /dev/shm/restart.apache2
-            """)
+            echo "$backend" >> /dev/shm/restart.apache2""")
         )
     
     def commit(self):
+        context = {
+            'reload_pool': settings.WEBAPPS_PHPFPM_RELOAD_POOL,
+        }
         self.append(textwrap.dedent("""
             # Apply changes if needed
             if [[ $UPDATED_FPM -eq 1 ]]; then
-                service php5-fpm reload
+                %(reload_pool)s
             fi
             
             # Coordinate Apache restart with other concurrent backends (e.g. Apache2Backend)
@@ -182,7 +184,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
             fi
             # End of coordination
-            """)
+            """) % context
         )
         super(PHPBackend, self).commit()
     
@@ -207,13 +209,10 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             pm = ondemand
             pm.max_requests = {{ max_requests }}
             pm.max_children = {{ max_children }}
-            
-            {% if request_terminate_timeout %}\
-            request_terminate_timeout = {{ request_terminate_timeout }}\
-            {% endif %}
-            {% for name, value in init_vars.items %}\
-            php_admin_value[{{ name | safe }}] = {{ value | safe }}\
-            {% endfor %}
+            {% if request_terminate_timeout %}
+            request_terminate_timeout = {{ request_terminate_timeout }}{% endif %}
+            {% for name, value in init_vars.items %}
+            php_admin_value[{{ name | safe }}] = {{ value | safe }}{% endfor %}
             """
         ))
         return fpm_config.render(Context(context))

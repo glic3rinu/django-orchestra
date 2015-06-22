@@ -196,10 +196,11 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     search_fields = ('number', 'account__username', 'comments')
     change_view_actions = [
         actions.manage_lines, actions.view_bill, actions.download_bills, actions.send_bills,
-        actions.close_bills
+        actions.close_bills, actions.amend_bills,
     ]
     actions = [
-        actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills
+        actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
+        actions.amend_bills,
     ]
     change_readonly_fields = ('account_link', 'type', 'is_open')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')

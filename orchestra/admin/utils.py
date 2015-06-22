@@ -16,7 +16,7 @@ from orchestra.models.utils import get_field_value
 from orchestra.utils import humanize
 
 from .decorators import admin_field
-from .html import monospace_format
+from .html import monospace_format, code_format
 
 
 def get_modeladmin(model, import_module=True):
@@ -163,5 +163,12 @@ def get_object_from_url(modeladmin, request):
 def display_mono(field):
     def display(self, log):
         return monospace_format(escape(getattr(log, field)))
+    display.short_description = field
+    return display
+
+
+def display_code(field):
+    def display(self, log):
+        return code_format(getattr(log, field))
     display.short_description = field
     return display

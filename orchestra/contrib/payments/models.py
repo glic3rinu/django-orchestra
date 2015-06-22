@@ -76,7 +76,7 @@ class TransactionQuerySet(models.QuerySet):
         return self.exclude(state=Transaction.REJECTED)
     
     def amount(self):
-        return next(iter(self.aggregate(models.Sum('amount')).values()))
+        return next(iter(self.aggregate(models.Sum('amount')).values())) or 0
     
     def processing(self):
         return self.filter(state__in=[Transaction.EXECUTED, Transaction.WAITTING_EXECUTION])

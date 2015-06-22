@@ -61,8 +61,9 @@ def send_report(method, args, log):
     backend = method.__self__.__class__.__name__
     subject = '[Orchestra] %s execution %s on %s'  % (backend, log.state, server)
     separator = "\n%s\n\n" % ('~ '*40,)
-    print(log.operations.all())
     operations = '\n'.join([' '.join((op.action, get_instance_url(op))) for op in log.operations.all()])
+    log_url = reverse('admin:orchestration_backendlog_change', args=(log.pk,))
+    log_url = orchestra_settings.ORCHESTRA_SITE_URL + log_url
     message = separator.join([
         "[EXIT CODE] %s" % log.exit_code,
         "[STDERR]\n%s" % log.stderr,
@@ -70,6 +71,7 @@ def send_report(method, args, log):
         "[SCRIPT]\n%s" % log.script,
         "[TRACEBACK]\n%s" % log.traceback,
         "[OPERATIONS]\n%s" % operations,
+        "[BACKEND LOG] %s" % log_url,
     ])
     html_message = '\n\n'.join([
         '<h4 style="color:#505050;">Exit code %s</h4>' % log.exit_code,
@@ -83,6 +85,7 @@ def send_report(method, args, log):
             '<pre style="margin-left:20px;font-size:11px">%s</pre>' % escape(log.traceback),
         '<h4 style="color:#505050;">Operations</h4>'
             '<pre style="margin-left:20px;font-size:11px">%s</pre>' % escape(operations),
+        '<h4 style="color:#505050;">Backend log <a href="%s">%s</h4>' % (log_url, log_url),
     ])
     mail_admins(subject, message, html_message=html_message)
 

@@ -20,7 +20,7 @@ class BillTypeListFilter(SimpleListFilter):
             ('invoice', _("Invoice")),
             ('amendmentinvoice', _("Amendment invoice")),
             ('fee', _("Fee")),
-            ('fee', _("Amendment fee")),
+            ('amendmentfee', _("Amendment fee")),
             ('proforma', _("Pro-forma")),
         )
     
@@ -31,10 +31,11 @@ class BillTypeListFilter(SimpleListFilter):
         return self.request.path.split('/')[-2]
     
     def choices(self, cl):
+        query = self.request.GET.urlencode()
         for lookup, title in self.lookup_choices:
             yield {
                 'selected': self.value() == lookup,
-                'query_string': reverse('admin:bills_%s_changelist' % lookup),
+                'query_string': reverse('admin:bills_%s_changelist' % lookup) + '?%s' % query,
                 'display': title,
             }
 

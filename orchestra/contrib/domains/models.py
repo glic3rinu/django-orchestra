@@ -172,13 +172,14 @@ class Domain(models.Model):
                         type=Record.MX,
                         value=mx
                     ))
-            if not has_a and not has_aaaa:
+            if not has_a:
                 default_a = settings.DOMAINS_DEFAULT_A
                 if default_a:
                     records.append(AttrDict(
                         type=Record.A,
                         value=default_a
                     ))
+            if not has_aaaa:
                 default_aaaa = settings.DOMAINS_DEFAULT_AAAA
                 if default_aaaa:
                     records.append(AttrDict(

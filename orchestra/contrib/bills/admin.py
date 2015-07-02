@@ -22,9 +22,14 @@ from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma
 
 
 PAYMENT_STATE_COLORS = {
+    Bill.OPEN: 'grey',
+    Bill.CREATED: 'darkorange',
+    Bill.PROCESSED: 'darkorange',
+    Bill.AMENDED: 'blue',
     Bill.PAID: 'green',
-    Bill.PENDING: 'darkorange',
+    Bill.EXECUTED: 'darkorange',
     Bill.BAD_DEBT: 'red',
+    Bill.INCOMPLETE: 'red',
 }
 
 

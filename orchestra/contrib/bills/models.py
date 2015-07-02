@@ -64,15 +64,17 @@ class Bill(models.Model):
     PROCESSED = 'PROCESSED'
     AMENDED = 'AMENDED'
     PAID = 'PAID'
-    PENDING = 'PENDING'
+    EXECUTED = 'EXECUTED'
     BAD_DEBT = 'BAD_DEBT'
+    INCOMPLETE = 'INCOMPLETE'
     PAYMENT_STATES = (
         (OPEN, _("Open")),
         (CREATED, _("Created")),
         (PROCESSED, _("Processed")),
         (AMENDED, _("Amended")),
         (PAID, _("Paid")),
-        (PENDING, _("Pending")),
+        (INCOMPLETE, _('Incomplete')),
+        (EXECUTED, _("Executed")),
         (BAD_DEBT, _("Bad debt")),
     )
     BILL = 'BILL'
@@ -92,7 +94,8 @@ class Bill(models.Model):
     number = models.CharField(_("number"), max_length=16, unique=True, blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
         related_name='%(class)s')
-#    amend_of = models.ForeignKey('self', null=True, blank=True, verbose_name=_("amend of"), related_name='amends')
+    amend_of = models.ForeignKey('self', null=True, blank=True, verbose_name=_("amend of"),
+        related_name='amends')
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
     created_on = models.DateField(_("created on"), auto_now_add=True)
     closed_on = models.DateField(_("closed on"), blank=True, null=True)
@@ -133,14 +136,49 @@ class Bill(models.Model):
     def payment_state(self):
         if self.is_open or self.get_type() == self.PROFORMA:
             return self.OPEN
-#        elif self.amends.filter(is_open=False).exists():
-#            return self.AMENDED
-        # TODO optimize this with a single query
-        secured = self.transactions.secured().amount() or 0
-        if abs(secured) >= abs(self.get_total()):
-            return self.PAID
-        elif self.transactions.exclude_rejected().exists():
-            return self.PENDING
+        elif self.amends.filter(is_open=False).exists():
+            return self.AMENDED
+        secured = 0
+        pending = 0
+        created = False
+        processed = False
+        executed = False
+        rejected = False
+        for transaction in self.transactions.all():
+            if transaction.state == transaction.SECURED:
+                secured += transaction.amount
+                pending += transaction.amount
+            elif transaction.state == transaction.WAITTING_PROCESSING:
+                pending += transaction.amount
+                created = True
+            elif transaction.state == transaction.WAITTING_EXECUTION:
+                pending += transaction.amount
+                processed = True
+            elif transaction.state == transaction.EXECUTED:
+                pending += transaction.amount
+                executed = True
+            elif transaction.state == transaction.REJECTED:
+                rejected = True
+            else:
+                raise TypeError("Unknown state")
+        ongoing = bool(secured != 0 or created or processed or executed)
+        total = self.get_total()
+        if total >= 0:
+            if secured >= total:
+                return self.PAID
+            elif ongoing and pending < total:
+                return self.INCOMPLETE
+        else:
+            if secured <= total:
+                return self.PAID
+            elif ongoing and pending > total:
+                return self.INCOMPLETE
+        if created:
+            return self.CREATED
+        elif processed:
+            return self.PROCESSED
+        elif executed:
+            return self.EXECUTED
         return self.BAD_DEBT
     
     def get_total(self):

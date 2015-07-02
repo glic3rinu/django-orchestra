@@ -228,7 +228,8 @@ def amend_bills(modeladmin, request, queryset):
             }
             amend = Bill.objects.create(
                 account=bill.account,
-                type=amend_type
+                type=amend_type,
+                amend_of=bill,
             )
             context['type'] = _(amend.get_type_display())
             amend.comments = _("%(type)s of %(related_type)s %(number)s and creation date %(date)s") % context

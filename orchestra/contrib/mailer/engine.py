@@ -25,7 +25,8 @@ def send_message(message, num=0, connection=None, bulk=settings.MAILER_BULK_MESS
     error = None
     try:
         connection.connection.sendmail(message.from_address, [message.to_address], smart_str(message.content))
-    except (SocketError, smtplib.SMTPSenderRefused,
+    except (SocketError,
+            smtplib.SMTPSenderRefused,
             smtplib.SMTPRecipientsRefused,
             smtplib.SMTPAuthenticationError) as err:
         message.defer()
@@ -33,6 +34,7 @@ def send_message(message, num=0, connection=None, bulk=settings.MAILER_BULK_MESS
     else:
         message.sent()
     message.log(error)
+    return connection
 
 
 def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
@@ -41,7 +43,7 @@ def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
             connection = None
             num = 0
             for message in Message.objects.filter(state=Message.QUEUED).order_by('priority'):
-                send_message(message, num, connection, bulk)
+                connection = send_message(message, num, connection, bulk)
                 num += 1
             now = timezone.now()
             qs = Q()

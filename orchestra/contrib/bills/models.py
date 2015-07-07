@@ -90,6 +90,10 @@ class Bill(models.Model):
         (AMENDMENTFEE, _("Amendment Fee")),
         (PROFORMA, _("Pro forma")),
     )
+    AMEND_MAP = {
+        INVOICE: AMENDMENTINVOICE,
+        FEE: AMENDMENTFEE,
+    }
     
     number = models.CharField(_("number"), max_length=16, unique=True, blank=True)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
@@ -181,6 +185,24 @@ class Bill(models.Model):
             return self.EXECUTED
         return self.BAD_DEBT
     
+    def clean(self):
+        if self.amend_of_id:
+            errors = {}
+            if self.type not in self.AMEND_MAP.values():
+                errors['amend_of'] = _("Type %s is not an amendment.") % self.get_type_display()
+            if self.amend_of.account_id != self.account_id:
+                errors['account'] = _("Amend of related account doesn't match bill account.")
+            if self.amend_of.is_open:
+                errors['amend_of'] = _("Related invoice is in open state.")
+            if self.amend_of.type in self.AMEND_MAP.values():
+                errors['amend_of'] = _("Related invoice is an amendment.")
+            if errors:
+                raise ValidationError(errors)
+        elif self.type in self.AMEND_MAP.values():
+            raise ValidationError({
+                'amend_of': _("Type %s requires an amend of link.") % self.get_type_display()
+            })
+    
     def get_total(self):
         if not self.is_open:
             return self.total
@@ -201,11 +223,7 @@ class Bill(models.Model):
         return self.type or self.get_class_type()
     
     def get_amend_type(self):
-        amend_map = {
-            self.INVOICE: self.AMENDMENTINVOICE,
-            self.FEE: self.AMENDMENTFEE,
-        }
-        amend_type = amend_map.get(self.type)
+        amend_type = self.AMEND_MAP.get(self.type)
         if amend_type is None:
             raise TypeError("%s has no associated amend type." % self.type)
         return amend_type
@@ -321,10 +339,17 @@ class Bill(models.Model):
             subtotals[tax] = (subtotal, round(tax/100*subtotal, 2))
         return subtotals
     
+    def compute_base(self):
+        bases = self.lines.annotate(
+            bases=F('subtotal') + Coalesce(F('sublines__total'), 0)
+        )
+        return round(bases.aggregate(Sum('bases'))['bases__sum'] or 0, 2)
+    
     def compute_total(self):
         totals = self.lines.annotate(
-            totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100))
-        return round(totals.aggregate(Sum('totals'))['totals__sum'], 2)
+            totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100)
+        )
+        return round(totals.aggregate(Sum('totals'))['totals__sum'] or 0, 2)
 
 
 class Invoice(Bill):
@@ -363,7 +388,7 @@ class BillLine(models.Model):
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.DecimalField(_("tax"), max_digits=4, decimal_places=2)
     start_on = models.DateField(_("start"))
-    end_on = models.DateField(_("end"), null=True)
+    end_on = models.DateField(_("end"), null=True, blank=True)
     order = models.ForeignKey(settings.BILLS_ORDER_MODEL, null=True, blank=True,
         help_text=_("Informative link back to the order"), on_delete=models.SET_NULL)
     order_billed_on = models.DateField(_("order billed"), null=True, blank=True)

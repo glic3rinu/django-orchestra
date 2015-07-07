@@ -17,6 +17,7 @@ from orchestra.admin.forms import adminmodelformset_factory
 from orchestra.admin.utils import get_object_from_url, change_url
 from orchestra.utils.html import html_to_pdf
 
+from . import settings
 from .forms import SelectSourceForm
 from .helpers import validate_contact
 from .models import Bill, BillLine
@@ -217,7 +218,7 @@ def amend_bills(modeladmin, request, queryset):
     if queryset.filter(is_open=True).exists():
         messages.warning(request, _("Selected bills should be in closed state"))
         return
-    ids = []
+    amend_ids = []
     for bill in queryset:
         with translation.override(bill.account.language):
             amend_type = bill.get_amend_type()
@@ -239,17 +240,33 @@ def amend_bills(modeladmin, request, queryset):
                 line = BillLine.objects.create(
                     bill=amend,
                     start_on=bill.created_on,
-                    description=_("Amend of %(related_type)s %(number)s, tax %(tax)s%%") % context,
+                    description=_("%(related_type)s %(number)s subtotal for tax %(tax)s%%") % context,
                     subtotal=subtotals[0],
                     tax=tax
                 )
-            ids.append(bill.pk)
-    amend_url = reverse('admin:bills_bill_changelist')
-    amend_url += '?id=%s' % ','.join(map(str, ids))
+            amend_ids.append(amend.pk)
+    num = len(amend_ids)
+    if num == 1:
+        amend_url = reverse('admin:bills_bill_change', args=amend_ids)
+    else:
+        amend_url = reverse('admin:bills_bill_changelist')
+        amend_url += '?id=%s' % ','.join(map(str, amend_ids))
+    context = {
+        'url': amend_url,
+        'num': num,
+    }
     messages.success(request, mark_safe(ungettext(
-        _('<a href="%s">One amendment bill</a> have been generated.') % amend_url,
-        _('<a href="%s">%i amendment bills</a> have been generated.') % (amend_url, len(ids)),
-        len(ids)
+        _('<a href="%(url)s">One amendment bill</a> have been generated.') % context,
+        _('<a href="%(url)s">%(num)i amendment bills</a> have been generated.') % context,
+        num
     )))
 amend_bills.verbose_name = _("Amend")
 amend_bills.url_name = 'amend'
+
+
+def report(modeladmin, request, queryset):
+    context = {
+        'bills': queryset,
+        'currency': settings.BILLS_CURRENCY,
+    }
+    return render(request, 'admin/bills/report.html', context)

@@ -186,10 +186,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'num_lines', 'display_total', 'display_payment_state', 'is_open', 'is_sent'
     )
     list_filter = (BillTypeListFilter, 'is_open', 'is_sent', TotalListFilter, PaymentStateListFilter)
-    add_fields = ('account', 'type', 'is_open', 'due_on', 'comments')
+    add_fields = ('account', 'type', 'amend_of', 'is_open', 'due_on', 'comments')
     fieldsets = (
         (None, {
-            'fields': ('number', 'type', 'account_link', 'display_total',
+            'fields': ('number', 'type', 'amend_of_link', 'account_link', 'display_total',
                        'display_payment_state', 'is_sent', 'due_on', 'comments'),
         }),
         (_("Raw"), {
@@ -205,13 +205,14 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     ]
     actions = [
         actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
-        actions.amend_bills,
+        actions.amend_bills, actions.report
     ]
-    change_readonly_fields = ('account_link', 'type', 'is_open')
+    change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
     inlines = [BillLineInline, ClosedBillLineInline]
     
     created_on_display = admin_date('created_on', short_description=_("Created"))
+    amend_of_link = admin_link('amend_of')
     
     def num_lines(self, bill):
         return bill.lines__count
@@ -267,8 +268,12 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     
     def get_fieldsets(self, request, obj=None):
         fieldsets = super(BillAdmin, self).get_fieldsets(request, obj)
-        if obj and obj.is_open:
-            fieldsets = (fieldsets[0],)
+        if obj:
+#            if obj.amend_of_id:
+#                fieldsets = list(fieldsets)
+#                fieldsets[0][1]['fields'] = fieldsets[0][1]['fields'] + ('amend_of_link',)
+            if obj.is_open:
+                fieldsets = (fieldsets[0],)
         return fieldsets
     
     def get_change_view_actions(self, obj=None):
@@ -289,10 +294,13 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         """ Make value input widget bigger """
         if db_field.name == 'comments':
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 4})
-        if db_field.name == 'html':
+        elif db_field.name == 'html':
             kwargs['widget'] = forms.Textarea(attrs={'cols': 150, 'rows': 20})
-        return super(BillAdmin, self).formfield_for_dbfield(db_field, **kwargs)
-        
+        formfield = super(BillAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'amend_of':
+            formfield.queryset = formfield.queryset.filter(is_open=False)
+        return formfield
+    
     def get_queryset(self, request):
         qs = super(BillAdmin, self).get_queryset(request)
         qs = qs.annotate(

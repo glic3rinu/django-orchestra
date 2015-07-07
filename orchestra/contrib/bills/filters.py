@@ -4,6 +4,8 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from . models import Bill
+
 
 class BillTypeListFilter(SimpleListFilter):
     """ Filter tickets by created_by according to request.user """
@@ -89,6 +91,7 @@ class PaymentStateListFilter(SimpleListFilter):
             ('PAID', _("Paid")),
             ('PENDING', _("Pending")),
             ('BAD_DEBT', _("Bad debt")),
+            ('AMENDED', _("Amended")),
         )
     
     def queryset(self, request, queryset):
@@ -96,10 +99,12 @@ class PaymentStateListFilter(SimpleListFilter):
         if self.value() == 'OPEN':
             return queryset.filter(Q(is_open=True)|Q(type=queryset.model.PROFORMA))
         elif self.value() == 'PAID':
-            zeros = queryset.filter(computed_total=0, computed_total__isnull=True).values_list('id', flat=True)
+            zeros = queryset.filter(computed_total=0, computed_total__isnull=True)
+            zeros = zeros.values_list('id', flat=True)
             ammounts = Transaction.objects.exclude(bill_id__in=zeros).secured().group_by('bill_id')
             paid = []
-            for bill_id, total in queryset.exclude(computed_total=0, computed_total__isnull=True, is_open=True).values_list('id', 'computed_total'):
+            relevant = queryset.exclude(computed_total=0, computed_total__isnull=True, is_open=True)
+            for bill_id, total in relevant.values_list('id', 'computed_total'):
                 try:
                     ammount = sum([t.ammount for t in ammounts[bill_id]])
                 except KeyError:
@@ -107,7 +112,11 @@ class PaymentStateListFilter(SimpleListFilter):
                 else:
                     if abs(total) <= abs(ammount):
                         paid.append(bill_id)
-            return queryset.filter(Q(computed_total=0)|Q(computed_total__isnull=True)|Q(id__in=paid)).exclude(is_open=True)
+            return queryset.filter(
+                Q(computed_total=0) |
+                Q(computed_total__isnull=True) |
+                Q(id__in=paid)
+            ).exclude(is_open=True)
         elif self.value() == 'PENDING':
             has_transaction = queryset.exclude(transactions__isnull=True)
             non_rejected = has_transaction.exclude(transactions__state=Transaction.REJECTED)
@@ -115,4 +124,11 @@ class PaymentStateListFilter(SimpleListFilter):
             return queryset.filter(pk__in=non_rejected)
         elif self.value() == 'BAD_DEBT':
             closed = queryset.filter(is_open=False).exclude(computed_total=0)
-            return closed.filter(Q(transactions__state=Transaction.REJECTED)|Q(transactions__isnull=True))
+            return closed.filter(
+                Q(transactions__state=Transaction.REJECTED) |
+                Q(transactions__isnull=True)
+            )
+        elif self.value() == 'AMENDED':
+            amendeds = queryset.filter(type__in=Bill.AMEND_MAP.values(), is_open=False)
+            amendeds_ids = amendeds.values_list('amend_of', flat=True)
+            return queryset.filter(id__in=amendeds)

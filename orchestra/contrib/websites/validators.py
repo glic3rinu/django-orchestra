@@ -28,3 +28,11 @@ def validate_domain_protocol(website, domain, protocol):
         raise ValidationError({
             'domains': 'A website is already defined for "%s" on protocol %s' % (domain, protocol),
         })
+
+
+def validate_server_name(domains):
+    if domains:
+        for domain in domains:
+            if not domain.name.startswith('*'):
+                return
+    raise ValidationError(_("At least one non-wildcard domain should be provided."))

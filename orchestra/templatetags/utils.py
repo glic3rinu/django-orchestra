@@ -96,3 +96,7 @@ def admin_url(obj):
 def isactive(obj):
     return getattr(obj, 'is_active', True)
 
+
+@register.filter
+def sub(value, arg):
+    return value - arg

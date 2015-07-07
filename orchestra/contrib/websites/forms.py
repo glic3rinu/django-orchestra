@@ -4,7 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from .utils import normurlpath
-from .validators import validate_domain_protocol
+from .validators import validate_domain_protocol, validate_server_name
 
 
 class WebsiteAdminForm(forms.ModelForm):
@@ -15,12 +15,16 @@ class WebsiteAdminForm(forms.ModelForm):
         if not domains:
             return self.cleaned_data
         protocol = self.cleaned_data.get('protocol')
-        for domain in domains.all():
+        domains = domains.all()
+        for domain in domains:
             try:
                 validate_domain_protocol(self.instance, domain, protocol)
-            except ValidationError as e:
-                # TODO not sure about this one
-                self.add_error(None, e)
+            except ValidationError as err:
+                self.add_error(None, err)
+        try:
+            validate_server_name(domains)
+        except ValidationError as err:
+            self.add_error('domains', err)
         return self.cleaned_data
 
 

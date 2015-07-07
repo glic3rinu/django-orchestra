@@ -1,0 +1,60 @@
+{% load i18n utils %}
+
+<html>
+<head>
+    <title>Bill Report</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+    @page {
+       size: 11.69in 8.27in;
+    }
+    table {
+       font-family: sans;
+       font-size: 10px;
+       max-width: 10in;
+    }
+    table tr:nth-child(even) {
+        background-color: #eee;
+    }
+    table tr:nth-child(odd) {
+        background-color: #fff;
+    }
+    table th {
+        color: white;
+        background-color: grey;
+    }
+    .item.column-base, .item.column-vat, .item.column-total, .item.column-number {
+        text-align: right;
+    }
+    .column-vat-number {
+        text-align: center;
+    }
+    </style>
+</head>
+<body>
+<table>
+<tr id="transaction">
+    <th class="title column-number">{% trans "Number" %}</th>
+    <th class="title column-vat-number">{% trans "VAT number" %}</th>
+    <th class="title column-billcontant">{% trans "Contact" %}</th>
+    <th class="title column-date">{% trans "Close date" %}</th>
+    <th class="title column-base">{% trans "Base" %}</th>
+    <th class="title column-vat">{% trans "VAT" %}</th>
+    <th class="title column-total">{% trans "Total" %}</th>
+</tr>
+{% for bill in bills %}
+<tr>
+    <td class="item column-number">{{ bill.number }}</td>
+    <td class="item column-vat-number">{{ bill.buyer.vat }}</td>
+    <td class="item column-billcontant">{{ bill.buyer.get_name }}</td>
+    <td class="item column-date">{{ bill.closed_on|date }}</td>
+    {% with base=bill.compute_base total=bill.compute_total %}
+    <td class="item column-base">{{ base }} &{{ currency }};</td>
+    <td class="item column-vat">{{ total|sub:base }} &{{ currency }};</td>
+    <td class="item column-total">{{ total }} &{{ currency }};</td>
+    {% endwith %}
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>

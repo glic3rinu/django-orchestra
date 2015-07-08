@@ -22,7 +22,7 @@ class Operation():
     
     def __hash__(self):
         """ set() """
-        return hash(self.backend) + hash(self.instance) + hash(self.action)
+        return hash((self.backend, self.instance, self.action))
     
     def __eq__(self, operation):
         """ set() """

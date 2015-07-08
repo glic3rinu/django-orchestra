@@ -109,9 +109,9 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         exclude = []
         if obj:
             if obj.state == Transaction.WAITTING_PROCESSING:
-                exclude = ['mark_as_executed', 'mark_as_secured', 'mark_as_rejected']
+                exclude = ['mark_as_executed', 'mark_as_secured']
             elif obj.state == Transaction.WAITTING_EXECUTION:
-                exclude = ['process_transactions', 'mark_as_secured', 'mark_as_rejected']
+                exclude = ['process_transactions', 'mark_as_secured']
             if obj.state == Transaction.EXECUTED:
                 exclude = ['process_transactions', 'mark_as_executed']
             elif obj.state in [Transaction.REJECTED, Transaction.SECURED]:

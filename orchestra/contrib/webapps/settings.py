@@ -192,7 +192,6 @@ WEBAPPS_PHP_DISABLED_FUNCTIONS = Setting('WEBAPPS_PHP_DISABLED_FUNCTION', (
     'system',
     'proc_open',
     'popen',
-    'curl_exec',
     'curl_multi_exec',
     'show_source',
     'pcntl_exec',

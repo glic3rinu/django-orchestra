@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Prefetch
 from django.db.models.functions import Coalesce
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
@@ -17,8 +17,10 @@ from orchestra.contrib.accounts.admin import AccountAdminMixin, AccountAdmin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
 from . import settings, actions
-from .filters import BillTypeListFilter, HasBillContactListFilter, TotalListFilter, PaymentStateListFilter
-from .models import Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine, BillContact
+from .filters import (BillTypeListFilter, HasBillContactListFilter, TotalListFilter,
+    PaymentStateListFilter, AmendedListFilter)
+from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine,
+    BillContact)
 
 
 PAYMENT_STATE_COLORS = {
@@ -185,8 +187,12 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'number', 'type_link', 'account_link', 'created_on_display',
         'num_lines', 'display_total', 'display_payment_state', 'is_open', 'is_sent'
     )
-    list_filter = (BillTypeListFilter, 'is_open', 'is_sent', TotalListFilter, PaymentStateListFilter)
+    list_filter = (
+        BillTypeListFilter, 'is_open', 'is_sent', TotalListFilter, PaymentStateListFilter,
+        AmendedListFilter
+    )
     add_fields = ('account', 'type', 'amend_of', 'is_open', 'due_on', 'comments')
+    change_list_template = 'admin/bills/change_list.html'
     fieldsets = (
         (None, {
             'fields': ('number', 'type', 'amend_of_link', 'account_link', 'display_total',
@@ -243,9 +249,13 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             url = reverse('admin:%s_%s_changelist' % (t_opts.app_label, t_opts.model_name))
             url += '?bill=%i' % bill.pk
         state = bill.get_payment_state_display().upper()
+        title = ''
+        if bill.closed_amends:
+            state += '*'
+            title = _("This bill has been amended, this value may not be valid.")
         color = PAYMENT_STATE_COLORS.get(bill.payment_state, 'grey')
-        return '<a href="{url}" style="color:{color}">{name}</a>'.format(
-            url=url, color=color, name=state)
+        return '<a href="{url}" style="color:{color}" title="{title}">{name}</a>'.format(
+            url=url, color=color, name=state, title=title)
     display_payment_state.allow_tags = True
     display_payment_state.short_description = _("Payment")
     
@@ -309,6 +319,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 (F('lines__subtotal') + Coalesce(F('lines__sublines__total'), 0)) * (1+F('lines__tax')/100)
             ),
         )
+        qs = qs.prefetch_related(Prefetch('amends', queryset=Bill.objects.filter(is_open=False), to_attr='closed_amends'))
         return qs
     
     def change_view(self, request, object_id, **kwargs):

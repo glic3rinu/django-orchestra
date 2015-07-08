@@ -91,7 +91,6 @@ class PaymentStateListFilter(SimpleListFilter):
             ('PAID', _("Paid")),
             ('PENDING', _("Pending")),
             ('BAD_DEBT', _("Bad debt")),
-            ('AMENDED', _("Amended")),
         )
     
     def queryset(self, request, queryset):
@@ -128,7 +127,29 @@ class PaymentStateListFilter(SimpleListFilter):
                 Q(transactions__state=Transaction.REJECTED) |
                 Q(transactions__isnull=True)
             )
-        elif self.value() == 'AMENDED':
-            amendeds = queryset.filter(type__in=Bill.AMEND_MAP.values(), is_open=False)
-            amendeds_ids = amendeds.values_list('amend_of', flat=True)
-            return queryset.filter(id__in=amendeds)
+
+
+class AmendedListFilter(SimpleListFilter):
+    title = _("amended")
+    parameter_name = 'amended'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('1', _("Closed amends")),
+            ('-1', _("Open or closed amends")),
+            ('0', _("No closed amends")),
+            ('-0', _("No amends")),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+        amended = queryset.filter(type__in=Bill.AMEND_MAP.values(), amend_of__isnull=False)
+        if not self.value().startswith('-'):
+            amended = amended.filter(is_open=False)
+        amended_ids = amended.distinct().values_list('amend_of_id', flat=True)
+        if self.value().endswith('1'):
+            return queryset.filter(id__in=amended_ids)
+        else:
+            return queryset.exclude(id__in=amended_ids)
+

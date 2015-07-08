@@ -140,8 +140,6 @@ class Bill(models.Model):
     def payment_state(self):
         if self.is_open or self.get_type() == self.PROFORMA:
             return self.OPEN
-        elif self.amends.filter(is_open=False).exists():
-            return self.AMENDED
         secured = 0
         pending = 0
         created = False

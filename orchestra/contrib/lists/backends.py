@@ -19,19 +19,19 @@ class MailmanVirtualDomainBackend(ServiceController):
         ('LISTS_VIRTUAL_ALIAS_DOMAINS_PATH',)
     )
     
-    def is_local_domain(self, domain):
+    def is_hosted_domain(self, domain):
         """ whether or not domain MX points to this server """
         return domain.has_default_mx()
     
     def include_virtual_alias_domain(self, context):
         domain = context['address_domain']
-        if domain and self.is_local_domain(domain):
+        if domain and self.is_hosted_domain(domain):
             self.append(textwrap.dedent("""
                 # Add virtual domain %(address_domain)s
                 [[ $(grep '^\s*%(address_domain)s\s*$' %(virtual_alias_domains)s) ]] || {
                     echo '%(address_domain)s' >> %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                }""") % self.context
+                }""") % context
             )
     
     def is_last_domain(self, domain):
@@ -108,8 +108,9 @@ class MailmanBackend(MailmanVirtualDomainBackend):
             context['suffix'] = suffix
             # Because mailman doesn't properly handle lists aliases we need two virtual aliases
             aliases.append("%(address_name)s%(suffix)s@%(domain)s\t%(name)s%(suffix)s" % context)
-            # And another with the original list name; Mailman generates links with it
-            aliases.append("%(name)s%(suffix)s@%(domain)s\t%(name)s%(suffix)s" % context)
+            if context['address_name'] != context['name']:
+                # And another with the original list name; Mailman generates links with it
+                aliases.append("%(name)s%(suffix)s@%(domain)s\t%(name)s%(suffix)s" % context)
         return '\n'.join(aliases)
     
     def save(self, mail_list):
@@ -122,7 +123,10 @@ class MailmanBackend(MailmanVirtualDomainBackend):
             }""") % context)
         # Custom domain
         if mail_list.address:
-            context['aliases'] = self.get_virtual_aliases(context)
+            context.update({
+                'aliases': self.get_virtual_aliases(context),
+                'num_entries': 2 if context['address_name'] != context['name'] else 1,
+            })
             self.append(textwrap.dedent("""\
                 # Create list alias for custom domain
                 aliases='%(aliases)s'
@@ -130,7 +134,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
                     echo "${aliases}" >> %(virtual_alias)s
                     UPDATED_VIRTUAL_ALIAS=1
                 else
-                    if [[ ! $(grep '^\s*%(address_name)s@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
+                    if [[ $(grep -E '^\s*(%(address_name)s|%(name)s)@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s|wc -l) -ne %(num_entries)s ]]; then
                         sed -i -e '/^.*\s%(name)s\(%(suffixes_regex)s\)\s*$/d' \\
                                -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s
                         echo "${aliases}" >> %(virtual_alias)s

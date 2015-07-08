@@ -49,9 +49,9 @@
     <td class="item column-billcontant">{{ bill.buyer.get_name }}</td>
     <td class="item column-date">{{ bill.closed_on|date }}</td>
     {% with base=bill.compute_base total=bill.compute_total %}
-    <td class="item column-base">{{ base }} &{{ currency }};</td>
-    <td class="item column-vat">{{ total|sub:base }} &{{ currency }};</td>
-    <td class="item column-total">{{ total }} &{{ currency }};</td>
+    <td class="item column-base">{{ base }}</td>
+    <td class="item column-vat">{{ total|sub:base }}</td>
+    <td class="item column-total">{{ total }}</td>
     {% endwith %}
 </tr>
 {% endfor %}

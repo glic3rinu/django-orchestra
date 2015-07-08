@@ -434,3 +434,20 @@ serailzer self.instance on create.
 * backendLog store method and language... and use it for display_script with correct lexer
 
 # process monitor data to represent state, or maybe create new resource datas when period expires?
+
+
+# Automatically mark as paid transactions with 0 or prevent its creation?
+
+# Confirmation steps on amend and other billing actions
+
+
+@register.filter
+def comma(value):
+    value = str(value)
+    if '.' in value:
+        left, right = str(value).split('.')
+        return ','.join((left, right))
+    return value
+
+
+# Close, send + download admin action for bills (with confirmation)

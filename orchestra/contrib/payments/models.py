@@ -144,7 +144,6 @@ class Transaction(models.Model):
         self.save(update_fields=['state', 'modified_at'])
     
     def mark_as_rejected(self):
-        self.check_state(self.EXECUTED)
         self.state = self.REJECTED
         self.save(update_fields=['state', 'modified_at'])
 

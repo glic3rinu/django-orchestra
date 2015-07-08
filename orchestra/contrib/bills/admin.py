@@ -195,8 +195,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_list_template = 'admin/bills/change_list.html'
     fieldsets = (
         (None, {
-            'fields': ('number', 'type', 'amend_of_link', 'account_link', 'display_total',
-                       'display_payment_state', 'is_sent', 'due_on', 'comments'),
+            'fields': ['number', 'type', 'amend_of_link', 'account_link', 'display_total',
+                       'display_payment_state', 'is_sent', 'due_on', 'comments'],
         }),
         (_("Raw"), {
             'classes': ('collapse',),
@@ -213,12 +213,22 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
         actions.amend_bills, actions.report
     ]
-    change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link')
+    change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link', 'amend_links')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
     inlines = [BillLineInline, ClosedBillLineInline]
+    date_hierarchy = 'closed_on'
     
     created_on_display = admin_date('created_on', short_description=_("Created"))
     amend_of_link = admin_link('amend_of')
+    
+    def amend_links(self, bill):
+        links = []
+        for amend in bill.amends.all():
+            url = reverse('admin:bills_bill_change', args=(amend.id,))
+            links.append('<a href="{url}">{num}</a>'.format(url=url, num=amend.number))
+        return '<br>'.join(links)
+    amend_links.short_description = _("Amends")
+    amend_links.allow_tags = True
     
     def num_lines(self, bill):
         return bill.lines__count
@@ -279,9 +289,11 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def get_fieldsets(self, request, obj=None):
         fieldsets = super(BillAdmin, self).get_fieldsets(request, obj)
         if obj:
-#            if obj.amend_of_id:
-#                fieldsets = list(fieldsets)
-#                fieldsets[0][1]['fields'] = fieldsets[0][1]['fields'] + ('amend_of_link',)
+            # Switches between amend_of_link and amend_links fields
+            if obj.amend_of_id:
+                fieldsets[0][1]['fields'][2] = 'amend_of_link'
+            else:
+                fieldsets[0][1]['fields'][2] = 'amend_links'
             if obj.is_open:
                 fieldsets = (fieldsets[0],)
         return fieldsets

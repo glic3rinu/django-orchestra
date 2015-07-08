@@ -20,10 +20,10 @@ class BillTypeListFilter(SimpleListFilter):
         return (
             ('bill', _("All")),
             ('invoice', _("Invoice")),
-            ('amendmentinvoice', _("Amendment invoice")),
             ('fee', _("Fee")),
-            ('amendmentfee', _("Amendment fee")),
             ('proforma', _("Pro-forma")),
+            ('amendmentfee', _("Amendment fee")),
+            ('amendmentinvoice', _("Amendment invoice")),
         )
     
     def queryset(self, request, queryset):
@@ -152,4 +152,3 @@ class AmendedListFilter(SimpleListFilter):
             return queryset.filter(id__in=amended_ids)
         else:
             return queryset.exclude(id__in=amended_ids)
-

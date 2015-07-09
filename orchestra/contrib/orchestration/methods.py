@@ -1,8 +1,9 @@
-import json
+import inspect
 import logging
 import socket
 import sys
 import select
+import textwrap
 
 from celery.datastructures import ExceptionInfo
 
@@ -147,11 +148,14 @@ def SSH(*args, **kwargs):
 
 
 def Python(backend, log, server, cmds, async=False):
-    script = [ str(cmd.func.__name__) + str(cmd.args) for cmd in cmds ]
-    script = json.dumps(script, indent=4).replace('"', '')
+    script = ''
+    for cmd in cmds:
+        script += '# %s\n' % (str(cmd.func.__name__) + str(cmd.args))
+        script += textwrap.dedent(''.join(inspect.getsourcelines(cmd.func)[0]))
     log.state = log.STARTED
     log.script = '\n'.join((log.script, script))
     log.save(update_fields=('script', 'state', 'updated_at'))
+    stdout = ''
     try:
         for cmd in cmds:
             with CaptureStdout() as stdout:
@@ -163,6 +167,7 @@ def Python(backend, log, server, cmds, async=False):
     except:
         log.exit_code = 1
         log.state = log.FAILURE
+        log.stdout = '\n'.join(stdout)
         log.traceback = ExceptionInfo(sys.exc_info()).traceback
         logger.error('Exception while executing %s on %s' % (backend, server))
     else:

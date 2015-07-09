@@ -98,7 +98,7 @@ close_bills.url_name = 'close'
 def send_bills(modeladmin, request, queryset):
     for bill in queryset:
         if not validate_contact(request, bill):
-            return
+            return False
     num = 0
     for bill in queryset:
         bill.send()
@@ -131,10 +131,13 @@ download_bills.url_name = 'download'
 
 
 def close_send_download_bills(modeladmin, request, queryset):
-    close_bills(modeladmin, request, queryset)
+    response = close_bills(modeladmin, request, queryset)
     if request.POST.get('post') == 'generic_confirmation':
-        send_bills(modeladmin, request, queryset)
+        response = send_bills(modeladmin, request, queryset)
+        if response is False:
+            return
         return download_bills(modeladmin, request, queryset)
+    return response
 close_send_download_bills.verbose_name = _("C.S.D.")
 close_send_download_bills.url_name = 'close-send-download'
 close_send_download_bills.help_text = _("Close, send and download bills in one shot.")

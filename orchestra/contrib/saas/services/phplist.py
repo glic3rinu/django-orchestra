@@ -63,6 +63,11 @@ class PHPListService(SoftwareService):
         super(PHPListService, self).validate()
         create = not self.instance.pk
         if create:
+            db_user = self.get_db_user()
+            try:
+                DatabaseUser.objects.get(username=db_user)
+            except DatabaseUser.DoesNotExist:
+                raise ValidationError(_("Global database user for PHPList '%s' does not exists."))
             account = self.get_account()
             db = Database(name=self.get_db_name(), account=account)
             try:

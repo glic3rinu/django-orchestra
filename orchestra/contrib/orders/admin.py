@@ -77,7 +77,9 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
         red = False
         human = escape(naturaldate(billed_until))
         if billed_until:
-            if order.service.billing_period == order.service.NEVER:
+            if order.cancelled_on and order.cancelled_on <= billed_until:
+                pass
+            elif order.service.billing_period == order.service.NEVER:
                 human = _("Forever")
             elif order.service.payment_style == order.service.POSTPAY:
                 boundary = order.service.handler.get_billing_point(order)

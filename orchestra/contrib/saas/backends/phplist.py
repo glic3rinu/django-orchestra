@@ -5,6 +5,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController
 
+from .. import settings
+
 
 class PhpListSaaSBackend(ServiceController):
     """
@@ -21,8 +23,9 @@ class PhpListSaaSBackend(ServiceController):
     serialize = True
     
     def _save(self, saas, server):
-        admin_link = 'http://%s/admin/' % saas.get_site_domain()
-        admin_content = requests.get(admin_link).content.decode('utf8')
+        admin_link = 'https://%s/admin/' % saas.get_site_domain()
+        print('admin_link:', admin_link)
+        admin_content = requests.get(admin_link, verify=settings.SAAS_PHPLIST_VERIFY_SSL).content.decode('utf8')
         if admin_content.startswith('Cannot connect to Database'):
             raise RuntimeError("Database is not yet configured")
         install = re.search(r'([^"]+firstinstall[^"]+)', admin_content)
@@ -37,7 +40,7 @@ class PhpListSaaSBackend(ServiceController):
                 'adminemail': saas.account.username,
                 'adminpassword': saas.password,
             }
-            response = requests.post(install_link, data=post)
+            response = requests.post(install_link, data=post, verify=settings.SAAS_PHPLIST_VERIFY_SSL)
             print(response.content.decode('utf8'))
             if response.status_code != 200:
                 raise RuntimeError("Bad status code %i" % response.status_code)

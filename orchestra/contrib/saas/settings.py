@@ -80,10 +80,15 @@ SAAS_PHPLIST_DB_NAME = Setting('SAAS_PHPLIST_DB_NAME',
     'phplist_mu',
 )
 
-
 SAAS_PHPLIST_BASE_DOMAIN = Setting('SAAS_PHPLIST_BASE_DOMAIN',
     'lists.{}'.format(ORCHESTRA_BASE_DOMAIN),
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
+)
+
+
+SAAS_PHPLIST_VERIFY_SSL = Setting('SAAS_PHPLIST_VERIFY_SSL',
+    True,
+    help_text="Verify SSL certificate on the HTTP requests performed by the backend.",
 )
 
 

@@ -102,7 +102,7 @@ class Bill(models.Model):
         related_name='amends')
     type = models.CharField(_("type"), max_length=16, choices=TYPES)
     created_on = models.DateField(_("created on"), auto_now_add=True)
-    closed_on = models.DateField(_("closed on"), blank=True, null=True)
+    closed_on = models.DateField(_("closed on"), blank=True, null=True, db_index=True)
     is_open = models.BooleanField(_("open"), default=True)
     is_sent = models.BooleanField(_("sent"), default=False)
     due_on = models.DateField(_("due on"), null=True, blank=True)

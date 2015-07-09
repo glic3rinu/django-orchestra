@@ -112,7 +112,7 @@ class Order(models.Model):
     object_id = models.PositiveIntegerField(null=True)
     service = models.ForeignKey(settings.ORDERS_SERVICE_MODEL, verbose_name=_("service"),
         related_name='orders')
-    registered_on = models.DateField(_("registered"), default=timezone.now)
+    registered_on = models.DateField(_("registered"), default=timezone.now, db_index=True)
     cancelled_on = models.DateField(_("cancelled"), null=True, blank=True)
     billed_on = models.DateField(_("billed"), null=True, blank=True)
     billed_until = models.DateField(_("billed until"), null=True, blank=True)

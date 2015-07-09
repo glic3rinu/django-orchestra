@@ -107,7 +107,7 @@ class ChangeViewActionsMixin(object):
                 verbose_name = verbose_name(obj)
             view.verbose_name = verbose_name
             view.css_class = getattr(action, 'css_class', 'historylink')
-            view.description = getattr(action, 'description', '')
+            view.help_text = getattr(action, 'help_text', '')
             views.append(view)
         return views
     

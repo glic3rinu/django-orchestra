@@ -68,7 +68,7 @@ class Ticket(models.Model):
     priority = models.CharField(_("priority"), max_length=32, choices=PRIORITIES,
         default=MEDIUM)
     state = models.CharField(_("state"), max_length=32, choices=STATES, default=NEW)
-    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    created_at = models.DateTimeField(_("created"), auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(_("modified"), auto_now=True)
     cc = models.TextField("CC", help_text=_("emails to send a carbon copy to"),
             blank=True)

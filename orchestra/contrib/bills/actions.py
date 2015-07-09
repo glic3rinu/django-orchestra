@@ -14,6 +14,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.forms import adminmodelformset_factory
+from orchestra.admin.decorators import action_with_confirmation
 from orchestra.admin.utils import get_object_from_url, change_url
 from orchestra.utils.html import html_to_pdf
 
@@ -21,24 +22,6 @@ from . import settings
 from .forms import SelectSourceForm
 from .helpers import validate_contact
 from .models import Bill, BillLine
-
-
-def download_bills(modeladmin, request, queryset):
-    if queryset.count() > 1:
-        bytesio = io.BytesIO()
-        archive = zipfile.ZipFile(bytesio, 'w')
-        for bill in queryset:
-            pdf = bill.as_pdf()
-            archive.writestr('%s.pdf' % bill.number, pdf)
-        archive.close()
-        response = HttpResponse(bytesio.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="orchestra-bills.zip"'
-        return response
-    bill = queryset.get()
-    pdf = bill.as_pdf()
-    return HttpResponse(pdf, content_type='application/pdf')
-download_bills.verbose_name = _("Download")
-download_bills.url_name = 'download'
 
 
 def view_bill(modeladmin, request, queryset):
@@ -111,6 +94,7 @@ close_bills.verbose_name = _("Close")
 close_bills.url_name = 'close'
 
 
+@action_with_confirmation()
 def send_bills(modeladmin, request, queryset):
     for bill in queryset:
         if not validate_contact(request, bill):
@@ -128,12 +112,41 @@ send_bills.verbose_name = lambda bill: _("Resend" if getattr(bill, 'is_sent', Fa
 send_bills.url_name = 'send'
 
 
+def download_bills(modeladmin, request, queryset):
+    if queryset.count() > 1:
+        bytesio = io.BytesIO()
+        archive = zipfile.ZipFile(bytesio, 'w')
+        for bill in queryset:
+            pdf = bill.as_pdf()
+            archive.writestr('%s.pdf' % bill.number, pdf)
+        archive.close()
+        response = HttpResponse(bytesio.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="orchestra-bills.zip"'
+        return response
+    bill = queryset.get()
+    pdf = bill.as_pdf()
+    return HttpResponse(pdf, content_type='application/pdf')
+download_bills.verbose_name = _("Download")
+download_bills.url_name = 'download'
+
+
+def close_send_download_bills(modeladmin, request, queryset):
+    close_bills(modeladmin, request, queryset)
+    if request.POST.get('post') == 'generic_confirmation':
+        send_bills(modeladmin, request, queryset)
+        return download_bills(modeladmin, request, queryset)
+close_send_download_bills.verbose_name = _("C.S.D.")
+close_send_download_bills.url_name = 'close-send-download'
+close_send_download_bills.help_text = _("Close, send and download bills in one shot.")
+
+
 def manage_lines(modeladmin, request, queryset):
     url = reverse('admin:bills_bill_manage_lines')
     url += '?ids=%s' % ','.join(map(str, queryset.values_list('id', flat=True)))
     return redirect(url)
 
 
+@action_with_confirmation()
 def undo_billing(modeladmin, request, queryset):
     group = {}
     for line in queryset.select_related('order'):
@@ -214,6 +227,7 @@ def copy_lines(modeladmin, request, queryset):
     return move_lines(modeladmin, request, queryset)
 
 
+@action_with_confirmation()
 def amend_bills(modeladmin, request, queryset):
     if queryset.filter(is_open=True).exists():
         messages.warning(request, _("Selected bills should be in closed state"))

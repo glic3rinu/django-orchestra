@@ -49,7 +49,7 @@ def change_ticket_state_factory(action, final_state):
     change_ticket_state.url_name = action
     change_ticket_state.verbose_name = action
     change_ticket_state.short_description = _('%s selected tickets') % action.capitalize()
-    change_ticket_state.description = _('Mark ticket as %s.') % final_state.lower()
+    change_ticket_state.help_text = _('Mark ticket as %s.') % final_state.lower()
     change_ticket_state.__name__ = action
     return change_ticket_state
 
@@ -90,7 +90,7 @@ def take_tickets(modeladmin, request, queryset):
     modeladmin.message_user(request, msg)
 take_tickets.url_name = 'take'
 take_tickets.short_description = _("Take selected tickets")
-take_tickets.description = _("Make yourself owner of the ticket.")
+take_tickets.help_text = _("Make yourself owner of the ticket.")
 
 
 @transaction.atomic

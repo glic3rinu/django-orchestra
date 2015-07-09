@@ -79,7 +79,7 @@ class BackendLog(models.Model):
     exit_code = models.IntegerField(_("exit code"), null=True)
     task_id = models.CharField(_("task ID"), max_length=36, unique=True, null=True,
         help_text="Celery task ID when used as execution backend")
-    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    created_at = models.DateTimeField(_("created"), auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(_("updated"), auto_now=True)
     
     class Meta:

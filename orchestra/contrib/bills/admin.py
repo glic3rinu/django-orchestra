@@ -207,11 +207,11 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     search_fields = ('number', 'account__username', 'comments')
     change_view_actions = [
         actions.manage_lines, actions.view_bill, actions.download_bills, actions.send_bills,
-        actions.close_bills, actions.amend_bills,
+        actions.close_bills, actions.amend_bills, actions.close_send_download_bills,
     ]
     actions = [
         actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
-        actions.amend_bills, actions.report
+        actions.amend_bills, actions.report, actions.close_send_download_bills,
     ]
     change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link', 'amend_links')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
@@ -303,7 +303,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         exclude = []
         if obj:
             if not obj.is_open:
-                exclude.append('close_bills')
+                exclude += ['close_bills', 'close_send_download_bills']
         return [action for action in actions if action.__name__ not in exclude]
     
     def get_inline_instances(self, request, obj=None):

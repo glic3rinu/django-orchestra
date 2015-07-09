@@ -450,4 +450,4 @@ def comma(value):
     return value
 
 
-# Close, send + download admin action for bills (with confirmation)
+# db_index on date_hierarchy

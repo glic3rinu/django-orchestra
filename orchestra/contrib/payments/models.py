@@ -166,7 +166,7 @@ class TransactionProcess(models.Model):
     data = JSONField(_("data"), blank=True)
     file = PrivateFileField(_("file"), blank=True)
     state = models.CharField(_("state"), max_length=16, choices=STATES, default=CREATED)
-    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    created_at = models.DateTimeField(_("created"), auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(_("updated"), auto_now=True)
     
     class Meta:

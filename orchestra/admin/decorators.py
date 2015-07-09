@@ -70,7 +70,7 @@ def action_with_confirmation(action_name=None, extra_context={},
             context = {
                 'title': _("Are you sure?"),
                 'content_message': _("Are you sure you want to {action} the selected {item}?").format(
-                        action=action_name, item=objects_name),
+                    action=action_name, item=objects_name),
                 'action_name': action_name.capitalize(),
                 'action_value': action_value,
                 'queryset': queryset,

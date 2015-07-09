@@ -331,7 +331,9 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 (F('lines__subtotal') + Coalesce(F('lines__sublines__total'), 0)) * (1+F('lines__tax')/100)
             ),
         )
-        qs = qs.prefetch_related(Prefetch('amends', queryset=Bill.objects.filter(is_open=False), to_attr='closed_amends'))
+        qs = qs.prefetch_related(
+            Prefetch('amends', queryset=Bill.objects.filter(is_open=False), to_attr='closed_amends')
+        )
         return qs
     
     def change_view(self, request, object_id, **kwargs):

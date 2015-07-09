@@ -438,8 +438,6 @@ serailzer self.instance on create.
 
 # Automatically mark as paid transactions with 0 or prevent its creation?
 
-# Confirmation steps on amend and other billing actions
-
 
 @register.filter
 def comma(value):
@@ -449,5 +447,3 @@ def comma(value):
         return ','.join((left, right))
     return value
 
-
-# db_index on date_hierarchy

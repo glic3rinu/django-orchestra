@@ -66,7 +66,10 @@ class TransactionQuerySet(models.QuerySet):
         source = kwargs.get('source')
         if source is None or not hasattr(source.method_class, 'process'):
             # Manual payments don't need processing
-            kwargs['state']=self.model.WAITTING_EXECUTION
+            kwargs['state'] = self.model.WAITTING_EXECUTION
+        amount = kwargs.get('amount')
+        if amount == 0:
+            kwargs['state'] = self.model.SECURED
         return super(TransactionQuerySet, self).create(**kwargs)
     
     def secured(self):
@@ -100,8 +103,8 @@ class Transaction(models.Model):
         related_name='transactions')
     source = models.ForeignKey(PaymentSource, null=True, blank=True,
         verbose_name=_("source"), related_name='transactions')
-    process = models.ForeignKey('payments.TransactionProcess', null=True, on_delete=models.SET_NULL,
-        blank=True, verbose_name=_("process"), related_name='transactions')
+    process = models.ForeignKey('payments.TransactionProcess', null=True, blank=True,
+        on_delete=models.SET_NULL, verbose_name=_("process"), related_name='transactions')
     state = models.CharField(_("state"), max_length=32, choices=STATES,
         default=WAITTING_PROCESSING)
     amount = models.DecimalField(_("amount"), max_digits=12, decimal_places=2)

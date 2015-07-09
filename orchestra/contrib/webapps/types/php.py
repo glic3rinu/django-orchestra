@@ -101,8 +101,9 @@ class PHPApp(AppType):
                 init_vars['disable_functions'] = ','.join(disable_functions)
         # Process timeout
         if timeout:
+            timeout = max(settings.WEBAPPS_PYTHON_DEFAULT_TIMEOUT, int(timeout))
             # Give a little slack here
-            timeout = str(int(timeout)-2)
+            timeout = str(timeout-2)
             init_vars['max_execution_time'] = timeout
         # Custom error log
         if self.PHP_ERROR_LOG_PATH and 'error_log' not in init_vars:
@@ -147,4 +148,3 @@ class PHPApp(AppType):
     def get_php_version_number(self):
         php_version = self.get_php_version()
         return utils.extract_version_number(php_version)
-

@@ -62,10 +62,10 @@ class OrderQuerySet(models.QuerySet):
         conflictive = self.filter(service__metric='')
         conflictive = conflictive.exclude(service__billing_period=Service.NEVER)
         # Exclude rates null or all rates with quantity 0
-        conflictive = conflictive.annotate(quantity_sum=Sum('service__rates__quantity')).exclude(quantity_sum=0)
-        conflictive = conflictive.select_related('service').distinct().group_by('account_id', 'service')
+        conflictive = conflictive.annotate(quantity_sum=Sum('service__rates__quantity'))
+        conflictive = conflictive.exclude(quantity_sum=0).select_related('service').distinct()
         qs = Q()
-        for account_id, services in conflictive.items():
+        for account_id, services in conflictive.group_by('account_id', 'service').items():
             for service, orders in services.items():
                 ini = datetime.date.max
                 end = datetime.date.min
@@ -137,7 +137,8 @@ class Order(models.Model):
         else:
             services = [service]
         for service in services:
-            orders = Order.objects.by_object(instance, service=service).select_related('service').active()
+            orders = Order.objects.by_object(instance, service=service)
+            orders = orders.select_related('service').active()
             if service.handler.matches(instance):
                 if not orders:
                     account_id = getattr(instance, 'account_id', instance.pk)

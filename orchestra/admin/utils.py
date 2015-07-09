@@ -1,4 +1,5 @@
 import datetime
+import importlib
 import inspect
 from functools import wraps
 
@@ -8,7 +9,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models
 from django.shortcuts import redirect
-import importlib
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 

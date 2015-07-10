@@ -11,7 +11,7 @@ from orchestra.admin.utils import admin_link, admin_date
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils.humanize import naturaldate
 
-from .actions import BillSelectedOrders, mark_as_ignored, mark_as_not_ignored
+from .actions import BillSelectedOrders, mark_as_ignored, mark_as_not_ignored, report
 from .filters import IgnoreOrderListFilter, ActiveOrderListFilter, BilledOrderListFilter
 from .models import Order, MetricStorage
 
@@ -55,7 +55,7 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     default_changelist_filters = (
         ('ignore', '0'),
     )
-    actions = (BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored)
+    actions = (BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored, report)
     change_view_actions = (BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored)
     date_hierarchy = 'registered_on'
     inlines = (MetricStorageInline,)

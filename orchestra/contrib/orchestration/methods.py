@@ -15,10 +15,8 @@ from . import settings
 
 logger = logging.getLogger(__name__)
 
-paramiko_connections = {}
 
-
-def Paramiko(backend, log, server, cmds, async=False):
+def Paramiko(backend, log, server, cmds, async=False, paramiko_connections={}):
     """
     Executes cmds to remote server using Pramaiko
     """

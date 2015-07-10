@@ -1,0 +1,66 @@
+{% load i18n utils %}
+
+<html>
+<head>
+    <title>Transaction Report</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+    @page {
+       size: 11.69in 8.27in;
+    }
+    table {
+       max-width: 10in;
+       font-family: sans;
+       font-size: 10px;
+    }
+    table tr:nth-child(even) {
+        background-color: #eee;
+    }
+    table tr:nth-child(odd) {
+        background-color: #fff;
+    }
+    table th {
+        color: white;
+        background-color: grey;
+    }
+    .item.column-created, .item.column-updated {
+        text-align: center;
+    }
+    .item.column-amount {
+        text-align: right;
+    }
+    </style>
+</head>
+<body>
+
+<table id="summary">
+<tr class="header">
+    <th class="title column-name">{% trans "Services" %}</th>
+    <th class="title column-active">{% trans "Active" %}</th>
+    <th class="title column-cancelled">{% trans "Cancelled" %}</th>
+    <th class="title column-nominal-price">{% trans "Nominal price" %}</th>
+    <th class="title column-number">{% trans "Number" %}</th>
+    <th class="title column-number">{% trans "Profit" %}</th>
+</tr>
+{% for service, info in services %}
+<tr>
+    <td class="item column-name">{{ service }}</td>
+    <td class="item column-amount">{{ info.0 }}</td>
+    <td class="item column-amount">{{ info.1 }}</td>
+    <td class="item column-amount">{{ info.2 }}</td>
+    <td class="item column-amount">{{ info.3 }}</td>
+    <td class="item column-amount">{{ info.2|mul:info.3 }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td class="item column-name"><b>{% trans "TOTAL" %}</b></td>
+    <td class="item column-amount"><b>{{ totals.0 }}</b></td>
+    <td class="item column-amount">{{ totals.1 }}</td>
+    <td class="item column-amount">{{ totals.2 }}</td>
+    <td class="item column-amount">{{ totals.3 }}</td>
+</tr>
+</table>
+
+# TODO calculate profit better: order.get_price() for everyperiod / metric, etc
+</body>
+</html>

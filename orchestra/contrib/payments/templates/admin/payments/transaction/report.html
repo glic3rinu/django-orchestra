@@ -9,9 +9,9 @@
        size: 11.69in 8.27in;
     }
     table {
+       max-width: 10in;
        font-family: sans;
        font-size: 10px;
-       max-width: 10in;
     }
     table tr:nth-child(even) {
         background-color: #eee;
@@ -23,9 +23,34 @@
         color: white;
         background-color: grey;
     }
+    .item.column-created, .item.column-updated {
+        text-align: center;
+    }
+    .item.column-amount {
+        text-align: right;
+    }
     </style>
 </head>
 <body>
+
+<table id="summary">
+<tr class="header">
+    <th class="title column-name">{% trans "Summary" %}</th>
+    <th class="title column-amount">{% trans "Amount" %}</th>
+</tr>
+{% for state, amount in states.items %}
+<tr>
+    <td class="item column-name">{{ state }}</td>
+    <td class="item column-amount">{{ amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td class="item column-name"><b>{% trans "TOTAL" %}</b></td>
+    <td class="item column-amount"><b>{{ total }}</b></td>
+</tr>
+</table>
+
+
 <table>
 <tr id="transaction">
     <th class="title column-id">ID</th>
@@ -47,8 +72,8 @@
     <td class="item column-iban">{{ transaction.source.data.iban }}</td>
     <td class="item column-amount">{{ transaction.amount }}</td>
     <td class="item column-state">{{ transaction.get_state_display }}</td>
-    <td class="item column-state">{{ transaction.created_at|date }}</td>
-    <td class="item column-state">{{ transaction.modified_at|date }}</td>
+    <td class="item column-created">{{ transaction.created_at|date }}</td>
+    <td class="item column-updated">{% if transaction.created_at|date != transaction.modified_at|date %}{{ transaction.modified_at|date }}{% else %} --- {% endif %}</td>
 </tr>
 {% endfor %}
 </table>

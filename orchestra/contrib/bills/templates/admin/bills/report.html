@@ -6,12 +6,16 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <style type="text/css">
     @page {
-       size: 11.69in 8.27in;
+        size: 11.69in 8.27in;
     }
     table {
-       font-family: sans;
-       font-size: 10px;
-       max-width: 10in;
+        font-family: sans;
+        font-size: 10px;
+        max-width: 10in;
+        margin: 4px;
+    }
+    .item.column-name {
+        text-align: right;
     }
     table tr:nth-child(even) {
         background-color: #eee;
@@ -23,6 +27,7 @@
         color: white;
         background-color: grey;
     }
+    
     .item.column-base, .item.column-vat, .item.column-total, .item.column-number {
         text-align: right;
     }
@@ -32,8 +37,30 @@
     </style>
 </head>
 <body>
-<table>
-<tr id="transaction">
+<table id="summary">
+<tr class="header">
+    <th class="title column-name">{% trans "Summary" %}</th>
+    <th class="title column-total">{% trans "Total" %}</th>
+</tr>
+{% for tax, subtotal in subtotals.items %}
+<tr>
+    <td class="item column-name">{% trans "subtotal" %} {{ tax }}% {% trans "VAT" %}</td>
+    <td class="item column-total">{{ subtotal|first}}</td>
+</tr>
+<tr>
+    <td class="item column-name">{% trans "taxes" %} {{ tax }}% {% trans "VAT" %}</td>
+    <td class="item column-total">{{ subtotal|last}}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td class="item column-name"><b>{% trans "TOTAL" %}</b></td>
+    <td class="item column-total"><b>{{ total }}</b></td>
+</tr>
+</table>
+
+
+<table id="main">
+<tr class="header">
     <th class="title column-number">{% trans "Number" %}</th>
     <th class="title column-vat-number">{% trans "VAT number" %}</th>
     <th class="title column-billcontant">{% trans "Contact" %}</th>

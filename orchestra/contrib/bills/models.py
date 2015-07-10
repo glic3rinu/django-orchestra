@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.contrib.accounts.models import Account
 from orchestra.contrib.contacts.models import Contact
 from orchestra.core import validators
+from orchestra.utils.functional import cached
 from orchestra.utils.html import html_to_pdf
 
 from . import settings
@@ -205,7 +206,7 @@ class Bill(models.Model):
         if not self.is_open:
             return self.total
         try:
-            return round(self.computed_total, 2)
+            return round(self.computed_total or 0, 2)
         except AttributeError:
             self.computed_total = self.compute_total()
             return self.computed_total
@@ -328,6 +329,7 @@ class Bill(models.Model):
             self.number = self.get_number()
         super(Bill, self).save(*args, **kwargs)
     
+    @cached
     def compute_subtotals(self):
         subtotals = {}
         lines = self.lines.annotate(totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)))
@@ -337,15 +339,24 @@ class Bill(models.Model):
             subtotals[tax] = (subtotal, round(tax/100*subtotal, 2))
         return subtotals
     
+    @cached
     def compute_base(self):
         bases = self.lines.annotate(
-            bases=F('subtotal') + Coalesce(F('sublines__total'), 0)
+            bases=Sum(F('subtotal') + Coalesce(F('sublines__total'), 0))
         )
         return round(bases.aggregate(Sum('bases'))['bases__sum'] or 0, 2)
     
+    @cached
+    def compute_tax(self):
+        taxes = self.lines.annotate(
+            taxes=Sum((F('subtotal') + Coalesce(F('sublines__total'), 0)) * (F('tax')/100))
+        )
+        return round(taxes.aggregate(Sum('taxes'))['taxes__sum'] or 0, 2)
+    
+    @cached
     def compute_total(self):
         totals = self.lines.annotate(
-            totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100)
+            totals=Sum((F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100))
         )
         return round(totals.aggregate(Sum('totals'))['totals__sum'] or 0, 2)
 

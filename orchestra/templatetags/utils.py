@@ -100,3 +100,9 @@ def isactive(obj):
 @register.filter
 def sub(value, arg):
     return value - arg
+
+
+@register.filter
+def mul(value, arg):
+    return value * arg
+

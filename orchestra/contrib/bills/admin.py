@@ -184,7 +184,7 @@ class BillLineManagerAdmin(BillLineAdmin):
 
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'number', 'type_link', 'account_link', 'created_on_display',
+        'number', 'type_link', 'account_link', 'updated_on_display',
         'num_lines', 'display_total', 'display_payment_state', 'is_open', 'is_sent'
     )
     list_filter = (
@@ -218,7 +218,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     inlines = [BillLineInline, ClosedBillLineInline]
     date_hierarchy = 'closed_on'
     
-    created_on_display = admin_date('created_on', short_description=_("Created"))
+    updated_on_display = admin_date('updated_on', short_description=_("Updated"))
     amend_of_link = admin_link('amend_of')
     
     def amend_links(self, bill):

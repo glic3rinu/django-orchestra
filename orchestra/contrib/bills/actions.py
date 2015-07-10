@@ -1,6 +1,7 @@
 import io
 import zipfile
 from datetime import date
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.admin import helpers
@@ -35,7 +36,7 @@ view_bill.url_name = 'view'
 
 
 @transaction.atomic
-def close_bills(modeladmin, request, queryset):
+def close_bills(modeladmin, request, queryset, action='close_bills'):
     queryset = queryset.filter(is_open=True)
     if not queryset:
         messages.warning(request, _("Selected bills should be in open state"))
@@ -80,7 +81,7 @@ def close_bills(modeladmin, request, queryset):
         'content_message': _("Once a bill is closed it can not be further modified.</p>"
                              "<p>Please select a payment source for the selected bills"),
         'action_name': 'Close bills',
-        'action_value': 'close_bills',
+        'action_value': action,
         'display_objects': [],
         'queryset': queryset,
         'opts': opts,
@@ -94,8 +95,11 @@ close_bills.verbose_name = _("Close")
 close_bills.url_name = 'close'
 
 
-@action_with_confirmation()
-def send_bills(modeladmin, request, queryset):
+def send_bills_action(modeladmin, request, queryset):
+    """
+    raw function without confirmation
+    enables reuse on close_send_download_bills because of generic_confirmation.action_view
+    """
     for bill in queryset:
         if not validate_contact(request, bill):
             return False
@@ -108,6 +112,11 @@ def send_bills(modeladmin, request, queryset):
         _("One bill has been sent."),
         _("%i bills have been sent.") % num,
         num))
+
+
+@action_with_confirmation()
+def send_bills(modeladmin, request, queryset):
+    return send_bills_action(modeladmin, request, queryset)
 send_bills.verbose_name = lambda bill: _("Resend" if getattr(bill, 'is_sent', False) else "Send")
 send_bills.url_name = 'send'
 
@@ -131,9 +140,9 @@ download_bills.url_name = 'download'
 
 
 def close_send_download_bills(modeladmin, request, queryset):
-    response = close_bills(modeladmin, request, queryset)
+    response = close_bills(modeladmin, request, queryset, action='close_send_download_bills')
     if request.POST.get('post') == 'generic_confirmation':
-        response = send_bills(modeladmin, request, queryset)
+        response = send_bills_action(modeladmin, request, queryset)
         if response is False:
             return
         return download_bills(modeladmin, request, queryset)
@@ -282,7 +291,20 @@ amend_bills.url_name = 'amend'
 
 
 def report(modeladmin, request, queryset):
+    subtotals = {}
+    total = 0
+    for bill in queryset:
+        for tax, subtotal in bill.compute_subtotals().items():
+            try:
+                subtotals[tax][0] += subtotal[0]
+            except KeyError:
+                subtotals[tax] = subtotal
+            else:
+                subtotals[tax][1] += subtotal[1]
+        total += bill.get_total()
     context = {
+        'subtotals': subtotals,
+        'total': total,
         'bills': queryset,
         'currency': settings.BILLS_CURRENCY,
     }

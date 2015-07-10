@@ -435,10 +435,6 @@ serailzer self.instance on create.
 
 # process monitor data to represent state, or maybe create new resource datas when period expires?
 
-
-# Automatically mark as paid transactions with 0 or prevent its creation?
-
-
 @register.filter
 def comma(value):
     value = str(value)
@@ -447,3 +443,9 @@ def comma(value):
         return ','.join((left, right))
     return value
 
+
+# FIX CLOSE SEND DOWNLOAD
+
+# payment/bill report allow to change template using a setting variable
+# Payment transaction stats 
+# order stats: service, cost, top profit, etc

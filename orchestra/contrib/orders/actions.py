@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 from django.shortcuts import render
@@ -144,3 +145,30 @@ def mark_as_not_ignored(modeladmin, request, queryset):
         _("%i selected orders have been marked as not ignored.") % num,
         num)
     modeladmin.message_user(request, msg)
+
+
+def report(modeladmin, request, queryset):
+    services = {}
+    totals = [0, 0, None, 0]
+    now = timezone.now().date()
+    for order in queryset.select_related('service'):
+        name = order.service.description
+        active, cancelled = (1, 0) if not order.cancelled_on or order.cancelled_on > now else (0, 1)
+        try:
+            info = services[name]
+        except KeyError:
+            nominal_price = order.service.nominal_price
+            info = [active, cancelled, nominal_price, 1]
+            services[name] = info
+        else:
+            info[0] += active
+            info[1] += cancelled
+            info[3] += 1
+        totals[0] += active
+        totals[1] += cancelled
+        totals[3] += 1
+    context = {
+        'services': sorted(services.items(), key=lambda n: -n[1][0]),
+        'totals': totals,
+    }
+    return render(request, 'admin/orders/order/report.html', context)

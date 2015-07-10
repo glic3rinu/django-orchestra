@@ -190,7 +190,18 @@ def report(modeladmin, request, queryset):
     else:
         transactions = queryset.values_list('transactions__id', flat=True).distinct()
         transactions = Transaction.objects.filter(id__in=transactions)
+    states = {}
+    total = 0
+    for transaction in transactions:
+        state = transaction.get_state_display()
+        try:
+            states[state] += transaction.amount
+        except KeyError:
+            states[state] = transaction.amount
+        total += transaction.amount
     context = {
-        'transactions': transactions
+        'states': states,
+        'total': total,
+        'transactions': transactions,
     }
     return render(request, 'admin/payments/transaction/report.html', context)

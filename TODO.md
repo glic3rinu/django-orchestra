@@ -15,7 +15,7 @@
 
 # LAST version of this shit http://wkhtmltopdf.org/downloads.h otml
 #apt-get install xfonts-75dpi
-#wget http://downloads.sourceforge.net/wkhtmltopdf/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb
+#wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb
 #dpkg -i wkhtmltox-0.12.2.1_linux-jessie-amd64.deb 
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )

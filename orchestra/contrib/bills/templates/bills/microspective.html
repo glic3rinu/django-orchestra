@@ -51,7 +51,7 @@
     </div>
     <div id="total">
         <span class="title">{% trans "TOTAL" %}</span><br>
-        <psan class="value">{{ bill.get_total }} &{{ currency.lower }};</span>
+        <psan class="value">{{ bill.compute_total }} &{{ currency.lower }};</span>
     </div>
     <div id="bill-date">
         <span class="title">{% blocktrans with bill_type=bill.get_type_display.upper %}{{ bill_type }} DATE{% endblocktrans %}</span><br>
@@ -116,7 +116,7 @@
         <br>
     {% endfor %}
     <span class="total column-title">{% trans "total" %}</span>
-    <span class="total column-value">{{ bill.get_total }} &{{ currency.lower }};</span>
+    <span class="total column-value">{{ bill.compute_total }} &{{ currency.lower }};</span>
     <br>
 </div>
 {% endblock %}

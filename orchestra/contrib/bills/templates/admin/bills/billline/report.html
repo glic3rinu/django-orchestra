@@ -29,6 +29,10 @@
     .item.column-amount {
         text-align: right;
     }
+    .footnote {
+       font-family: sans;
+       font-size: 10px;
+    }
     </style>
 </head>
 <body>
@@ -39,7 +43,8 @@
     <th class="title column-active">{% trans "Active" %}</th>
     <th class="title column-cancelled">{% trans "Cancelled" %}</th>
     <th class="title column-nominal-price">{% trans "Nominal price" %}</th>
-    <th class="title column-number">{% trans "Number" %}</th>
+    <th class="title column-number">{% trans "Quantity" %}</th>
+    <th class="title column-number">{% trans "Profit" %}</th>
 </tr>
 {% for service, info in services %}
 <tr>
@@ -48,15 +53,20 @@
     <td class="item column-amount">{{ info.1 }}</td>
     <td class="item column-amount">{{ info.2 }}</td>
     <td class="item column-amount">{{ info.3 }}</td>
+    <td class="item column-amount">{{ info.4 }}</td>
 </tr>
 {% endfor %}
 <tr>
     <td class="item column-name"><b>{% trans "TOTAL" %}</b></td>
     <td class="item column-amount"><b>{{ totals.0 }}</b></td>
-    <td class="item column-amount">{{ totals.1 }}</td>
-    <td class="item column-amount">{{ totals.2 }}</td>
+    <td class="item column-amount"><b>{{ totals.1 }}<b></td>
+    <td class="item column-amount"><b>{{ totals.2 }}<b></td>
+    <td class="item column-amount"><b>{{ totals.3 }}<b></td>
+    <td class="item column-amount"><b>{{ totals.4 }}<b></td>
 </tr>
 </table>
-
+<div class="footnote">
+* Custom lines
+</div>
 </body>
 </html>

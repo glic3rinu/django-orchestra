@@ -165,7 +165,7 @@ class Bill(models.Model):
             else:
                 raise TypeError("Unknown state")
         ongoing = bool(secured != 0 or created or processed or executed)
-        total = self.get_total()
+        total = self.compute_total()
         if total >= 0:
             if secured >= total:
                 return self.PAID
@@ -201,15 +201,6 @@ class Bill(models.Model):
             raise ValidationError({
                 'amend_of': _("Type %s requires an amend of link.") % self.get_type_display()
             })
-    
-    def get_total(self):
-        if not self.is_open:
-            return self.total
-        try:
-            return round(self.computed_total or 0, 2)
-        except AttributeError:
-            self.computed_total = self.compute_total()
-            return self.computed_total
     
     def get_payment_state_display(self):
         value = self.payment_state
@@ -332,33 +323,44 @@ class Bill(models.Model):
     @cached
     def compute_subtotals(self):
         subtotals = {}
-        lines = self.lines.annotate(totals=(F('subtotal') + Coalesce(F('sublines__total'), 0)))
+        lines = self.lines.annotate(totals=F('subtotal') + Sum(Coalesce('sublines__total', 0)))
         for tax, total in lines.values_list('tax', 'totals'):
-            subtotal, taxes = subtotals.get(tax) or (0, 0)
-            subtotal += total
-            subtotals[tax] = (subtotal, round(tax/100*subtotal, 2))
-        return subtotals
+            try:
+                subtotals[tax] += total
+            except KeyError:
+                subtotals[tax] = total
+        result = {}
+        for tax, subtotal in subtotals.items():
+            result[tax] = (subtotal, round(tax/100*subtotal, 2))
+        return result
     
     @cached
     def compute_base(self):
         bases = self.lines.annotate(
-            bases=Sum(F('subtotal') + Coalesce(F('sublines__total'), 0))
+            bases=F('subtotal') + Sum(Coalesce('sublines__total', 0))
         )
         return round(bases.aggregate(Sum('bases'))['bases__sum'] or 0, 2)
     
     @cached
     def compute_tax(self):
         taxes = self.lines.annotate(
-            taxes=Sum((F('subtotal') + Coalesce(F('sublines__total'), 0)) * (F('tax')/100))
+            taxes=(F('subtotal') + Coalesce(Sum('sublines__total'), 0)) * (F('tax')/100)
         )
         return round(taxes.aggregate(Sum('taxes'))['taxes__sum'] or 0, 2)
     
     @cached
     def compute_total(self):
-        totals = self.lines.annotate(
-            totals=Sum((F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100))
-        )
-        return round(totals.aggregate(Sum('totals'))['totals__sum'] or 0, 2)
+        if 'lines' in getattr(self, '_prefetched_objects_cache', ()):
+            total = 0
+            for line in self.lines.all():
+                line_total = line.compute_total()
+                total += line_total * (1+line.tax/100)
+            return round(total, 2)
+        else:
+            totals = self.lines.annotate(
+                totals=(F('subtotal') + Sum(Coalesce('sublines__total', 0))) * (1+F('tax')/100)
+            )
+            return round(totals.aggregate(Sum('totals'))['totals__sum'] or 0, 2)
 
 
 class Invoice(Bill):
@@ -410,11 +412,6 @@ class BillLine(models.Model):
     def __str__(self):
         return "#%i" % self.pk
     
-    def compute_total(self):
-        """ Computes subline discounts """
-        if self.pk:
-            return self.subtotal + sum([sub.total for sub in self.sublines.all()])
-    
     def get_verbose_quantity(self):
         return self.verbose_quantity or self.quantity
     
@@ -433,6 +430,17 @@ class BillLine(models.Model):
         if ini == end:
             return ini
         return "{ini} / {end}".format(ini=ini, end=end)
+    
+    @cached
+    def compute_total(self):
+        total = self.subtotal or 0
+        if hasattr(self, 'subline_total'):
+            total += self.subline_total or 0
+        elif 'sublines' in getattr(self, '_prefetched_objects_cache', ()):
+            total += sum(subline.total for subline in self.sublines.all())
+        else:
+            total += self.sublines.aggregate(sub_total=Sum('total'))['sub_total'] or 0
+        return round(total, 2)
     
 #    def save(self, *args, **kwargs):
 #        super(BillLine, self).save(*args, **kwargs)

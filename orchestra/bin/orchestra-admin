@@ -163,7 +163,7 @@ function install_requirements () {
     
     # Install a more recent version of wkhtmltopdf (0.12.2) (PDF page number support)
     wkhtmltox=$(mktemp)
-    wget http://downloads.sourceforge.net/wkhtmltopdf/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb -O ${wkhtmltox}
+    wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb -O ${wkhtmltox}
     dpkg -i ${wkhtmltox}
     
     # Make sure locales are in place before installing postgres

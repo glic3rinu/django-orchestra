@@ -22,7 +22,7 @@ class SelectSourceForm(forms.ModelForm):
         super(SelectSourceForm, self).__init__(*args, **kwargs)
         bill = kwargs.get('instance')
         if bill:
-            total = bill.get_total()
+            total = bill.compute_total()
             sources = bill.account.paymentsources.filter(is_active=True)
             recharge = bool(total < 0)
             choices = [(None, '-----------')]

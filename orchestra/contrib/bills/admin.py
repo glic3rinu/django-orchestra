@@ -88,7 +88,7 @@ class ClosedBillLineInline(BillLineInline):
     display_description.allow_tags = True
     
     def display_subtotal(self, line):
-        subtotals = ['&nbsp;&nbsp;' + str(line.subtotal)]
+        subtotals = ['&nbsp;' + str(line.subtotal)]
         for subline in line.sublines.all():
             subtotals.append(str(subline.total))
         return '<br>'.join(subtotals)
@@ -112,9 +112,11 @@ class BillLineAdmin(admin.ModelAdmin):
         'description', 'bill_link', 'display_is_open', 'account_link', 'rate', 'quantity', 'tax',
         'subtotal', 'display_sublinetotal', 'display_total'
     )
-    actions = (actions.undo_billing, actions.move_lines, actions.copy_lines,)
-    list_filter = ('tax', ('bill', admin.RelatedOnlyFieldListFilter), 'bill__is_open')
-    list_select_related = ('bill',)
+    actions = (
+        actions.undo_billing, actions.move_lines, actions.copy_lines, actions.service_report
+    )
+    list_filter = ('tax', 'bill__is_open', 'order__service')
+    list_select_related = ('bill', 'bill__account')
     search_fields = ('description', 'bill__number')
     
     account_link = admin_link('bill__account')
@@ -139,9 +141,7 @@ class BillLineAdmin(admin.ModelAdmin):
         qs = super(BillLineAdmin, self).get_queryset(request)
         qs = qs.annotate(
             subline_total=Sum('sublines__total'),
-            computed_total=Sum(
-                (F('subtotal') + Coalesce(F('sublines__total'), 0)) * (1+F('tax')/100)
-            ),
+            computed_total=(F('subtotal') + Sum(Coalesce('sublines__total', 0))) * (1+F('tax')/100),
         )
         return qs
 
@@ -203,7 +203,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('html',),
         }),
     )
-    list_prefetch_related = ('transactions',)
+    list_prefetch_related = ('transactions', 'lines__sublines')
     search_fields = ('number', 'account__username', 'comments')
     change_view_actions = [
         actions.manage_lines, actions.view_bill, actions.download_bills, actions.send_bills,
@@ -211,7 +211,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     ]
     actions = [
         actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
-        actions.amend_bills, actions.report, actions.close_send_download_bills,
+        actions.amend_bills, actions.bill_report, actions.service_report,
+        actions.close_send_download_bills,
     ]
     change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link', 'amend_links')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
@@ -236,10 +237,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     num_lines.short_description = _("lines")
     
     def display_total(self, bill):
-        return "%s &%s;" % (round(bill.computed_total or 0, 2), settings.BILLS_CURRENCY.lower())
+        return "%s &%s;" % (bill.compute_total(), settings.BILLS_CURRENCY.lower())
     display_total.allow_tags = True
     display_total.short_description = _("total")
-    display_total.admin_order_field = 'computed_total'
+    display_total.admin_order_field = 'approx_total'
     
     def type_link(self, bill):
         bill_type = bill.type.lower()
@@ -309,8 +310,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def get_inline_instances(self, request, obj=None):
         inlines = super(BillAdmin, self).get_inline_instances(request, obj)
         if obj and not obj.is_open:
-            return [inline for inline in inlines if not isinstance(inline, BillLineInline)]
-        return [inline for inline in inlines if not isinstance(inline, ClosedBillLineInline)]
+            return [inline for inline in inlines if type(inline) != BillLineInline]
+        return [inline for inline in inlines if type(inline) != ClosedBillLineInline]
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -327,9 +328,10 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         qs = super(BillAdmin, self).get_queryset(request)
         qs = qs.annotate(
             models.Count('lines'),
-            computed_total=Sum(
-                (F('lines__subtotal') + Coalesce(F('lines__sublines__total'), 0)) * (1+F('lines__tax')/100)
-            ),
+            # FIXME https://code.djangoproject.com/ticket/10060
+            approx_total=Coalesce(Sum(
+                (F('lines__subtotal') + Coalesce('lines__sublines__total', 0)) * (1+F('lines__tax')/100),
+            ), 0),
         )
         qs = qs.prefetch_related(
             Prefetch('amends', queryset=Bill.objects.filter(is_open=False), to_attr='closed_amends')

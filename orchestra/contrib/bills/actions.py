@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.utils import translation
+from django.utils import translation, timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 
@@ -134,7 +134,9 @@ def download_bills(modeladmin, request, queryset):
         return response
     bill = queryset.get()
     pdf = bill.as_pdf()
-    return HttpResponse(pdf, content_type='application/pdf')
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="%s.pdf"' % bill.number
+    return response
 download_bills.verbose_name = _("Download")
 download_bills.url_name = 'download'
 
@@ -290,7 +292,7 @@ amend_bills.verbose_name = _("Amend")
 amend_bills.url_name = 'amend'
 
 
-def report(modeladmin, request, queryset):
+def bill_report(modeladmin, request, queryset):
     subtotals = {}
     total = 0
     for bill in queryset:
@@ -301,11 +303,54 @@ def report(modeladmin, request, queryset):
                 subtotals[tax] = subtotal
             else:
                 subtotals[tax][1] += subtotal[1]
-        total += bill.get_total()
+        total += bill.compute_total()
     context = {
         'subtotals': subtotals,
         'total': total,
         'bills': queryset,
         'currency': settings.BILLS_CURRENCY,
     }
-    return render(request, 'admin/bills/report.html', context)
+    return render(request, 'admin/bills/bill/report.html', context)
+
+
+def service_report(modeladmin, request, queryset):
+    services = {}
+    totals = [0, 0, 0, 0, 0]
+    now = timezone.now().date()
+    if queryset.model == Bill:
+        queryset = BillLine.objects.filter(bill_id__in=queryset.values_list('id', flat=True))
+    # Filter amends
+    queryset = queryset.filter(bill__amend_of__isnull=True)
+    for line in queryset.select_related('order__service').prefetch_related('sublines'):
+        order, service = None, None
+        if line.order_id:
+            order = line.order
+            service = order.service
+            name = service.description
+            active, cancelled = (1, 0) if not order.cancelled_on or order.cancelled_on > now else (0, 1)
+            nominal_price = order.service.nominal_price
+        else:
+            name = '*%s' % line.description
+            active = 1
+            cancelled = 0
+            nominal_price = 0
+        try:
+            info = services[name]
+        except KeyError:
+            info = [active, cancelled, nominal_price, line.quantity or 1, line.compute_total()]
+            services[name] = info
+        else:
+            info[0] += active
+            info[1] += cancelled
+            info[3] += line.quantity or 1
+            info[4] += line.compute_total()
+        totals[0] += active
+        totals[1] += cancelled
+        totals[2] += nominal_price
+        totals[3] += line.quantity or 1
+        totals[4] += line.compute_total()
+    context = {
+        'services': sorted(services.items(), key=lambda n: -n[1][4]),
+        'totals': totals,
+    }
+    return render(request, 'admin/bills/billline/report.html', context)

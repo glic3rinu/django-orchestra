@@ -183,7 +183,7 @@ msgstr "Factura"
 
 #: filters.py:21 models.py:88
 msgid "Amendment invoice"
-msgstr "Factura rectificative"
+msgstr "Factura rectificativa"
 
 #: filters.py:22 models.py:89
 msgid "Fee"

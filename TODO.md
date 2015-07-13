@@ -444,8 +444,19 @@ def comma(value):
     return value
 
 
-# FIX CLOSE SEND DOWNLOAD
 
 # payment/bill report allow to change template using a setting variable
-# Payment transaction stats 
+# Payment transaction stats, graps over time
 # order stats: service, cost, top profit, etc
+# TODO remove bill.total 
+
+
+reporter.stories_filed = F('stories_filed') + 1
+reporter.save()
+In order to access the new value that has been saved in this way, the object will need to be reloaded:
+https://docs.djangoproject.com/en/dev/ref/models/conditional-expressions/
+Greatest
+Colaesce('total', 'computed_total')
+Case
+
+# case on payment transaction state ? case when trans.amount > 

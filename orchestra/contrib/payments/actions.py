@@ -176,10 +176,10 @@ commit.verbose_name = _("Commit")
 
 def delete_selected(modeladmin, request, queryset):
     """ Has to have same name as admin.actions.delete_selected """
-    related_transactions = helpers.pre_delete_processes(modelamdin, request, queryset)
+    related_transactions = helpers.pre_delete_processes(modeladmin, request, queryset)
     response = actions.delete_selected(modeladmin, request, queryset)
     if response is None:
-        helpers.post_delete_processes(modelamdin, request, related_transactions)
+        helpers.post_delete_processes(modeladmin, request, related_transactions)
     return response
 delete_selected.short_description = actions.delete_selected.short_description
 

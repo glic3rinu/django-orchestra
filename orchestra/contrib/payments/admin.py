@@ -94,8 +94,10 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     actions = change_view_actions + (actions.report,)
     filter_by_account_fields = ('bill', 'source')
     change_readonly_fields = ('amount', 'currency')
-    readonly_fields = ('bill_link', 'display_state', 'process_link', 'account_link', 'source_link')
-    list_select_related = ('source', 'bill__account')
+    readonly_fields = (
+        'bill_link', 'display_state', 'process_link', 'account_link', 'source_link'
+    )
+    list_select_related = ('source', 'bill__account', 'process')
     date_hierarchy = 'created_at'
     
     bill_link = admin_link('bill')
@@ -174,7 +176,8 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     def delete_view(self, request, object_id, extra_context=None):
         queryset = self.model.objects.filter(id=object_id)
         related_transactions = helpers.pre_delete_processes(self, request, queryset)
-        response = super(TransactionProcessAdmin, self).delete_view(request, object_id, extra_context)
+        response = super(TransactionProcessAdmin, self).delete_view(
+            request, object_id, extra_context)
         if isinstance(response, HttpResponseRedirect):
             helpers.post_delete_processes(self, request, related_transactions)
         return response

@@ -108,8 +108,7 @@ class Bill(models.Model):
     is_sent = models.BooleanField(_("sent"), default=False)
     due_on = models.DateField(_("due on"), null=True, blank=True)
     updated_on = models.DateField(_("updated on"), auto_now=True)
-    # TODO allways compute total or what?
-    total = models.DecimalField(max_digits=12, decimal_places=2, null=True)
+#    total = models.DecimalField(max_digits=12, decimal_places=2, null=True)
     comments = models.TextField(_("comments"), blank=True)
     html = models.TextField(_("HTML"), blank=True)
     
@@ -124,6 +123,10 @@ class Bill(models.Model):
     @classmethod
     def get_class_type(cls):
         return cls.__name__.upper()
+    
+    @cached_property
+    def total(self):
+        return self.compute_total()
     
     @cached_property
     def seller(self):
@@ -253,10 +256,10 @@ class Bill(models.Model):
             payment = self.account.paymentsources.get_default()
         if not self.due_on:
             self.due_on = self.get_due_date(payment=payment)
-        self.total = self.compute_total()
+        total = self.compute_total()
         transaction = None
         if self.get_type() != self.PROFORMA:
-            transaction = self.transactions.create(bill=self, source=payment, amount=self.total)
+            transaction = self.transactions.create(bill=self, source=payment, amount=total)
         self.closed_on = timezone.now()
         self.is_open = False
         self.is_sent = False
@@ -441,12 +444,6 @@ class BillLine(models.Model):
         else:
             total += self.sublines.aggregate(sub_total=Sum('total'))['sub_total'] or 0
         return round(total, 2)
-    
-#    def save(self, *args, **kwargs):
-#        super(BillLine, self).save(*args, **kwargs)
-#        if self.bill.is_open:
-#            self.bill.total = self.bill.get_total()
-#            self.bill.save(update_fields=['total'])
 
 
 class BillSubline(models.Model):
@@ -465,10 +462,3 @@ class BillSubline(models.Model):
     description = models.CharField(_("description"), max_length=256)
     total = models.DecimalField(max_digits=12, decimal_places=2)
     type = models.CharField(_("type"), max_length=16, choices=TYPES, default=OTHER)
-    
-#    def save(self, *args, **kwargs):
-#        # TODO cost of this shit
-#        super(BillSubline, self).save(*args, **kwargs)
-#        if self.line.bill.is_open:
-#            self.line.bill.total = self.line.bill.get_total()
-#            self.line.bill.save(update_fields=['total'])

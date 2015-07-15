@@ -55,11 +55,11 @@ class TotalListFilter(SimpleListFilter):
     
     def queryset(self, request, queryset):
         if self.value() == 'gt':
-            return queryset.filter(computed_total__gt=0)
+            return queryset.filter(approx_total__gt=0)
         elif self.value() == 'eq':
-            return queryset.filter(computed_total=0)
+            return queryset.filter(approx_total=0)
         elif self.value() == 'lt':
-            return queryset.filter(computed_total__lt=0)
+            return queryset.filter(approx_total__lt=0)
         return queryset
 
 
@@ -94,16 +94,17 @@ class PaymentStateListFilter(SimpleListFilter):
         )
     
     def queryset(self, request, queryset):
+        # FIXME use queryset.computed_total instead of approx_total, bills.admin.BillAdmin.get_queryset
         Transaction = queryset.model.transactions.related.related_model
         if self.value() == 'OPEN':
             return queryset.filter(Q(is_open=True)|Q(type=queryset.model.PROFORMA))
         elif self.value() == 'PAID':
-            zeros = queryset.filter(computed_total=0, computed_total__isnull=True)
+            zeros = queryset.filter(approx_total=0, approx_total__isnull=True)
             zeros = zeros.values_list('id', flat=True)
             ammounts = Transaction.objects.exclude(bill_id__in=zeros).secured().group_by('bill_id')
             paid = []
-            relevant = queryset.exclude(computed_total=0, computed_total__isnull=True, is_open=True)
-            for bill_id, total in relevant.values_list('id', 'computed_total'):
+            relevant = queryset.exclude(approx_total=0, approx_total__isnull=True, is_open=True)
+            for bill_id, total in relevant.values_list('id', 'approx_total'):
                 try:
                     ammount = sum([t.ammount for t in ammounts[bill_id]])
                 except KeyError:
@@ -112,8 +113,8 @@ class PaymentStateListFilter(SimpleListFilter):
                     if abs(total) <= abs(ammount):
                         paid.append(bill_id)
             return queryset.filter(
-                Q(computed_total=0) |
-                Q(computed_total__isnull=True) |
+                Q(approx_total=0) |
+                Q(approx_total__isnull=True) |
                 Q(id__in=paid)
             ).exclude(is_open=True)
         elif self.value() == 'PENDING':
@@ -122,7 +123,7 @@ class PaymentStateListFilter(SimpleListFilter):
             non_rejected = non_rejected.values_list('id', flat=True).distinct()
             return queryset.filter(pk__in=non_rejected)
         elif self.value() == 'BAD_DEBT':
-            closed = queryset.filter(is_open=False).exclude(computed_total=0)
+            closed = queryset.filter(is_open=False).exclude(approx_total=0)
             return closed.filter(
                 Q(transactions__state=Transaction.REJECTED) |
                 Q(transactions__isnull=True)

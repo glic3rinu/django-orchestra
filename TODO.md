@@ -13,11 +13,6 @@
 
 * backend logs with hal logo
 
-# LAST version of this shit http://wkhtmltopdf.org/downloads.h otml
-#apt-get install xfonts-75dpi
-#wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb
-#dpkg -i wkhtmltox-0.12.2.1_linux-jessie-amd64.deb 
-
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
 * create log file at /var/log/orchestra.log and rotate
@@ -175,9 +170,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * Autocomplete admin fields like <site_name>.phplist... with js
 
 * allow empty metric pack for default rates? changes on rating algo
-# don't produce lines with cost == 0 or quantity 0 ? maybe minimal quantity for billing? like 0.1 ? or minimal price? per line or per bill?
-
-# lines too long on invoice, double lines or cut
 
 * payment methods icons
 * use server.name | server.address on python backends, like gitlab instead of settings?
@@ -373,23 +365,10 @@ method(
     arg, arg, arg)
 
 
-# dovecot sieve only allolws one fucking active script. refactor mailbox shit to replace active script symlink by orchestra. Create a generic wrapper that includes al filters (rc, imp and orchestra)
-http://wiki2.dovecot.org/Pigeonhole/Sieve/Examples
-
-
-
-# orders ignorign default filter is not very effective, because of selecting all orders for billing will select ignored too
-
-
-# mail system users group? which one is more convinient? if main group does not exists, backend will fail!
 
 Bash/Python/PHPBackend
 
-
-# bill action view on a separate process. check memory consumption without debug (236m)
-
 # services.handler as generator in order to save memory? not swell like a balloon
-# mailboxes group username instead of mainuser
 
 import uwsgi
 from uwsgidecorators import timer
@@ -406,34 +385,23 @@ uwsgi --reload /tmp/project-master.pid
 # or if uwsgi was started with touch-reload=/tmp/somefile
 touch /tmp/somefile
 
-
 # Change zone ttl
 # batch zone edditing
-# inherit registers from parent?
 
 # datetime metric storage granularity: otherwise innacurate detection of billed metric on order.billed_on
 
 # Serializers.validation migration to DRF3: grep -r 'attrs, source' *|grep -v '~'
 serailzer self.instance on create.
 
-# set_password serializer: "just-the-password" not {"password": "password"}
-
-# use namedtuples?
-
-# Negative transactionsx
-
-
 * check certificate: websites directive ssl + domains search on miscellaneous
 
-
-# Merge websites locations
 # ValueError: Unable to configure handler 'file': [Errno 13] Permission denied: '/home/orchestra/panel/orchestra.log'
 
 # billing invoice link on related invoices not overflow nginx GET vars
 
 * backendLog store method and language... and use it for display_script with correct lexer
 
-# process monitor data to represent state, or maybe create new resource datas when period expires?
+# Compute Resource Data history from Monitor Data.
 
 @register.filter
 def comma(value):
@@ -444,12 +412,8 @@ def comma(value):
     return value
 
 
-
 # payment/bill report allow to change template using a setting variable
 # Payment transaction stats, graps over time
-# order stats: service, cost, top profit, etc
-# TODO remove bill.total 
-
 
 reporter.stories_filed = F('stories_filed') + 1
 reporter.save()

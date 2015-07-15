@@ -65,8 +65,9 @@ class Account(auth.AbstractBaseUser):
             was_active = Account.objects.filter(pk=self.pk).values_list('is_active', flat=True)[0]
         super(Account, self).save(*args, **kwargs)
         if created:
-            self.main_systemuser = self.systemusers.create(account=self, username=self.username,
-                password=self.password, is_active=active_systemuser)
+            self.main_systemuser = self.systemusers.create(
+                account=self, username=self.username, password=self.password,
+                is_active=active_systemuser)
             self.save(update_fields=('main_systemuser',))
         elif was_active != self.is_active:
             self.notify_related()

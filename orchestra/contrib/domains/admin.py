@@ -60,7 +60,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     fields = ('name', 'account_link')
     inlines = [RecordInline, DomainInline]
     list_filter = [TopDomainListFilter]
-    change_readonly_fields = ('name',)
+    change_readonly_fields = ('name', 'serial')
     search_fields = ('name', 'account__username')
     add_form = BatchDomainCreationAdminForm
     change_view_actions = [view_zone]
@@ -92,6 +92,18 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_websites.admin_order_field = 'websites__name'
     display_websites.short_description = _("Websites")
     display_websites.allow_tags = True
+    
+    def get_fieldsets(self, request, obj=None):
+        """ Add SOA fields when domain is top """
+        fieldsets = super(DomainAdmin, self).get_fieldsets(request, obj)
+        if obj and obj.is_top:
+            fieldsets += (
+                (_("SOA"), {
+                    'classes': ('collapse',),
+                    'fields': ('serial', 'refresh', 'retry', 'expire', 'min_ttl'),
+                }),
+            )
+        return fieldsets
     
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """

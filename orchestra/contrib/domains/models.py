@@ -19,8 +19,25 @@ class Domain(models.Model):
         related_name='domains', help_text=_("Automatically selected for subdomains."))
     top = models.ForeignKey('domains.Domain', null=True, related_name='subdomain_set',
         editable=False)
-    serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial,
-        help_text=_("Serial number"))
+    serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial, editable=False,
+        help_text=_("A timestamp that changes whenever you update your domain."))
+    refresh = models.IntegerField(_("refresh"), null=True, blank=True,
+        validators=[validators.validate_zone_interval],
+        help_text=_("The number of seconds before the zone should be refreshed "
+                    "(<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_REFRESH)
+    retry = models.IntegerField(_("retry"), null=True, blank=True,
+        validators=[validators.validate_zone_interval],
+        help_text=_("The number of seconds before a failed refresh should be retried "
+                    "(<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_RETRY)
+    expire = models.IntegerField(_("expire"), null=True, blank=True,
+        validators=[validators.validate_zone_interval],
+        help_text=_("The upper limit in seconds before a zone is considered no longer "
+                    "authoritative (<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_EXPIRE)
+    min_ttl = models.IntegerField(_("refresh"), null=True, blank=True,
+        validators=[validators.validate_zone_interval],
+        help_text=_("The negative result TTL (for example, how long a resolver should "
+                    "consider a negative result for a subdomain to be valid before retrying) "
+                    "(<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_MIN_TTL)
     
     def __str__(self):
         return self.name
@@ -153,10 +170,10 @@ class Domain(models.Model):
                     "%s." % settings.DOMAINS_DEFAULT_NAME_SERVER,
                     utils.format_hostmaster(settings.DOMAINS_DEFAULT_HOSTMASTER),
                     str(self.serial),
-                    settings.DOMAINS_DEFAULT_REFRESH,
-                    settings.DOMAINS_DEFAULT_RETRY,
-                    settings.DOMAINS_DEFAULT_EXPIRATION,
-                    settings.DOMAINS_DEFAULT_MIN_CACHING_TIME
+                    settings.DOMAINS_DEFAULT_REFRESH if self.refresh is None else self.refresh,
+                    settings.DOMAINS_DEFAULT_RETRY if self.retry is None else self.retry,
+                    settings.DOMAINS_DEFAULT_EXPIRE if self.expire is None else self.expire,
+                    settings.DOMAINS_DEFAULT_MIN_TTL if self.min_ttl is None else self.min_ttl,
                 ]
                 records.insert(0, AttrDict(
                     type=Record.SOA,

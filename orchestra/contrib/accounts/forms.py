@@ -22,8 +22,8 @@ def create_account_creation_form():
         model = apps.get_model(model)
         field_name = 'create_%s' % model._meta.model_name
         label = _("Create %s") % model._meta.verbose_name
-        fields[field_name] = forms.BooleanField(initial=True, required=False, label=label,
-                help_text=help_text)
+        fields[field_name] = forms.BooleanField(
+            initial=True, required=False, label=label, help_text=help_text)
         
     def clean(self):
         """ unique usernames between accounts and system users """
@@ -55,7 +55,8 @@ def create_account_creation_form():
             raise ValidationError(errors)
     
     def save_model(self, account):
-        account.save(active_systemuser=self.cleaned_data['enable_systemuser'])
+        enable_systemuser=self.cleaned_data['enable_systemuser']
+        account.save(active_systemuser=enable_systemuser)
     
     def save_related(self, account):
         for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:

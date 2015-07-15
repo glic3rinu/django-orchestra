@@ -118,6 +118,8 @@ class Order(models.Model):
     billed_until = models.DateField(_("billed until"), null=True, blank=True)
     ignore = models.BooleanField(_("ignore"), default=False)
     description = models.TextField(_("description"), blank=True)
+    content_object_repr = models.CharField(_("content object representation"), max_length=256,
+        editable=False)
     
     content_object = GenericForeignKey()
     objects = OrderQuerySet.as_manager()
@@ -146,8 +148,12 @@ class Order(models.Model):
                         # New account workaround -> user.account_id == None
                         continue
                     ignore = service.handler.get_ignore(instance)
-                    order = cls(content_object=instance, service=service,
-                            account_id=account_id, ignore=ignore)
+                    order = cls(
+                        content_object=instance,
+                        content_object_repr=str(instance),
+                        service=service,
+                        account_id=account_id,
+                        ignore=ignore)
                     if commit:
                         order.save()
                     updates.append((order, 'created'))
@@ -187,9 +193,16 @@ class Order(models.Model):
         logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
             id=self.id, description=description, metric=metric).encode('ascii', 'replace')
         )
+        update_fields = []
         if self.description != description:
             self.description = description
-            self.save(update_fields=['description'])
+            update_fields.append('description')
+        content_object_repr = str(instance)
+        if self.content_object_repr != content_object_repr:
+            self.content_object_repr = content_object_repr
+            update_fields.append('content_object_repr')
+        if update_fields:
+            self.save(update_fields=update_fields)
     
     def cancel(self, commit=True):
         self.cancelled_on = timezone.now()

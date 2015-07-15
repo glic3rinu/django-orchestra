@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.utils.html import escape
@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin 
-from orchestra.admin.utils import admin_link, admin_date
+from orchestra.admin.utils import admin_link, admin_date, change_url
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils.humanize import naturaldate
 
@@ -60,17 +60,32 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     date_hierarchy = 'registered_on'
     inlines = (MetricStorageInline,)
     add_inlines = ()
-    search_fields = ('account__username', 'description')
+    search_fields = ('account__username', 'content_object_repr', 'description',)
     list_prefetch_related = (
         'content_object',
         Prefetch('metrics', queryset=MetricStorage.objects.order_by('-id')),
     )
     list_select_related = ('account', 'service')
+    readonly_fields = ('content_object_repr', 'content_object_link')
     
     service_link = admin_link('service')
-    content_object_link = admin_link('content_object', order=False)
     display_registered_on = admin_date('registered_on')
     display_cancelled_on = admin_date('cancelled_on')
+    
+    def content_object_link(self, order):
+        if order.content_object:
+            try:
+                url = change_url(order.content_object)
+            except NoReverseMatch:
+                # Does not has admin
+                return order.content_object_repr
+            description = str(order.content_object)
+            return '<a href="{url}">{description}</a>'.format(
+                url=url, description=description)
+        return order.content_object_repr
+    content_object_link.short_description = _("Content object")
+    content_object_link.allow_tags = True
+    content_object_link.admin_order_field = 'content_object_repr'
     
     def display_billed_until(self, order):
         billed_until = order.billed_until

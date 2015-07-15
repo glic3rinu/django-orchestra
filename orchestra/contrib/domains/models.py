@@ -20,24 +20,36 @@ class Domain(models.Model):
     top = models.ForeignKey('domains.Domain', null=True, related_name='subdomain_set',
         editable=False)
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial, editable=False,
-        help_text=_("A timestamp that changes whenever you update your domain."))
+        help_text=_("A revision number that changes whenever you update your domain."))
     refresh = models.IntegerField(_("refresh"), null=True, blank=True,
         validators=[validators.validate_zone_interval],
-        help_text=_("The number of seconds before the zone should be refreshed "
-                    "(<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_REFRESH)
+        help_text=_("The time a secondary DNS server waits before querying the primary DNS "
+                    "server's SOA record to check for changes. When the refresh time expires, "
+                    "the secondary DNS server requests a copy of the current SOA record from "
+                    "the primary. The primary DNS server complies with this request. "
+                    "The secondary DNS server compares the serial number of the primary DNS "
+                    "server's current SOA record and the serial number in it's own SOA record. "
+                    "If they are different, the secondary DNS server will request a zone "
+                    "transfer from the primary DNS server. "
+                    "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_REFRESH)
     retry = models.IntegerField(_("retry"), null=True, blank=True,
         validators=[validators.validate_zone_interval],
-        help_text=_("The number of seconds before a failed refresh should be retried "
-                    "(<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_RETRY)
+        help_text=_("The time a secondary server waits before retrying a failed zone transfer. "
+                    "Normally, the retry time is less than the refresh time. "
+                    "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_RETRY)
     expire = models.IntegerField(_("expire"), null=True, blank=True,
         validators=[validators.validate_zone_interval],
-        help_text=_("The upper limit in seconds before a zone is considered no longer "
-                    "authoritative (<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_EXPIRE)
-    min_ttl = models.IntegerField(_("refresh"), null=True, blank=True,
+        help_text=_("The time that a secondary server will keep trying to complete a zone "
+                    "transfer. If this time expires prior to a successful zone transfer, "
+                    "the secondary server will expire its zone file. This means the secondary "
+                    "will stop answering queries. "
+                    "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_EXPIRE)
+    min_ttl = models.IntegerField(_("min TTL"), null=True, blank=True,
         validators=[validators.validate_zone_interval],
-        help_text=_("The negative result TTL (for example, how long a resolver should "
-                    "consider a negative result for a subdomain to be valid before retrying) "
-                    "(<tt>%s</tt> by default).") % settings.DOMAINS_DEFAULT_MIN_TTL)
+        help_text=_("The minimum time-to-live value applies to all resource records in the "
+                    "zone file. This value is supplied in query responses to inform other "
+                    "servers how long they should keep the data in cache. "
+                    "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_MIN_TTL)
     
     def __str__(self):
         return self.name

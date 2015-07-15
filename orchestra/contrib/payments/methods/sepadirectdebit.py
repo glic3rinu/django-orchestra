@@ -19,14 +19,14 @@ from .options import PaymentMethod
 
 class SEPADirectDebitForm(PluginDataForm):
     iban = forms.CharField(label='IBAN',
-            widget=forms.TextInput(attrs={'size': '50'}))
+        widget=forms.TextInput(attrs={'size': '50'}))
     name = forms.CharField(max_length=128, label=_("Name"),
-            widget=forms.TextInput(attrs={'size': '50'}))
+        widget=forms.TextInput(attrs={'size': '50'}))
 
 
 class SEPADirectDebitSerializer(serializers.Serializer):
     iban = serializers.CharField(label='IBAN', validators=[IBANValidator()],
-            min_length=min(IBAN_COUNTRY_CODE_LENGTH.values()), max_length=34)
+        min_length=min(IBAN_COUNTRY_CODE_LENGTH.values()), max_length=34)
     name = serializers.CharField(label=_("Name"), max_length=128)
     
     def validate(self, data):
@@ -45,8 +45,10 @@ class SEPADirectDebit(PaymentMethod):
     due_delta = datetime.timedelta(days=5)
     
     def get_bill_message(self):
-        return _("This bill will be automatically charged to your bank account "
-                 " with IBAN number<br><strong>%s</strong>.") % self.instance.number
+        context = {
+            'number': self.instance.number
+        }
+        return settings.PAYMENTS_DD_BILL_MESSAGE % context
     
     @classmethod
     def process(cls, transactions):

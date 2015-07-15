@@ -8,6 +8,11 @@ PAYMENT_CURRENCY = Setting('PAYMENT_CURRENCY',
 )
 
 
+PAYMENTS_DD_BILL_MESSAGE = Setting('PAYMENTS_DD_BILL_MESSAGE',
+    _("<strong>Direct debit</strong>, this bill will be automatically charged "
+      "to your bank account with IBAN number<br><strong>%(number)s</strong>."),
+)
+
 PAYMENTS_DD_CREDITOR_NAME = Setting('PAYMENTS_DD_CREDITOR_NAME',
     'Orchestra'
 )

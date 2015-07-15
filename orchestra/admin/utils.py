@@ -109,7 +109,7 @@ def admin_link(*args, **kwargs):
         return '---'
     display = kwargs.get('display')
     if display:
-        display = getattr(obj, display, 'merda')
+        display = getattr(obj, display, None)
     else:
         display = obj
     try:

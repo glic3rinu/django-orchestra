@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-28 16:40+0000\n"
+"POT-Creation-Date: 2015-07-15 12:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,132 +18,153 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: actions.py:21
+#: actions.py:24
 msgid "Selected transactions must be on '{state}' state"
 msgstr ""
 
-#: actions.py:30
+#: actions.py:34
 msgid "Processed"
 msgstr ""
 
-#: actions.py:37
-msgid "Selected transaction has been processed."
+#: actions.py:41
+msgid "One selected transaction has been processed."
 msgstr ""
 
-#: actions.py:38
+#: actions.py:42
 #, python-format
 msgid "%s Selected transactions have been processed."
 msgstr ""
 
-#: actions.py:41
+#: actions.py:45
 msgid ""
 "The following transaction process has been generated, you may want to save "
 "it on your computer now."
 msgstr ""
 
-#: actions.py:43
+#: actions.py:47
 #, python-format
 msgid ""
 "The following %s transaction processes have been generated, you may want to "
 "save it on your computer now."
 msgstr ""
 
-#: actions.py:46
+#: actions.py:50
 msgid "Process"
 msgstr ""
 
-#: actions.py:59 actions.py:130 models.py:93 models.py:161
+#: actions.py:63 actions.py:134 models.py:97 models.py:164
 msgid "Executed"
 msgstr ""
 
-#: actions.py:62
+#: actions.py:66
 msgid "One selected transaction has been marked as executed."
 msgstr ""
 
-#: actions.py:63
+#: actions.py:67
 #, python-format
 msgid "%s selected transactions have been marked as executed."
 msgstr ""
 
-#: actions.py:67 actions.py:138
+#: actions.py:71 actions.py:142
 msgid "Mark as executed"
 msgstr ""
 
-#: actions.py:75 models.py:94
+#: actions.py:79 models.py:98
 msgid "Secured"
 msgstr ""
 
-#: actions.py:78
+#: actions.py:82
 msgid "One selected transaction has been marked as secured."
 msgstr ""
 
-#: actions.py:79
+#: actions.py:83
 #, python-format
 msgid "%s selected transactions have been marked as secured."
 msgstr ""
 
-#: actions.py:83
+#: actions.py:87
 msgid "Mark as secured"
 msgstr ""
 
-#: actions.py:91 actions.py:162 models.py:95
+#: actions.py:95 actions.py:166 models.py:99
 msgid "Rejected"
 msgstr ""
 
-#: actions.py:94 actions.py:165
+#: actions.py:98 actions.py:169
 msgid "One selected transaction has been marked as rejected."
 msgstr ""
 
-#: actions.py:95 actions.py:166
+#: actions.py:99 actions.py:170
 #, python-format
 msgid "%s selected transactions have been marked as rejected."
 msgstr ""
 
-#: actions.py:99
+#: actions.py:103
 msgid "Mark as rejected"
 msgstr ""
 
-#: actions.py:133
+#: actions.py:137
 msgid "One selected process has been marked as executed."
 msgstr ""
 
-#: actions.py:134
+#: actions.py:138
 #, python-format
 msgid "%s selected processes have been marked as executed."
 msgstr ""
 
-#: actions.py:146 models.py:162
+#: actions.py:150 models.py:165
 msgid "Aborted"
 msgstr ""
 
-#: actions.py:149
+#: actions.py:153
 msgid "One selected process has been aborted."
 msgstr ""
 
-#: actions.py:150
+#: actions.py:154
 #, python-format
 msgid "%s selected processes have been aborted."
 msgstr ""
 
-#: actions.py:154
+#: actions.py:158
 msgid "Abort"
 msgstr ""
 
-#: actions.py:170
+#: actions.py:174
 msgid "Commit"
 msgstr ""
 
-#: admin.py:42
+#: admin.py:43
 msgid "ID"
 msgstr ""
 
-#: admin.py:101
+#: admin.py:105
 msgid "proc"
 msgstr ""
 
-#: admin.py:152
+#: admin.py:158
 msgid "Transactions"
 msgstr ""
+
+#: helpers.py:11
+msgid "No transaction process selected."
+msgstr ""
+
+#: helpers.py:15
+msgid "Done nothing. Not all related transactions in waitting execution."
+msgstr ""
+
+#: helpers.py:32
+msgid "Unprocessed"
+msgstr ""
+
+#: helpers.py:34
+#, python-format
+msgid ""
+"One related transaction has been marked as <i>waitting for processing</i>"
+msgid_plural ""
+"%i related transactions have been marked as <i>waitting for processing</i>."
+msgstr[0] ""
+msgstr[1] ""
 
 #: methods/creditcard.py:11
 msgid "Label"
@@ -165,86 +186,123 @@ msgstr ""
 msgid "SEPA Direct Debit"
 msgstr ""
 
-#: methods/sepadirectdebit.py:48
-msgid ""
-"This bill will be automatically charged to your bank account  with IBAN "
-"number<br><strong>%s</strong>."
-msgstr ""
-"Esta factura se cobrará automaticamente en tu cuenta bancaria con IBAN "
-"<br><strong>%s</strong>."
-
-#: models.py:19
+#: models.py:20
 msgid "account"
 msgstr ""
 
-#: models.py:21
+#: models.py:22
 msgid "method"
 msgstr ""
 
-#: models.py:23 models.py:166
+#: models.py:24 models.py:169
 msgid "data"
 msgstr ""
 
-#: models.py:24
+#: models.py:25
 msgid "active"
 msgstr ""
 
-#: models.py:91
+#: models.py:95
 msgid "Waitting processing"
 msgstr ""
 
-#: models.py:92
+#: models.py:96
 msgid "Waitting execution"
 msgstr ""
 
-#: models.py:98
+#: models.py:102
 msgid "bill"
 msgstr ""
 
-#: models.py:101
+#: models.py:105
 msgid "source"
 msgstr ""
 
-#: models.py:103
+#: models.py:107
 msgid "process"
 msgstr ""
 
-#: models.py:104 models.py:168
+#: models.py:108 models.py:171
 msgid "state"
 msgstr ""
 
-#: models.py:106
+#: models.py:110
 msgid "amount"
 msgstr ""
 
-#: models.py:108 models.py:169
+#: models.py:112 models.py:172
 msgid "created"
 msgstr ""
 
-#: models.py:109
+#: models.py:113
 msgid "modified"
 msgstr ""
 
-#: models.py:124
+#: models.py:128
 msgid "New transactions can not be allocated for this bill."
 msgstr ""
 
-#: models.py:160
+#: models.py:163 templates/admin/payments/transaction/report.html:63
 msgid "Created"
 msgstr ""
 
-#: models.py:163
+#: models.py:166
 msgid "Commited"
 msgstr ""
 
-#: models.py:167
+#: models.py:170
 msgid "file"
 msgstr ""
 
-#: models.py:170
+#: models.py:173
 msgid "updated"
 msgstr ""
 
-#: models.py:173
+#: models.py:176
 msgid "Transaction processes"
+msgstr ""
+
+#: settings.py:12
+#, fuzzy, python-format
+#| msgid ""
+#| "This bill will be automatically charged to your bank account  with IBAN "
+#| "number<br><strong>%s</strong>."
+msgid ""
+"<strong>Direct debit</strong>, this bill will be automatically charged to "
+"your bank account with IBAN number<br><strong>%(number)s</strong>."
+msgstr ""
+"<strong>Adeudo por domiciliación</strong>, esta factura se cobrará "
+"automaticamente en tu cuenta bancaria con IBAN <br><strong>%s</strong>."
+
+#: templates/admin/payments/transaction/report.html:38
+msgid "Summary"
+msgstr ""
+
+#: templates/admin/payments/transaction/report.html:39
+#: templates/admin/payments/transaction/report.html:61
+msgid "Amount"
+msgstr ""
+
+#: templates/admin/payments/transaction/report.html:48
+msgid "TOTAL"
+msgstr ""
+
+#: templates/admin/payments/transaction/report.html:57
+msgid "Bill"
+msgstr ""
+
+#: templates/admin/payments/transaction/report.html:58
+msgid "Account"
+msgstr ""
+
+#: templates/admin/payments/transaction/report.html:59
+msgid "Contact"
+msgstr ""
+
+#: templates/admin/payments/transaction/report.html:62
+msgid "State"
+msgstr ""
+
+#: templates/admin/payments/transaction/report.html:64
+msgid "Updated"
 msgstr ""

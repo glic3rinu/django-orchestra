@@ -424,3 +424,6 @@ Colaesce('total', 'computed_total')
 Case
 
 # case on payment transaction state ? case when trans.amount > 
+
+
+# ORDERS keep content_object verbose name for deleted objects

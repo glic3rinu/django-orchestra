@@ -385,7 +385,6 @@ uwsgi --reload /tmp/project-master.pid
 # or if uwsgi was started with touch-reload=/tmp/somefile
 touch /tmp/somefile
 
-# Change zone ttl
 # batch zone edditing
 
 # datetime metric storage granularity: otherwise innacurate detection of billed metric on order.billed_on
@@ -424,6 +423,3 @@ Colaesce('total', 'computed_total')
 Case
 
 # case on payment transaction state ? case when trans.amount > 
-
-
-# ORDERS keep content_object verbose name for deleted objects

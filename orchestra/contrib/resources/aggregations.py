@@ -34,9 +34,8 @@ class Last(Aggregation):
         if date is not None:
             dataset = dataset.filter(created_at__lte=date)
         return dataset
-    
-    def historic_filter(self, dataset):
-        yield (timezone.now(), self.filter(dataset))
+
+    def monthly_historic_filter(self, dataset):
         now = timezone.now()
         date = datetime.datetime(
             year=now.year,
@@ -53,6 +52,10 @@ class Last(Aggregation):
                 raise StopIteration
             yield (date, dataset_copy)
             date -= relativedelta(months=1)
+    
+    def historic_filter(self, dataset):
+        yield (timezone.now(), self.filter(dataset))
+        yield from self.monthly_historic_filter(dataset)
     
     def compute_usage(self, dataset):
         values = dataset.values_list('value', flat=True)
@@ -75,22 +78,7 @@ class MonthlySum(Last):
         )
     
     def historic_filter(self, dataset):
-        now = timezone.now()
-        date = datetime.datetime(
-            year=now.year,
-            month=now.month,
-            day=1,
-            tzinfo=timezone.utc,
-        )
-        while True:
-            dataset_copy = copy.copy(dataset)
-            dataset_copy = self.filter(dataset_copy, date=date)
-            try:
-                dataset_copy[0]
-            except IndexError:
-                raise StopIteration
-            yield (date, dataset_copy)
-            date -= relativedelta(months=1)
+        yield from self.monthly_historic_filter(dataset)
 
 
 class MonthlyAvg(MonthlySum):

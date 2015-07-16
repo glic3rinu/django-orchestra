@@ -423,5 +423,3 @@ Colaesce('total', 'computed_total')
 Case
 
 # case on payment transaction state ? case when trans.amount > 
-
-# Yield multiple values on historic filter on all aggregators

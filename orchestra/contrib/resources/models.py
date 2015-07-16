@@ -209,6 +209,7 @@ class ResourceData(models.Model):
         total = 0
         has_result = False
         for dataset in self.get_monitor_datasets():
+            dataset = resource.aggregation_instance.filter(dataset)
             usage = resource.aggregation_instance.compute_usage(dataset)
             if usage is not None:
                 has_result = True
@@ -237,7 +238,7 @@ class ResourceData(models.Model):
                 dataset = MonitorData.objects.filter(
                     monitor=monitor,
                     content_type=self.content_type_id,
-                    object_id=self.object_id
+                    object_id=self.object_id,
                 )
             else:
                 fields = '__'.join(path)
@@ -248,11 +249,9 @@ class ResourceData(models.Model):
                 dataset = MonitorData.objects.filter(
                     monitor=monitor,
                     content_type=ct,
-                    object_id__in=pks
+                    object_id__in=pks,
                 )
-            datasets.append(
-                resource.aggregation_instance.filter(dataset)
-            )
+            datasets.append(dataset)
         return datasets
 
 

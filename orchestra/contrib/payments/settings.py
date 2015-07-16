@@ -1,3 +1,5 @@
+from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
+
 from orchestra.contrib.settings import Setting
 
 from .. import payments

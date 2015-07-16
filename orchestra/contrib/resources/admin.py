@@ -17,7 +17,7 @@ from orchestra.core import services
 from orchestra.utils import db, sys
 from orchestra.utils.functional import cached
 
-from .actions import run_monitor
+from .actions import run_monitor, history
 from .filters import ResourceDataListFilter
 from .forms import ResourceForm
 from .models import Resource, ResourceData, MonitorData
@@ -109,7 +109,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     )
     search_fields = ('object_id',)
     readonly_fields = fields
-    actions = (run_monitor,)
+    actions = (run_monitor, history)
     change_view_actions = actions
     ordering = ('-updated_at',)
     list_select_related = ('resource__content_type',)
@@ -117,7 +117,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     
     resource_link = admin_link('resource')
     content_object_link = admin_link('content_object')
-    content_object_link.admin_order_field = None
+    content_object_link.admin_order_field = 'object_id'
     display_updated = admin_date('updated_at', short_description=_("Updated"))
     
     def get_urls(self):
@@ -170,8 +170,10 @@ class MonitorDataAdmin(ExtendedModelAdmin):
         resource_data = query_string.get('resource_data')
         if resource_data:
             data = ResourceData.objects.get(pk=int(resource_data[0]))
+            resource = data.resource
             ids = []
             for dataset in data.get_monitor_datasets():
+                dataset = resource.aggregation_instance.filter(dataset)
                 if isinstance(dataset, MonitorData):
                     ids.append(dataset.id)
                 else:
@@ -242,7 +244,7 @@ def resource_inline_factory(resources):
         fields = (
             'verbose_name', 'display_used', 'display_updated', 'allocated', 'unit',
         )
-        readonly_fields = ('display_used', 'display_updated')
+        readonly_fields = ('display_used', 'display_updated',)
         
         class Media:
             css = {
@@ -253,11 +255,15 @@ def resource_inline_factory(resources):
         
         def display_used(self, data):
             update_link = ''
+            history_link = ''
             if data.pk:
-                url = reverse('admin:resources_resourcedata_monitor', args=(data.pk,))
-                update_link = '<a href="%s"><strong>%s</strong></a>' % (url, ugettext("Update"))
+                update_url = reverse('admin:resources_resourcedata_monitor', args=(data.pk,))
+                update_link = '<a href="%s"><strong>%s</strong></a>' % (update_url, _("Update"))
+                history_url = reverse('admin:resources_resourcedata_history', args=(data.pk,))
+                popup = 'onclick="return showAddAnotherPopup(this);"'
+                history_link = '<a href="%s" %s>%s</a>' % (history_url, popup, _("History"))
             if data.used is not None:
-                return '%s %s %s' % (data.used, data.resource.unit, update_link)
+                return ' '.join(map(str, (data.used, data.resource.unit, update_link, history_link)))
             return _("Unknonw %s") % update_link
         display_used.short_description = _("Used")
         display_used.allow_tags = True
@@ -265,7 +271,7 @@ def resource_inline_factory(resources):
         def has_add_permission(self, *args, **kwargs):
             """ Hidde add another """
             return False
-        
+    
     return ResourceInline
 
 

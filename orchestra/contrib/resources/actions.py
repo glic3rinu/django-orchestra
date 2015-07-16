@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 
@@ -38,3 +38,29 @@ def run_monitor(modeladmin, request, queryset):
     if referer:
         return redirect(referer)
 run_monitor.url_name = 'monitor'
+
+
+def history(modeladmin, request, queryset):
+    resources = {}
+    for data in queryset:
+        resource = data.resource
+        total = 0
+        totals = {}
+        for dataset in data.get_monitor_datasets():
+            for date, dataset in resource.aggregation_instance.historic_filter(dataset):
+                usage = resource.aggregation_instance.compute_usage(dataset)
+                if usage is not None:
+                    try:
+                        totals[date] += usage
+                    except KeyError:
+                        totals[date] = usage
+        scale = resource.get_scale()
+        for date, total in totals.items():
+            totals[date] = float(total)/scale
+        totals = list(sorted(totals.items()))
+        resources[data] = totals
+    context = {
+        'resources': resources,
+    }
+    return render(request, 'admin/resources/resourcedata/report.html', context)
+history.url_name = 'history'

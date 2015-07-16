@@ -1,0 +1,82 @@
+{% load i18n utils %}
+
+<html>
+<head>
+    <title>Transaction Report</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="/static/orchestra/js/Chart.min.js"></script>
+    <style type="text/css">
+    @page {
+       size: 11.69in 8.27in;
+    }
+    h3 {
+       font-family: sans;
+       font-size: 13px;
+    }
+    table {
+       max-width: 10in;
+       font-family: sans;
+       font-size: 10px;
+    }
+    table tr:nth-child(even) {
+        background-color: #eee;
+    }
+    table tr:nth-child(odd) {
+        background-color: #fff;
+    }
+    table th {
+        color: white;
+        background-color: grey;
+    }
+    .item.column-created, .item.column-updated {
+        text-align: center;
+    }
+    .item.column-amount {
+        text-align: right;
+    }
+    .footnote {
+       font-family: sans;
+       font-size: 10px;
+    }
+    </style>
+</head>
+<body>
+
+
+{% for data, totals in resources.items %}
+    <h3>{{ data.resource.get_verbose_name }} {{ data.content_object }} - {{ data.resource.aggregation_instance.verbose_name }}</h3>
+    <canvas id="chart-{{ data.id }}" width="600" height="400"></canvas>
+    <script>
+        // bar chart data
+        var barData = {
+            labels : [{% for date, total in totals %}"{{ date|date }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+            datasets : [
+                {
+                    fillColor : "#48A497",
+                    strokeColor : "#48A4D1",
+                    data : [{% for date, total in totals %}{{ total|floatformat:3 }}{% if not forloop.last %},{% endif %}{% endfor %}]
+                }
+            ]
+        }
+        var income = document.getElementById("chart-{{ data.id }}").getContext("2d");
+        var options = {
+            scaleLabel: "<%=value%> {{ data.resource.unit }}",
+        }
+        new Chart(income).Bar(barData, options);
+    </script>
+
+    <table id="summary">
+    <tr class="header">
+        <th class="title column-name">{% trans "Date" %}</th>
+        <th class="title column-active">{% trans "Used" %}</th>
+    </tr>
+    {% for date, total in totals %}
+    <tr>
+        <td class="item column-name">{{ date|date }}</td>
+        <td class="item column-amount">{{ total|floatformat:3 }} {{ data.resource.unit }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+{% endfor %}
+</body>
+</html>

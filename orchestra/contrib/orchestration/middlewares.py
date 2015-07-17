@@ -1,5 +1,6 @@
 from threading import local
 
+from django.contrib.admin.models import LogEntry
 from django.core.urlresolvers import resolve
 from django.db import transaction
 from django.db.models.signals import pre_delete, post_save, m2m_changed
@@ -15,14 +16,14 @@ from .models import BackendLog
 
 @receiver(post_save, dispatch_uid='orchestration.post_save_collector')
 def post_save_collector(sender, *args, **kwargs):
-    if sender not in [BackendLog, Operation]:
+    if sender not in (BackendLog, Operation, LogEntry):
         instance = kwargs.get('instance')
         OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
 
 @receiver(pre_delete, dispatch_uid='orchestration.pre_delete_collector')
 def pre_delete_collector(sender, *args, **kwargs):
-    if sender not in [BackendLog, Operation]:
+    if sender not in (BackendLog, Operation, LogEntry):
         OperationsMiddleware.collect(Operation.DELETE, **kwargs)
 
 

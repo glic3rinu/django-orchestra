@@ -1,0 +1,20 @@
+{% extends "admin/orchestra/generic_confirmation.html" %}
+{% load static %}
+
+
+{% block extrahead %}
+{{ block.super }}
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/actions.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/collapse.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/inlines.js' %}"></script>
+{% endblock %}
+
+{% block formset %}
+    {% for formset in formsets %}
+        {{ formset.as_admin }}
+    {% endfor %}
+{% endblock %}

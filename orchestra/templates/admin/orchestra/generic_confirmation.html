@@ -32,6 +32,7 @@
     <p>{{ content_message | safe }}</p>
     <ul>{{ display_objects | unordered_list }}</ul>
     <form action="" method="post">{% csrf_token %}
+    {% block form %}
     {% if form %}
         <fieldset class="module aligned">
         {{ form.non_field_errors }}
@@ -50,9 +51,12 @@
         {% endfor %}
         </fieldset>
     {% endif %}
+    {% endblock %}
+    {% block formset %}
     {% if formset %}
         {{ formset.as_admin }}
     {% endif %}
+    {% endblock %}
     <div>
     {% for obj in queryset %}
     <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />

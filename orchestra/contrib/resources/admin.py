@@ -254,16 +254,25 @@ def resource_inline_factory(resources):
         display_updated = admin_date('updated_at', default=_("Never"))
         
         def display_used(self, data):
+            from django.templatetags.static import static
             update_link = ''
             history_link = ''
             if data.pk:
-                update_url = reverse('admin:resources_resourcedata_monitor', args=(data.pk,))
-                update_link = '<a href="%s"><strong>%s</strong></a>' % (update_url, _("Update"))
-                history_url = reverse('admin:resources_resourcedata_history', args=(data.pk,))
-                popup = 'onclick="return showAddAnotherPopup(this);"'
-                history_link = '<a href="%s" %s>%s</a>' % (history_url, popup, _("History"))
+                context = {
+                    'title': _("Update"),
+                    'url': reverse('admin:resources_resourcedata_monitor', args=(data.pk,)),
+                    'image': '<img src="%s"></img>' % static('orchestra/images/reload.png'),
+                }
+                update = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
+                context.update({
+                    'title': _("Show history"),
+                    'image': '<img src="%s"></img>' % static('orchestra/images/history.png'),
+                    'url': reverse('admin:resources_resourcedata_history', args=(data.pk,)),
+                    'popup': 'onclick="return showAddAnotherPopup(this);"',
+                })
+                history = '<a href="%(url)s" title="%(title)s" %(popup)s>%(image)s</a>' % context
             if data.used is not None:
-                return ' '.join(map(str, (data.used, data.resource.unit, update_link, history_link)))
+                return ' '.join(map(str, (data.used, data.resource.unit, update, history)))
             return _("Unknonw %s") % update_link
         display_used.short_description = _("Used")
         display_used.allow_tags = True

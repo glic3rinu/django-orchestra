@@ -8,24 +8,17 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
-from .actions import view_zone
+from .actions import view_zone, edit_records
 from .filters import TopDomainListFilter
-from .forms import RecordInlineFormSet, BatchDomainCreationAdminForm
+from .forms import RecordForm, RecordInlineFormSet, BatchDomainCreationAdminForm
 from .models import Domain, Record
 
 
 class RecordInline(admin.TabularInline):
     model = Record
+    form = RecordForm
     formset = RecordInlineFormSet
     verbose_name_plural = _("Extra records")
-    
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        """ Make value input widget bigger """
-        if db_field.name == 'value':
-            kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
-        if db_field.name == 'ttl':
-            kwargs['widget'] = forms.TextInput(attrs={'size':'10'})
-        return super(RecordInline, self).formfield_for_dbfield(db_field, **kwargs)
 
 
 class DomainInline(admin.TabularInline):
@@ -63,6 +56,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_readonly_fields = ('name', 'serial')
     search_fields = ('name', 'account__username')
     add_form = BatchDomainCreationAdminForm
+    actions = (edit_records,)
     change_view_actions = [view_zone]
     
     def structured_name(self, domain):

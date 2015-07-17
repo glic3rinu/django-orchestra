@@ -20,7 +20,7 @@ class Domain(models.Model):
     top = models.ForeignKey('domains.Domain', null=True, related_name='subdomain_set',
         editable=False)
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial, editable=False,
-        help_text=_("A revision number that changes whenever you update your domain."))
+        help_text=_("A revision number that changes whenever this domain is updated."))
     refresh = models.IntegerField(_("refresh"), null=True, blank=True,
         validators=[validators.validate_zone_interval],
         help_text=_("The time a secondary DNS server waits before querying the primary DNS "
@@ -182,10 +182,10 @@ class Domain(models.Model):
                     "%s." % settings.DOMAINS_DEFAULT_NAME_SERVER,
                     utils.format_hostmaster(settings.DOMAINS_DEFAULT_HOSTMASTER),
                     str(self.serial),
-                    settings.DOMAINS_DEFAULT_REFRESH if self.refresh is None else self.refresh,
-                    settings.DOMAINS_DEFAULT_RETRY if self.retry is None else self.retry,
-                    settings.DOMAINS_DEFAULT_EXPIRE if self.expire is None else self.expire,
-                    settings.DOMAINS_DEFAULT_MIN_TTL if self.min_ttl is None else self.min_ttl,
+                    self.refresh or settings.DOMAINS_DEFAULT_REFRESH,
+                    self.retry or settings.DOMAINS_DEFAULT_RETRY,
+                    self.expire or settings.DOMAINS_DEFAULT_EXPIRE,
+                    self.min_ttl or settings.DOMAINS_DEFAULT_MIN_TTL,
                 ]
                 records.insert(0, AttrDict(
                     type=Record.SOA,
@@ -272,13 +272,24 @@ class Record(models.Model):
         (SOA, "SOA"),
     )
     
+    VALIDATORS = {
+        MX: validators.validate_mx_record,
+        NS: validators.validate_zone_label,
+        A: validate_ipv4_address,
+        AAAA: validate_ipv6_address,
+        CNAME: validators.validate_zone_label,
+        TXT: validate_ascii,
+        SRV: validators.validate_srv_record,
+        SOA: validators.validate_soa_record,
+    }
+    
     domain = models.ForeignKey(Domain, verbose_name=_("domain"), related_name='records')
     ttl = models.CharField(_("TTL"), max_length=8, blank=True,
         help_text=_("Record TTL, defaults to %s") % settings.DOMAINS_DEFAULT_TTL,
         validators=[validators.validate_zone_interval])
     type = models.CharField(_("type"), max_length=32, choices=TYPE_CHOICES)
-    value = models.CharField(_("value"), max_length=256, help_text=_("MX, NS and CNAME records "
-        "sould end with a dot."))
+    value = models.CharField(_("value"), max_length=256,
+        help_text=_("MX, NS and CNAME records sould end with a dot."))
     
     def __str__(self):
         return "%s %s IN %s %s" % (self.domain, self.get_ttl(), self.type, self.value)
@@ -288,20 +299,13 @@ class Record(models.Model):
         # validate value
         if self.type != self.TXT:
             self.value = self.value.lower().strip()
-        choices = {
-            self.MX: validators.validate_mx_record,
-            self.NS: validators.validate_zone_label,
-            self.A: validate_ipv4_address,
-            self.AAAA: validate_ipv6_address,
-            self.CNAME: validators.validate_zone_label,
-            self.TXT: validate_ascii,
-            self.SRV: validators.validate_srv_record,
-            self.SOA: validators.validate_soa_record,
-        }
-        try:
-            choices[self.type](self.value)
-        except ValidationError as error:
-            raise ValidationError({'value': error})
+        if self.type:
+            try:
+                self.VALIDATORS[self.type](self.value)
+            except ValidationError as error:
+                raise ValidationError({
+                    'value': error,
+                })
     
     def get_ttl(self):
         return self.ttl or settings.DOMAINS_DEFAULT_TTL

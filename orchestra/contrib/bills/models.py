@@ -200,10 +200,6 @@ class Bill(models.Model):
                 errors['amend_of'] = _("Related invoice is an amendment.")
             if errors:
                 raise ValidationError(errors)
-        elif self.type in self.AMEND_MAP.values():
-            raise ValidationError({
-                'amend_of': _("Type %s requires an amend of link.") % self.get_type_display()
-            })
     
     def get_payment_state_display(self):
         value = self.payment_state

@@ -40,7 +40,7 @@ def _un(singular__plural, n=None):
     return ungettext(singular, plural, n)
 
 
-def naturaldatetime(date, include_seconds=False):
+def naturaldatetime(date, include_seconds=True):
     """Convert datetime into a human natural date string."""
     if not date:
         return ''
@@ -56,35 +56,35 @@ def naturaldatetime(date, include_seconds=False):
     minutes = delta.seconds / 60
     seconds = delta.seconds
     
-    ago = ' ago'
+    ago = " ago"
     if days < 0:
-        ago = ''
+        ago = ""
     days = abs(days)
     
     if days == 0:
         if hours == 0:
-            if minutes > 0:
+            if minutes >= 1:
                 minutes = float(seconds)/60
                 return ungettext(
-                    _('{minutes:.1f} minute{ago}'),
-                    _('{minutes:.1f} minutes{ago}'), minutes
+                    _("{minutes:.1f} minute{ago}"),
+                    _("{minutes:.1f} minutes{ago}"), minutes
                 ).format(minutes=minutes, ago=ago)
             else:
-                if include_seconds and seconds:
+                if include_seconds:
                     return ungettext(
-                        _('{seconds} second{ago}'),
-                        _('{seconds} seconds{ago}'), seconds
+                        _("{seconds} second{ago}"),
+                        _("{seconds} seconds{ago}"), seconds
                     ).format(seconds=seconds, ago=ago)
-                return _('just now')
+                return _("just now")
         else:
             hours = float(minutes)/60
             return ungettext(
-                _('{hours:.1f} hour{ago}'),
-                _('{hours:.1f} hours{ago}'), hours
+                _("{hours:.1f} hour{ago}"),
+                _("{hours:.1f} hours{ago}"), hours
             ).format(hours=hours, ago=ago)
     
     if delta_midnight.days == 0:
-        return _('yesterday at {time}').format(time=date.strftime('%H:%M'))
+        return _("yesterday at {time}").format(time=date.strftime('%H:%M'))
     
     count = 0
     for chunk, pluralizefun in OLDER_CHUNKS:

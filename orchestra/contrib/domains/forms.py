@@ -2,6 +2,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin.forms import AdminFormSet
+
 from . import validators
 from .helpers import domain_for_validation
 from .models import Domain
@@ -63,17 +65,35 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
         return cleaned_data
 
 
-class RecordInlineFormSet(forms.models.BaseInlineFormSet):
+class RecordForm(forms.ModelForm):
+    class Meta:
+        fields = ('ttl', 'type', 'value')
+    
+    def __init__(self, *args, **kwargs):
+        super(RecordForm, self).__init__(*args, **kwargs)
+        self.fields['ttl'].widget = forms.TextInput(attrs={'size':'10'})
+        self.fields['value'].widget = forms.TextInput(attrs={'size':'100'})
+
+
+class ValidateZoneMixin(object):
     def clean(self):
         """ Checks if everything is consistent """
-        super(RecordInlineFormSet, self).clean()
-        if any(self.errors):
+        super(ValidateZoneMixin, self).clean()
+        if any(formset.errors):
             return
-        if self.instance.name:
+        if formset.instance.name:
             records = []
-            for form in self.forms:
+            for form in formset.forms:
                 data = form.cleaned_data
                 if data and not data['DELETE']:
                     records.append(data)
-            domain = domain_for_validation(self.instance, records)
+            domain = domain_for_validation(formset.instance, records)
             validators.validate_zone(domain.render_zone())
+
+
+class RecordEditFormSet(ValidateZoneMixin, AdminFormSet):
+    pass
+
+
+class RecordInlineFormSet(ValidateZoneMixin, forms.models.BaseInlineFormSet):
+    pass

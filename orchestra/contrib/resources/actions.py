@@ -62,5 +62,5 @@ def history(modeladmin, request, queryset):
     context = {
         'resources': resources,
     }
-    return render(request, 'admin/resources/resourcedata/report.html', context)
+    return render(request, 'admin/resources/resourcedata/history.html', context)
 history.url_name = 'history'

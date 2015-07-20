@@ -8,7 +8,7 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
-from .actions import view_zone, edit_records
+from .actions import view_zone, edit_records, set_soa
 from .filters import TopDomainListFilter
 from .forms import RecordForm, RecordInlineFormSet, BatchDomainCreationAdminForm
 from .models import Domain, Record
@@ -51,13 +51,16 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     )
     add_fields = ('name', 'account')
     fields = ('name', 'account_link')
-    inlines = [RecordInline, DomainInline]
-    list_filter = [TopDomainListFilter]
+    readonly_fields = ('account_link', 'top_link',)
+    inlines = (RecordInline, DomainInline)
+    list_filter = (TopDomainListFilter,)
     change_readonly_fields = ('name', 'serial')
     search_fields = ('name', 'account__username')
     add_form = BatchDomainCreationAdminForm
-    actions = (edit_records,)
-    change_view_actions = [view_zone]
+    actions = (edit_records, set_soa)
+    change_view_actions = (view_zone, edit_records)
+    
+    top_link = admin_link('top')
     
     def structured_name(self, domain):
         if domain.is_top:
@@ -90,14 +93,25 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     def get_fieldsets(self, request, obj=None):
         """ Add SOA fields when domain is top """
         fieldsets = super(DomainAdmin, self).get_fieldsets(request, obj)
-        if obj and obj.is_top:
-            fieldsets += (
-                (_("SOA"), {
-                    'classes': ('collapse',),
-                    'fields': ('serial', 'refresh', 'retry', 'expire', 'min_ttl'),
-                }),
-            )
+        if obj:
+            if obj.is_top:
+                fieldsets += (
+                    (_("SOA"), {
+                        'classes': ('collapse',),
+                        'fields': ('serial', 'refresh', 'retry', 'expire', 'min_ttl'),
+                    }),
+                )
+            else:
+                existing = fieldsets[0][1]['fields']
+                if 'top_link' not in existing:
+                    fieldsets[0][1]['fields'].insert(2, 'top_link')
         return fieldsets
+    
+    def get_inline_instances(self, request, obj=None):
+        inlines = super(DomainAdmin, self).get_inline_instances(request, obj)
+        if not obj or not obj.is_top:
+            return [inline for inline in inlines if type(inline) != DomainInline]
+        return inlines
     
     def get_queryset(self, request):
         """ Order by structured name and imporve performance """
@@ -121,12 +135,6 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 domain = Domain.objects.create(name=name, account_id=obj.account_id)
                 self.extra_domains.append(domain)
     
-    def save_formset(self, request, form, formset, change):
-        """
-        Given an inline formset save it to the database.
-        """
-        formset.save()
-    
     def save_related(self, request, form, formsets, change):
         """ batch domain creation support """
         super(DomainAdmin, self).save_related(request, form, formsets, change)
@@ -142,7 +150,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                                 record.pk = None
                         formset.instance = domain
                         form.instance = domain
-                        self.save_formset(request, form, formset, change=change)
+                        self.save_formset(request, form, formset, change)
 
 
 admin.site.register(Domain, DomainAdmin)

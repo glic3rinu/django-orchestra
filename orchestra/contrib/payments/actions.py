@@ -68,7 +68,7 @@ def mark_as_executed(modeladmin, request, queryset):
         num)
     modeladmin.message_user(request, msg)
 mark_as_executed.url_name = 'execute'
-mark_as_executed.verbose_name = _("Mark as executed")
+mark_as_executed.short_description = _("Mark as executed")
 
 
 @transaction.atomic
@@ -84,7 +84,7 @@ def mark_as_secured(modeladmin, request, queryset):
         num)
     modeladmin.message_user(request, msg)
 mark_as_secured.url_name = 'secure'
-mark_as_secured.verbose_name = _("Mark as secured")
+mark_as_secured.short_description = _("Mark as secured")
 
 
 @transaction.atomic
@@ -100,7 +100,7 @@ def mark_as_rejected(modeladmin, request, queryset):
         num)
     modeladmin.message_user(request, msg)
 mark_as_rejected.url_name = 'reject'
-mark_as_rejected.verbose_name = _("Mark as rejected")
+mark_as_rejected.short_description = _("Mark as rejected")
 
 
 def _format_display_objects(modeladmin, request, queryset, related):
@@ -139,7 +139,7 @@ def mark_process_as_executed(modeladmin, request, queryset):
         num)
     modeladmin.message_user(request, msg)
 mark_process_as_executed.url_name = 'executed'
-mark_process_as_executed.verbose_name = _("Mark as executed")
+mark_process_as_executed.short_description = _("Mark as executed")
 
 
 @transaction.atomic
@@ -155,7 +155,7 @@ def abort(modeladmin, request, queryset):
         num)
     modeladmin.message_user(request, msg)
 abort.url_name = 'abort'
-abort.verbose_name = _("Abort")
+abort.short_description = _("Abort")
 
 
 @transaction.atomic
@@ -171,7 +171,7 @@ def commit(modeladmin, request, queryset):
         num)
     modeladmin.message_user(request, msg)
 commit.url_name = 'commit'
-commit.verbose_name = _("Commit")
+commit.short_description = _("Commit")
 
 
 def delete_selected(modeladmin, request, queryset):

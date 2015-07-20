@@ -129,4 +129,4 @@ def disable(modeladmin, request, queryset):
         num)
     modeladmin.message_user(request, msg)
 disable.url_name = 'disable'
-disable.verbose_name = _("Disable")
+disable.short_description = _("Disable")

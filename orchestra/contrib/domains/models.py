@@ -21,7 +21,7 @@ class Domain(models.Model):
         editable=False)
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial, editable=False,
         help_text=_("A revision number that changes whenever this domain is updated."))
-    refresh = models.IntegerField(_("refresh"), null=True, blank=True,
+    refresh = models.CharField(_("refresh"), max_length=16, blank=True,
         validators=[validators.validate_zone_interval],
         help_text=_("The time a secondary DNS server waits before querying the primary DNS "
                     "server's SOA record to check for changes. When the refresh time expires, "
@@ -32,19 +32,19 @@ class Domain(models.Model):
                     "If they are different, the secondary DNS server will request a zone "
                     "transfer from the primary DNS server. "
                     "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_REFRESH)
-    retry = models.IntegerField(_("retry"), null=True, blank=True,
+    retry = models.CharField(_("retry"), max_length=16, blank=True,
         validators=[validators.validate_zone_interval],
         help_text=_("The time a secondary server waits before retrying a failed zone transfer. "
                     "Normally, the retry time is less than the refresh time. "
                     "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_RETRY)
-    expire = models.IntegerField(_("expire"), null=True, blank=True,
+    expire = models.CharField(_("expire"), max_length=16, blank=True,
         validators=[validators.validate_zone_interval],
         help_text=_("The time that a secondary server will keep trying to complete a zone "
                     "transfer. If this time expires prior to a successful zone transfer, "
                     "the secondary server will expire its zone file. This means the secondary "
                     "will stop answering queries. "
                     "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_EXPIRE)
-    min_ttl = models.IntegerField(_("min TTL"), null=True, blank=True,
+    min_ttl = models.CharField(_("min TTL"), max_length=16, blank=True,
         validators=[validators.validate_zone_interval],
         help_text=_("The minimum time-to-live value applies to all resource records in the "
                     "zone file. This value is supplied in query responses to inform other "

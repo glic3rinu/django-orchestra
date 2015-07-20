@@ -17,7 +17,9 @@ class AdminFormMixin(object):
     def as_admin(self):
         prepopulated_fields = {}
         fieldsets = [
-            (None, {'fields': list(self.fields.keys())})
+            (None, {
+                'fields': list(self.fields.keys())
+            }),
         ]
         adminform = helpers.AdminForm(self, fieldsets, prepopulated_fields)
         template = Template(
@@ -25,7 +27,10 @@ class AdminFormMixin(object):
             '   {% include "admin/includes/fieldset.html" %}'
             '{% endfor %}'
         )
-        return template.render(Context({'adminform': adminform}))
+        context = Context({
+            'adminform': adminform
+        })
+        return template.render(context)
 
 
 class AdminFormSet(BaseModelFormSet):
@@ -43,7 +48,10 @@ class AdminFormSet(BaseModelFormSet):
         template = Template(
             '{% include "admin/edit_inline/tabular.html" %}'
         )
-        return template.render(Context({'inline_admin_formset': inline_admin_formset}))
+        context = Context({
+            'inline_admin_formset': inline_admin_formset
+        })
+        return template.render(context)
 
 
 def adminmodelformset_factory(modeladmin, form, formset=AdminFormSet, **kwargs):

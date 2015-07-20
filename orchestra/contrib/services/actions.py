@@ -47,7 +47,7 @@ def update_orders(modeladmin, request, queryset, extra_context=None):
     }
     return render(request, 'admin/services/service/update_orders.html', context)
 update_orders.url_name = 'update-orders'
-update_orders.verbose_name = _("Update orders")
+update_orders.short_description = _("Update orders")
 
 
 def view_help(modeladmin, request, queryset):
@@ -62,7 +62,7 @@ def view_help(modeladmin, request, queryset):
     }
     return TemplateResponse(request, 'admin/services/service/help.html', context)
 view_help.url_name = 'help'
-view_help.verbose_name = _("Help")
+view_help.tool_description = _("Help")
 
 
 def clone(modeladmin, request, queryset):

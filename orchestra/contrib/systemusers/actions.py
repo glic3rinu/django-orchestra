@@ -67,7 +67,7 @@ def set_permission(modeladmin, request, queryset):
     return TemplateResponse(request, 'admin/systemusers/systemuser/set_permission.html',
         context, current_app=modeladmin.admin_site.name)
 set_permission.url_name = 'set-permission'
-set_permission.verbose_name = _("Set permission")
+set_permission.tool_description = _("Set permission")
 
 
 def delete_selected(modeladmin, request, queryset):

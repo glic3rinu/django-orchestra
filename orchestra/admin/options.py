@@ -98,11 +98,13 @@ class ChangeViewActionsMixin(object):
                 action = getattr(self, action)
             view = action_to_view(action, self)
             view.url_name = getattr(action, 'url_name', action.__name__)
-            verbose_name = getattr(action, 'verbose_name',
-                    view.url_name.capitalize().replace('_', ' '))
-            if hasattr(verbose_name, '__call__'):
-                verbose_name = verbose_name(obj)
-            view.verbose_name = verbose_name
+            tool_description = getattr(action, 'tool_description', '')
+            if not tool_description:
+                tool_description = getattr(action, 'short_description',
+                        view.url_name.capitalize().replace('_', ' '))
+            if hasattr(tool_description, '__call__'):
+                tool_description = tool_description(obj)
+            view.tool_description = tool_description
             view.css_class = getattr(action, 'css_class', 'historylink')
             view.help_text = getattr(action, 'help_text', '')
             views.append(view)

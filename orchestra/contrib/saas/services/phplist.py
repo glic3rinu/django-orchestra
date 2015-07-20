@@ -54,7 +54,7 @@ class PHPListService(SoftwareService):
         return db_name[:65]
     
     def get_db_user(self):
-        return settings.SAAS_PHPLIST_DB_NAME
+        return settings.SAAS_PHPLIST_DB_USER
     
     def get_account(self):
         return self.instance.account.get_main()

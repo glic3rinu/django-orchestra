@@ -31,7 +31,7 @@ def view_bill(modeladmin, request, queryset):
         return
     html = bill.html or bill.render()
     return HttpResponse(html)
-view_bill.verbose_name = _("View")
+view_bill.tool_description = _("View")
 view_bill.url_name = 'view'
 
 
@@ -91,7 +91,7 @@ def close_bills(modeladmin, request, queryset, action='close_bills'):
         'obj': get_object_from_url(modeladmin, request),
     }
     return render(request, 'admin/orchestra/generic_confirmation.html', context)
-close_bills.verbose_name = _("Close")
+close_bills.tool_description = _("Close")
 close_bills.url_name = 'close'
 
 
@@ -137,7 +137,7 @@ def download_bills(modeladmin, request, queryset):
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="%s.pdf"' % bill.number
     return response
-download_bills.verbose_name = _("Download")
+download_bills.tool_description = _("Download")
 download_bills.url_name = 'download'
 
 
@@ -149,7 +149,7 @@ def close_send_download_bills(modeladmin, request, queryset):
             return
         return download_bills(modeladmin, request, queryset)
     return response
-close_send_download_bills.verbose_name = _("C.S.D.")
+close_send_download_bills.tool_description = _("C.S.D.")
 close_send_download_bills.url_name = 'close-send-download'
 close_send_download_bills.help_text = _("Close, send and download bills in one shot.")
 
@@ -288,7 +288,7 @@ def amend_bills(modeladmin, request, queryset):
         _('<a href="%(url)s">%(num)i amendment bills</a> have been generated.') % context,
         num
     )))
-amend_bills.verbose_name = _("Amend")
+amend_bills.tool_description = _("Amend")
 amend_bills.url_name = 'amend'
 
 

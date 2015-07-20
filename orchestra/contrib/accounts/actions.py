@@ -25,7 +25,7 @@ def list_contacts(modeladmin, request, queryset):
     url = reverse('admin:contacts_contact_changelist')
     url += '?account__in=%s' % ','.join(map(str, ids))
     return redirect(url)
-list_contacts.verbose_name = _("List contacts")
+list_contacts.short_description = _("List contacts")
 
 
 def service_report(modeladmin, request, queryset):

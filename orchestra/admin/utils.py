@@ -98,7 +98,7 @@ def change_url(obj):
 @admin_field
 def admin_link(*args, **kwargs):
     instance = args[-1]
-    if kwargs['field'] in ['id', 'pk', '__str__']:
+    if kwargs['field'] in ('id', 'pk', '__str__'):
         obj = instance
     else:
         try:
@@ -120,7 +120,7 @@ def admin_link(*args, **kwargs):
     extra = ''
     if kwargs['popup']:
         extra = 'onclick="return showAddAnotherPopup(this);"'
-    return '<a href="%s" %s>%s</a>' % (url, extra, display)
+    return mark_safe('<a href="%s" %s>%s</a>' % (url, extra, display))
 
 
 @admin_field

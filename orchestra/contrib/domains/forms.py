@@ -1,8 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin.forms import AdminFormSet
+from orchestra.admin.forms import AdminFormSet, AdminFormMixin
 
 from . import validators
 from .helpers import domain_for_validation
@@ -71,8 +72,8 @@ class RecordForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(RecordForm, self).__init__(*args, **kwargs)
-        self.fields['ttl'].widget = forms.TextInput(attrs={'size':'10'})
-        self.fields['value'].widget = forms.TextInput(attrs={'size':'100'})
+        self.fields['ttl'].widget = forms.TextInput(attrs={'size': '10'})
+        self.fields['value'].widget = forms.TextInput(attrs={'size': '100'})
 
 
 class ValidateZoneMixin(object):
@@ -97,3 +98,30 @@ class RecordEditFormSet(ValidateZoneMixin, AdminFormSet):
 
 class RecordInlineFormSet(ValidateZoneMixin, forms.models.BaseInlineFormSet):
     pass
+
+
+class SOAForm(AdminFormMixin, forms.Form):
+    refresh = forms.CharField()
+    clear_refresh = forms.BooleanField(label=_("Clear refresh"), required=False,
+        help_text=_("Remove custom refresh value for all selected domains."))
+    retry = forms.CharField()
+    clear_retry = forms.BooleanField(label=_("Clear retry"), required=False,
+        help_text=_("Remove custom retry value for all selected domains."))
+    expire = forms.CharField()
+    clear_expire = forms.BooleanField(label=_("Clear expire"), required=False,
+        help_text=_("Remove custom expire value for all selected domains."))
+    min_ttl = forms.CharField()
+    clear_min_ttl = forms.BooleanField(label=_("Clear min TTL"), required=False,
+        help_text=_("Remove custom min TTL value for all selected domains."))
+    
+    def __init__(self, *args, **kwargs):
+        super(SOAForm, self).__init__(*args, **kwargs)
+        for name in self.fields:
+            if not name.startswith('clear_'):
+                field = Domain._meta.get_field_by_name(name)[0]
+                self.fields[name] = forms.CharField(
+                    label=capfirst(field.verbose_name),
+                    help_text=field.help_text,
+                    validators=field.validators,
+                    required=False,
+                )

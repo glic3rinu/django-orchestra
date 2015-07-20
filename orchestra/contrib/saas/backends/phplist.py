@@ -1,9 +1,12 @@
+import hashlib
 import re
+import textwrap
 
 import requests
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController
+from orchestra.utils.sys import sshrun
 
 from .. import settings
 
@@ -45,7 +48,28 @@ class PhpListSaaSBackend(ServiceController):
             if response.status_code != 200:
                 raise RuntimeError("Bad status code %i" % response.status_code)
         else:
-            raise NotImplementedError("Change password not implemented")
+            md5_password = hashlib.md5()
+            md5_password.update(saas.password.encode('ascii'))
+            context = {
+                'name': saas.name,
+                'site_name': saas.name,
+                'db_user': settings.SAAS_PHPLIST_DB_USER,
+                'db_pass': settings.SAAS_PHPLIST_DB_PASS,
+                'db_name': settings.SAAS_PHPLIST_DB_NAME,
+                'db_host': settings.SAAS_PHPLIST_DB_HOST,
+                'digest': md5_password.hexdigest(),
+            }
+            context['db_name'] = context['db_name'] % context
+            cmd = textwrap.dedent("""\
+                mysql \\
+                    --host=%(db_host)s \\
+                    --user=%(db_user)s \\
+                    --password=%(db_pass)s \\
+                    --execute='UPDATE phplist_admin SET password="%(digest)s" where ID=1; \\
+                               UPDATE phplist_user_user SET password="%(digest)s" where ID=1;' \\
+                    %(db_name)s""") % context
+            print(cmd)
+            sshrun(server.get_address(), cmd)
     
     def save(self, saas):
         if hasattr(saas, 'password'):

@@ -426,7 +426,4 @@ Case
 
 # bill changelist: dates: (closed_on, created_on, updated_on)
 
-
-# Add record modeladmin action: select domains + add records (formset) to selected domains
-
 # Resource data inline show info: link to monitor data, and history chart: link to monitor data of each item

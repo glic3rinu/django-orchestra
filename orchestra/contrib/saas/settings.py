@@ -1,3 +1,5 @@
+from django.utils.translation import ugettext_lazy as _
+
 from orchestra.contrib.settings import Setting
 from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
@@ -76,9 +78,29 @@ SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
 )
 
 
-SAAS_PHPLIST_DB_NAME = Setting('SAAS_PHPLIST_DB_NAME',
+SAAS_PHPLIST_DB_USER = Setting('SAAS_PHPLIST_DB_USER',
     'phplist_mu',
+    help_text=_("Needed for password changing support."),
 )
+
+
+SAAS_PHPLIST_DB_PASS = Setting('SAAS_PHPLIST_DB_PASS',
+    'secret',
+    help_text=_("Needed for password changing support."),
+)
+
+
+SAAS_PHPLIST_DB_NAME = Setting('SAAS_PHPLIST_DB_NAME',
+    'phplist_mu_%(site_name)s',
+    help_text=_("Needed for password changing support."),
+)
+
+
+SAAS_PHPLIST_DB_HOST = Setting('SAAS_PHPLIST_DB_HOST',
+    'loclahost',
+    help_text=_("Needed for password changing support."),
+)
+
 
 SAAS_PHPLIST_BASE_DOMAIN = Setting('SAAS_PHPLIST_BASE_DOMAIN',
     'lists.{}'.format(ORCHESTRA_BASE_DOMAIN),

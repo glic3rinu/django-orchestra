@@ -174,7 +174,8 @@ class Bind9MasterDomainBackend(ServiceController):
 class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
     """
     Generate the configuartion for slave servers
-    It auto-discover the master server based on your routing configuration or you can use DOMAINS_MASTERS to explicitly configure the master.
+    It auto-discover the master server based on your routing configuration or you can use
+    DOMAINS_MASTERS to explicitly configure the master.
     """
     CONF_PATH = settings.DOMAINS_SLAVES_PATH
     

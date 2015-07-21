@@ -427,3 +427,5 @@ Case
 # bill changelist: dates: (closed_on, created_on, updated_on)
 
 # Resource data inline show info: link to monitor data, and history chart: link to monitor data of each item
+
+# DIsplay message email content nicelly

@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin 
 from orchestra.admin.utils import admin_link, admin_date, change_url
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils.humanize import naturaldate
 
@@ -49,13 +50,18 @@ class MetricStorageInline(admin.TabularInline):
 class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         'id', 'service_link', 'account_link', 'content_object_link',
-        'display_registered_on', 'display_billed_until', 'display_cancelled_on', 'display_metric'
+        'display_registered_on', 'display_billed_until', 'display_cancelled_on',
+        'display_metric'
     )
-    list_filter = (ActiveOrderListFilter, IgnoreOrderListFilter, BilledOrderListFilter, 'service')
+    list_filter = (
+        ActiveOrderListFilter, IgnoreOrderListFilter, BilledOrderListFilter, 'service'
+    )
     default_changelist_filters = (
         ('ignore', '0'),
     )
-    actions = (BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored, report)
+    actions = (
+        BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored, report, list_accounts
+    )
     change_view_actions = (BillSelectedOrders(), mark_as_ignored, mark_as_not_ignored)
     date_hierarchy = 'registered_on'
     inlines = (MetricStorageInline,)
@@ -111,7 +117,9 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_billed_until.admin_order_field = 'billed_until'
     
     def display_metric(self, order):
-        """ dispalys latest metric value, don't uses latest() because not loosing prefetch_related """
+        """
+        dispalys latest metric value, don't uses latest() because not loosing prefetch_related
+        """
         try:
             metric = order.metrics.all()[0]
         except IndexError:

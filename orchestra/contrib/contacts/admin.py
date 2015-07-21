@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import AtLeastOneRequiredInlineFormSet, ExtendedModelAdmin
 from orchestra.admin.actions import SendEmail
 from orchestra.admin.utils import insertattr, change_url
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdmin, AccountAdminMixin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
@@ -59,7 +60,7 @@ class ContactAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('address', ('zipcode', 'city'), 'country')
         }),
     )
-    actions = [SendEmail(),]
+    actions = (SendEmail(), list_accounts)
     
     def dispaly_name(self, contact):
         return str(contact)

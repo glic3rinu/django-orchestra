@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 
 from .forms import VPSChangeForm, VPSCreationForm
@@ -37,6 +38,7 @@ class VPSAdmin(AccountAdminMixin, ExtendedModelAdmin):
             'fields': ('password1', 'password2',)
         }),
     )
+    actions = (list_accounts,)
     
     def get_urls(self):
         useradmin = UserAdmin(VPS, self.admin_site)

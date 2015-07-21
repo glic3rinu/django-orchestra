@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_date, insertattr, admin_link
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin, AccountAdmin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 
@@ -212,7 +213,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     actions = [
         actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
         actions.amend_bills, actions.bill_report, actions.service_report,
-        actions.close_send_download_bills,
+        actions.close_send_download_bills, list_accounts,
     ]
     change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link', 'amend_links')
     readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')

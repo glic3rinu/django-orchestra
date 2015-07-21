@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, change_url
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 
@@ -57,7 +58,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_readonly_fields = ('name', 'serial')
     search_fields = ('name', 'account__username')
     add_form = BatchDomainCreationAdminForm
-    actions = (edit_records, set_soa)
+    actions = (edit_records, set_soa, list_accounts)
     change_view_actions = (view_zone, edit_records)
     
     top_link = admin_link('top')

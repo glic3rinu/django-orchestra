@@ -273,14 +273,14 @@ class Record(models.Model):
     )
     
     VALIDATORS = {
-        MX: validators.validate_mx_record,
-        NS: validators.validate_zone_label,
-        A: validate_ipv4_address,
-        AAAA: validate_ipv6_address,
-        CNAME: validators.validate_zone_label,
-        TXT: validate_ascii,
-        SRV: validators.validate_srv_record,
-        SOA: validators.validate_soa_record,
+        MX: (validators.validate_mx_record,),
+        NS: (validators.validate_zone_label,),
+        A: (validate_ipv4_address,),
+        AAAA: (validate_ipv6_address,),
+        CNAME: (validators.validate_zone_label,),
+        TXT: (validate_ascii, validators.validate_quoted_record),
+        SRV: (validators.validate_srv_record,),
+        SOA: (validators.validate_soa_record,),
     }
     
     domain = models.ForeignKey(Domain, verbose_name=_("domain"), related_name='records')
@@ -300,12 +300,13 @@ class Record(models.Model):
         if self.type != self.TXT:
             self.value = self.value.lower().strip()
         if self.type:
-            try:
-                self.VALIDATORS[self.type](self.value)
-            except ValidationError as error:
-                raise ValidationError({
-                    'value': error,
-                })
+            for validator in self.VALIDATORS.get(self.type, []):
+                try:
+                    validator(self.value)
+                except ValidationError as error:
+                    raise ValidationError({
+                        'value': error,
+                    })
     
     def get_ttl(self):
         return self.ttl or settings.DOMAINS_DEFAULT_TTL

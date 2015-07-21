@@ -18,7 +18,7 @@ from . import settings
 
 
 def list_contacts(modeladmin, request, queryset):
-    ids = queryset.values_list('id', flat=True)
+    ids = queryset.order_by().values_list('id', flat=True).distinct()
     if not ids:
         messages.warning(request, "Select at least one account.")
         return
@@ -26,6 +26,17 @@ def list_contacts(modeladmin, request, queryset):
     url += '?account__in=%s' % ','.join(map(str, ids))
     return redirect(url)
 list_contacts.short_description = _("List contacts")
+
+
+def list_accounts(modeladmin, request, queryset):
+    accounts = queryset.order_by().values_list('account_id', flat=True).distinct()
+    if not accounts:
+        messages.warning(request, "Select at least one instance.")
+        return
+    url = reverse('admin:contacts_contact_changelist')
+    url += '?id__in=%s' % ','.join(map(str, accounts))
+    return redirect(url)
+list_accounts.short_description = _("List accounts")
 
 
 def service_report(modeladmin, request, queryset):

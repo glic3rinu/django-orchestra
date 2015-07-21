@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import insertattr
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.contrib.services.models import Service
 
@@ -29,6 +30,7 @@ class ContractedPlanAdmin(AccountAdminMixin, admin.ModelAdmin):
     list_filter = ('plan__name',)
     list_select_related = ('plan', 'account')
     search_fields = ('account__username', 'plan__name', 'id')
+    actions = (list_accounts,)
 
 
 admin.site.register(Plan, PlanAdmin)

@@ -14,7 +14,8 @@ from .. import settings
 class PhpListSaaSBackend(ServiceController):
     """
     Creates a new phplist instance on a phpList multisite installation.
-    The site is created by means of creating a new database per phpList site, but all sites share the same code.
+    The site is created by means of creating a new database per phpList site,
+    but all sites share the same code.
     
     <tt>// config/config.php
     $site = array_shift((explode(".",$_SERVER['HTTP_HOST'])));
@@ -28,7 +29,8 @@ class PhpListSaaSBackend(ServiceController):
     def _save(self, saas, server):
         admin_link = 'https://%s/admin/' % saas.get_site_domain()
         print('admin_link:', admin_link)
-        admin_content = requests.get(admin_link, verify=settings.SAAS_PHPLIST_VERIFY_SSL).content.decode('utf8')
+        admin_content = requests.get(admin_link, verify=settings.SAAS_PHPLIST_VERIFY_SSL)
+        admin_content = admin_content.content.decode('utf8')
         if admin_content.startswith('Cannot connect to Database'):
             raise RuntimeError("Database is not yet configured")
         install = re.search(r'([^"]+firstinstall[^"]+)', admin_content)
@@ -68,7 +70,7 @@ class PhpListSaaSBackend(ServiceController):
                     --execute='UPDATE phplist_admin SET password="%(digest)s" where ID=1; \\
                                UPDATE phplist_user_user SET password="%(digest)s" where ID=1;' \\
                     %(db_name)s""") % context
-            print(cmd)
+            print('cmd:', cmd)
             sshrun(server.get_address(), cmd)
     
     def save(self, saas):

@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeViewActionsMixin, ExtendedModelAdmin
 from orchestra.admin.utils import admin_colored, admin_link
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.plugins.admin import SelectPluginAdminMixin
 
@@ -91,7 +92,7 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         actions.process_transactions, actions.mark_as_executed, actions.mark_as_secured,
         actions.mark_as_rejected,
     )
-    actions = change_view_actions + (actions.report,)
+    actions = change_view_actions + (actions.report, list_accounts)
     filter_by_account_fields = ('bill', 'source')
     change_readonly_fields = ('amount', 'currency')
     readonly_fields = (

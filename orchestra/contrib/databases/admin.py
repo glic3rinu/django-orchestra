@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.utils import change_url
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 
 from .forms import DatabaseCreationForm, DatabaseUserChangeForm, DatabaseUserCreationForm
@@ -42,6 +43,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_horizontal = ['users']
     filter_by_account_fields = ('users',)
     list_prefetch_related = ('users',)
+    actions = (list_accounts,)
     
     def display_users(self, db):
         links = []
@@ -90,6 +92,7 @@ class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, Exten
     readonly_fields = ('account_link', 'display_databases',)
     filter_by_account_fields = ('databases',)
     list_prefetch_related = ('databases',)
+    actions = (list_accounts,)
     
     def display_databases(self, user):
         links = []

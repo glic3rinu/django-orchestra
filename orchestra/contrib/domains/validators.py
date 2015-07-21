@@ -107,6 +107,16 @@ def validate_soa_record(value):
             raise ValidationError(msg)
 
 
+def validate_quoted_record(value):
+    value = value.strip()
+    if ' ' in value and (value[0] != '"' or value[-1] != '"'):
+        raise ValidationError(
+            _("This record value contains spaces, you must enclose the string in double quotes; "
+              "otherwise, individual words will be separately quoted and break up the record "
+              "into multiple parts.")
+        )
+
+
 def validate_zone(zone):
     """ Ultimate zone file validation using named-checkzone """
     zone_name = zone.split()[0][:-1]

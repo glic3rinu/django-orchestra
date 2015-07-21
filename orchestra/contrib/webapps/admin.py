@@ -6,6 +6,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import change_url, get_modeladmin
+from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.plugins.admin import SelectPluginAdminMixin
@@ -58,6 +59,7 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     plugin = AppType
     plugin_field = 'type'
     plugin_title = _("Web application type")
+    actions = (list_accounts,)
     
     def display_websites(self, webapp):
         websites = []

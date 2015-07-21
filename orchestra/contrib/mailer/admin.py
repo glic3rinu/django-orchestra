@@ -1,3 +1,6 @@
+import base64
+import email
+
 from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -12,7 +15,7 @@ from .engine import send_pending
 from .models import Message, SMTPLog
 
 
-COLORS = { 
+COLORS = {
     Message.QUEUED: 'purple',
     Message.SENT: 'green',
     Message.DEFERRED: 'darkorange',
@@ -29,6 +32,21 @@ class MessageAdmin(admin.ModelAdmin):
     )
     list_filter = ('state', 'priority', 'retries')
     list_prefetch_related = ('logs__id')
+    fieldsets = (
+        (None, {
+            'fields': ('state', 'priority', ('retries', 'last_retry_delta'),
+                       'display_full_subject', 'display_to_address', 'display_from_address',
+                       'display_content'),
+        }),
+        (_("Edit"), {
+            'classes': ('collapse',),
+            'fields': ('subject', 'to_address', 'from_address', 'content'),
+        }),
+    )
+    readonly_fields = (
+        'retries', 'last_retry_delta', 'display_full_subject', 'display_to_address',
+        'display_from_address', 'display_content',
+    )
     
     colored_state = admin_colored('state', colors=COLORS)
     created_at_delta = admin_date('created_at')
@@ -51,6 +69,37 @@ class MessageAdmin(admin.ModelAdmin):
     num_logs.short_description = _("Logs")
     num_logs.admin_order_field = 'logs__count'
     num_logs.allow_tags = True
+    
+    def display_content(self, instance):
+        part = email.message_from_string(instance.content)
+        payload = part.get_payload()
+        if isinstance(payload, list):
+            for part in payload:
+                payload = part.get_payload()
+                if part.get_content_type() == 'text/html':
+                    # prioritize HTML
+                    payload = '<div style="padding-left:110px">%s</div>' % payload
+                    break
+        if part.get('Content-Transfer-Encoding') == 'base64':
+            payload = base64.b64decode(payload)
+            payload = payload.decode(part.get_charsets()[0])
+        if part.get_content_type() == 'text/plain':
+            payload = payload.replace('\n', '<br>')
+        return payload
+    display_content.short_description = _("Content")
+    display_content.allow_tags = True
+    
+    def display_full_subject(self, instance):
+        return instance.subject
+    display_full_subject.short_description = _("Subject")
+    
+    def display_from_address(self, instance):
+        return instance.from_address
+    display_from_address.short_description = _("From address")
+    
+    def display_to_address(self, instance):
+        return instance.to_address
+    display_to_address.short_description = _("To address")
     
     def get_urls(self):
         from django.conf.urls import url
@@ -76,6 +125,7 @@ class MessageAdmin(admin.ModelAdmin):
         if db_field.name == 'subject':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
         return super(MessageAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
 
 class SMTPLogAdmin(admin.ModelAdmin):
     list_display = (

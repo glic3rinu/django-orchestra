@@ -80,15 +80,15 @@ class ValidateZoneMixin(object):
     def clean(self):
         """ Checks if everything is consistent """
         super(ValidateZoneMixin, self).clean()
-        if any(formset.errors):
+        if any(self.errors):
             return
-        if formset.instance.name:
+        if self.instance.name:
             records = []
-            for form in formset.forms:
+            for form in self.forms:
                 data = form.cleaned_data
                 if data and not data['DELETE']:
                     records.append(data)
-            domain = domain_for_validation(formset.instance, records)
+            domain = domain_for_validation(self.instance, records)
             validators.validate_zone(domain.render_zone())
 
 

@@ -15,3 +15,9 @@ TASKS_ENABLE_UWSGI_CRON_BEAT = Setting('TASKS_ENABLE_UWSGI_CRON_BEAT',
     False,
     help_text="Not implemented.",
 )
+
+
+
+TASKS_BACKEND_CLEANUP_DAYS = Setting('TASKS_BACKEND_CLEANUP_DAYS',
+    10,
+)

@@ -185,8 +185,8 @@ class BillLineManagerAdmin(BillLineAdmin):
 
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'number', 'type_link', 'account_link', 'updated_on_display',
-        'num_lines', 'display_total', 'display_payment_state', 'is_open', 'is_sent'
+        'number', 'type_link', 'account_link', 'closed_on_display', 'updated_on_display',
+        'num_lines', 'display_total', 'display_payment_state', 'is_sent'
     )
     list_filter = (
         BillTypeListFilter, 'is_open', 'is_sent', TotalListFilter, PaymentStateListFilter,
@@ -197,7 +197,11 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     fieldsets = (
         (None, {
             'fields': ['number', 'type', 'amend_of_link', 'account_link', 'display_total',
-                       'display_payment_state', 'is_sent', 'due_on', 'comments'],
+                       'display_payment_state', 'is_sent', 'comments'],
+        }),
+        (_("Dates"), {
+            'classes': ('collapse',),
+            'fields': ('created_on_display', 'closed_on_display', 'updated_on_display', 'due_on'),
         }),
         (_("Raw"), {
             'classes': ('collapse',),
@@ -216,10 +220,15 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         actions.close_send_download_bills, list_accounts,
     ]
     change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link', 'amend_links')
-    readonly_fields = ('number', 'display_total', 'is_sent', 'display_payment_state')
+    readonly_fields = (
+        'number', 'display_total', 'is_sent', 'display_payment_state', 'created_on_display',
+        'closed_on_display', 'updated_on_display'
+    )
     inlines = [BillLineInline, ClosedBillLineInline]
     date_hierarchy = 'closed_on'
     
+    created_on_display = admin_date('created_on', short_description=_("Created"))
+    closed_on_display = admin_date('closed_on', short_description=_("Closed"))
     updated_on_display = admin_date('updated_on', short_description=_("Updated"))
     amend_of_link = admin_link('amend_of')
     

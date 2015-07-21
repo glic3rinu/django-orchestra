@@ -13,4 +13,4 @@ from .models import BackendLog
 def backend_logs_cleanup():
     days = settings.ORCHESTRATION_BACKEND_CLEANUP_DAYS
     epoch = timezone.now()-timedelta(days=days)
-    return BackendLog.objects.filter(created_at__lt=epoch).delete()
+    return BackendLog.objects.filter(created_at__lt=epoch).only('id').delete()

@@ -412,7 +412,7 @@ def comma(value):
 
 
 # payment/bill report allow to change template using a setting variable
-# Payment transaction stats, graps over time
+# Payment transaction stats, graphs over time
 
 reporter.stories_filed = F('stories_filed') + 1
 reporter.save()
@@ -424,8 +424,4 @@ Case
 
 # case on payment transaction state ? case when trans.amount > 
 
-# bill changelist: dates: (closed_on, created_on, updated_on)
-
 # Resource data inline show info: link to monitor data, and history chart: link to monitor data of each item
-
-# DIsplay message email content nicelly

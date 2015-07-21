@@ -1,5 +1,6 @@
 import hashlib
 import re
+import sys
 import textwrap
 
 import requests
@@ -26,17 +27,21 @@ class PhpListSaaSBackend(ServiceController):
     default_route_match = "saas.service == 'phplist'"
     serialize = True
     
+    def error(self, msg):
+        sys.stderr.write(msg + '\n')
+        raise RuntimeError(msg)
+    
     def _save(self, saas, server):
         admin_link = 'https://%s/admin/' % saas.get_site_domain()
-        print('admin_link:', admin_link)
+        sys.stdout.write('admin_link: %s\n' % admin_link)
         admin_content = requests.get(admin_link, verify=settings.SAAS_PHPLIST_VERIFY_SSL)
         admin_content = admin_content.content.decode('utf8')
         if admin_content.startswith('Cannot connect to Database'):
-            raise RuntimeError("Database is not yet configured")
+            self.error("Database is not yet configured.")
         install = re.search(r'([^"]+firstinstall[^"]+)', admin_content)
         if install:
             if not hasattr(saas, 'password'):
-                raise RuntimeError("Password is missing")
+                self.error("Password is missing.")
             install_path = install.groups()[0]
             install_link = admin_link + install_path[1:]
             post = {
@@ -46,9 +51,9 @@ class PhpListSaaSBackend(ServiceController):
                 'adminpassword': saas.password,
             }
             response = requests.post(install_link, data=post, verify=settings.SAAS_PHPLIST_VERIFY_SSL)
-            print(response.content.decode('utf8'))
+            sys.stdout.write(response.content.decode('utf8')+'\n')
             if response.status_code != 200:
-                raise RuntimeError("Bad status code %i" % response.status_code)
+                self.error("Bad status code %i." % response.status_code)
         else:
             md5_password = hashlib.md5()
             md5_password.update(saas.password.encode('ascii'))
@@ -70,7 +75,7 @@ class PhpListSaaSBackend(ServiceController):
                     --execute='UPDATE phplist_admin SET password="%(digest)s" where ID=1; \\
                                UPDATE phplist_user_user SET password="%(digest)s" where ID=1;' \\
                     %(db_name)s""") % context
-            print('cmd:', cmd)
+            sys.stdout.write('cmd: %s\n' % cmd)
             sshrun(server.get_address(), cmd)
     
     def save(self, saas):

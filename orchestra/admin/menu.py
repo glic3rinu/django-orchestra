@@ -29,14 +29,17 @@ def api_link(context):
 
 
 def process_registry(register):
-    def get_item(model, options):
+    def get_item(model, options, parent=False):
+        name = options.get('verbose_name_plural')
         if isinstance(model, str):
             url = reverse('admin:'+model)
         else:
             opts = model._meta
             url = reverse('admin:{}_{}_changelist'.format(
                 opts.app_label, opts.model_name))
-        name = capfirst(options.get('verbose_name_plural'))
+            if parent:
+                name = opts.app_label
+        name = capfirst(name)
         return items.MenuItem(name, url)
     
     childrens = {}
@@ -49,7 +52,7 @@ def process_registry(register):
                     if not parent_item.children:
                         parent_item.children.append(deepcopy(parent_item))
                 else:
-                    parent_item = get_item(parent, register[parent])
+                    parent_item = get_item(parent, register[parent], parent=True)
                     parent_item.children = []
                 parent_item.children.append(get_item(model, options))
                 childrens[parent] = parent_item

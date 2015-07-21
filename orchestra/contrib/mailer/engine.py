@@ -54,5 +54,6 @@ def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
                 send_message(message, num, connection, bulk)
             if connection is not None:
                 connection.close()
+        return num
     except OperationLocked:
         pass

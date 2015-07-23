@@ -425,3 +425,19 @@ Case
 # case on payment transaction state ? case when trans.amount > 
 
 # Resource data inline show info: link to monitor data, and history chart: link to monitor data of each item
+
+
+# ORDER diff Pending vs ALL
+# pre-bill confirmation: remove account if lines.count() == 0 ?
+
+# Discount prepaid metric should be more optimal https://orchestra.pangea.org/admin/orders/order/40/
+
+
+# Resource history, show backend+content_object accumulation stacked bar chart
+# Resource consumption summary: combine selected rather than make individual summaries
+# Search on resource consumption (store content_object str)
+# monitor data value convert to scale and include units and title="data.value"
+# resource history merge multiple monitors, split in multiple graphs different resources and account aggregated resource if multiple objects are selected
+
+
+# order.billed_metric besides billed_until

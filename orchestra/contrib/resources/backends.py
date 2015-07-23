@@ -71,8 +71,11 @@ class ServiceMonitor(ServiceBackend):
                 raise ValueError("%s expected '<id> <value>' got '%s'" % (cls_name, line))
             if isinstance(value, bytes):
                 value = value.decode('ascii')
-            MonitorData.objects.create(monitor=name, object_id=object_id,
-                    content_type=ct, value=value, created_at=self.current_date)
+            content_object = get_object_for_this_type(pk=object_id)
+            MonitorData.objects.create(
+                monitor=name, object_id=object_id, content_type=ct, value=value,
+                created_at=self.current_date, content_object_repr=str(content_object),
+            )
     
     def execute(self, *args, **kwargs):
         log = super(ServiceMonitor, self).execute(*args, **kwargs)

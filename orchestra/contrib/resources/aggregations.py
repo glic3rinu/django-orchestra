@@ -22,6 +22,10 @@ class Aggregation(plugins.Plugin, metaclass=plugins.PluginMount):
     def compute_usage(self, dataset):
         """ given a dataset computes its usage according to the method (avg, sum, ...) """
         raise NotImplementedError
+    
+    def compute_historic_usage(self, dataset):
+        """ generates [(data, usage),] tuples for resource data history reporting """
+        raise NotImplementedError
 
 
 class Last(Aggregation):
@@ -34,14 +38,13 @@ class Last(Aggregation):
         if date is not None:
             dataset = dataset.filter(created_at__lte=date)
         return dataset
-
+    
     def monthly_historic_filter(self, dataset):
-        now = timezone.now()
-        date = datetime.datetime(
-            year=now.year,
-            month=now.month,
+        today = timezone.now().date()
+        date = datetime.date(
+            year=today.year,
+            month=today.month,
             day=1,
-            tzinfo=timezone.utc,
         )
         while True:
             dataset_copy = copy.copy(dataset)
@@ -49,12 +52,12 @@ class Last(Aggregation):
             try:
                 dataset_copy[0]
             except IndexError:
-                raise StopIteration
+                yield (date, None)
             yield (date, dataset_copy)
             date -= relativedelta(months=1)
     
     def historic_filter(self, dataset):
-        yield (timezone.now(), self.filter(dataset))
+        yield (timezone.now().date(), self.filter(dataset))
         yield from self.monthly_historic_filter(dataset)
     
     def compute_usage(self, dataset):
@@ -62,6 +65,10 @@ class Last(Aggregation):
         if values:
             return sum(values)
         return None
+    
+    def compute_historic_usage(self, dataset):
+        dataset = dataset.only('object_id', 'value', 'content_object_repr')
+        return [(mdata, mdata.value) for mdata in dataset]
 
 
 class MonthlySum(Last):
@@ -71,7 +78,7 @@ class MonthlySum(Last):
     
     def filter(self, dataset, date=None):
         if date is None:
-            date = timezone.now()
+            date = timezone.now().date()
         return dataset.filter(
             created_at__year=date.year,
             created_at__month=date.month,
@@ -79,6 +86,17 @@ class MonthlySum(Last):
     
     def historic_filter(self, dataset):
         yield from self.monthly_historic_filter(dataset)
+    
+    def compute_historic_usage(self, dataset):
+        objects = {}
+        mdatas = {}
+        for mdata in dataset.only('object_id', 'value', 'content_object_repr'):
+            mdatas[mdata.object_id] = mdata
+            try:
+                objects[mdata.object_id] += mdata.value
+            except KeyError:
+                objects[mdata.object_id] = mdata.value
+        return [(mdatas[object_id], value) for object_id, value in objects.items()]
 
 
 class MonthlyAvg(MonthlySum):
@@ -86,24 +104,20 @@ class MonthlyAvg(MonthlySum):
     name = 'monthly-avg'
     verbose_name = _("Monthly AVG")
     
-    def filter(self, dataset, date=None):
-        qs = super(MonthlyAvg, self).filter(dataset, date=date)
-        return qs.order_by('created_at')
-    
     def get_epoch(self, date=None):
         if date is None:
-            date = timezone.now()
-        return datetime.datetime(
+            date = timezone.now().date()
+        return datetime.date(
             year=date.year,
             month=date.month,
             day=1,
-            tzinfo=timezone.utc,
         )
     
-    def compute_usage(self, dataset):
+    def compute_usage(self, dataset, historic=False):
         result = 0
         has_result = False
-        for monitor, dataset in dataset.group_by('monitor').items():
+        aggregate = []
+        for object_id, dataset in dataset.order_by('created_at').group_by('object_id').items():
             try:
                 last = dataset[-1]
             except IndexError:
@@ -111,14 +125,26 @@ class MonthlyAvg(MonthlySum):
             epoch = self.get_epoch(date=last.created_at)
             total = (last.created_at-epoch).total_seconds()
             ini = epoch
-            for data in dataset:
+            current = 0
+            for mdata in dataset:
                 has_result = True
-                slot = (data.created_at-ini).total_seconds()
-                result += data.value * decimal.Decimal(str(slot/total))
-                ini = data.created_at
+                slot = (mdata.created_at-ini).total_seconds()
+                current += mdata.value * decimal.Decimal(str(slot/total))
+                ini = mdata.created_at
+            if historic:
+                aggregate.append(
+                    (mdata, current)
+                )
+            else:
+                result += current
         if has_result:
+            if historic:
+                return aggregate
             return result
         return None
+    
+    def compute_historic_usage(self, dataset):
+        return self.compute_usage(dataset, historic=True)
 
 
 class Last10DaysAvg(MonthlyAvg):
@@ -129,16 +155,16 @@ class Last10DaysAvg(MonthlyAvg):
     
     def get_epoch(self, date=None):
         if date is None:
-            date = timezone.now()
+            date = timezone.now().date()
         return date - datetime.timedelta(days=self.days)
     
     def filter(self, dataset, date=None):
         epoch = self.get_epoch(date=date)
-        dataset = dataset.filter(created_at__gt=epoch).order_by('created_at')
+        dataset = dataset.filter(created_at__gt=epoch)
         if date is not None:
             dataset = dataset.filter(created_at__lte=date)
         return dataset
     
     def historic_filter(self, dataset):
-        yield (timezone.now(), self.filter(dataset))
+        yield (timezone.now().date(), self.filter(dataset))
         yield from super(Last10DaysAvg, self).historic_filter(dataset)

@@ -1,3 +1,5 @@
+import datetime
+import json
 import re
 
 from django import template
@@ -5,6 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.forms import CheckboxInput
 from django.template.base import Node
+from django.template.defaultfilters import date
+from django.utils.safestring import mark_safe
 
 from orchestra import get_version
 from orchestra.admin.utils import change_url
@@ -106,3 +110,12 @@ def sub(value, arg):
 def mul(value, arg):
     return value * arg
 
+
+@register.filter
+def as_json(obj, *args):
+    indent = args[0] if args else None
+    def default(obj):
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            return date(obj)
+        return obj
+    return mark_safe(json.dumps(obj, indent=indent, default=default))

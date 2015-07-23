@@ -63,7 +63,6 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     change_form_template = 'admin/accounts/account/change_form.html'
     actions = [disable, list_contacts, service_report, SendEmail(), delete_related_services]
     change_view_actions = [disable, service_report]
-    list_select_related = ('billcontact',)
     ordering = ()
     
     main_systemuser_link = admin_link('main_systemuser')

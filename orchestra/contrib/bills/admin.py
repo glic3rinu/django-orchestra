@@ -371,7 +371,7 @@ class BillContactInline(admin.StackedInline):
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
         if db_field.name == 'name':
-            kwargs['widget'] = forms.TextInput(attrs={'size':'70'})
+            kwargs['widget'] = forms.TextInput(attrs={'size':'90'})
         if db_field.name == 'address':
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
         if db_field.name == 'email_usage':
@@ -388,3 +388,4 @@ has_bill_contact.admin_order_field = 'billcontact'
 insertattr(AccountAdmin, 'inlines', BillContactInline)
 insertattr(AccountAdmin, 'list_display', has_bill_contact)
 insertattr(AccountAdmin, 'list_filter', HasBillContactListFilter)
+insertattr(AccountAdmin, 'list_select_related', 'billcontact')

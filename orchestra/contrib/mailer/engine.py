@@ -51,7 +51,8 @@ def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
                 delta = timedelta(seconds=seconds)
                 qs = qs | Q(retries=retries, last_retry__lte=now-delta)
             for message in Message.objects.filter(state=Message.DEFERRED).filter(qs).order_by('priority'):
-                send_message(message, num, connection, bulk)
+                connection = send_message(message, num, connection, bulk)
+                num += 1
             if connection is not None:
                 connection.close()
         return num

@@ -1,17 +1,159 @@
-{% load i18n utils %}
+{% load i18n utils static %}
 
 <html>
 <head>
     <title>Resource history</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <script src="/static/orchestra/js/Chart.min.js"></script>
+    <script src="{% static "admin/js/jquery.js" %}" type="text/javascript"></script>
+    <script src="{% static "orchestra/js/highcharts/highcharts.js" %}" type="text/javascript"></script>
+    <script src="{% static "orchestra/js/highcharts/modules/exporting.js" %}" type="text/javascript"></script>
+    <script>
+    {% for resource, objects, totals, dates in resources %}
+        {% if totals %}
+            $(function () {
+                var title = '{{ resource.aggregation_instance.verbose_name }} {{ resource.content_type }} {{ resource.verbose_name.lower }}';
+                var container = '{{ resource.id }}-totals';
+                var series = {{ totals|as_json }};
+                var dates = {{ dates|as_json }};
+                var unit = '{{ resource.unit }}';
+                $('#'+container).highcharts({
+                    chart: {
+                        type: 'column',
+                        backgroundColor: "{% if forloop.counter|divisibleby:2 %}#EDF3FE{% else %}#FFFFFF{% endif %}"
+                    },
+                    title: {
+                        text: title
+                    },
+                    xAxis: {
+                        categories: dates
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: unit
+                        },
+                        stackLabels: {
+                            enabled: true,
+                            style: {
+                                fontWeight: 'bold',
+                                color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                            }
+                        }
+                    },
+                    legend: {
+                        align: 'right',
+                        x: -30,
+                        verticalAlign: 'top',
+                        y: 25,
+                        floating: true,
+                        backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+                        borderColor: '#CCC',
+                        borderWidth: 1,
+                        shadow: false
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            return '<b>' + this.x + '</b><br/>' +
+                                this.series.name + ': ' + this.y + ' ' + unit + '<br/>' +
+                                'Total: ' + this.point.stackTotal + ' ' + unit;
+                        }
+                    },
+                    plotOptions: {
+                        column: {
+                            stacking: 'normal',
+                            dataLabels: {
+                                enabled: true,
+                                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+                                style: {
+                                    textShadow: '0 0 3px black'
+                                },
+                                formatter: function () {
+                                    return this.series.name + ': ' + this.y + ' ' + unit;
+                                }
+                            }
+                        }
+                    },
+                    series: series
+                });
+            });
+        {% endif %}
+        $(function () {
+            var title = '{{ resource.aggregation_instance.verbose_name }} {{ resource.content_type }} {{ resource.verbose_name.lower }} (detail)';
+            var container = '{{ resource.id }}-objects';
+            var series = {{ objects|as_json }};
+            var dates = {{ dates|as_json }};
+            var unit = '{{ resource.unit }}';
+            $('#'+container).highcharts({
+                chart: {
+                    type: 'column',
+                    backgroundColor: "{% if forloop.counter|divisibleby:2 %}#EDF3FE{% else %}#FFFFFF{% endif %}"
+                },
+                title: {
+                    text: title
+                },
+                xAxis: {
+                    categories: dates
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: unit
+                    },
+                    stackLabels: {
+                        enabled: true,
+                        formatter: function () { return this.total + ' ' + unit; },
+                        style: {
+                            fontWeight: 'bold',
+                            color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                        }
+                    }
+                },
+                legend: {
+                    align: 'right',
+                    x: -30,
+                    verticalAlign: 'top',
+                    y: 25,
+                    floating: true,
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+                    borderColor: '#CCC',
+                    borderWidth: 1,
+                    shadow: false
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.x + '</b><br/>' +
+                            this.series.name + ': ' + this.y + ' ' + unit + '<br/>' +
+                            'Total: ' + this.point.stackTotal + ' ' + unit;
+                    }
+                },
+                plotOptions: {
+                    column: {
+                        stacking: 'normal',
+                        dataLabels: {
+                            enabled: true,
+                            color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+                            style: {
+                                textShadow: '0 0 3px black'
+                            },
+                            formatter: function () {
+                                return this.series.name + ': ' + this.y + ' ' + unit;
+                            }
+                        }
+                    }
+                },
+                series: series
+            });
+        });
+
+    {% endfor %}
+    </script>
     <style type="text/css">
     @page {
        size: 11.69in 8.27in;
     }
-    h3 {
+    h1{
        font-family: sans;
-       font-size: 13px;
+       font-size: 21px;
     }
     table {
        max-width: 10in;
@@ -41,42 +183,17 @@
     </style>
 </head>
 <body>
-
-
-{% for data, totals in resources.items %}
-    <h3>{{ data.resource.get_verbose_name }} {{ data.content_object }} - {{ data.resource.aggregation_instance.verbose_name }}</h3>
-    <canvas id="chart-{{ data.id }}" width="600" height="400"></canvas>
-    <script>
-        // bar chart data
-        var barData = {
-            labels : [{% for date, total in totals %}"{{ date|date }}"{% if not forloop.last %},{% endif %}{% endfor %}],
-            datasets : [
-                {
-                    fillColor : "#48A497",
-                    strokeColor : "#48A4D1",
-                    data : [{% for date, total in totals %}{{ total|floatformat:3 }}{% if not forloop.last %},{% endif %}{% endfor %}]
-                }
-            ]
-        }
-        var income = document.getElementById("chart-{{ data.id }}").getContext("2d");
-        var options = {
-            scaleLabel: "<%=value%> {{ data.resource.unit }}",
-        }
-        new Chart(income).Bar(barData, options);
-    </script>
-    
-    <table id="summary">
-    <tr class="header">
-        <th class="title column-name">{% trans "Date" %}</th>
-        <th class="title column-active">{% trans "Used" %}</th>
-    </tr>
-    {% for date, total in totals %}
-    <tr>
-        <td class="item column-name">{{ date|date }}</td>
-        <td class="item column-amount">{{ total|floatformat:3 }} {{ data.resource.unit }}</td>
-    </tr>
+    {% for resource, __, totals, __ in resources %}
+    <div style="background: {% if forloop.counter|divisibleby:2 %}#EDF3FE{% else %}#FFFFFF{% endif %}; margin-bottom: -1px; border: 1px solid grey">
+    <div style="padding: 10px">
+    <h1>{{ resource.content_type|capfirst }} {{ resource.verbose_name.lower }}<h1>
+    {% if totals %}
+        <div id="{{ resource.id }}-totals" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <br>
+    {% endif %}
+    <div id="{{ resource.id }}-objects" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+    </div>
+    </div>
     {% endfor %}
-    </table>
-{% endfor %}
 </body>
 </html>

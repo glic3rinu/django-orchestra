@@ -34,28 +34,33 @@ class MessageAdmin(admin.ModelAdmin):
     list_prefetch_related = ('logs__id')
     fieldsets = (
         (None, {
-            'fields': ('state', 'priority', ('retries', 'last_retry_delta'),
-                       'display_full_subject', 'display_to_address', 'display_from_address',
+            'fields': ('state', 'priority', ('retries', 'last_retry_delta', 'created_at_delta'),
+                       'display_full_subject', 'display_from', 'display_to',
                        'display_content'),
         }),
         (_("Edit"), {
             'classes': ('collapse',),
-            'fields': ('subject', 'to_address', 'from_address', 'content'),
+            'fields': ('subject', 'from_address', 'to_address', 'content'),
         }),
     )
     readonly_fields = (
-        'retries', 'last_retry_delta', 'display_full_subject', 'display_to_address',
-        'display_from_address', 'display_content',
+        'retries', 'last_retry_delta', 'created_at_delta', 'display_full_subject',
+        'display_to', 'display_from', 'display_content',
     )
+    date_hierarchy = 'created_at'
     
     colored_state = admin_colored('state', colors=COLORS)
     created_at_delta = admin_date('created_at')
     last_retry_delta = admin_date('last_retry')
     
     def display_subject(self, instance):
-        return instance.subject[:32]
+        subject = instance.subject
+        if len(subject) > 32:
+            return subject[:32] + '&hellip;'
+        return subject
     display_subject.short_description = _("Subject")
     display_subject.admin_order_field = 'subject'
+    display_subject.allow_tags = True
     
     def num_logs(self, instance):
         num = instance.logs__count
@@ -77,14 +82,14 @@ class MessageAdmin(admin.ModelAdmin):
             for part in payload:
                 payload = part.get_payload()
                 if part.get_content_type() == 'text/html':
-                    # prioritize HTML
                     payload = '<div style="padding-left:110px">%s</div>' % payload
+                    # prioritize HTML
                     break
         if part.get('Content-Transfer-Encoding') == 'base64':
             payload = base64.b64decode(payload)
             payload = payload.decode(part.get_charsets()[0])
         if part.get_content_type() == 'text/plain':
-            payload = payload.replace('\n', '<br>')
+            payload = payload.replace('\n', '<br>').replace(' ', '&nbsp;')
         return payload
     display_content.short_description = _("Content")
     display_content.allow_tags = True
@@ -93,13 +98,13 @@ class MessageAdmin(admin.ModelAdmin):
         return instance.subject
     display_full_subject.short_description = _("Subject")
     
-    def display_from_address(self, instance):
+    def display_from(self, instance):
         return instance.from_address
-    display_from_address.short_description = _("From address")
+    display_from.short_description = _("From")
     
-    def display_to_address(self, instance):
+    def display_to(self, instance):
         return instance.to_address
-    display_to_address.short_description = _("To address")
+    display_to.short_description = _("To")
     
     def get_urls(self):
         from django.conf.urls import url

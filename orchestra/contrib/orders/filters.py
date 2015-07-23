@@ -74,12 +74,12 @@ class BilledOrderListFilter(SimpleListFilter):
         return metric_pks
     
     def queryset(self, request, queryset):
+        Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
         if self.value() == 'yes':
             return queryset.filter(billed_until__isnull=False, billed_until__gte=timezone.now())
         elif self.value() == 'no':
             return queryset.exclude(billed_until__isnull=False, billed_until__gte=timezone.now())
         elif self.value() == 'pending':
-            Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
             return queryset.filter(
                 Q(pk__in=self.get_pending_metric_pks(queryset)) | Q(
                     Q(billed_until__isnull=True) | Q(~Q(service__billing_period=Service.NEVER) &

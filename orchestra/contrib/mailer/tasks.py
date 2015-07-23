@@ -20,4 +20,4 @@ def cleanup_messages():
     delta = timedelta(days=settings.MAILER_MESSAGES_CLEANUP_DAYS)
     now = timezone.now()
     epoch = (now-delta)
-    return Message.objects.filter(state=Message.SENT, last_retry__lt=epoch).delete()
+    return Message.objects.filter(state=Message.SENT, created_at__lt=epoch).only('id').delete()

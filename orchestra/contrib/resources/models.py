@@ -128,7 +128,7 @@ class Resource(models.Model):
     
     def sync_periodic_task(self):
         name = 'monitor.%s' % str(self)
-        if self.pk and self.crontab:
+        if self.pk and self.crontab and self.is_active:
             try:
                 task = PeriodicTask.objects.get(name=name)
             except PeriodicTask.DoesNotExist:
@@ -174,6 +174,8 @@ class ResourceData(models.Model):
     updated_at = models.DateTimeField(_("updated"), null=True, editable=False)
     allocated = models.DecimalField(_("allocated"), max_digits=8, decimal_places=2,
         null=True, blank=True)
+    content_object_repr = models.CharField(_("content object representation"), max_length=256,
+        editable=False)
     
     content_object = GenericForeignKey()
     
@@ -208,7 +210,7 @@ class ResourceData(models.Model):
         resource = self.resource
         total = 0
         has_result = False
-        for dataset in self.get_monitor_datasets():
+        for monitor, dataset in self.get_monitor_datasets():
             dataset = resource.aggregation_instance.filter(dataset)
             usage = resource.aggregation_instance.compute_usage(dataset)
             if usage is not None:
@@ -221,7 +223,8 @@ class ResourceData(models.Model):
             current = self.get_used()
         self.used = current or 0
         self.updated_at = timezone.now()
-        self.save(update_fields=['used', 'updated_at'])
+        self.content_object_repr = str(self.content_object)
+        self.save(update_fields=('used', 'updated_at', 'content_object_repr'))
     
     def monitor(self, async=False):
         ids = (self.object_id,)
@@ -231,7 +234,6 @@ class ResourceData(models.Model):
     
     def get_monitor_datasets(self):
         resource = self.resource
-        datasets = []
         for monitor in resource.monitors:
             path = resource.get_model_path(monitor)
             if path == []:
@@ -251,8 +253,7 @@ class ResourceData(models.Model):
                     content_type=ct,
                     object_id__in=pks,
                 )
-            datasets.append(dataset)
-        return datasets
+            yield monitor, dataset
 
 
 class MonitorDataQuerySet(models.QuerySet):
@@ -262,11 +263,13 @@ class MonitorDataQuerySet(models.QuerySet):
 class MonitorData(models.Model):
     """ Stores monitored data """
     monitor = models.CharField(_("monitor"), max_length=256,
-            choices=ServiceMonitor.get_choices())
+        choices=ServiceMonitor.get_choices())
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
     object_id = models.PositiveIntegerField(_("object id"))
     created_at = models.DateTimeField(_("created"), default=timezone.now)
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
+    content_object_repr = models.CharField(_("content object representation"), max_length=256,
+        editable=False)
     
     content_object = GenericForeignKey()
     objects = MonitorDataQuerySet.as_manager()
@@ -295,7 +298,7 @@ def create_resource_relation():
             except KeyError:
                 pass
             try:
-                data = self.obj.resource_set.get(resource__name=attr)
+                rdata = self.obj.resource_set.get(resource__name=attr)
             except ResourceData.DoesNotExist:
                 model = self.obj._meta.model_name
                 resource = Resource.objects.get(
@@ -303,13 +306,13 @@ def create_resource_relation():
                     name=attr,
                     is_active=True
                 )
-                data = ResourceData(
+                rdata = ResourceData(
                     content_object=self.obj,
                     resource=resource,
                     allocated=resource.default_allocation
                 )
-            self.obj.__resource_cache[attr] = data
-            return data
+            self.obj.__resource_cache[attr] = rdata
+            return rdata
         
         def __get__(self, obj, cls):
             """ proxy handled object """

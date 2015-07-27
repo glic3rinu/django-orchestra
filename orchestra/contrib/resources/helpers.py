@@ -34,7 +34,7 @@ def get_history_data(queryset):
                     serie = {}
                     for data in datas:
                         date = date_filter(data.date)
-                        value = round(float(data.value or 0)/scale, 2)
+                        value = round(float(data.value)/scale, 3) if data.value is not None else None
                         all_dates.add(date)
                         serie[date] = value
                 else:
@@ -42,7 +42,7 @@ def get_history_data(queryset):
                     for data in datas:
                         date = data.created_at.timestamp()
                         date = int(str(date).split('.')[0] + '000')
-                        value = round(float(data.value or 0)/scale, 2)
+                        value = round(float(data.value)/scale, 3) if data.value is not None else None
                         serie.append(
                             (date, value)
                         )

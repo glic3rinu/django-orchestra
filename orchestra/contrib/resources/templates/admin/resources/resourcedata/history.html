@@ -46,7 +46,6 @@
                 });
              },
             columns: function (div, i, seriesOptions, resource){
-                console.log(div);
                 $(div).highcharts({
                     chart: {
                         type: 'column',
@@ -68,6 +67,9 @@
                             style: {
                                 fontWeight: 'bold',
                                 color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                            },
+                            formatter: function () {
+                                return this.total + ' ' + resource['unit'];
                             }
                         }
                     },
@@ -85,8 +87,8 @@
                     tooltip: {
                         formatter: function () {
                             return '<b>' + this.x + '</b><br/>' +
-                                this.series.name + ': ' + this.y.toFixed(2) + ' ' + resource['unit'] + '<br/>' +
-                                'Total: ' + this.point.stackTotal.toFixed(2) + ' ' + resource['unit'];
+                                this.series.name + ': ' + this.y.toFixed(3) + ' ' + resource['unit'] + '<br/>' +
+                                'Total: ' + this.point.stackTotal.toFixed(3) + ' ' + resource['unit'];
                         }
                     },
                     plotOptions: {
@@ -99,7 +101,7 @@
                                     textShadow: '0 0 3px black'
                                 },
                                 formatter: function () {
-                                    return this.series.name + ': ' + this.y.toFixed(2) + ' ' + resource['unit'];
+                                    return this.series.name + ': ' + this.y.toFixed(3) + ' ' + resource['unit'];
                                 }
                             }
                         }

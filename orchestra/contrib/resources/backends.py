@@ -71,7 +71,7 @@ class ServiceMonitor(ServiceBackend):
                 raise ValueError("%s expected '<id> <value>' got '%s'" % (cls_name, line))
             if isinstance(value, bytes):
                 value = value.decode('ascii')
-            content_object = get_object_for_this_type(pk=object_id)
+            content_object = ct.get_object_for_this_type(pk=object_id)
             MonitorData.objects.create(
                 monitor=name, object_id=object_id, content_type=ct, value=value,
                 created_at=self.current_date, content_object_repr=str(content_object),

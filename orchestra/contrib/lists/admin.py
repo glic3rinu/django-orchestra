@@ -64,6 +64,12 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
             url(r'^(\d+)/password/$',
                 self.admin_site.admin_view(useradmin.user_change_password))
         ] + super(ListAdmin, self).get_urls()
+    
+    def save_model(self, request, obj, form, change):
+        """ set password """
+        if not change:
+            obj.set_password(form.cleaned_data["password1"])
+        super(ListAdmin, self).save_model(request, obj, form, change)
 
 
 admin.site.register(List, ListAdmin)

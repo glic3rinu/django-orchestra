@@ -82,13 +82,10 @@ class LinkHeaderRouter(DefaultRouter):
     def insert(self, prefix_or_model, name, field, **kwargs):
         """ Dynamically add new fields to an existing serializer """
         viewset = self.get_viewset(prefix_or_model)
-#        setattr(viewset, 'inserted', getattr(viewset, 'inserted', []))
         if viewset.serializer_class is None:
             viewset.serializer_class = viewset().get_serializer_class()
         viewset.serializer_class._declared_fields.update({name: field(**kwargs)})
-#        if not name in viewset.inserted:
         viewset.serializer_class.Meta.fields += (name,)
-#            viewset.inserted.append(name)
 
 
 # Create a router and register our viewsets with it.

@@ -167,8 +167,8 @@ class Resource(models.Model):
 class ResourceData(models.Model):
     """ Stores computed resource usage and allocation """
     resource = models.ForeignKey(Resource, related_name='dataset', verbose_name=_("resource"))
-    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
-    object_id = models.PositiveIntegerField(_("object id"))
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"), db_index=True)
+    object_id = models.PositiveIntegerField(_("object id"), db_index=True)
     used = models.DecimalField(_("used"), max_digits=16, decimal_places=3, null=True,
         editable=False)
     updated_at = models.DateTimeField(_("updated"), null=True, editable=False)
@@ -262,11 +262,11 @@ class MonitorDataQuerySet(models.QuerySet):
 
 class MonitorData(models.Model):
     """ Stores monitored data """
-    monitor = models.CharField(_("monitor"), max_length=256,
+    monitor = models.CharField(_("monitor"), max_length=256, db_index=True,
         choices=ServiceMonitor.get_choices())
-    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
-    object_id = models.PositiveIntegerField(_("object id"))
-    created_at = models.DateTimeField(_("created"), default=timezone.now)
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"), db_index=True)
+    object_id = models.PositiveIntegerField(_("object id"), db_index=True)
+    created_at = models.DateTimeField(_("created"), default=timezone.now, db_index=True)
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     content_object_repr = models.CharField(_("content object representation"), max_length=256,
         editable=False)

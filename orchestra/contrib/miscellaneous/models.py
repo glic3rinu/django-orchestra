@@ -39,7 +39,7 @@ class Miscellaneous(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
         related_name='miscellaneous')
     identifier = NullableCharField(_("identifier"), max_length=256, null=True, unique=True,
-        help_text=_("A unique identifier for this service."))
+        db_index=True, help_text=_("A unique identifier for this service."))
     description = models.TextField(_("description"), blank=True)
     amount = models.PositiveIntegerField(_("amount"), default=1)
     is_active = models.BooleanField(_("active"), default=True,

@@ -400,8 +400,6 @@ serailzer self.instance on create.
 
 * backendLog store method and language... and use it for display_script with correct lexer
 
-# Compute Resource Data history from Monitor Data.
-
 @register.filter
 def comma(value):
     value = str(value)
@@ -431,13 +429,11 @@ Case
 # pre-bill confirmation: remove account if lines.count() == 0 ?
 
 # Discount prepaid metric should be more optimal https://orchestra.pangea.org/admin/orders/order/40/
+#   -> order.billed_metric besides billed_until
+
+# USE CONTROLLED MONITOR GRAPHS
+# graph metric storage
+# CLEANUP MONITOR DATA 0.00 (from SUM aggregators, AVG are needed for maintaining state), maybe also aggregate older values
+# MULTIPLE GRAPH TYPE: datapoint line chart for AVG, stacked for SUM())
 
 
-# Resource history, show backend+content_object accumulation stacked bar chart
-# Resource consumption summary: combine selected rather than make individual summaries
-# Search on resource consumption (store content_object str)
-# monitor data value convert to scale and include units and title="data.value"
-# resource history merge multiple monitors, split in multiple graphs different resources and account aggregated resource if multiple objects are selected
-
-
-# order.billed_metric besides billed_until

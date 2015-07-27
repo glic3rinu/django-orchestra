@@ -5,32 +5,63 @@
     <title>Resource history</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <script src="{% static "admin/js/jquery.js" %}" type="text/javascript"></script>
-    <script src="{% static "orchestra/js/highcharts/highcharts.js" %}" type="text/javascript"></script>
+    <script src="{% static "orchestra/js/highcharts/stock/highstock.js" %}" type="text/javascript"></script>
     <script src="{% static "orchestra/js/highcharts/modules/exporting.js" %}" type="text/javascript"></script>
     <script>
-    {% for resource, objects, totals, dates in resources %}
-        {% if totals %}
-            $(function () {
-                var title = '{{ resource.aggregation_instance.verbose_name }} {{ resource.content_type }} {{ resource.verbose_name.lower }}';
-                var container = '{{ resource.id }}-totals';
-                var series = {{ totals|as_json }};
-                var dates = {{ dates|as_json }};
-                var unit = '{{ resource.unit }}';
-                $('#'+container).highcharts({
+    
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+    function plot_charts(url) {
+        charts = {
+            series: function (div, i, seriesOptions, resource) {
+                $(div).highcharts('StockChart', {
                     chart: {
-                        type: 'column',
-                        backgroundColor: "{% if forloop.counter|divisibleby:2 %}#EDF3FE{% else %}#FFFFFF{% endif %}"
+                        backgroundColor: (i % 2 ? "#EDF3FE" : "#FFFFFF")
+                    },
+                    rangeSelector: {
+                        selected: 4
                     },
                     title: {
-                        text: title
+                        text: resource['verbose_name'] + ' ' + resource['content_type'] + ' ' + resource['aggregation'] + (div.indexOf('aggregate') > 0 ? ' (aggregated)': '')
+                    },
+                    yAxis: {
+                        labels: {
+                            formatter: function () {
+                                return this.value + ' ' + resource['unit'];
+                            }
+                        },
+                        plotLines: [{
+                            value: 0,
+                            width: 2,
+                            color: 'silver'
+                        }],
+                        min: 0,
+                    },
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} '+resource['unit']+ '</b><br/>',
+                        valueDecimals: 2
+                    },
+                    series: seriesOptions
+                });
+             },
+            columns: function (div, i, seriesOptions, resource){
+                console.log(div);
+                $(div).highcharts({
+                    chart: {
+                        type: 'column',
+                        backgroundColor: (i % 2 ? "#EDF3FE" : "#FFFFFF")
+                    },
+                    title: {
+                        text: resource['verbose_name'] + ' ' + resource['content_type'] + ' ' + resource['aggregation'] + (div.indexOf('aggregate') > 0 ? ' (aggregated)': '')
                     },
                     xAxis: {
-                        categories: dates
+                        categories: resource['dates']
                     },
                     yAxis: {
                         min: 0,
                         title: {
-                            text: unit
+                            text: resource['unit']
                         },
                         stackLabels: {
                             enabled: true,
@@ -54,8 +85,8 @@
                     tooltip: {
                         formatter: function () {
                             return '<b>' + this.x + '</b><br/>' +
-                                this.series.name + ': ' + this.y + ' ' + unit + '<br/>' +
-                                'Total: ' + this.point.stackTotal + ' ' + unit;
+                                this.series.name + ': ' + this.y.toFixed(2) + ' ' + resource['unit'] + '<br/>' +
+                                'Total: ' + this.point.stackTotal.toFixed(2) + ' ' + resource['unit'];
                         }
                     },
                     plotOptions: {
@@ -68,84 +99,79 @@
                                     textShadow: '0 0 3px black'
                                 },
                                 formatter: function () {
-                                    return this.series.name + ': ' + this.y + ' ' + unit;
+                                    return this.series.name + ': ' + this.y.toFixed(2) + ' ' + resource['unit'];
                                 }
                             }
                         }
                     },
-                    series: series
-                });
-            });
-        {% endif %}
-        $(function () {
-            var title = '{{ resource.aggregation_instance.verbose_name }} {{ resource.content_type }} {{ resource.verbose_name.lower }} (detail)';
-            var container = '{{ resource.id }}-objects';
-            var series = {{ objects|as_json }};
-            var dates = {{ dates|as_json }};
-            var unit = '{{ resource.unit }}';
-            $('#'+container).highcharts({
-                chart: {
-                    type: 'column',
-                    backgroundColor: "{% if forloop.counter|divisibleby:2 %}#EDF3FE{% else %}#FFFFFF{% endif %}"
-                },
-                title: {
-                    text: title
-                },
-                xAxis: {
-                    categories: dates
-                },
-                yAxis: {
-                    min: 0,
-                    title: {
-                        text: unit
-                    },
-                    stackLabels: {
-                        enabled: true,
-                        formatter: function () { return this.total + ' ' + unit; },
-                        style: {
-                            fontWeight: 'bold',
-                            color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-                        }
-                    }
-                },
-                legend: {
-                    align: 'right',
-                    x: -30,
-                    verticalAlign: 'top',
-                    y: 25,
-                    floating: true,
-                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
-                    borderColor: '#CCC',
-                    borderWidth: 1,
-                    shadow: false
-                },
-                tooltip: {
-                    formatter: function () {
-                        return '<b>' + this.x + '</b><br/>' +
-                            this.series.name + ': ' + this.y + ' ' + unit + '<br/>' +
-                            'Total: ' + this.point.stackTotal + ' ' + unit;
-                    }
-                },
-                plotOptions: {
-                    column: {
-                        stacking: 'normal',
-                        dataLabels: {
-                            enabled: true,
-                            color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-                            style: {
-                                textShadow: '0 0 3px black'
-                            },
-                            formatter: function () {
-                                return this.series.name + ': ' + this.y + ' ' + unit;
-                            }
-                        }
-                    }
-                },
-                series: series
-            });
+                    series: seriesOptions
+                })
+            }
+        };
+        
+        $.getJSON(url, function(data) {
+            var dataLength = data.length;
+            $("#charts").empty();
+            for (i=0; i < dataLength; i++) {
+                var index = 0;
+                var seriesOptions = [];
+                var resource = data[i];
+                var objects = resource["objects"];
+                var objectsLength = objects.length;
+                var a_index = 0;
+                var aggregated = false;
+                var aggregates = []
+                for (j=0; j < objectsLength; j++) {
+                    aggregate = [];
+                    var object = objects[j];
+                    var monitors = object["monitors"];
+                    var monitorsLength = monitors.length;
+                    for (k=0; k < monitorsLength; k++) {
+                        var datasets = monitors[k]['datasets'];
+                        if (resource['aggregated_history']) {
+                            var datasetsLength = datasets.length;
+                            for (l=0; l < datasetsLength; l++) {
+                                seriesOptions.push(datasets[l]);
+                                for (m=0; m < resource['dates'].length; m++) {
+                                    aggregate[m] = ((aggregate[m] || 0 ) + datasets[l]['data'][m]);
+                                };
+                            };
+                        } else {
+                            for (var object_name in datasets) {
+                                seriesOptions[index] = {
+                                    name: object_name,
+                                    data: datasets[object_name]
+                                };
+                                index += 1;
+                            };
+                        };
+                    };
+                    if (k > 1)
+                        aggregated = true;
+                    aggregates[a_index] = {
+                        name: object['object_name'],
+                        data: aggregate
+                    };
+                    a_index += 1;
+                };
+                
+                divs = (
+                    '<div style="background: '+(i % 2 ? "#EDF3FE" : "#FFFFFF")+'; margin-bottom: -1px; border: 1px solid grey; padding: 10px;">' +
+                    '<h1>'+resource['content_type'].capitalize() + ' ' + resource['verbose_name'].toLowerCase() + '</h1>' +
+                    '<div id="resource-'+i+'" style="height: 400px; min-width: 310px"></div>'
+                );
+                if (a_index > 1 && aggregated && resource['aggregated_history'])
+                    divs += '<br><div id="resource-'+i+'-aggregate" style="height: 400px; min-width: 310px"></div>';
+                divs += '</div>';
+                
+                $("#charts").append(divs);
+                if (a_index > 1 && aggregated && resource['aggregated_history'])
+                    charts['columns']('#resource-'+i+'-aggregate', i, aggregates, resource);
+                charts[(resource['aggregated_history'] ? 'columns': 'series')]('#resource-'+i, i, seriesOptions, resource);
+            };
         });
-
-    {% endfor %}
+    };
+    plot_charts("{% url 'admin:resources_resourcedata_history_data' %}?ids={{ ids }}");
     </script>
     <style type="text/css">
     @page {
@@ -183,17 +209,8 @@
     </style>
 </head>
 <body>
-    {% for resource, __, totals, __ in resources %}
-    <div style="background: {% if forloop.counter|divisibleby:2 %}#EDF3FE{% else %}#FFFFFF{% endif %}; margin-bottom: -1px; border: 1px solid grey">
-    <div style="padding: 10px">
-    <h1>{{ resource.content_type|capfirst }} {{ resource.verbose_name.lower }}<h1>
-    {% if totals %}
-        <div id="{{ resource.id }}-totals" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-        <br>
-    {% endif %}
-    <div id="{{ resource.id }}-objects" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+    <div id="charts">
+    Crunching data ...
     </div>
-    </div>
-    {% endfor %}
 </body>
 </html>

@@ -56,7 +56,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     inlines = (RecordInline, DomainInline)
     list_filter = (TopDomainListFilter,)
     change_readonly_fields = ('name', 'serial')
-    search_fields = ('name', 'account__username')
+    search_fields = ('name', 'account__username', 'records__value')
     add_form = BatchDomainCreationAdminForm
     actions = (edit_records, set_soa, list_accounts)
     change_view_actions = (view_zone, edit_records)

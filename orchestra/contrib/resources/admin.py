@@ -19,6 +19,7 @@ from orchestra.utils import db, sys
 from orchestra.utils.functional import cached
 
 from .actions import run_monitor, history
+from .api import history_data
 from .filters import ResourceDataListFilter
 from .forms import ResourceForm
 from .models import Resource, ResourceData, MonitorData
@@ -109,13 +110,13 @@ content_object_link.allow_tags = True
 
 class ResourceDataAdmin(ExtendedModelAdmin):
     list_display = (
-        'id', 'resource_link', content_object_link, 'allocated', 'display_used', 'display_unit',
+        'id', 'resource_link', content_object_link, 'allocated', 'display_used',
         'display_updated'
     )
     list_filter = ('resource',)
     fields = (
         'resource_link', 'content_type', content_object_link, 'display_updated', 'display_used',
-        'allocated', 'display_unit'
+        'allocated',
     )
     search_fields = ('content_object_repr',)
     readonly_fields = fields
@@ -137,22 +138,21 @@ class ResourceDataAdmin(ExtendedModelAdmin):
                 admin_site.admin_view(self.used_monitordata_view),
                 name='%s_%s_used_monitordata' % (opts.app_label, opts.model_name)
             ),
+            url('^history_data/$',
+                admin_site.admin_view(history_data),
+                name='%s_%s_history_data' % (opts.app_label, opts.model_name)
+            ),
             url('^list-related/(.+)/(.+)/(\d+)/$',
                 admin_site.admin_view(self.list_related_view),
                 name='%s_%s_list_related' % (opts.app_label, opts.model_name)
             ),
         ] + urls
     
-    def display_unit(self, rdata):
-        return rdata.unit
-    display_unit.short_description = _("Unit")
-    display_unit.admin_order_field = 'resource__unit'
-    
     def display_used(self, rdata):
         if rdata.used is None:
             return ''
         url = reverse('admin:resources_resourcedata_used_monitordata', args=(rdata.pk,))
-        return '<a href="%s">%s</a>' % (url, rdata.used)
+        return '<a href="%s">%s %s</a>' % (url, rdata.used, rdata.unit)
     display_used.short_description = _("Used")
     display_used.admin_order_field = 'used'
     display_used.allow_tags = True
@@ -194,7 +194,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
 
 
 class MonitorDataAdmin(ExtendedModelAdmin):
-    list_display = ('id', 'monitor', 'display_created', 'value', content_object_link)
+    list_display = ('id', 'monitor', content_object_link, 'display_created', 'value')
     list_filter = ('monitor', ResourceDataListFilter)
     add_fields = ('monitor', 'content_type', 'object_id', 'created_at', 'value')
     fields = ('monitor', 'content_type', content_object_link, 'display_created', 'value')

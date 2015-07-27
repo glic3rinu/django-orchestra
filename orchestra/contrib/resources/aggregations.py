@@ -6,25 +6,24 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.utils.python import AttrDict
+
 from orchestra import plugins
 
 
 class Aggregation(plugins.Plugin, metaclass=plugins.PluginMount):
     """ filters and computes dataset usage """
+    aggregated_history = False
+    
     def filter(self, dataset):
         """ Filter the dataset to get the relevant data according to the period """
-        raise NotImplementedError
-    
-    def historic_filter(self, dataset):
-        """ Generates (date, dataset) tuples for resource data history reporting """
         raise NotImplementedError
     
     def compute_usage(self, dataset):
         """ given a dataset computes its usage according to the method (avg, sum, ...) """
         raise NotImplementedError
     
-    def compute_historic_usage(self, dataset):
-        """ generates [(data, usage),] tuples for resource data history reporting """
+    def aggregate_history(self, dataset):
         raise NotImplementedError
 
 
@@ -39,42 +38,32 @@ class Last(Aggregation):
             dataset = dataset.filter(created_at__lte=date)
         return dataset
     
-    def monthly_historic_filter(self, dataset):
-        today = timezone.now().date()
-        date = datetime.date(
-            year=today.year,
-            month=today.month,
-            day=1,
-        )
-        while True:
-            dataset_copy = copy.copy(dataset)
-            dataset_copy = self.filter(dataset_copy, date=date)
-            try:
-                dataset_copy[0]
-            except IndexError:
-                yield (date, None)
-            yield (date, dataset_copy)
-            date -= relativedelta(months=1)
-    
-    def historic_filter(self, dataset):
-        yield (timezone.now().date(), self.filter(dataset))
-        yield from self.monthly_historic_filter(dataset)
-    
     def compute_usage(self, dataset):
         values = dataset.values_list('value', flat=True)
         if values:
             return sum(values)
         return None
     
-    def compute_historic_usage(self, dataset):
-        dataset = dataset.only('object_id', 'value', 'content_object_repr')
-        return [(mdata, mdata.value) for mdata in dataset]
+    def aggregate_history(self, dataset):
+        prev_object_id = None
+        for mdata in dataset.order_by('object_id', 'created_at'):
+            object_id = mdata.object_id
+            if object_id != prev_object_id:
+                if prev_object_id is not None:
+                    yield (mdata.content_object_repr, datas)
+                datas = [mdata]
+            else:
+                datas.append(mdata)
+            prev_object_id = object_id
+        if prev_object_id is not None:
+            yield (mdata.content_object_repr, datas)
 
 
 class MonthlySum(Last):
     """ Monthly sum the values of all monitors """
     name = 'monthly-sum'
     verbose_name = _("Monthly Sum")
+    aggregated_history = True
     
     def filter(self, dataset, date=None):
         if date is None:
@@ -84,25 +73,45 @@ class MonthlySum(Last):
             created_at__month=date.month,
         )
     
-    def historic_filter(self, dataset):
-        yield from self.monthly_historic_filter(dataset)
-    
-    def compute_historic_usage(self, dataset):
-        objects = {}
-        mdatas = {}
-        for mdata in dataset.only('object_id', 'value', 'content_object_repr'):
-            mdatas[mdata.object_id] = mdata
-            try:
-                objects[mdata.object_id] += mdata.value
-            except KeyError:
-                objects[mdata.object_id] = mdata.value
-        return [(mdatas[object_id], value) for object_id, value in objects.items()]
+    def aggregate_history(self, dataset):
+        make_data = lambda mdata, current: AttrDict(
+            date=datetime.date(
+                year=mdata.created_at.year,
+                month=mdata.created_at.month,
+                day=1
+            ),
+            value=current,
+            content_object_repr=mdata.content_object_repr
+        )
+        
+        prev_month = None
+        prev_object_id = None
+        datas = []
+        for mdata in dataset.order_by('object_id', 'created_at'):
+            object_id = mdata.object_id
+            if object_id != prev_object_id:
+                if prev_object_id is not None:
+                    yield (mdata.content_object_repr, datas)
+                datas = []
+            month = mdata.created_at.month
+            if object_id != prev_object_id or month != prev_month:
+                if prev_month is not None:
+                    datas.append(make_data(mdata, current))
+                current = mdata.value
+            else:
+                current += mdata.value
+            prev_month = month
+            prev_object_id = object_id
+        if prev_object_id is not None:
+            datas.append(make_data(mdata, current))
+            yield (mdata.content_object_repr, datas)
 
 
 class MonthlyAvg(MonthlySum):
     """ sum of the monthly averages of each monitor """
     name = 'monthly-avg'
     verbose_name = _("Monthly AVG")
+    aggregated_history = False
     
     def get_epoch(self, date=None):
         if date is None:
@@ -143,8 +152,8 @@ class MonthlyAvg(MonthlySum):
             return result
         return None
     
-    def compute_historic_usage(self, dataset):
-        return self.compute_usage(dataset, historic=True)
+    def aggregate_history(self, dataset):
+        yield from super(MonthlySum, self).aggregate_history(dataset)
 
 
 class Last10DaysAvg(MonthlyAvg):
@@ -164,7 +173,3 @@ class Last10DaysAvg(MonthlyAvg):
         if date is not None:
             dataset = dataset.filter(created_at__lte=date)
         return dataset
-    
-    def historic_filter(self, dataset):
-        yield (timezone.now().date(), self.filter(dataset))
-        yield from super(Last10DaysAvg, self).historic_filter(dataset)

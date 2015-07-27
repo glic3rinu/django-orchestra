@@ -114,6 +114,7 @@ class Order(models.Model):
         related_name='orders')
     registered_on = models.DateField(_("registered"), default=timezone.now, db_index=True)
     cancelled_on = models.DateField(_("cancelled"), null=True, blank=True)
+    # TODO billed metric
     billed_on = models.DateField(_("billed"), null=True, blank=True)
     billed_until = models.DateField(_("billed until"), null=True, blank=True)
     ignore = models.BooleanField(_("ignore"), default=False)

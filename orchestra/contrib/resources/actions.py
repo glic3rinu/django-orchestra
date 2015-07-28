@@ -42,9 +42,8 @@ def run_monitor(modeladmin, request, queryset):
 run_monitor.url_name = 'monitor'
 
 
-def history(modeladmin, request, queryset):
+def show_history(modeladmin, request, queryset):
     context = {
         'ids': ','.join(map(str, queryset.values_list('id', flat=True))),
     }
     return render(request, 'admin/resources/resourcedata/history.html', context)
-history.url_name = 'history'

@@ -1,4 +1,4 @@
-from django.template.defaultfilters import date as date_filter
+from django.template.defaultfilters import date as date_format
 
 
 def get_history_data(queryset):
@@ -18,7 +18,7 @@ def get_history_data(queryset):
                 'unit': resource.unit,
                 'scale': resource.get_scale(),
                 'verbose_name': str(resource.verbose_name),
-                'dates': set(),
+                'dates': set() if aggregation.aggregated_history else None,
                 'objects': [],
             }
             resources[resource] = (options, aggregation)
@@ -33,10 +33,9 @@ def get_history_data(queryset):
                     needs_aggregation = True
                     serie = {}
                     for data in datas:
-                        date = date_filter(data.date)
                         value = round(float(data.value)/scale, 3) if data.value is not None else None
-                        all_dates.add(date)
-                        serie[date] = value
+                        all_dates.add(data.date)
+                        serie[data.date] = value
                 else:
                     serie = []
                     for data in datas:
@@ -62,7 +61,8 @@ def get_history_data(queryset):
         result = []
         for options, aggregation in resources.values():
             if aggregation.aggregated_history:
-                all_dates = options['dates']
+                all_dates = sorted(options['dates'])
+                options['dates'] = [date_format(date) for date in all_dates]
                 for obj in options['objects']:
                     for monitor in obj['monitors']:
                         series = []

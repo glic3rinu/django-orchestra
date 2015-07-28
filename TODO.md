@@ -365,7 +365,6 @@ method(
     arg, arg, arg)
 
 
-
 Bash/Python/PHPBackend
 
 # services.handler as generator in order to save memory? not swell like a balloon
@@ -384,8 +383,6 @@ kill -HUP `cat /tmp/project-master.pid`
 uwsgi --reload /tmp/project-master.pid
 # or if uwsgi was started with touch-reload=/tmp/somefile
 touch /tmp/somefile
-
-# batch zone edditing
 
 # datetime metric storage granularity: otherwise innacurate detection of billed metric on order.billed_on
 
@@ -422,18 +419,10 @@ Case
 
 # case on payment transaction state ? case when trans.amount > 
 
-# Resource data inline show info: link to monitor data, and history chart: link to monitor data of each item
-
+# Resource inline links point to custom changelist view that preserve state (breadcrumbs, title, etc) rather than generic changeview with queryarg filtering
 
 # ORDER diff Pending vs ALL
 # pre-bill confirmation: remove account if lines.count() == 0 ?
 
 # Discount prepaid metric should be more optimal https://orchestra.pangea.org/admin/orders/order/40/
 #   -> order.billed_metric besides billed_until
-
-# USE CONTROLLED MONITOR GRAPHS
-# graph metric storage
-# CLEANUP MONITOR DATA 0.00 (from SUM aggregators, AVG are needed for maintaining state), maybe also aggregate older values
-# MULTIPLE GRAPH TYPE: datapoint line chart for AVG, stacked for SUM())
-
-

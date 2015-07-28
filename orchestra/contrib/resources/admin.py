@@ -1,12 +1,15 @@
 from urllib.parse import parse_qs
 
+from django.apps import apps
 from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.admin.utils import unquote
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.shortcuts import redirect
+from django.templatetags.static import static
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
@@ -18,7 +21,7 @@ from orchestra.core import services
 from orchestra.utils import db, sys
 from orchestra.utils.functional import cached
 
-from .actions import run_monitor, history
+from .actions import run_monitor, show_history
 from .api import history_data
 from .filters import ResourceDataListFilter
 from .forms import ResourceForm
@@ -120,7 +123,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
     )
     search_fields = ('content_object_repr',)
     readonly_fields = fields
-    actions = (run_monitor, history)
+    actions = (run_monitor, show_history)
     change_view_actions = actions
     ordering = ('-updated_at',)
     list_select_related = ('resource__content_type', 'content_type')
@@ -166,15 +169,13 @@ class ResourceDataAdmin(ExtendedModelAdmin):
         return redirect(url)
     
     def list_related_view(self, request, app_name, model_name, object_id):
-        from django.apps import apps
-        from django.db.models import Q
         resources = Resource.objects.select_related('content_type')
         resource_models = {r.content_type.model_class(): r.content_type_id for r in resources}
         # Self
         model = apps.get_model(app_name, model_name)
         obj = model.objects.get(id=int(object_id))
         ct_id = resource_models[model]
-        qset = Q(content_type_id=ct_id, object_id=obj.id)
+        qset = Q(content_type_id=ct_id, object_id=obj.id, resource__is_active=True)
         # Related
         for field, rel in obj._meta.fields_map.items():
             try:
@@ -184,7 +185,7 @@ class ResourceDataAdmin(ExtendedModelAdmin):
             else:
                 manager = getattr(obj, field)
                 ids = manager.values_list('id', flat=True)
-                qset = Q(qset) | Q(content_type_id=ct_id, object_id__in=ids)
+                qset = Q(qset) | Q(content_type_id=ct_id, object_id__in=ids, resource__is_active=True)
         related = ResourceData.objects.filter(qset)
         related_ids = related.values_list('id', flat=True)
         related_ids = ','.join(map(str, related_ids))
@@ -211,7 +212,7 @@ class MonitorDataAdmin(ExtendedModelAdmin):
             mdata = ResourceData.objects.get(pk=int(resource_data[0]))
             resource = mdata.resource
             ids = []
-            for dataset in mdata.get_monitor_datasets():
+            for monitor, dataset in mdata.get_monitor_datasets():
                 dataset = resource.aggregation_instance.filter(dataset)
                 if isinstance(dataset, MonitorData):
                     ids.append(dataset.id)
@@ -302,9 +303,8 @@ def resource_inline_factory(resources):
             return super(ResourceInline, self).get_fieldsets(request, obj)
         
         def display_used(self, rdata):
-            from django.templatetags.static import static
-            update_link = ''
-            history_link = ''
+            update = ''
+            history = ''
             if rdata.pk:
                 context = {
                     'title': _("Update"),
@@ -315,13 +315,15 @@ def resource_inline_factory(resources):
                 context.update({
                     'title': _("Show history"),
                     'image': '<img src="%s"></img>' % static('orchestra/images/history.png'),
-                    'url': reverse('admin:resources_resourcedata_history', args=(rdata.pk,)),
+                    'url': reverse('admin:resources_resourcedata_show_history', args=(rdata.pk,)),
                     'popup': 'onclick="return showAddAnotherPopup(this);"',
                 })
                 history = '<a href="%(url)s" title="%(title)s" %(popup)s>%(image)s</a>' % context
             if rdata.used is not None:
-                return ' '.join(map(str, (rdata.used, rdata.resource.unit, update, history)))
-            return _("Unknonw %s") % update_link
+                used_url = reverse('admin:resources_resourcedata_used_monitordata', args=(rdata.pk,))
+                used =  '<a href="%s">%s %s</a>' % (used_url, rdata.used, rdata.unit)
+                return ' '.join(map(str, (used, update, history)))
+            return _("Unknonw %s %s") % (update, history)
         display_used.short_description = _("Used")
         display_used.allow_tags = True
         

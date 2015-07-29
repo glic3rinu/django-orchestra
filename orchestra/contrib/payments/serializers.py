@@ -11,13 +11,15 @@ class PaymentSourceSerializer(AccountSerializerMixin, serializers.HyperlinkedMod
         model = PaymentSource
         fields = ('url', 'id', 'method', 'data', 'is_active')
     
-    def validate_data(self, attrs, source):
-        plugin = PaymentMethod.get(attrs['method'])
+    def validate(self, data):
+        """ validate data according to method """
+        data = super(PaymentSourceSerializer, self).validate(data)
+        plugin = PaymentMethod.get(data['method'])
         serializer_class = plugin().get_serializer()
-        serializer = serializer_class(data=attrs[source])
+        serializer = serializer_class(data=data['data'])
         if not serializer.is_valid():
             raise serializers.ValidationError(serializer.errors)
-        return attrs
+        return data
     
     def transform_data(self, obj, value):
         if not obj:

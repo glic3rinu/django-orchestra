@@ -84,12 +84,13 @@ class SiteDirective(Plugin):
         if errors:
             raise ValidationError(errors)
     
-    def validate(self, website):
-        if self.regex and not re.match(self.regex, website.value):
+    def validate(self, directive):
+        directive.value = directive.value.strip()
+        if self.regex and not re.match(self.regex, directive.value):
             raise ValidationError({
                 'value': ValidationError(_("'%(value)s' does not match %(regex)s."),
                     params={
-                        'value': website.value,
+                        'value': directive.value,
                         'regex': self.regex
                     }),
             })
@@ -99,20 +100,25 @@ class Redirect(SiteDirective):
     name = 'redirect'
     verbose_name = _("Redirection")
     help_text = _("<tt>&lt;website path&gt; &lt;destination URL&gt;</tt>")
-    regex = r'^[^ ]+\s[^ ]+$'
+    regex = r'^[^ ]*\s[^ ]+$'
     group = SiteDirective.HTTPD
     unique_value = True
     unique_location = True
+    
+    def validate(self, directive):
+        """ inserts default url path if not provided """
+        values = directive.value.strip().split()
+        if len(values) == 1:
+            values.insert(0, '/')
+        directive.value = ' '.join(values)
+        super(Redirect, self).validate(directive)
 
 
-class Proxy(SiteDirective):
+class Proxy(Redirect):
     name = 'proxy'
     verbose_name = _("Proxy")
     help_text = _("<tt>&lt;website path&gt; &lt;target URL&gt;</tt>")
     regex = r'^[^ ]+\shttp[^ ]+(timeout=[0-9]{1,3}|retry=[0-9]|\s)*$'
-    group = SiteDirective.HTTPD
-    unique_value = True
-    unique_location = True
 
 
 class ErrorDocument(SiteDirective):
@@ -132,27 +138,21 @@ class SSLCA(SiteDirective):
     name = 'ssl-ca'
     verbose_name = _("SSL CA")
     help_text = _("Filesystem path of the CA certificate file.")
-    regex = r'^[^ ]+$'
+    regex = r'^/[^ ]+$'
     group = SiteDirective.SSL
     unique_name = True
 
 
-class SSLCert(SiteDirective):
+class SSLCert(SSLCA):
     name = 'ssl-cert'
     verbose_name = _("SSL cert")
     help_text = _("Filesystem path of the certificate file.")
-    regex = r'^[^ ]+$'
-    group = SiteDirective.SSL
-    unique_name = True
 
 
-class SSLKey(SiteDirective):
+class SSLKey(SSLCA):
     name = 'ssl-key'
     verbose_name = _("SSL key")
     help_text = _("Filesystem path of the key file.")
-    regex = r'^[^ ]+$'
-    group = SiteDirective.SSL
-    unique_name = True
 
 
 class SecRuleRemove(SiteDirective):
@@ -164,13 +164,11 @@ class SecRuleRemove(SiteDirective):
     unique_location = True
 
 
-class SecEngine(SiteDirective):
+class SecEngine(SecRuleRemove):
     name = 'sec-engine'
     verbose_name = _("SecRuleEngine Off")
     help_text = _("URL path with disabled modsecurity engine.")
     regex = r'^/[^ ]*$'
-    group = SiteDirective.SEC
-    unique_value = True
 
 
 class WordPressSaaS(SiteDirective):
@@ -183,21 +181,13 @@ class WordPressSaaS(SiteDirective):
     unique_location = True
 
 
-class DokuWikiSaaS(SiteDirective):
+class DokuWikiSaaS(WordPressSaaS):
     name = 'dokuwiki-saas'
     verbose_name = "DokuWiki SaaS"
     help_text = _("URL path for mounting wordpress multisite.")
-    group = SiteDirective.SAAS
-    regex = r'^/[^ ]*$'
-    unique_value = True
-    unique_location = True
 
 
-class DrupalSaaS(SiteDirective):
+class DrupalSaaS(WordPressSaaS):
     name = 'drupal-saas'
     verbose_name = "Drupdal SaaS"
     help_text = _("URL path for mounting wordpress multisite.")
-    group = SiteDirective.SAAS
-    regex = r'^/[^ ]*$'
-    unique_value = True
-    unique_location = True

@@ -34,13 +34,11 @@ class ListSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):
         fields = ('url', 'id', 'name', 'password', 'address_name', 'address_domain', 'admin_email')
         postonly_fields = ('name', 'password')
     
-    def validate_address_domain(self, attrs, source):
-        address_domain = attrs.get(source)
-        address_name = attrs.get('address_name')
+    def validate_address_domain(self, address_name):
         if self.instance:
             address_domain = address_domain or self.instance.address_domain
             address_name = address_name or self.instance.address_name
         if address_name and not address_domain:
             raise serializers.ValidationError(
                 _("address_domains should should be provided when providing an addres_name"))
-        return attrs
+        return address_name

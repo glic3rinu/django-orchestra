@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.contrib.orchestration import Operation
 
 
-def validate_path_exists(user, path, ):
+def validate_path_exists(user, path):
     user.path_to_validate = path
     log = Operation.execute_action(user, 'validate_path_exists')[0]
     if 'path does not exists' in log.stderr:

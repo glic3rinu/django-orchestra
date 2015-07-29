@@ -426,3 +426,6 @@ Case
 
 # Discount prepaid metric should be more optimal https://orchestra.pangea.org/admin/orders/order/40/
 #   -> order.billed_metric besides billed_until
+
+
+# websites directives: redirect strip() and allow empty URL_path

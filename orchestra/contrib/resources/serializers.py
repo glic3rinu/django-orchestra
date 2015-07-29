@@ -48,9 +48,8 @@ def insert_resource_serializers():
         except KeyError:
             continue
         # TODO this is a fucking workaround, reimplement this on the proper place
-        def validate_resources(self, attrs, source, _resources=resources):
+        def validate_resources(self, posted, _resources=resources):
             """ Creates missing resources """
-            posted = attrs.get(source, [])
             result = []
             resources = list(_resources)
             for data in posted:
@@ -67,8 +66,7 @@ def insert_resource_serializers():
                 if not resource.on_demand:
                     data.allocated = resource.default_allocation
                 result.append(data)
-            attrs[source] = result
-            return attrs
+            return result
         viewset = router.get_viewset(model)
         viewset.serializer_class.validate_resources = validate_resources
         

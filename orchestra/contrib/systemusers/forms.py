@@ -62,6 +62,10 @@ class SystemUserFormMixin(object):
             };""" % username
         )
     
+    def clean_directory(self):
+        directory = self.cleaned_data['directory']
+        return directory.lstrip('/')
+    
     def clean(self):
         super(SystemUserFormMixin, self).clean()
         cleaned_data = self.cleaned_data
@@ -112,6 +116,10 @@ class PermissionForm(forms.Form):
         self.fields['base_home'].choices = (
             (user.get_base_home(), user.get_base_home()) for user in related_users
         )
+    
+    def clean_home_extension(self):
+        home_extension = self.cleaned_data['home_extension']
+        return home_extension.lstrip('/')
     
     def clean(self):
         cleaned_data = super(PermissionForm, self).clean()

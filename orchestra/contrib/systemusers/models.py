@@ -96,6 +96,7 @@ class SystemUser(models.Model):
         super(SystemUser, self).save(*args, **kwargs)
     
     def clean(self):
+        self.directory = self.directory.lstrip('/')
         if self.home:
             self.home = os.path.normpath(self.home)
         if self.directory:

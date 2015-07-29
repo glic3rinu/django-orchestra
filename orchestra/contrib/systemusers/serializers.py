@@ -24,20 +24,20 @@ class SystemUserSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSeriali
         )
         postonly_fields = ('username', 'password')
     
-    def validate(self, attrs):
-        attrs = super(SystemUserSerializer, self).validate(attrs)
-        user = SystemUser(
-            username=attrs.get('username') or self.instance.username,
-            shell=attrs.get('shell') or self.instance.shell,
-        )
-        validate_home(user, attrs, self.get_account())
-        return attrs
+    def validate_directory(self, directory):
+        return directory.lstrip('/')
     
-    def validate_groups(self, attrs, source):
-        groups = attrs.get(source)
+    def validate(self, data):
+        data = super(SystemUserSerializer, self).validate(data)
+        user = SystemUser(
+            username=data.get('username') or self.instance.username,
+            shell=data.get('shell') or self.instance.shell,
+        )
+        validate_home(user, data, self.get_account())
+        groups = data.get('groups')
         if groups:
             for group in groups:
-                if group.username == attrs['username']:
+                if group.username == data['username']:
                     raise serializers.ValidationError(
                         _("Do not make the user member of its group"))
-        return attrs
+        return data

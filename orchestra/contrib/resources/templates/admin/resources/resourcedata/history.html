@@ -186,12 +186,12 @@
                 };
                 
                 divs = (
-                    '<div style="background: '+(i % 2 ? "#EDF3FE" : "#FFFFFF")+'; margin: 10px; margin-bottom: -1px; border: 1px solid grey; padding: 20px;">' +
+                    '<div class="chart-box" style="background: '+(i % 2 ? "#EDF3FE" : "#FFFFFF")+';">' +
                     '<h1>'+resource['content_type'].capitalize() + ' ' + resource['verbose_name'].toLowerCase() + '</h1>' +
-                    '<div id="resource-'+i+'" style="height: 400px; min-width: 310px"></div>'
+                    '<div id="resource-'+i+'" class="chart"></div>'
                 );
                 if (a_index > 1 && aggregated && resource['aggregated_history'])
-                    divs += '<br><div id="resource-'+i+'-aggregate" style="height: 400px; min-width: 310px"></div>';
+                    divs += '<br><div class="chart" id="resource-'+i+'-aggregate"></div>';
                 divs += '</div>';
                 
                 $("#charts").append(divs);
@@ -211,11 +211,36 @@
        font-family: sans;
        font-size: 21px;
     }
+    #notice {
+       font-family: sans;
+       font-size: 12px;
+       text-align: right;
+       padding-right: 10px;
+    }
+    #message {
+        width:300px;
+        margin:0 auto;
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 18px;
+        margin-top: 5%;
+    }
+    .chart-box {
+        margin: 10px;
+        margin-bottom: -1px;
+        border: 1px solid grey;
+        padding: 20px;
+    }
+    .chart {
+        height: 400px;
+        min-width: 310px;
+    }
     </style>
 </head>
 <body>
+    <div id="notice">&#9830;Notice that resources used by deleted services will not appear.</div>
     <div id="charts">
-        <div id="message" style="width:300px; margin:0 auto; font-family: monospace; font-weight: bold; font-size: 18px; margin-top: 5%">
+        <div id="message">
             > crunching data <span id="dancing-dots-text"> <span><span>.</span><span>.</span><span>.</span></span></span>
         </div>
     </div>

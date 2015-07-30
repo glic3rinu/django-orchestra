@@ -203,6 +203,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             size = 1
         else:
             raise NotImplementedError
+        size = round(size, 2)
         return decimal.Decimal(str(size))
     
     def get_pricing_slots(self, ini, end):
@@ -492,52 +493,69 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         lines = []
         bp = None
         for order in orders:
-            recharges = []
+            prepay_discount = 0
             bp = self.get_billing_point(order, bp=bp, **options)
             if (self.billing_period != self.NEVER and
                 self.get_pricing_period() == self.NEVER and
                 self.payment_style == self.PREPAY and order.billed_on):
                     # Recharge
                     if self.payment_style == self.PREPAY and order.billed_on:
+                        recharges = []
                         rini = order.billed_on
                         rend = min(bp, order.billed_until)
-                        cmetric = None
+                        bmetric = order.billed_metric
+                        bsize = self.get_price_size(rini, order.billed_until)
+                        prepay_discount = self.get_price(account, bmetric) * bsize
+                        prepay_discount = round(prepay_discount, 2)
                         for cini, cend, metric in order.get_metric(rini, rend, changes=True):
-                            if cmetric is None:
-                                cmetric = metric
-                                csize = self.get_price_size(rini, order.billed_until)
-                                cprice = self.get_price(account, cmetric) * csize
                             size = self.get_price_size(cini, cend)
                             price = self.get_price(account, metric) * size
                             discounts = ()
-                            discount = min(price, max(cprice, 0))
-                            if discount:
-                                cprice -= price
+                            discount = min(price, max(prepay_discount, 0))
+                            prepay_discount -= price
+                            if discount > 0:
                                 price -= discount
                                 discounts = (
                                     ('prepay', -discount),
                                 )
-                            # if price-discount:
-                            recharges.append((order, price, cini, cend, metric, discounts))
-                        # only recharge when appropiate in order to preserve bigger prepays.
-                        if cmetric < metric or bp > order.billed_until:
+                            # Don't overdload bills with lots of lines
+                            if price > 0:
+                                recharges.append((order, price, cini, cend, metric, discounts))
+                        if prepay_discount < 0:
+                            # User has prepaid less than the actual consumption
                             for order, price, cini, cend, metric, discounts in recharges:
                                 line = self.generate_line(order, price, cini, cend, metric=metric,
                                     computed=True, discounts=discounts)
                                 lines.append(line)
             if order.billed_until and order.cancelled_on and order.cancelled_on >= order.billed_until:
+                # Cancelled order
                 continue
             if self.billing_period != self.NEVER:
                 ini = order.billed_until or order.registered_on
                 # Periodic billing
                 if bp <= ini:
+                    # Already billed
                     continue
                 order.new_billed_until = bp
                 if self.get_pricing_period() == self.NEVER:
                     # Changes (Mailbox disk-like)
                     for cini, cend, metric in order.get_metric(ini, bp, changes=True):
                         price = self.get_price(account, metric)
-                        lines.append(self.generate_line(order, price, cini, cend, metric=metric))
+                        discounts = ()
+                        # Since the current datamodel can't guarantee to retrieve the exact
+                        # state for calculating prepay_discount (service price could have change)
+                        # maybe is it better not to discount anything.
+#                        discount = min(price, max(prepay_discount, 0))
+#                        if discount > 0:
+#                            price -= discount
+#                            prepay_discount -= discount
+#                            discounts = (
+#                                ('prepay', -discount),
+#                            )
+                        if metric > 0:
+                            line = self.generate_line(order, price, cini, cend, metric=metric,
+                                discounts=discounts)
+                            lines.append(line)
                 elif self.get_pricing_period() == self.billing_period:
                     # pricing_slots (Traffic-like)
                     if self.payment_style == self.PREPAY:
@@ -545,7 +563,18 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     for cini, cend in self.get_pricing_slots(ini, bp):
                         metric = order.get_metric(cini, cend)
                         price = self.get_price(account, metric)
-                        lines.append(self.generate_line(order, price, cini, cend, metric=metric))
+                        discounts = ()
+#                        discount = min(price, max(prepay_discount, 0))
+#                        if discount > 0:
+#                            price -= discount
+#                            prepay_discount -= discount
+#                            discounts = (
+#                                ('prepay', -discount),
+#                            )
+                        if metric > 0:
+                            line = self.generate_line(order, price, cini, cend, metric=metric,
+                                discounts=discounts)
+                            lines.append(line)
                 else:
                     raise NotImplementedError
             else:
@@ -558,9 +587,12 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     # get metric (Job-like)
                     metric = order.get_metric(date)
                     price = self.get_price(account, metric)
-                    lines.append(self.generate_line(order, price, date, metric=metric))
+                    line = self.generate_line(order, price, date, metric=metric)
+                    lines.append(line)
                 else:
                     raise NotImplementedError
+            # Last processed metric for futrue recharges
+            order.new_billed_metric = metric
         return lines
     
     def generate_bill_lines(self, orders, account, **options):
@@ -575,6 +607,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             for line in lines:
                 order = line.order
                 order.billed_on = now
+                order.billed_metric = getattr(order, 'new_billed_metric', order.billed_metric)
                 order.billed_until = getattr(order, 'new_billed_until', order.billed_until)
-                order.save(update_fields=['billed_on', 'billed_until'])
+                order.save(update_fields=('billed_on', 'billed_until', 'billed_metric'))
         return lines

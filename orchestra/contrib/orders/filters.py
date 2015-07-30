@@ -51,24 +51,12 @@ class BilledOrderListFilter(SimpleListFilter):
             queryset=MetricStorage.objects.filter(created_on__gt=F('order__billed_on'),
                 created_on__lte=(F('updated_on')-mindelta))
         )
-        prefetch_billed_metric = Prefetch('metrics', to_attr='billed_metric',
-            queryset=MetricStorage.objects.filter(order__billed_on__isnull=False,
-                created_on__lte=F('order__billed_on'), updated_on__gt=F('order__billed_on'))
-        )
         metric_queryset = queryset.exclude(service__metric='').exclude(billed_on__isnull=True)
-        for order in metric_queryset.prefetch_related(prefetch_valid_metrics, prefetch_billed_metric):
-            if len(order.billed_metric) != 1:
-                # corner case of prefetch_billed_metric: Does not always work with latests metrics
-                latest = order.metrics.latest()
-                if not latest:
-                    raise ValueError("Data inconsistency #metrics %i != 1." % len(order.billed_metric))
-                billed_metric = latest.value
-            else:
-                billed_metric = order.billed_metric[0].value
+        for order in metric_queryset.prefetch_related(prefetch_valid_metrics):
             for metric in order.valid_metrics:
                 if metric.created_on <= order.billed_on:
                     raise ValueError("This value should already be filtered on the prefetch query.")
-                if metric.value > billed_metric:
+                if metric.value > order.billed_metric:
                     metric_pks.append(order.pk)
                     break
         return metric_pks

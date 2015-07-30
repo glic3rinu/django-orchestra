@@ -47,27 +47,35 @@ $(document).ready( function () {
              <div class="tabular inline-related last-related">
             <fieldset class="module">
             <h2><a href="{% url 'admin:accounts_account_change' account.pk %}">{{ account }}</a><span style="float:right">{{ total | floatformat:"-2" }} &euro;</span></h2>
-            <table>
-            <thead>
-                <tr><th style="width:30%;">Description</th> <th style="width:30%;">Period</th> <th style="width:10%;">Size&times;Quantity</th> <th style="width:10%;">Price</th></tr>
-            </thead>
-            <tbody>
-            {% for line in lines %}
-            <tr class="form-row {% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
-                <td>
-                    <a href="{{ line.order | admin_url }}">{{ line.order.description }}</a>
-                    {% for discount in line.discounts %}
-                        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Discount per {{ discount.type }}
-                    {% endfor %}
-                </td>
-                <td>{{ line.ini | date }} to {{ line.end | date }}</td>
-                <td>{{ line.size | floatformat:"-2" }}&times;{{ line.metric | floatformat:"-2"}}</td>
-                <td>
-                    &nbsp;{{ line.subtotal | floatformat:"-2" }} &euro;
-                    {% for discount in line.discounts %}<br>{{ discount.total | floatformat:"-2" }} &euro;{% endfor %}
-                </td>
-            </tr>
-            {% endfor %}
+            {% if not lines %}
+                <table>
+                <thead>
+                    <tr><th>{% trans 'Nothing to bill' %}</th></tr>
+                </thead>
+                </table>
+            {% else %}
+                <table>
+                <thead>
+                    <tr><th style="width:30%;">Description</th> <th style="width:30%;">Period</th> <th style="width:10%;">Size&times;Quantity</th> <th style="width:10%;">Price</th></tr>
+                </thead>
+                <tbody>
+                {% for line in lines %}
+                <tr class="form-row {% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
+                    <td>
+                        <a href="{{ line.order | admin_url }}">{{ line.order.description }}</a>
+                        {% for discount in line.discounts %}
+                            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Discount per {{ discount.type }}
+                        {% endfor %}
+                    </td>
+                    <td>{{ line.ini | date }} to {{ line.end | date }}</td>
+                    <td>{{ line.size | floatformat:"-2" }}&times;{{ line.metric | floatformat:"-2"}}</td>
+                    <td>
+                        &nbsp;{{ line.subtotal | floatformat:"-2" }} &euro;
+                        {% for discount in line.discounts %}<br>{{ discount.total | floatformat:"-2" }} &euro;{% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% endif %}
             </tbody>
             </table>
             </fieldset>

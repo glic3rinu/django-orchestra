@@ -40,7 +40,7 @@ def _un(singular__plural, n=None):
     return ungettext(singular, plural, n)
 
 
-def naturaldatetime(date, include_seconds=True):
+def naturaldatetime(date, show_seconds=False):
     """Convert datetime into a human natural date string."""
     if not date:
         return ''
@@ -63,19 +63,17 @@ def naturaldatetime(date, include_seconds=True):
     
     if days == 0:
         if hours == 0:
-            if minutes >= 1:
+            if minutes >= 1 or not show_seconds:
                 minutes = float(seconds)/60
                 return ungettext(
                     _("{minutes:.1f} minute{ago}"),
                     _("{minutes:.1f} minutes{ago}"), minutes
                 ).format(minutes=minutes, ago=ago)
             else:
-                if include_seconds:
-                    return ungettext(
-                        _("{seconds} second{ago}"),
-                        _("{seconds} seconds{ago}"), seconds
-                    ).format(seconds=seconds, ago=ago)
-                return _("just now")
+                return ungettext(
+                    _("{seconds} second{ago}"),
+                    _("{seconds} seconds{ago}"), seconds
+                ).format(seconds=seconds, ago=ago)
         else:
             hours = float(minutes)/60
             return ungettext(

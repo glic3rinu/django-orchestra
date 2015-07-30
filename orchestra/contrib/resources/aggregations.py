@@ -1,6 +1,7 @@
 import copy
 import datetime
 import decimal
+import itertools
 
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
@@ -74,37 +75,36 @@ class MonthlySum(Last):
         )
     
     def aggregate_history(self, dataset):
-        make_data = lambda mdata, current: AttrDict(
-            date=datetime.date(
-                year=mdata.created_at.year,
-                month=mdata.created_at.month,
-                day=1
-            ),
-            value=current,
-            content_object_repr=mdata.content_object_repr
-        )
-        
-        prev_month = None
+        prev = None
         prev_object_id = None
         datas = []
-        for mdata in dataset.order_by('object_id', 'created_at'):
+        sink = AttrDict(object_id=-1, value=-1, content_object_repr='',
+            created_at=AttrDict(year=-1, month=-1))
+        for mdata in itertools.chain(dataset.order_by('object_id', 'created_at'), [sink]):
             object_id = mdata.object_id
-            if object_id != prev_object_id:
+            ymonth = (mdata.created_at.year, mdata.created_at.month)
+            if object_id != prev_object_id or ymonth != prev.ymonth:
                 if prev_object_id is not None:
-                    yield (mdata.content_object_repr, datas)
-                datas = []
-            month = mdata.created_at.month
-            if object_id != prev_object_id or month != prev_month:
-                if prev_month is not None:
-                    datas.append(make_data(mdata, current))
+                    data = AttrDict(
+                        date=datetime.date(
+                            year=prev.ymonth[0],
+                            month=prev.ymonth[1],
+                            day=1
+                        ),
+                        value=current,
+                        content_object_repr=prev.content_object_repr
+                    )
+                    datas.append(data)
                 current = mdata.value
             else:
                 current += mdata.value
-            prev_month = month
+            if object_id != prev_object_id:
+                if prev_object_id is not None:
+                    yield(prev.content_object_repr, datas)
+                    datas = []
+            prev = mdata
+            prev.ymonth = ymonth
             prev_object_id = object_id
-        if prev_object_id is not None:
-            datas.append(make_data(mdata, current))
-            yield (mdata.content_object_repr, datas)
 
 
 class MonthlyAvg(MonthlySum):
@@ -122,7 +122,7 @@ class MonthlyAvg(MonthlySum):
             day=1,
         )
     
-    def compute_usage(self, dataset, historic=False):
+    def compute_usage(self, dataset):
         result = 0
         has_result = False
         aggregate = []
@@ -140,15 +140,9 @@ class MonthlyAvg(MonthlySum):
                 slot = (mdata.created_at-ini).total_seconds()
                 current += mdata.value * decimal.Decimal(str(slot/total))
                 ini = mdata.created_at
-            if historic:
-                aggregate.append(
-                    (mdata, current)
-                )
             else:
                 result += current
         if has_result:
-            if historic:
-                return aggregate
             return result
         return None
     

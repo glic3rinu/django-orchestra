@@ -211,6 +211,7 @@ class Service(models.Model):
                 if counter >= metric:
                     counter = metric
                     accumulated += (counter - ant_counter) * rate['price']
+                    accumulated = round(accumulated, 2)
                     return decimal.Decimal(str(accumulated))
                 ant_counter = counter
                 accumulated += rate['price'] * rate['quantity']
@@ -221,6 +222,7 @@ class Service(models.Model):
             for rate in rates:
                 counter += rate['quantity']
                 if counter >= position:
+                    price = round(rate['price'], 2)
                     return decimal.Decimal(str(rate['price']))
             raise RuntimeError("Rating algorithm bad result")
     

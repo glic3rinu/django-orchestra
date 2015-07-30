@@ -417,15 +417,19 @@ Greatest
 Colaesce('total', 'computed_total')
 Case
 
-# case on payment transaction state ? case when trans.amount > 
+# SQL case on payment transaction state ? case when trans.amount > 
 
 # Resource inline links point to custom changelist view that preserve state (breadcrumbs, title, etc) rather than generic changeview with queryarg filtering
 
 # ORDER diff Pending vs ALL
-# pre-bill confirmation: remove account if lines.count() == 0 ?
 
-# Discount prepaid metric should be more optimal https://orchestra.pangea.org/admin/orders/order/40/
-#   -> order.billed_metric besides billed_until
+# DELETING RESOURCE RELATED OBJECT SHOULD NOT delete related monitor data for traffic accountancy
 
+# round decimals on every billing operation
 
-# websites directives: redirect strip() and allow empty URL_path
+# Serie1
+
+# Pangea post-create: lorena no has afegit el webalizer
+# cleanup monitor data
+
+# Add SPF record type

@@ -114,13 +114,14 @@ class Order(models.Model):
         related_name='orders')
     registered_on = models.DateField(_("registered"), default=timezone.now, db_index=True)
     cancelled_on = models.DateField(_("cancelled"), null=True, blank=True)
-    # TODO billed metric
     billed_on = models.DateField(_("billed"), null=True, blank=True)
+    billed_metric = models.DecimalField(_("billed metric"), max_digits=16, decimal_places=2,
+        null=True, blank=True)
     billed_until = models.DateField(_("billed until"), null=True, blank=True)
     ignore = models.BooleanField(_("ignore"), default=False)
     description = models.TextField(_("description"), blank=True)
     content_object_repr = models.CharField(_("content object representation"), max_length=256,
-        editable=False)
+        editable=False, help_text=_("Used for searches."))
     
     content_object = GenericForeignKey()
     objects = OrderQuerySet.as_manager()
@@ -239,13 +240,15 @@ class Order(models.Model):
         if kwargs:
             raise AttributeError
         if len(args) == 2:
+            # Slot
             ini, end = args
-            metrics = self.metrics.filter(updated_on__lt=end, updated_on__gte=ini)
+            metrics = self.metrics.filter(created_on__lt=end, updated_on__gte=ini)
         elif len(args) == 1:
+            # On effect on date
             date = args[0]
             date = datetime.date(year=date.year, month=date.month, day=date.day)
             date += datetime.timedelta(days=1)
-            metrics = self.metrics.filter(updated_on__lt=date)
+            metrics = self.metrics.filter(created_on__lte=date)
         elif not args:
             return self.metrics.latest('updated_on').value
         else:
@@ -261,7 +264,6 @@ class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     created_on = models.DateField(_("created"), auto_now_add=True)
-#    default=lambda: timezone.now())
     # TODO time field?
     updated_on = models.DateTimeField(_("updated"))
     

@@ -228,6 +228,7 @@ class MailmanTraffic(ServiceMonitor):
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Mailman traffic")
     script_executable = '/usr/bin/python'
+    monthly_sum_old_values = True
     doc_settings = (settings,
         ('LISTS_MAILMAN_POST_LOG_PATH',)
     )
@@ -332,6 +333,7 @@ class MailmanSubscribers(ServiceMonitor):
     """
     model = 'lists.List'
     verbose_name = _("Mailman subscribers")
+    delete_old_equal_values = True
     
     def monitor(self, mail_list):
         context = self.get_context(mail_list)

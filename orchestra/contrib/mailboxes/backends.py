@@ -24,10 +24,12 @@ class SieveFilteringMixin(object):
             context['box'] = box
             self.append(textwrap.dedent("""
                 # Create %(box)s mailbox
-                mkdir -p %(maildir)s/.%(box)s
-                chown %(user)s:%(group)s %(maildir)s/.%(box)s
+                su $user --shell /bin/bash << 'EOF'
+                    mkdir -p "%(maildir)s/.%(box)s"
+                EOF
                 if [[ ! $(grep '%(box)s' %(maildir)s/subscriptions) ]]; then
                     echo '%(box)s' >> %(maildir)s/subscriptions
+                    chown $user:$user %(maildir)s/subscriptions
                 fi
                 """) % context
             )
@@ -37,17 +39,18 @@ class SieveFilteringMixin(object):
             context['filtering'] = ('# %(banner)s\n' + content) % context
             self.append(textwrap.dedent("""\
                 # Create and compile orchestra sieve filtering
-                mkdir -p $(dirname '%(filtering_path)s')
-                cat << 'EOF' > %(filtering_path)s
-                %(filtering)s
+                su $user --shell /bin/bash << 'EOF'
+                    mkdir -p $(dirname "%(filtering_path)s")
+                    cat << '    EOF' > %(filtering_path)s
+                        %(filtering)s
+                    EOF
+                    sievec %(filtering_path)s
                 EOF
-                sievec %(filtering_path)s
-                chown %(user)s:%(group)s %(filtering_path)s
-                chown %(user)s:%(group)s %(filtering_cpath)s
                 """) % context
             )
         else:
             self.append("echo '' > %(filtering_path)s" % context)
+        self.append('chown $user:$group %(filtering_path)s' % context)
 
 
 class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
@@ -94,8 +97,9 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         #unit_to_bytes(mailbox.resources.disk.unit)
         self.append(textwrap.dedent("""
             # Set Maildir quota for %(user)s
-            mkdir -p %(maildir)s
-            chown %(user)s:%(group)s %(maildir)s
+            su $user --shell /bin/bash << 'EOF'
+                mkdir -p %(maildir)s
+            EOF
             if [[ ! -f %(maildir)s/maildirsize ]]; then
                 echo "%(quota)iS" > %(maildir)s/maildirsize
                 chown %(user)s:%(group)s %(maildir)s/maildirsize
@@ -110,7 +114,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         self.append(textwrap.dedent("""
             nohup bash -c '{ sleep 2 && killall -u %(user)s -s KILL; }' &> /dev/null &
             killall -u %(user)s || true
-            # Fucking postfix SASL caches credentials
+            # Restart because of Postfix SASL caches credentials
             userdel %(user)s || true && RESTART_POSTFIX=1
             groupdel %(user)s || true""") % context
         )
@@ -141,7 +145,6 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
     
     verbose_name = _("Dovecot-Postfix virtualuser")
     model = 'mailboxes.Mailbox'
-    # TODO related_models = ('resources__content_type') ?? needed for updating disk usage from resource.data
     
     def set_user(self, context):
         self.append(textwrap.dedent("""
@@ -394,6 +397,7 @@ class DovecotMaildirDisk(ServiceMonitor):
     model = 'mailboxes.Mailbox'
     resource = ServiceMonitor.DISK
     verbose_name = _("Dovecot Maildir size")
+    delete_old_equal_values = True
     doc_settings = (settings,
         ('MAILBOXES_MAILDIRSIZE_PATH',)
     )
@@ -428,6 +432,7 @@ class PostfixMailscannerTraffic(ServiceMonitor):
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Postfix-Mailscanner traffic")
     script_executable = '/usr/bin/python'
+    monthly_sum_old_values = True
     doc_settings = (settings,
         ('MAILBOXES_MAIL_LOG_PATH',)
     )

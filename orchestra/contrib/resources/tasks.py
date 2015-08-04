@@ -1,8 +1,15 @@
+import datetime
+
+from celery.task.schedules import crontab
+from django.db import transaction
+from django.utils import timezone
+
 from orchestra.contrib.orchestration import Operation
-from orchestra.contrib.tasks import task
+from orchestra.contrib.tasks import task, periodic_task
 from orchestra.models.utils import get_model_field_path
 from orchestra.utils.sys import LockFile
 
+from . import settings
 from .backends import ServiceMonitor
 
 
@@ -49,3 +56,22 @@ def monitor(resource_id, ids=None):
                     triggers.append(op)
         Operation.execute(triggers)
         return logs
+
+
+@periodic_task(run_every=crontab(hour=2, minute=30), name='resources.cleanup_old_monitors')
+@transaction.atomic
+def cleanup_old_monitors(queryset=None):
+    if queryset is None:
+        from .models import MonitorData
+        queryset = MonitorData.objects.filter()
+    delta = datetime.timedelta(days=settings.RESOURCES_OLD_MONITOR_DATA_DAYS)
+    threshold = timezone.now() - delta
+    queryset = queryset.filter(created_at__lt=threshold)
+    delete_counts = []
+    for monitor in ServiceMonitor.get_plugins():
+        dataset = queryset.filter(monitor=monitor)
+        delete_count = monitor.aggregate(dataset)
+        delete_counts.append(
+            (monitor.get_name(), delete_count)
+        )
+    return delete_counts

@@ -7,6 +7,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceBackend
 
+from . import helpers
+
 
 class ServiceMonitor(ServiceBackend):
     TRAFFIC = 'traffic'
@@ -16,6 +18,8 @@ class ServiceMonitor(ServiceBackend):
     # TODO UNITS
     actions = ('monitor', 'exceeded', 'recovery')
     abstract = True
+    delete_old_equal_values = False
+    monthly_sum_old_values = False
     
     @classmethod
     def get_plugins(cls):
@@ -81,3 +85,10 @@ class ServiceMonitor(ServiceBackend):
         log = super(ServiceMonitor, self).execute(*args, **kwargs)
         self.store(log)
         return log
+    
+    @classmethod
+    def aggregate(cls, dataset):
+        if cls.delete_old_equal_values:
+            return helpers.delete_old_equal_values(dataset)
+        elif cls.monthly_sum_old_values:
+            return helpers.monthly_sum_old_values(dataset)

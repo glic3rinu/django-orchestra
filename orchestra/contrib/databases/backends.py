@@ -120,6 +120,7 @@ class MysqlDisk(ServiceMonitor):
     """
     model = 'databases.Database'
     verbose_name = _("MySQL disk")
+    delete_old_equal_values = True
     
     def exceeded(self, db):
         if db.type != db.MYSQL:

@@ -8,6 +8,7 @@ class OpenVZTraffic(ServiceMonitor):
     """
     model = 'vps.VPS'
     resource = ServiceMonitor.TRAFFIC
+    monthly_sum_old_values = True
     
     def process(self, line):
         """ diff with last stored value """

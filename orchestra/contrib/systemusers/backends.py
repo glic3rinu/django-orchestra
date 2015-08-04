@@ -101,12 +101,11 @@ class UNIXUserBackend(ServiceController):
         context = self.get_context(user)
         context.update({
             'perm_action': user.set_perm_action,
-            'perm_home': user.set_perm_base_home,
             'perm_to': os.path.join(user.set_perm_base_home, user.set_perm_home_extension),
         })
         exclude_acl = []
         for exclude in settings.SYSTEMUSERS_FORBIDDEN_PATHS:
-            context['exclude_acl'] = os.path.join(context['perm_home'], exclude)
+            context['exclude_acl'] = os.path.join(user.set_perm_base_home, exclude)
             exclude_acl.append('-not -path "%(exclude_acl)s"' % context)
         context['exclude_acl'] = ' \\\n    -a '.join(exclude_acl) if exclude_acl else ''
         if user.set_perm_perms == 'rw':
@@ -115,10 +114,32 @@ class UNIXUserBackend(ServiceController):
             context['perm_perms'] = 'r-x' if user.set_perm_action == 'grant' else '-wx'
         elif user.set_perm_perms == 'w':
             context['perm_perms'] = '-wx' if user.set_perm_action == 'grant' else 'r-x'
+        # Access paths
+        head = user.set_perm_base_home
+        relative = ''
+        access_paths = ["'%s'" % head]
+        import fnmatch
+        for tail in user.set_perm_home_extension.split(os.sep)[:-1]:
+            relative = os.path.join(relative, tail)
+            for exclude in settings.SYSTEMUSERS_FORBIDDEN_PATHS:
+                if fnmatch.fnmatch(relative, exclude):
+                    break
+            else:
+                # No match
+                head = os.path.join(head, tail)
+                access_paths.append("'%s'" % head)
+        context['access_paths'] = ' '.join(access_paths)
         if user.set_perm_action == 'grant':
             self.append(textwrap.dedent("""\
-                # Home access
-                setfacl -m u:%(user)s:--x '%(perm_home)s'
+                # Grant execution permissions to every parent directory
+                for access_path in %(access_paths)s; do
+                    # Preserve existing ACLs
+                    acl=$(getfacl -a "$access_path" | grep '^user:%(user)s:') && {
+                        perms=$(echo "$acl" | cut -d':' -f3)
+                        perms=$(echo "$perms" | cut -c 1,2)x
+                        setfacl -m u:%(user)s:$perms "$access_path"
+                    } || setfacl -m u:%(user)s:--x "$access_path"
+                done
                 # Grant perms to existing and future files
                 find '%(perm_to)s' %(exclude_acl)s \\
                     -exec setfacl -m u:%(user)s:%(perm_perms)s {} \\;
@@ -182,6 +203,7 @@ class UNIXUserDisk(ServiceMonitor):
     model = 'systemusers.SystemUser'
     resource = ServiceMonitor.DISK
     verbose_name = _('UNIX user disk')
+    delete_old_equal_values = True
     
     def prepare(self):
         super(UNIXUserDisk, self).prepare()
@@ -211,6 +233,7 @@ class Exim4Traffic(ServiceMonitor):
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Exim4 traffic")
     script_executable = '/usr/bin/python'
+    monthly_sum_old_values = True
     doc_settings = (settings,
         ('SYSTEMUSERS_MAIL_LOG_PATH',)
     )
@@ -296,6 +319,7 @@ class VsFTPdTraffic(ServiceMonitor):
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _('VsFTPd traffic')
     script_executable = '/usr/bin/python'
+    monthly_sum_old_values = True
     doc_settings = (settings,
         ('SYSTEMUSERS_FTP_LOG_PATH',)
     )

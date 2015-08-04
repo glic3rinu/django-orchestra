@@ -1,3 +1,5 @@
+import decimal
+
 from django.template.defaultfilters import date as date_format
 
 
@@ -79,3 +81,54 @@ def get_history_data(queryset):
     else:
         result = [resource[0] for resource in resources.values()]
     return result
+
+
+def delete_old_equal_values(dataset):
+    """ only first and last values of an equal serie (+-error) are kept """
+    prev_value = None
+    prev_key = None
+    delete_count = 0
+    error = decimal.Decimal('0.005')
+    third = False
+    for mdata in dataset.order_by('content_type_id', 'object_id', 'created_at'):
+        key = (mdata.content_type_id, mdata.object_id)
+        if prev_key == key:
+            if prev_value is not None and mdata.value*(1-error) < prev_value < mdata.value*(1+error):
+                if third:
+                    prev.delete()
+                    delete_count += 1
+                else:
+                    third = True
+            else:
+                third = False
+            prev_value = mdata.value
+            prev_key = key
+        else:
+            prev_value = None
+            prev_key = key
+        prev = mdata
+    return delete_count
+
+
+def monthly_sum_old_values(dataset):
+    aggregated = 0
+    prev_key = None
+    prev = None
+    to_delete = []
+    delete_count = 0
+    for mdata in dataset.order_by('content_type_id', 'object_id', 'created_at'):
+        key = (mdata.content_type_id, mdata.object_id, mdata.created_at.year, mdata.created_at.month)
+        if prev_key is not None and prev_key != key:
+            if prev.value != aggregated:
+                prev.value = aggregated
+                prev.save(update_fields=('value',))
+            for obj in to_delete[:-1]:
+                obj.delete()
+                delete_count += 1
+            aggregated = 0
+            to_delete = []
+        prev = mdata
+        prev_key = key
+        aggregated += mdata.value
+        to_delete.append(mdata)
+    return delete_count

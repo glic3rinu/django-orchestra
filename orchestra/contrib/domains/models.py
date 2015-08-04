@@ -259,6 +259,7 @@ class Record(models.Model):
     AAAA = 'AAAA'
     SRV = 'SRV'
     TXT = 'TXT'
+    SPF = 'SPF'
     SOA = 'SOA'
     
     TYPE_CHOICES = (
@@ -269,6 +270,7 @@ class Record(models.Model):
         (AAAA, _("AAAA (IPv6 address)")),
         (SRV, "SRV"),
         (TXT, "TXT"),
+        (SPF, "SPF"),
         (SOA, "SOA"),
     )
     
@@ -279,6 +281,7 @@ class Record(models.Model):
         AAAA: (validate_ipv6_address,),
         CNAME: (validators.validate_zone_label,),
         TXT: (validate_ascii, validators.validate_quoted_record),
+        SPF: (validate_ascii, validators.validate_quoted_record),
         SRV: (validators.validate_srv_record,),
         SOA: (validators.validate_soa_record,),
     }

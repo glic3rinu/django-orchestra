@@ -420,9 +420,11 @@ class Apache2Traffic(ServiceMonitor):
     model = 'websites.Website'
     resource = ServiceMonitor.TRAFFIC
     verbose_name = _("Apache 2 Traffic")
+    monthly_sum_old_values = True
     doc_settings = (settings,
         ('WEBSITES_TRAFFIC_IGNORE_HOSTS',)
     )
+    
     def prepare(self):
         super(Apache2Traffic, self).prepare()
         ignore_hosts = '\\|'.join(settings.WEBSITES_TRAFFIC_IGNORE_HOSTS)

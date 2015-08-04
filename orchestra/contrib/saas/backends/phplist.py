@@ -19,7 +19,10 @@ class PhpListSaaSBackend(ServiceController):
     but all sites share the same code.
     
     <tt>// config/config.php
-    $site = array_shift((explode(".",$_SERVER['HTTP_HOST'])));
+    $site = getenv("SITE");
+    if ( $site == '' ) {
+        $site = array_shift((explode(".",$_SERVER['HTTP_HOST'])));
+    }
     $database_name = "phplist_mu_{$site}";</tt>
     """
     verbose_name = _("phpList SaaS")
@@ -57,16 +60,8 @@ class PhpListSaaSBackend(ServiceController):
         else:
             md5_password = hashlib.md5()
             md5_password.update(saas.password.encode('ascii'))
-            context = {
-                'name': saas.name,
-                'site_name': saas.name,
-                'db_user': settings.SAAS_PHPLIST_DB_USER,
-                'db_pass': settings.SAAS_PHPLIST_DB_PASS,
-                'db_name': settings.SAAS_PHPLIST_DB_NAME,
-                'db_host': settings.SAAS_PHPLIST_DB_HOST,
-                'digest': md5_password.hexdigest(),
-            }
-            context['db_name'] = context['db_name'] % context
+            context = self.get_context(saas)
+            context['digest'] = md5_password.hexdigest()
             cmd = textwrap.dedent("""\
                 mysql \\
                     --host=%(db_host)s \\
@@ -81,3 +76,47 @@ class PhpListSaaSBackend(ServiceController):
     def save(self, saas):
         if hasattr(saas, 'password'):
             self.append(self._save, saas)
+        context = self.get_context(saas)
+        if context['crontab']:
+            context['escaped_crontab'] = context['crontab'].replace('$', '\\$')
+            self.append(textwrap.dedent("""\
+                # Configuring phpList crontabs
+                if [[ ! $(crontab -u %(user)s -l | grep 'phpList:"%(site_name)s"') ]]; then
+                cat << EOF | su %(user)s --shell /bin/bash -c 'crontab'
+                $(crontab -u %(user)s -l)
+                
+                # %(banner)s - phpList:"%(site_name)s"
+                %(escaped_crontab)s
+                EOF
+                fi""") % context
+            )
+    
+    def delete(self, saas):
+        context = self.get_context(saas)
+        if context['crontab']:
+            context['crontab_regex'] = '\\|'.join(context['crontab'].splitlines())
+            context['crontab_regex'] = context['crontab_regex'].replace('*', '\\*')
+            self.append(textwrap.dedent("""\
+                crontab -u %(user)s -l \\
+                    | grep -v 'phpList:"%(site_name)s"\\|%(crontab_regex)s' \\
+                    | su %(user)s --shell /bin/bash -c 'crontab'
+                """) % context
+            )
+    
+    def get_context(self, saas):
+        context = {
+            'banner': self.get_banner(),
+            'name': saas.name,
+            'site_name': saas.name,
+            'phplist_path': settings.SAAS_PHPLIST_PATH,
+            'user': settings.SAAS_PHPLIST_SYSTEMUSER,
+            'db_user': settings.SAAS_PHPLIST_DB_USER,
+            'db_pass': settings.SAAS_PHPLIST_DB_PASS,
+            'db_name': settings.SAAS_PHPLIST_DB_NAME,
+            'db_host': settings.SAAS_PHPLIST_DB_HOST,
+        }
+        context.update({
+            'crontab': settings.SAAS_PHPLIST_CRONTAB % context,
+            'db_name': context['db_name'] % context,
+        })
+        return context

@@ -110,9 +110,27 @@ SAAS_PHPLIST_BASE_DOMAIN = Setting('SAAS_PHPLIST_BASE_DOMAIN',
 
 SAAS_PHPLIST_VERIFY_SSL = Setting('SAAS_PHPLIST_VERIFY_SSL',
     True,
-    help_text="Verify SSL certificate on the HTTP requests performed by the backend.",
+    help_text=_("Verify SSL certificate on the HTTP requests performed by the backend."),
 )
 
+SAAS_PHPLIST_PATH = Setting('SAAS_PHPLIST_PATH',
+    '/var/www/phplist-mu',
+    help_text=_("Filesystem path to the phpList source code installed on the server. "
+                "Used by <tt>SAAS_PHPLIST_CRONTAB</tt>.")
+)
+
+SAAS_PHPLIST_SYSTEMUSER = Setting('SAAS_PHPLIST_SYSTEMUSER',
+    'root',
+    help_text=_("System user running phpList on the server."
+                "Used by <tt>SAAS_PHPLIST_CRONTAB</tt>.")
+)
+
+SAAS_PHPLIST_CRONTAB = Setting('SAAS_PHPLIST_CRONTAB',
+    ('*/10 * * * * PHPLIST=%(phplist_path)s; export SITE="%(site_name)s"; php $PHPLIST/admin/index.php -c $PHPLIST/config/config.php -p processqueue > /dev/null\n'
+     '*/40 * * * * PHPLIST=%(phplist_path)s; export SITE="%(site_name)s"; php $PHPLIST/admin/index.php -c $PHPLIST/config/config.php -p processbounces > /dev/null'),
+    help_text=_("<tt>processqueue</tt> and <tt>processbounce</tt> phpList cron execution. "
+                "Left blank if you don't want crontab to be configured")
+)
 
 SAAS_SEAFILE_DOMAIN = Setting('SAAS_SEAFILE_DOMAIN',
     'seafile.{}'.format(ORCHESTRA_BASE_DOMAIN),

@@ -427,30 +427,12 @@ Case
 
 # round decimals on every billing operation
 
-# Serie1
-
-# cleanup monitor data: helpers.functions into ServiceMonitor methods
-
 # Add SPF record type
 
 # OVZ TRAFFIC ACCOUNTING!!
 
 # PHPlist cron, bounces and traffic (maybe specific mail script with sitename)
-    'crontab': settings.SAAS_PHPLIST_CRONTAB.replace('$', '$$')
-}
-*/10 * * * * PHPLIST=%(php_list_path)s; export SITE="%(site)s"; php $PHPLIST/admin/index.php -c $PHPLIST/config/config.php -p processqueue > /dev/null
-*/40 * * * * PHPLIST=%(php_list_path)s; export SITE="%(site)s"; php $PHPLIST/admin/index.php -c $PHPLIST/config/config.php -p processbounces > /dev/null
 
-if settings.SAAS_PHPLIST_CRONTAB:
-    self.append(textwrap.dedent("""
-        # Configuring phpList crontabs
-if [[ ! $(crontab -l | grep "^%(site)s") ]]; then
-cat << EOF | crontab
-$(crontab -l)
-# %(banner)s
-%(crontab)s
-EOF
-fi
 
 # use "su $user --shell /bin/bash" on backends for security : MKDIR -p...
 

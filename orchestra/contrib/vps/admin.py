@@ -6,18 +6,18 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
+from orchestra.forms import UserCreationForm, NonStoredUserChangeForm
 
-from .forms import VPSChangeForm, VPSCreationForm
 from .models import VPS
 
 
 class VPSAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('hostname', 'type', 'template', 'account_link')
     list_filter = ('type', 'template')
-    form = VPSChangeForm
-    add_form = VPSCreationForm
+    form = NonStoredUserChangeForm
+    add_form = UserCreationForm
     readonly_fields = ('account_link',)
-    change_readonly_fields = ('account', 'name', 'type', 'template')
+    change_readonly_fields = ('account', 'hostname', 'type', 'template')
     fieldsets = (
         (None, {
             'classes': ('wide',),

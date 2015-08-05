@@ -45,7 +45,7 @@ class SystemUser(models.Model):
         help_text=_("Optional directory relative to user's home."))
     shell = models.CharField(_("shell"), max_length=32, choices=settings.SYSTEMUSERS_SHELLS,
         default=settings.SYSTEMUSERS_DEFAULT_SHELL)
-    groups = models.ManyToManyField('self', blank=True,  symmetrical=False,
+    groups = models.ManyToManyField('self', blank=True, symmetrical=False,
         help_text=_("A new group will be created for the user. "
                     "Which additional groups would you like them to be a member of?"))
     is_active = models.BooleanField(_("active"), default=True,

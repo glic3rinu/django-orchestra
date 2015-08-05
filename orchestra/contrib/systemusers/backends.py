@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import textwrap
 
@@ -97,6 +98,51 @@ class UNIXUserBackend(ServiceController):
         else:
             self.append("rm -fr %(base_home)s" % context)
     
+    def grant_permissions(self, user, context):
+        context['perms'] = user.set_perm_perms
+        # Capital X adds execution permissions for directories, not files
+        context['perms_X'] = context['perms'] + 'X'
+        self.append(textwrap.dedent("""\
+            # Grant execution permissions to every parent directory
+            for access_path in %(access_paths)s; do
+                # Preserve existing ACLs
+                acl=$(getfacl -a "$access_path" | grep '^user:%(user)s:') && {
+                    perms=$(echo "$acl" | cut -d':' -f3)
+                    perms=$(echo "$perms" | cut -c 1,2)x
+                    setfacl -m u:%(user)s:$perms "$access_path"
+                } || setfacl -m u:%(user)s:--x "$access_path"
+            done
+            # Grant perms to existing files, excluding execution
+            find '%(perm_to)s' -type f %(exclude_acl)s \\
+                -exec setfacl -m u:%(user)s:%(perms)s {} \\;
+            # Grant perms to extisting directories and set defaults for future content
+            find '%(perm_to)s' -type d %(exclude_acl)s \\
+                -exec setfacl -m u:%(user)s:%(perms_X)s -m d:u:%(user)s:%(perms_X)s {} \\;
+            # Account group as the owner of new files
+            chmod g+s '%(perm_to)s'""") % context
+        )
+        if not user.is_main:
+            self.append(textwrap.dedent("""\
+                # Grant access to main user
+                find '%(perm_to)s' -type d %(exclude_acl)s \\
+                    -exec setfacl -m d:u:%(mainuser)s:rwx {} \\;\
+                """) % context
+            )
+    
+    def revoke_permissions(self, context):
+        revoke_perms = {
+            'rw': '',
+            'r': 'w',
+            'w': 'r',
+        }
+        context['perms'] = revoke_perms[user.set_perm_perms]
+        self.append(textwrap.dedent("""\
+            # Revoke permissions
+            find '%(perm_to)s' %(exclude_acl)s \\
+                -exec setfacl -m u:%(user)s:%(perms)s {} \\;\
+            """) % context
+        )
+    
     def set_permission(self, user):
         context = self.get_context(user)
         context.update({
@@ -108,17 +154,10 @@ class UNIXUserBackend(ServiceController):
             context['exclude_acl'] = os.path.join(user.set_perm_base_home, exclude)
             exclude_acl.append('-not -path "%(exclude_acl)s"' % context)
         context['exclude_acl'] = ' \\\n    -a '.join(exclude_acl) if exclude_acl else ''
-        if user.set_perm_perms == 'rw':
-            context['perm_perms'] = 'rwx' if user.set_perm_action == 'grant' else '---'
-        elif user.set_perm_perms == 'r':
-            context['perm_perms'] = 'r-x' if user.set_perm_action == 'grant' else '-wx'
-        elif user.set_perm_perms == 'w':
-            context['perm_perms'] = '-wx' if user.set_perm_action == 'grant' else 'r-x'
         # Access paths
         head = user.set_perm_base_home
         relative = ''
         access_paths = ["'%s'" % head]
-        import fnmatch
         for tail in user.set_perm_home_extension.split(os.sep)[:-1]:
             relative = os.path.join(relative, tail)
             for exclude in settings.SYSTEMUSERS_FORBIDDEN_PATHS:
@@ -129,39 +168,11 @@ class UNIXUserBackend(ServiceController):
                 head = os.path.join(head, tail)
                 access_paths.append("'%s'" % head)
         context['access_paths'] = ' '.join(access_paths)
+        
         if user.set_perm_action == 'grant':
-            self.append(textwrap.dedent("""\
-                # Grant execution permissions to every parent directory
-                for access_path in %(access_paths)s; do
-                    # Preserve existing ACLs
-                    acl=$(getfacl -a "$access_path" | grep '^user:%(user)s:') && {
-                        perms=$(echo "$acl" | cut -d':' -f3)
-                        perms=$(echo "$perms" | cut -c 1,2)x
-                        setfacl -m u:%(user)s:$perms "$access_path"
-                    } || setfacl -m u:%(user)s:--x "$access_path"
-                done
-                # Grant perms to existing and future files
-                find '%(perm_to)s' %(exclude_acl)s \\
-                    -exec setfacl -m u:%(user)s:%(perm_perms)s {} \\;
-                find '%(perm_to)s' -type d %(exclude_acl)s \\
-                    -exec setfacl -m d:u:%(user)s:%(perm_perms)s {} \\;
-                # Account group as the owner of new files
-                chmod g+s '%(perm_to)s'""") % context
-            )
-            if not user.is_main:
-                self.append(textwrap.dedent("""\
-                    # Grant access to main user
-                    find '%(perm_to)s' -type d %(exclude_acl)s \\
-                        -exec setfacl -m d:u:%(mainuser)s:rwx {} \\;\
-                    """) % context
-                )
+            self.grant_permissions(user, context)
         elif user.set_perm_action == 'revoke':
-            self.append(textwrap.dedent("""\
-                # Revoke permissions
-                find '%(perm_to)s' %(exclude_acl)s \\
-                    -exec setfacl -m u:%(user)s:%(perm_perms)s {} \\;\
-                """) % context
-            )
+            self.revoke_permissions(user, context)
         else:
             raise NotImplementedError()
     

@@ -23,6 +23,12 @@ def send_message(message, num=0, connection=None, bulk=settings.MAILER_BULK_MESS
         connection = get_connection(backend='django.core.mail.backends.smtp.EmailBackend')
         connection.open()
     error = None
+    message.last_try = timezone.now()
+    update_fields = ['last_try']
+    if message.state != message.QUEUED:
+        message.retries += 1
+        update_fields.append('retries')
+    message.save(update_fields=update_fields)
     try:
         connection.connection.sendmail(message.from_address, [message.to_address], smart_str(message.content))
     except (SocketError,
@@ -49,7 +55,7 @@ def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
             qs = Q()
             for retries, seconds in enumerate(settings.MAILER_DEFERE_SECONDS):
                 delta = timedelta(seconds=seconds)
-                qs = qs | Q(retries=retries, last_retry__lte=now-delta)
+                qs = qs | Q(retries=retries, last_try__lte=now-delta)
             for message in Message.objects.filter(state=Message.DEFERRED).filter(qs).order_by('priority'):
                 connection = send_message(message, num, connection, bulk)
                 num += 1

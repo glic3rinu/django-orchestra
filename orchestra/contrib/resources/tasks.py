@@ -63,7 +63,7 @@ def monitor(resource_id, ids=None):
 def cleanup_old_monitors(queryset=None):
     if queryset is None:
         from .models import MonitorData
-        queryset = MonitorData.objects.filter()
+        queryset = MonitorData.objects.all()
     delta = datetime.timedelta(days=settings.RESOURCES_OLD_MONITOR_DATA_DAYS)
     threshold = timezone.now() - delta
     queryset = queryset.filter(created_at__lt=threshold)

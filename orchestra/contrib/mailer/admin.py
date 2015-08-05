@@ -28,13 +28,13 @@ COLORS = {
 class MessageAdmin(admin.ModelAdmin):
     list_display = (
         'display_subject', 'colored_state', 'priority', 'to_address', 'from_address',
-        'created_at_delta', 'retries', 'last_retry_delta', 'num_logs',
+        'created_at_delta', 'display_retries', 'last_try_delta',
     )
     list_filter = ('state', 'priority', 'retries')
     list_prefetch_related = ('logs__id')
     fieldsets = (
         (None, {
-            'fields': ('state', 'priority', ('retries', 'last_retry_delta', 'created_at_delta'),
+            'fields': ('state', 'priority', ('retries', 'last_try_delta', 'created_at_delta'),
                        'display_full_subject', 'display_from', 'display_to',
                        'display_content'),
         }),
@@ -44,36 +44,36 @@ class MessageAdmin(admin.ModelAdmin):
         }),
     )
     readonly_fields = (
-        'retries', 'last_retry_delta', 'created_at_delta', 'display_full_subject',
+        'retries', 'last_try_delta', 'created_at_delta', 'display_full_subject',
         'display_to', 'display_from', 'display_content',
     )
     date_hierarchy = 'created_at'
     
     colored_state = admin_colored('state', colors=COLORS)
     created_at_delta = admin_date('created_at')
-    last_retry_delta = admin_date('last_retry')
+    last_try_delta = admin_date('last_try')
     
     def display_subject(self, instance):
         subject = instance.subject
-        if len(subject) > 32:
-            return subject[:32] + '&hellip;'
+        if len(subject) > 64:
+            return subject[:64] + '&hellip;'
         return subject
     display_subject.short_description = _("Subject")
     display_subject.admin_order_field = 'subject'
     display_subject.allow_tags = True
     
-    def num_logs(self, instance):
-        num = instance.logs__count
-        if num == 1:
+    def display_retries(self, instance):
+        num_logs = instance.logs__count
+        if num_logs == 1:
             pk = instance.logs.all()[0].id
             url = reverse('admin:mailer_smtplog_change', args=(pk,))
         else:
             url = reverse('admin:mailer_smtplog_changelist')
             url += '?&message=%i' % instance.pk
-        return '<a href="%s" onclick="return showAddAnotherPopup(this);">%d</a>' % (url, num)
-    num_logs.short_description = _("Logs")
-    num_logs.admin_order_field = 'logs__count'
-    num_logs.allow_tags = True
+        return '<a href="%s" onclick="return showAddAnotherPopup(this);">%d</a>' % (url, instance.retries)
+    display_retries.short_description = _("Retries")
+    display_retries.admin_order_field = 'retries'
+    display_retries.allow_tags = True
     
     def display_content(self, instance):
         part = email.message_from_string(instance.content)

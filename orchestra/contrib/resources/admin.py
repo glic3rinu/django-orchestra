@@ -198,7 +198,7 @@ class MonitorDataAdmin(ExtendedModelAdmin):
     list_display = ('id', 'monitor', content_object_link, 'display_created', 'value')
     list_filter = ('monitor', ResourceDataListFilter)
     add_fields = ('monitor', 'content_type', 'object_id', 'created_at', 'value')
-    fields = ('monitor', 'content_type', content_object_link, 'display_created', 'value')
+    fields = ('monitor', 'content_type', content_object_link, 'display_created', 'value', 'state')
     change_readonly_fields = fields
     list_select_related = ('content_type',)
     search_fields = ('content_object_repr',)
@@ -258,6 +258,7 @@ def resource_inline_factory(resources):
                     if resource not in queryset_resources:
                         kwargs = {
                             'content_object': self.instance,
+                            'content_object_repr': str(self.instance),
                         }
                         if resource.default_allocation:
                             kwargs['allocated'] = resource.default_allocation
@@ -323,7 +324,9 @@ def resource_inline_factory(resources):
                 used_url = reverse('admin:resources_resourcedata_used_monitordata', args=(rdata.pk,))
                 used =  '<a href="%s">%s %s</a>' % (used_url, rdata.used, rdata.unit)
                 return ' '.join(map(str, (used, update, history)))
-            return _("Unknonw %s %s") % (update, history)
+            if rdata.resource.monitors:
+                return _("Unknonw %s %s") % (update, history)
+            return _("No monitor")
         display_used.short_description = _("Used")
         display_used.allow_tags = True
         

@@ -57,8 +57,14 @@ class ServiceMonitor(ServiceBackend):
         return data.created_at
     
     def process(self, line):
-        """ line -> object_id, value """
-        return line.split()
+        """ line -> object_id, value, state"""
+        result = line.split()
+        if len(result) != 2:
+            cls_name = self.__class__.__name__
+            raise ValueError("%s expected '<id> <value>' got '%s'" % (cls_name, line))
+        # State is None, unless your monitor needs to keep track of it
+        result.append(None)
+        return result
     
     def store(self, log):
         """ stores monitored values from stdout """
@@ -68,16 +74,14 @@ class ServiceMonitor(ServiceBackend):
         ct = ContentType.objects.get_by_natural_key(app_label, model_name.lower())
         for line in log.stdout.splitlines():
             line = line.strip()
-            try:
-                object_id, value = self.process(line)
-            except ValueError:
-                cls_name = self.__class__.__name__
-                raise ValueError("%s expected '<id> <value>' got '%s'" % (cls_name, line))
+            object_id, value, state = self.process(line)
             if isinstance(value, bytes):
                 value = value.decode('ascii')
+            if isinstance(state, bytes):
+                state = state.decode('ascii')
             content_object = ct.get_object_for_this_type(pk=object_id)
             MonitorData.objects.create(
-                monitor=name, object_id=object_id, content_type=ct, value=value,
+                monitor=name, object_id=object_id, content_type=ct, value=value, state=state,
                 created_at=self.current_date, content_object_repr=str(content_object),
             )
     

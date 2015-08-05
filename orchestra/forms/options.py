@@ -60,7 +60,7 @@ class UserCreationForm(forms.ModelForm):
 class UserChangeForm(forms.ModelForm):
     password = auth_forms.ReadOnlyPasswordHashField(label=_("Password"),
         help_text=_("Raw passwords are not stored, so there is no way to see "
-                    "this user's password, but you can change the password "
+                    "this user's password, but you can change it by "
                     "using <a href=\"password/\">this form</a>."))
     
     def clean_password(self):
@@ -68,6 +68,13 @@ class UserChangeForm(forms.ModelForm):
         # This is done here, rather than on the field, because the
         # field does not have access to the initial value
         return self.initial["password"]
+
+
+class NonStoredUserChangeForm(forms.ModelForm):
+    password = forms.CharField(label=_("Password"), required=False,
+        widget=SpanWidget(display='<strong>Unknown password</strong>'),
+        help_text=_("This service's password is not stored, so there is no way to see it, "
+                    "but you can change it using <a href=\"password/\">this form</a>."))
 
 
 class ReadOnlyFormMixin(object):

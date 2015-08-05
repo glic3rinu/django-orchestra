@@ -13,9 +13,8 @@ class VPS(models.Model):
     type = models.CharField(_("type"), max_length=64, choices=settings.VPS_TYPES,
         default=settings.VPS_DEFAULT_TYPE)
     template = models.CharField(_("template"), max_length=64,
-        choices=settings.VPS_TEMPLATES, default=settings.VPS_DEFAULT_TEMPLATE)
-    password = models.CharField(_('password'), max_length=128,
-        help_text=_("<TT>root</TT> password of this virtual machine"))
+        choices=settings.VPS_TEMPLATES, default=settings.VPS_DEFAULT_TEMPLATE,
+        help_text=_("Initial template."))
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
         related_name='vpss')
     

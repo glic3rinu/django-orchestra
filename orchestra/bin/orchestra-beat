@@ -191,7 +191,7 @@ def fire_pending_messages(settings, db):
         for num, seconds in enumerate(MAILER_DEFERE_SECONDS):
             delta = timedelta(seconds=seconds)
             epoch = now-delta
-            query_or.append("""(mailer_message.retries = %i AND mailer_message.last_retry <= '%s')"""
+            query_or.append("""(mailer_message.retries = %i AND mailer_message.last_try <= '%s')"""
                 % (num, epoch.isoformat().replace('T', ' ')))
         query = """\
             SELECT 1 FROM mailer_message

@@ -33,13 +33,18 @@ class ResourceSerializer(serializers.ModelSerializer):
 def insert_resource_serializers():
     # clean previous state
     for related in Resource._related:
-        viewset = router.get_viewset(related)
-        fields = list(viewset.serializer_class.Meta.fields)
         try:
-            fields.remove('resources')
-        except ValueError:
+            viewset = router.get_viewset(related)
+        except KeyError:
+            # API viewset not registered
             pass
-        viewset.serializer_class.Meta.fields = fields
+        else:
+            fields = list(viewset.serializer_class.Meta.fields)
+            try:
+                fields.remove('resources')
+            except ValueError:
+                pass
+            viewset.serializer_class.Meta.fields = fields
     # Create nested serializers on target models
     for ct, resources in Resource.objects.group_by('content_type').items():
         model = ct.model_class()

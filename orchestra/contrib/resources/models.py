@@ -172,8 +172,7 @@ class ResourceData(models.Model):
     used = models.DecimalField(_("used"), max_digits=16, decimal_places=3, null=True,
         editable=False)
     updated_at = models.DateTimeField(_("updated"), null=True, editable=False)
-    allocated = models.DecimalField(_("allocated"), max_digits=8, decimal_places=2,
-        null=True, blank=True)
+    allocated = models.PositiveIntegerField(_("allocated"), null=True, blank=True)
     content_object_repr = models.CharField(_("content object representation"), max_length=256,
         editable=False)
     
@@ -268,6 +267,8 @@ class MonitorData(models.Model):
     object_id = models.PositiveIntegerField(_("object id"), db_index=True)
     created_at = models.DateTimeField(_("created"), default=timezone.now, db_index=True)
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
+    state = models.DecimalField(_("state"), max_digits=16, decimal_places=2, null=True,
+        help_text=_("Optional field used to store current state needed for diff-based monitoring."))
     content_object_repr = models.CharField(_("content object representation"), max_length=256,
         editable=False)
     
@@ -308,6 +309,7 @@ def create_resource_relation():
                 )
                 rdata = ResourceData(
                     content_object=self.obj,
+                    content_object_repr=str(self.obj),
                     resource=resource,
                     allocated=resource.default_allocation
                 )

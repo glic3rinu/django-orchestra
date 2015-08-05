@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from . import settings
@@ -14,7 +13,7 @@ class Message(models.Model):
         (QUEUED, _("Queued")),
         (SENT, _("Sent")),
         (DEFERRED, _("Deferred")),
-        (FAILED, _("Failes")),
+        (FAILED, _("Failed")),
     )
     
     CRITICAL = 0
@@ -36,8 +35,7 @@ class Message(models.Model):
     content = models.TextField(_("content"))
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     retries = models.PositiveIntegerField(_("retries"), default=0)
-    # TODO rename to last_try
-    last_retry = models.DateTimeField(_("last try"), null=True)
+    last_try = models.DateTimeField(_("last try"), null=True)
     
     def __str__(self):
         return '%s to %s' % (self.subject, self.to_address)
@@ -47,9 +45,7 @@ class Message(models.Model):
         # Max tries
         if self.retries >= len(settings.MAILER_DEFERE_SECONDS):
             self.state = self.FAILED
-        self.retries += 1
-        self.last_retry = timezone.now()
-        self.save(update_fields=('state', 'retries', 'last_retry'))
+        self.save(update_fields=('state',))
     
     def sent(self):
         self.state = self.SENT

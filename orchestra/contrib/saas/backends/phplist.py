@@ -34,7 +34,8 @@ class PhpListSaaSBackend(ServiceController):
         sys.stderr.write(msg + '\n')
         raise RuntimeError(msg)
     
-    def _save(self, saas, server):
+    def _install_or_change_password(self, saas, server):
+        """ configures the database for the new site through HTTP to /admin/ """
         admin_link = 'https://%s/admin/' % saas.get_site_domain()
         sys.stdout.write('admin_link: %s\n' % admin_link)
         admin_content = requests.get(admin_link, verify=settings.SAAS_PHPLIST_VERIFY_SSL)
@@ -75,7 +76,7 @@ class PhpListSaaSBackend(ServiceController):
     
     def save(self, saas):
         if hasattr(saas, 'password'):
-            self.append(self._save, saas)
+            self.append(self._install_or_change_password, saas)
         context = self.get_context(saas)
         if context['crontab']:
             context['escaped_crontab'] = context['crontab'].replace('$', '\\$')

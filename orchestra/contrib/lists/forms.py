@@ -1,8 +1,6 @@
-from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core.validators import validate_password
-from orchestra.forms.widgets import SpanWidget
+from orchestra.forms import UserCreationForm, NonStoredUserChangeForm
 
 
 class CleanAddressMixin(object):
@@ -15,25 +13,9 @@ class CleanAddressMixin(object):
         return domain
 
 
-class ListCreationForm(CleanAddressMixin, forms.ModelForm):
-    password1 = forms.CharField(label=_("Password"), validators=[validate_password],
-        widget=forms.PasswordInput)
-    password2 = forms.CharField(label=_("Password confirmation"),
-        widget=forms.PasswordInput,
-        help_text=_("Enter the same password as above, for verification."))
-    
-    def clean_password2(self):
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
-            msg = _("The two password fields didn't match.")
-            raise forms.ValidationError(msg)
-        return password2
-    
+class ListCreationForm(CleanAddressMixin, UserCreationForm):
+    pass
 
-class ListChangeForm(CleanAddressMixin, forms.ModelForm):
-    password = forms.CharField(label=_("Password"), required=False,
-        widget=SpanWidget(display='<strong>Unknown password</strong>'),
-        help_text=_("List passwords are not stored, so there is no way to see this "
-                    "list's password, but you can change the password using "
-                    "<a href=\"password/\">this form</a>."))
+
+class ListChangeForm(CleanAddressMixin, NonStoredUserChangeForm):
+    pass

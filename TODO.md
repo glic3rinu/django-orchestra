@@ -36,8 +36,6 @@
 
 * What fields we really need on contacts? name email phone and what more?
 
-* Redirect junk emails and delete every 30 days?
-
 * DOC: Complitely decouples scripts execution, billing, service definition
 
 * init.d celery scripts
@@ -58,20 +56,10 @@
 * env ORCHESTRA_MASTER_SERVER='test1.orchestra.lan' ORCHESTRA_SECOND_SERVER='test2.orchestra.lan' ORCHESTRA_SLAVE_SERVER='test3.orchestra.lan' python3 manage.py test orchestra.contrib.domains.tests.functional_tests.tests:AdminBind9BackendDomainTest --nologcapture --keepdb
 
 * ForeignKey.swappable
-* Field.editable
-* ManyToManyField.symmetrical = False (user group)
 
 * REST PERMISSIONS
 
-* caching based on "def text2int(textnum, numwords={}):"
-
-* sync() ServiceController method that synchronizes orchestra and servers (delete or import)
-
-* consider removing mailbox support on forward (user@pangea.org instead)
-
 * Databases.User add reverse M2M databases widget (like mailbox.addresses)
-
-* Grant permissions to systemusers
 
 * Make one dedicated CGI user for each account only for CGI execution (fpm/fcgid). Different from the files owner, and without W permissions, so attackers can not inject backdors and malware.
 
@@ -81,23 +69,13 @@
 
 * Directory Protection on webapp and use webapp path as base path (validate)
 
-* validate systemuser.home on server-side
-
 * webapp backend option compatibility check? raise exception, missconfigured error
-
-* admin systemuser home/directory, add default home and empty directory with has_shell on admin
 
 * Resource used_list_display=True, allocated_list_displat=True, allow resources to show up on list_display
 
 * BackendLog.updated_at (tasks that run over several minutes when finished they do not appear first on the changelist) (like celery tasks.when)
 
-* Periodic task for cleaning old monitoring data
-
 * Create an admin service_view with icons (like SaaS app)
-
-* Resource graph for each related object
-
-* SaaS model splitted into SaaSUser and SaaSSite? inherit from SaaS, proxy model?
 
 * prevent @pangea.org email addresses on contacts, enforce at least one email without @pangea.org
 
@@ -124,8 +102,6 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 * contain error on plugin missing key (plugin dissabled): NOP, fail hard is better than silently, perhaps fail at starttime? apploading machinary
 
 * contact.alternative_phone on a phone.tooltip, email:to
-
-* better validate options and directives (url locations, filesystem paths, etc..)
 
 * make sure that you understand the risks
 
@@ -295,7 +271,7 @@ https://code.djangoproject.com/ticket/24576
 # Settings.parser.changes: if setting.value == default. remove
 # reload generic admin view ?redirect=http...
 # inspecting django db connection for asserting db readines? or performing a query
-# wake up django mailer on send_mail
+* wake up django mailer on send_mail
 
         from orchestra.contrib.tasks import task
         import time, sys
@@ -308,14 +284,14 @@ https://code.djangoproject.com/ticket/24576
                 time.sleep(1)
         counter.apply_async(10, '/tmp/kakas')
 
-# Provide some fixtures with mocked data
+* Provide some fixtures with mocked data
 
 
 TODO http://wiki2.dovecot.org/HowTo/SimpleVirtualInstall
 TODO http://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
 TODO mount the filesystem with "nosuid" option
 
-# uwse uwsgi cron: decorator or config cron = 59 2 -1 -1 -1 %(virtualenv)/bin/python manage.py runmyfunnytask
+* uwse uwsgi cron: decorator or config cron = 59 2 -1 -1 -1 %(virtualenv)/bin/python manage.py runmyfunnytask
 
 # mailboxes.address settings multiple local domains, not only one?
 # backend.context = self.get_context() or save(obj, context=None) ?? more like form.cleaned_data
@@ -323,7 +299,7 @@ TODO mount the filesystem with "nosuid" option
 # smtplib.SMTPConnectError: (421, b'4.7.0 mail.pangea.org Error: too many connections from 77.246.181.209')
 
 # rename virtual_maps to virtual_alias_maps and remove virtual_alias_domains ?
-# virtdomains file is not ideal, prevent fake/error on domains there! and make sure to chekc if this file is required!
+# virtdomains file is not ideal, prevent user provided fake/error domains there! and make sure to chekc if this file is required!
 
 # Deprecate restart/start/stop services (do touch wsgi.py and fuck celery)
 orchestra-beat support for uwsgi cron
@@ -338,11 +314,9 @@ resorce monitoring more efficient, less mem an better queries for calc current d
 
 # bill this https://orchestra.pangea.org/admin/orders/order/8236/ should be already billed, <= vs <
 # Convert rating method from function to PluginClass
-# Tests can not run because django.db.utils.ProgrammingError: relation "accounts_account" does not exist
 
 # autoresponses on mailboxes, not addresses or remove them
 
-# ACL don't give exec permissions to files!
 # force save and continue on routes (and others?)
 # gevent for python3
 apt-get install cython3
@@ -383,8 +357,6 @@ kill -HUP `cat /tmp/project-master.pid`
 uwsgi --reload /tmp/project-master.pid
 # or if uwsgi was started with touch-reload=/tmp/somefile
 touch /tmp/somefile
-
-# datetime metric storage granularity: otherwise innacurate detection of billed metric on order.billed_on
 
 # Serializers.validation migration to DRF3: grep -r 'attrs, source' *|grep -v '~'
 serailzer self.instance on create.
@@ -427,14 +399,14 @@ Case
 
 # round decimals on every billing operation
 
-# Add SPF record type
-
-# OVZ TRAFFIC ACCOUNTING!!
-
 # PHPlist cron, bounces and traffic (maybe specific mail script with sitename)
-
 
 # use "su $user --shell /bin/bash" on backends for security : MKDIR -p...
 
-
 # model.field.flatchoices
+
+* This is beta software, please test thoroughly before putting into production and report back any issues.
+
+# messages SMTP errors: temporary->deferre else Failed
+
+# Don't enforce one contact per account? remove account.email in favour of contacts?

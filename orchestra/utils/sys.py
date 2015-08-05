@@ -142,7 +142,11 @@ def run(command, display=False, valid_codes=(0,), silent=False, stdin=b'', async
 
 def sshrun(addr, command, *args, executable='bash', persist=False, **kwargs):
     from .. import settings
-    options = ['stricthostkeychecking=no']
+    options = [
+        'stricthostkeychecking=no',
+        'BatchMode=yes',
+        'EscapeChar=none',
+    ]
     if persist:
         options.extend((
             'ControlMaster=auto',

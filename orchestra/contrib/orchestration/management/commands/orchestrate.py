@@ -6,6 +6,7 @@ from orchestra.contrib.orchestration import manager, Operation
 from orchestra.contrib.orchestration.models import Server
 from orchestra.contrib.orchestration.backends import ServiceBackend
 from orchestra.utils.python import import_class, OrderedSet, AttrDict
+from orchestra.utils.sys import confirm
 
 
 class Command(BaseCommand):
@@ -91,15 +92,8 @@ class Command(BaseCommand):
             context = {
                 'servers': ', '.join(servers),
             }
-            msg = ("\n\nAre your sure to execute the previous scripts on %(servers)s (yes/no)? " % context)
-            confirm = input(msg)
-            while 1:
-                if confirm not in ('yes', 'no'):
-                    confirm = input('Please enter either "yes" or "no": ')
-                    continue
-                if confirm == 'no':
-                    return
-                break
+            if not confirm("\n\nAre your sure to execute the previous scripts on %(servers)s (yes/no)? " % context)
+                return
         if not dry:
             logs = manager.execute(scripts, serialize=serialize, async=True)
             running = list(logs)

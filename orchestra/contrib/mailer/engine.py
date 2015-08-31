@@ -13,13 +13,9 @@ from . import settings
 from .models import Message
 
 
-def send_message(message, num=0, connection=None, bulk=settings.MAILER_BULK_MESSAGES):
-    if num >= bulk and connection is not None:
-        connection.close()
-        connection = None
+def send_message(message, connection=None, bulk=settings.MAILER_BULK_MESSAGES):
     if connection is None:
         # Reset connection with django
-        num = 0
         connection = get_connection(backend='django.core.mail.backends.smtp.EmailBackend')
         connection.open()
     error = None
@@ -47,20 +43,28 @@ def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
     try:
         with LockFile('/dev/shm/mailer.send_pending.lock'):
             connection = None
-            num = 0
-            for message in Message.objects.filter(state=Message.QUEUED).order_by('priority'):
-                connection = send_message(message, num, connection, bulk)
-                num += 1
+            cur, total = 0, 0
+            for message in Message.objects.filter(state=Message.QUEUED).order_by('priority', 'last_try', 'created_at'):
+                if cur >= bulk and connection is not None:
+                    connection.close()
+                    cur = 0
+                connection = send_message(message, connection, bulk)
+                cur += 1
+                total += 1
             now = timezone.now()
             qs = Q()
             for retries, seconds in enumerate(settings.MAILER_DEFERE_SECONDS):
                 delta = timedelta(seconds=seconds)
                 qs = qs | Q(retries=retries, last_try__lte=now-delta)
-            for message in Message.objects.filter(state=Message.DEFERRED).filter(qs).order_by('priority'):
-                connection = send_message(message, num, connection, bulk)
-                num += 1
+            for message in Message.objects.filter(state=Message.DEFERRED).filter(qs).order_by('priority', 'last_try'):
+                if cur >= bulk and connection is not None:
+                    connection.close()
+                    cur = 0
+                connection = send_message(message, connection, bulk)
+                cur += 1
+                total += 1
             if connection is not None:
                 connection.close()
-        return num
+        return total
     except OperationLocked:
         pass

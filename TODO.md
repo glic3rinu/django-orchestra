@@ -15,8 +15,6 @@
 
 * help_text on readonly_fields specialy Bill.state. (eg. A bill is in OPEN state when bla bla )
 
-* create log file at /var/log/orchestra.log and rotate
-
 * order.register_at
     @property
     def register_on(self):
@@ -363,8 +361,6 @@ serailzer self.instance on create.
 
 * check certificate: websites directive ssl + domains search on miscellaneous
 
-# ValueError: Unable to configure handler 'file': [Errno 13] Permission denied: '/home/orchestra/panel/orchestra.log'
-
 # billing invoice link on related invoices not overflow nginx GET vars
 
 * backendLog store method and language... and use it for display_script with correct lexer
@@ -410,3 +406,9 @@ Case
 # messages SMTP errors: temporary->deferre else Failed
 
 # Don't enforce one contact per account? remove account.email in favour of contacts?
+
+#change class LogEntry(models.Model):
+    action_time = models.DateTimeField(_('action time'), auto_now=True) to auto_now_add
+
+# Model operations on Manager instead of model method
+# Mailer: mark as sent

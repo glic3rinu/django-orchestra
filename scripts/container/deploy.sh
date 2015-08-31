@@ -88,8 +88,7 @@ if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$
 fi
 
 # create logfile
-touch /home/orchestra/panel/orchestra.log
-chown $USER:$USER /home/orchestra/panel/orchestra.log
+surun "$PYTHON_BIN $MANAGE setuplog --noinput"
 
 
 # admin_tools needs accounts and does not have migrations

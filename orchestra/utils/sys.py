@@ -32,6 +32,17 @@ def check_non_root(func):
     return wrapped
 
 
+def confirm(msg):
+    confirmation = input(msg)
+    while True:
+        if confirmation not in ('yes', 'no'):
+            confirmation = input('Please enter either "yes" or "no": ')
+            continue
+        if confirmation == 'no':
+            return False
+        return True
+
+
 class _Attribute(object):
     """ Simple string subclass to allow arbitrary attribute access. """
     def __init__(self, stdout):

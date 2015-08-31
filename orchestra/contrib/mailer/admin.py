@@ -32,6 +32,7 @@ class MessageAdmin(admin.ModelAdmin):
     )
     list_filter = ('state', 'priority', 'retries')
     list_prefetch_related = ('logs__id')
+    search_fields = ('to_address', 'from_address', 'subject',)
     fieldsets = (
         (None, {
             'fields': ('state', 'priority', ('retries', 'last_try_delta', 'created_at_delta'),

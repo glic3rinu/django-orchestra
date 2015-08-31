@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from orchestra.utils import paths
-from orchestra.utils.sys import run, check_root
+from orchestra.utils.sys import run, check_root, confirm
 
 
 class Command(BaseCommand):
@@ -230,16 +230,9 @@ class Command(BaseCommand):
             elif diff.exit_code == 1:
                 # File is different, save the old one
                 if interactive:
-                    msg = ("\n\nFile %(file)s be updated, do you like to overide "
-                           "it? (yes/no): " % context)
-                    confirm = input(msg)
-                    while 1:
-                        if confirm not in ('yes', 'no'):
-                            confirm = input('Please enter either "yes" or "no": ')
-                            continue
-                        if confirm == 'no':
-                            return
-                        break
+                    if not confirm("\n\nFile %(file)s be updated, do you like to overide "
+                                   "it? (yes/no): " % context)
+                        return
                 run("cp %(file)s %(file)s.save" % context, display=True)
                 run("cat << 'EOF' > %(file)s\n%(conf)s\nEOF" % context, display=True)
                 self.stdout.write("\033[1;31mA new version of %(file)s has been installed.\n "

@@ -61,6 +61,10 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
         sudo python3 manage.py setupcelery --username orchestra
         ```
 
+7. (Optional) Configure logging
+    ```bash
+    sudo python3 manage.py setuplog
+    ```
 
 8. Configure the web server:
     ```bash
@@ -68,6 +72,7 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
     sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
     sudo python3 manage.py setupnginx --user orchestra
     ```
+
 
 9. Start all services:
     ```bash

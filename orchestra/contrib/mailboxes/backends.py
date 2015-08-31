@@ -24,12 +24,12 @@ class SieveFilteringMixin(object):
             context['box'] = box
             self.append(textwrap.dedent("""
                 # Create %(box)s mailbox
-                su $user --shell /bin/bash << 'EOF'
+                su %(user)s --shell /bin/bash << 'EOF'
                     mkdir -p "%(maildir)s/.%(box)s"
                 EOF
                 if [[ ! $(grep '%(box)s' %(maildir)s/subscriptions) ]]; then
                     echo '%(box)s' >> %(maildir)s/subscriptions
-                    chown $user:$user %(maildir)s/subscriptions
+                    chown %(user)s:%(user)s %(maildir)s/subscriptions
                 fi
                 """) % context
             )
@@ -39,7 +39,7 @@ class SieveFilteringMixin(object):
             context['filtering'] = ('# %(banner)s\n' + content) % context
             self.append(textwrap.dedent("""\
                 # Create and compile orchestra sieve filtering
-                su $user --shell /bin/bash << 'EOF'
+                su %(user)s --shell /bin/bash << 'EOF'
                     mkdir -p $(dirname "%(filtering_path)s")
                     cat << '    EOF' > %(filtering_path)s
                         %(filtering)s
@@ -50,7 +50,7 @@ class SieveFilteringMixin(object):
             )
         else:
             self.append("echo '' > %(filtering_path)s" % context)
-        self.append('chown $user:$group %(filtering_path)s' % context)
+        self.append('chown %(user)s:%(group)s %(filtering_path)s' % context)
 
 
 class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
@@ -97,7 +97,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         #unit_to_bytes(mailbox.resources.disk.unit)
         self.append(textwrap.dedent("""
             # Set Maildir quota for %(user)s
-            su $user --shell /bin/bash << 'EOF'
+            su %(user)s --shell /bin/bash << 'EOF'
                 mkdir -p %(maildir)s
             EOF
             if [[ ! -f %(maildir)s/maildirsize ]]; then

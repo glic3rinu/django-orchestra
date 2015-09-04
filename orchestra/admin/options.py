@@ -17,7 +17,7 @@ from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
 
-from ..utils.python import random_ascii
+from ..utils.python import random_ascii, pairwise
 
 from .forms import AdminPasswordChangeForm
 #from django.contrib.auth.forms import AdminPasswordChangeForm
@@ -68,6 +68,31 @@ class AtLeastOneRequiredInlineFormSet(BaseInlineFormSet):
         if not any(cleaned_data and not cleaned_data.get('DELETE', False)
             for cleaned_data in self.cleaned_data):
             raise forms.ValidationError('At least one item required.')
+
+
+class EnhaceSearchMixin(object):
+    def lookup_allowed(self, lookup, value):
+        """ allows any lookup """
+        if 'password' in lookup:
+            return False
+        return True
+    
+    def get_search_results(self, request, queryset, search_term):
+        """ allows to specify field <field_name>:<search_term> """
+        search_fields = self.get_search_fields(request)
+        if ':' in search_term:
+            fields = {field.split('__')[0]: field for field in search_fields}
+            new_search_term = []
+            for part in search_term.split():
+                cur_search_term = ''
+                for field, term in pairwise(part.split(':')):
+                    if field in fields:
+                        queryset = queryset.filter(**{'%s__icontains' % fields[field]: term})
+                    else:
+                        cur_search_term += ':'.join((field, term))
+                new_search_term.append(cur_search_term)
+            search_term = ' '.join(new_search_term)
+        return super(EnhaceSearchMixin, self).get_search_results(request, queryset, search_term)
 
 
 class ChangeViewActionsMixin(object):
@@ -176,7 +201,11 @@ class ChangeAddFieldsMixin(object):
         return super(ChangeAddFieldsMixin, self).get_form(request, obj, **defaults)
 
 
-class ExtendedModelAdmin(ChangeViewActionsMixin, ChangeAddFieldsMixin, ChangeListDefaultFilter, admin.ModelAdmin):
+class ExtendedModelAdmin(ChangeViewActionsMixin,
+                         ChangeAddFieldsMixin,
+                         ChangeListDefaultFilter,
+                         EnhaceSearchMixin,
+                         admin.ModelAdmin):
     list_prefetch_related = None
     
     def get_queryset(self, request):

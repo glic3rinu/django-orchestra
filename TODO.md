@@ -407,8 +407,7 @@ Case
 
 # Don't enforce one contact per account? remove account.email in favour of contacts?
 
-#change class LogEntry(models.Model):
-    action_time = models.DateTimeField(_('action time'), auto_now=True) to auto_now_add
-
-# Model operations on Manager instead of model method
 # Mailer: mark as sent
+
+# Pending filter filter out orders zero metric from pending
+

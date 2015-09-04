@@ -8,6 +8,21 @@ from orchestra.utils.python import AttrDict
 from . import settings, validators, utils
 
 
+class DomainQuerySet(models.QuerySet):
+    def get_parent(self, name, top=False):
+        """ get the next domain on the chain """
+        split = name.split('.')
+        parent = None
+        for i in range(1, len(split)-1):
+            name = '.'.join(split[i:])
+            domain = Domain.objects.filter(name=name)
+            if domain:
+                parent = domain.get()
+                if not top:
+                    return parent
+        return parent
+
+
 class Domain(models.Model):
     name = models.CharField(_("name"), max_length=256, unique=True,
         help_text=_("Domain or subdomain name."),
@@ -51,22 +66,10 @@ class Domain(models.Model):
                     "servers how long they should keep the data in cache. "
                     "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_MIN_TTL)
     
+    objects = DomainQuerySet.as_manager()
+    
     def __str__(self):
         return self.name
-    
-    @classmethod
-    def get_parent_domain(cls, name, top=False):
-        """ get the next domain on the chain """
-        split = name.split('.')
-        parent = None
-        for i in range(1, len(split)-1):
-            name = '.'.join(split[i:])
-            domain = Domain.objects.filter(name=name)
-            if domain:
-                parent = domain.get()
-                if not top:
-                    return parent
-        return parent
     
     @property
     def origin(self):
@@ -122,7 +125,7 @@ class Domain(models.Model):
         return self.origin.subdomain_set.all().prefetch_related('records')
     
     def get_parent(self, top=False):
-        return self.get_parent_domain(self.name, top=top)
+        return type(self).objects.get_parent(self.name, top=top)
     
     def render_zone(self):
         origin = self.origin

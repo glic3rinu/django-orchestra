@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n l10n staticfiles admin_urls utils %}
+{% load i18n l10n staticfiles admin_urls utils orders %}
 
 {% block extrastyle %}
 {{ block.super }}
@@ -50,7 +50,7 @@ $(document).ready( function () {
             {% if not lines %}
                 <table>
                 <thead>
-                    <tr><th>{% trans 'Nothing to bill' %}</th></tr>
+                    <tr><th>{% trans 'Nothing to bill, all lines have size&times;quantity 0.' %}</th></tr>
                 </thead>
                 </table>
             {% else %}
@@ -67,7 +67,7 @@ $(document).ready( function () {
                             <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Discount per {{ discount.type }}
                         {% endfor %}
                     </td>
-                    <td>{{ line.ini | date }} to {{ line.end | date }}</td>
+                    <td>{{ line | periodformat }}</td>
                     <td>{{ line.size | floatformat:"-2" }}&times;{{ line.metric | floatformat:"-2"}}</td>
                     <td>
                         &nbsp;{{ line.subtotal | floatformat:"-2" }} &euro;

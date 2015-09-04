@@ -32,8 +32,8 @@ def update_orders(sender, **kwargs):
     if sender._meta.app_label not in settings.ORDERS_EXCLUDED_APPS:
         instance = kwargs['instance']
         if type(instance) in services:
-            Order.update_orders(instance)
+            Order.objects.update_by_instance(instance)
         elif not hasattr(instance, 'account'):
             related = helpers.get_related_object(instance)
             if related and related != instance:
-                Order.update_orders(related)
+                Order.objects.update_by_instance(related)

@@ -19,6 +19,18 @@ autodiscover_modules('handlers')
 rate_class = import_class(settings.SERVICES_RATE_CLASS)
 
 
+class ServiceQuerySet(models.QuerySet):
+    def filter_by_instance(self, instance):
+        cache = caches.get_request_cache()
+        ct = ContentType.objects.get_for_model(instance)
+        key = 'services.Service-%i' % ct.pk
+        services = cache.get(key)
+        if services is None:
+            services = self.filter(content_type=ct, is_active=True)
+            cache.set(key, services)
+        return services
+
+
 class Service(models.Model):
     NEVER = ''
 #    DAILY = 'DAILY'
@@ -152,19 +164,10 @@ class Service(models.Model):
         ),
         default=PREPAY)
     
+    objects = ServiceQuerySet.as_manager()
+    
     def __str__(self):
         return self.description
-    
-    @classmethod
-    def get_services(cls, instance):
-        cache = caches.get_request_cache()
-        ct = ContentType.objects.get_for_model(instance)
-        key = 'services.Service-%i' % ct.pk
-        services = cache.get(key)
-        if services is None:
-            services = cls.objects.filter(content_type=ct, is_active=True)
-            cache.set(key, services)
-        return services
     
     @cached_property
     def handler(self):
@@ -251,5 +254,5 @@ class Service(models.Model):
         if related_model._meta.model_name != 'account':
             queryset = queryset.select_related('account').all()
         for instance in queryset:
-            updates += order_model.update_orders(instance, service=self, commit=commit)
+            updates += order_model.objects.update_by_instance(instance, service=self, commit=commit)
         return updates

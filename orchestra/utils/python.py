@@ -3,6 +3,7 @@ import collections
 import random
 import string
 from io import StringIO
+from itertools import tee
 
 
 def import_class(cls):
@@ -118,3 +119,9 @@ def cmp_to_key(mycmp):
             return mycmp(self.obj, other.obj) != 0
     return K
 
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)

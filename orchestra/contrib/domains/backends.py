@@ -111,7 +111,7 @@ class Bind9MasterDomainBackend(ServiceController):
         from orchestra.contrib.orchestration.manager import router
         operation = Operation(backend, domain, Operation.SAVE)
         servers = []
-        for route in router.get_routes(operation):
+        for route in router.objects.get_for_operation(operation):
             servers.append(route.host.get_ip())
         return servers
     

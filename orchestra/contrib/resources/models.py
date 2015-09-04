@@ -164,6 +164,23 @@ class Resource(models.Model):
         return tasks.monitor(self.pk)
 
 
+class ResourceDataQuerySet(models.QuerySet):
+    def get_or_create(self, obj, resource):
+        ct = ContentType.objects.get_for_model(type(obj))
+        try:
+            return self.get(
+                content_type=ct,
+                object_id=obj.pk,
+                resource=resource
+            ), False
+        except self.model.DoesNotExist:
+            return self.create(
+                content_object=obj,
+                resource=resource,
+                allocated=resource.default_allocation
+            ), True
+
+
 class ResourceData(models.Model):
     """ Stores computed resource usage and allocation """
     resource = models.ForeignKey(Resource, related_name='dataset', verbose_name=_("resource"))
@@ -177,6 +194,7 @@ class ResourceData(models.Model):
         editable=False)
     
     content_object = GenericForeignKey()
+    objects = ResourceDataQuerySet.as_manager()
     
     class Meta:
         unique_together = ('resource', 'content_type', 'object_id')
@@ -184,22 +202,6 @@ class ResourceData(models.Model):
     
     def __str__(self):
         return "%s: %s" % (str(self.resource), str(self.content_object))
-    
-    @classmethod
-    def get_or_create(cls, obj, resource):
-        ct = ContentType.objects.get_for_model(type(obj))
-        try:
-            return cls.objects.get(
-                content_type=ct,
-                object_id=obj.pk,
-                resource=resource
-            ), False
-        except cls.DoesNotExist:
-            return cls.objects.create(
-                content_object=obj,
-                resource=resource,
-                allocated=resource.default_allocation
-            ), True
     
     @property
     def unit(self):

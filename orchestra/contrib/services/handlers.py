@@ -247,7 +247,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     
     def generate_line(self, order, price, *dates, metric=1, discounts=None, computed=False):
         """
-        discounts: already applied discounts on price
+        discounts: extra discounts to apply
         computed: price = price*size already performed
         """
         if len(dates) == 2:
@@ -271,14 +271,17 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             'metric': metric,
             'discounts': [],
         })
-        discounted = 0
-        for dtype, dprice in discounts:
-            self.generate_discount(line, dtype, dprice)
-            discounted += dprice
-        # TODO this is needed for all discounts?
-        subtotal += discounted
         if subtotal > price:
-            self.generate_discount(line, self._PLAN, price-subtotal)
+            plan_discount = price-subtotal
+            self.generate_discount(line, self._PLAN, plan_discount)
+            subtotal += plan_discount
+        for dtype, dprice in discounts:
+            subtotal += dprice
+            # Prevent compensations to refund money
+            if dtype == self._COMPENSATION and subtotal < 0:
+                dprice -= subtotal
+            if dprice:
+                self.generate_discount(line, dtype, dprice)
         return line
     
     def assign_compensations(self, givers, receivers, **options):
@@ -318,7 +321,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     cend = comp.end
                     if only_beyond:
                         cini = beyond
-                elif not only_beyond:
+                elif only_beyond:
                     continue
                 dsize += self.get_price_size(cini, cend)
             # Extend billing point a little bit to benefit from a substantial discount
@@ -359,8 +362,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     if intersect:
                         csize += self.get_price_size(intersect.ini, intersect.end)
                 price = self.get_price(account, metric, position=position, rates=rates)
-                price = price * size
                 cprice = price * csize
+                price = price * size
                 if order in priced:
                     priced[order][0] += price
                     priced[order][1] += cprice
@@ -368,23 +371,25 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     priced[order] = (price, cprice)
         lines = []
         for order, prices in priced.items():
-            discounts = ()
-            # Generate lines and discounts from order.nominal_price
-            price, cprice = prices
-            # Compensations > new_billed_until
-            dsize, new_end = self.apply_compensations(order, only_beyond=True)
-            cprice += dsize*price
-            if cprice:
-                discounts = (
-                    (self._COMPENSATION, -cprice),
-                )
-                if new_end:
-                    size = self.get_price_size(order.new_billed_until, new_end)
-                    price += price*size
-                    order.new_billed_until = new_end
-            line = self.generate_line(
-                order, price, ini, new_end or end, discounts=discounts, computed=True)
-            lines.append(line)
+            if hasattr(order, 'new_billed_until'):
+                discounts = ()
+                # Generate lines and discounts from order.nominal_price
+                price, cprice = prices
+                a = order.id
+                # Compensations > new_billed_until
+                dsize, new_end = self.apply_compensations(order, only_beyond=True)
+                cprice += dsize*price
+                if cprice:
+                    discounts = (
+                        (self._COMPENSATION, -cprice),
+                    )
+                    if new_end:
+                        size = self.get_price_size(order.new_billed_until, new_end)
+                        price += price*size
+                        order.new_billed_until = new_end
+                line = self.generate_line(
+                    order, price, ini, new_end or end, discounts=discounts, computed=True)
+                lines.append(line)
         return lines
     
     def bill_registered_or_renew_events(self, account, porders, rates):
@@ -503,7 +508,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                         recharges = []
                         rini = order.billed_on
                         rend = min(bp, order.billed_until)
-                        bmetric = order.billed_metric
+                        bmetric = order.billed_metric or 0
                         bsize = self.get_price_size(rini, order.billed_until)
                         prepay_discount = self.get_price(account, bmetric) * bsize
                         prepay_discount = round(prepay_discount, 2)

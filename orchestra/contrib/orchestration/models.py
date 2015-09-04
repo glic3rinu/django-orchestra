@@ -144,6 +144,31 @@ class BackendOperation(models.Model):
 autodiscover_modules('backends')
 
 
+class RouteQuerySet(models.QuerySet):
+    def get_for_operation(self, operation, **kwargs):
+        cache = kwargs.get('cache', {})
+        if not cache:
+            for route in self.filter(is_active=True).select_related('host'):
+                for action in route.backend_class.get_actions():
+                    key = (route.backend, action)
+                    try:
+                        cache[key].append(route)
+                    except KeyError:
+                        cache[key] = [route]
+        routes = []
+        backend_cls = operation.backend
+        key = (backend_cls.get_name(), operation.action)
+        try:
+            target_routes = cache[key]
+        except KeyError:
+            pass
+        else:
+            for route in target_routes:
+                if route.matches(operation.instance):
+                    routes.append(route)
+        return routes
+
+
 class Route(models.Model):
     """
     Defines the routing that determine in which server a backend is executed
@@ -163,6 +188,7 @@ class Route(models.Model):
 #            default=MethodBackend.get_default())
     is_active = models.BooleanField(_("active"), default=True)
     
+    objects = RouteQuerySet.as_manager()
     
     class Meta:
         unique_together = ('backend', 'host')
@@ -173,30 +199,6 @@ class Route(models.Model):
     @cached_property
     def backend_class(self):
         return ServiceBackend.get_backend(self.backend)
-    
-    @classmethod
-    def get_routes(cls, operation, **kwargs):
-        cache = kwargs.get('cache', {})
-        if not cache:
-            for route in cls.objects.filter(is_active=True).select_related('host'):
-                for action in route.backend_class.get_actions():
-                    key = (route.backend, action)
-                    try:
-                        cache[key].append(route)
-                    except KeyError:
-                        cache[key] = [route]
-        routes = []
-        backend_cls = operation.backend
-        key = (backend_cls.get_name(), operation.action)
-        try:
-            target_routes = cache[key]
-        except KeyError:
-            pass
-        else:
-            for route in target_routes:
-                if route.matches(operation.instance):
-                    routes.append(route)
-        return routes
     
     def clean(self):
         if not self.match:

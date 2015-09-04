@@ -67,7 +67,7 @@ class MailboxBillingTest(BaseTestCase):
         return self.resource
     
     def allocate_disk(self, mailbox, value):
-        data, __ = ResourceData.get_or_create(mailbox, self.resource)
+        data, __ = ResourceData.objects.get_or_create(mailbox, self.resource)
         data.allocated = value
         data.save()
     

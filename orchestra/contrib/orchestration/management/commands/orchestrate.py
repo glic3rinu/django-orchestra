@@ -92,7 +92,7 @@ class Command(BaseCommand):
             context = {
                 'servers': ', '.join(servers),
             }
-            if not confirm("\n\nAre your sure to execute the previous scripts on %(servers)s (yes/no)? " % context)
+            if not confirm("\n\nAre your sure to execute the previous scripts on %(servers)s (yes/no)? " % context):
                 return
         if not dry:
             logs = manager.execute(scripts, serialize=serialize, async=True)

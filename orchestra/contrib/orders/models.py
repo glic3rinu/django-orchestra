@@ -7,6 +7,7 @@ from django.db.models import F, Q, Sum
 from django.apps import apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -103,6 +104,49 @@ class OrderQuerySet(models.QuerySet):
     def inactive(self, **kwargs):
         """ return inactive orders """
         return self.filter(cancelled_on__lte=timezone.now(), **kwargs)
+    
+    def update_by_instance(self, instance, service=None, commit=True):
+        updates = []
+        if service is None:
+            Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
+            services = Service.objects.filter_by_instance(instance)
+        else:
+            services = [service]
+        for service in services:
+            orders = Order.objects.by_object(instance, service=service)
+            orders = orders.select_related('service').active()
+            if service.handler.matches(instance):
+                if not orders:
+                    account_id = getattr(instance, 'account_id', instance.pk)
+                    if account_id is None:
+                        # New account workaround -> user.account_id == None
+                        continue
+                    ignore = service.handler.get_ignore(instance)
+                    order = self.model(
+                        content_object=instance,
+                        content_object_repr=str(instance),
+                        service=service,
+                        account_id=account_id,
+                        ignore=ignore)
+                    if commit:
+                        order.save()
+                    updates.append((order, 'created'))
+                    logger.info("CREATED new order id: {id}".format(id=order.id))
+                else:
+                    if len(orders) > 1:
+                        raise ValueError("A single active order was expected.")
+                    order = orders[0]
+                    updates.append((order, 'updated'))
+                if commit:
+                    order.update()
+            elif orders:
+                if len(orders) > 1:
+                    raise ValueError("A single active order was expected.")
+                order = orders[0]
+                order.cancel(commit=commit)
+                logger.info("CANCELLED order id: {id}".format(id=order.id))
+                updates.append((order, 'cancelled'))
+        return updates
 
 
 class Order(models.Model):
@@ -133,52 +177,14 @@ class Order(models.Model):
         return str(self.service)
     
     @classmethod
-    def update_orders(cls, instance, service=None, commit=True):
-        updates = []
-        if service is None:
-            Service = apps.get_model(settings.ORDERS_SERVICE_MODEL)
-            services = Service.get_services(instance)
-        else:
-            services = [service]
-        for service in services:
-            orders = Order.objects.by_object(instance, service=service)
-            orders = orders.select_related('service').active()
-            if service.handler.matches(instance):
-                if not orders:
-                    account_id = getattr(instance, 'account_id', instance.pk)
-                    if account_id is None:
-                        # New account workaround -> user.account_id == None
-                        continue
-                    ignore = service.handler.get_ignore(instance)
-                    order = cls(
-                        content_object=instance,
-                        content_object_repr=str(instance),
-                        service=service,
-                        account_id=account_id,
-                        ignore=ignore)
-                    if commit:
-                        order.save()
-                    updates.append((order, 'created'))
-                    logger.info("CREATED new order id: {id}".format(id=order.id))
-                else:
-                    if len(orders) > 1:
-                        raise ValueError("A single active order was expected.")
-                    order = orders[0]
-                    updates.append((order, 'updated'))
-                if commit:
-                    order.update()
-            elif orders:
-                if len(orders) > 1:
-                    raise ValueError("A single active order was expected.")
-                order = orders[0]
-                order.cancel(commit=commit)
-                logger.info("CANCELLED order id: {id}".format(id=order.id))
-                updates.append((order, 'cancelled'))
-        return updates
-    
-    @classmethod
     def get_bill_backend(cls):
         return import_class(settings.ORDERS_BILLING_BACKEND)()
+    
+    def clean(self):
+        if self.billed_on < self.registered_on:
+            raise ValidationError(_("Billed date can not be earlier than registered on."))
+        if self.billed_until and not self.billed_on:
+            raise ValidationError(_("Billed on is missing while billed until is being provided."))
     
     def update(self):
         instance = self.content_object
@@ -189,7 +195,7 @@ class Order(models.Model):
         if handler.metric:
             metric = handler.get_metric(instance)
             if metric is not None:
-                MetricStorage.store(self, metric)
+                MetricStorage.objects.store(self, metric)
             metric = ', metric:{}'.format(metric)
         description = handler.get_order_description(instance)
         logger.info("UPDATED order id:{id}, description:{description}{metric}".format(
@@ -229,6 +235,8 @@ class Order(models.Model):
             for metric in self.metrics.filter(created_on__lt=end).order_by('id'):
                 created = metric.created_on
                 if created > ini:
+                    if prev is None:
+                        raise ValueError("Metric storage information is inconsistent.")
                     cini = prev.created_on
                     if not result:
                         cini = ini
@@ -259,27 +267,13 @@ class Order(models.Model):
             return decimal.Decimal(0)
 
 
-class MetricStorage(models.Model):
-    """ Stores metric state for future billing """
-    order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
-    value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
-    created_on = models.DateField(_("created"), auto_now_add=True)
-    # TODO time field?
-    updated_on = models.DateTimeField(_("updated"))
-    
-    class Meta:
-        get_latest_by = 'id'
-    
-    def __str__(self):
-        return str(self.order)
-    
-    @classmethod
-    def store(cls, order, value):
+class MetricStorageQuerySet(models.QuerySet):
+    def store(self, order, value):
         now = timezone.now()
         try:
-            last = cls.objects.filter(order=order).latest()
-        except cls.DoesNotExist:
-            cls.objects.create(order=order, value=value, updated_on=now)
+            last = self.filter(order=order).latest()
+        except self.model.DoesNotExist:
+            self.create(order=order, value=value, updated_on=now)
         else:
             # Metric storage has per-day granularity (last value of the day is what counts)
             if last.created_on == now.date():
@@ -289,7 +283,24 @@ class MetricStorage(models.Model):
             else:
                 error = decimal.Decimal(str(settings.ORDERS_METRIC_ERROR))
                 if value > last.value+error or value < last.value-error:
-                    cls.objects.create(order=order, value=value, updated_on=now)
+                    self.create(order=order, value=value, updated_on=now)
                 else:
                     last.updated_on = now
                     last.save(update_fields=['updated_on'])
+
+
+class MetricStorage(models.Model):
+    """ Stores metric state for future billing """
+    order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
+    value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
+    created_on = models.DateField(_("created"), auto_now_add=True)
+    # TODO time field?
+    updated_on = models.DateTimeField(_("updated"))
+    
+    objects = MetricStorageQuerySet.as_manager()
+    
+    class Meta:
+        get_latest_by = 'id'
+    
+    def __str__(self):
+        return str(self.order)

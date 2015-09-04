@@ -130,7 +130,7 @@ class Bill(models.Model):
     
     @cached_property
     def seller(self):
-        return Account.get_main().billcontact
+        return Account.objects.get_main().billcontact
     
     @cached_property
     def buyer(self):

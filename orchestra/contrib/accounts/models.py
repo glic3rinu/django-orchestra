@@ -13,6 +13,11 @@ from orchestra.utils.mail import send_email_template
 from . import settings
 
 
+class AccountManager(auth.UserManager):
+    def get_main(self):
+        return self.get(pk=settings.ACCOUNTS_MAIN_PK)
+
+
 class Account(auth.AbstractBaseUser):
     # Username max_length determined by LINUX system user/group lentgh: 32
     username = models.CharField(_("username"), max_length=32, unique=True,
@@ -39,7 +44,7 @@ class Account(auth.AbstractBaseUser):
                     "Unselect this instead of deleting accounts."))
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
     
-    objects = auth.UserManager()
+    objects = AccountManager()
     
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
@@ -54,10 +59,6 @@ class Account(auth.AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_superuser
-    
-    @classmethod
-    def get_main(cls):
-        return cls.objects.get(pk=settings.ACCOUNTS_MAIN_PK)
     
     def save(self, active_systemuser=False, *args, **kwargs):
         created = not self.pk

@@ -59,7 +59,7 @@ def generate(operations):
     for operation in operations:
         logger.debug("Queued %s" % str(operation))
         if operation.routes is None:
-            operation.routes = router.get_routes(operation, cache=cache)
+            operation.routes = router.objects.get_for_operation(operation, cache=cache)
         for route in operation.routes:
             # TODO key by action.async
             async_action = route.action_is_async(operation.action)
@@ -196,7 +196,7 @@ def collect(instance, action, **kwargs):
                             continue
             operation = Operation(backend_cls, selected, iaction)
             # Only schedule operations if the router has execution routes
-            routes = router.get_routes(operation, cache=route_cache)
+            routes = router.objects.get_for_operation(operation, cache=route_cache)
             if routes:
                 operation.routes = routes
                 if iaction != Operation.DELETE:

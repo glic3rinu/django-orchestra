@@ -4,27 +4,58 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.http import HttpResponseRedirect
 from django.contrib.admin.utils import unquote
+from django.contrib.admin.templatetags.admin_static import static
 
 from orchestra.admin.utils import admin_link, admin_date
 
 
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = (
-        '__str__', 'display_action_time', 'user_link',
+        'id', 'display_message', 'display_action_time', 'user_link',
     )
-    list_filter = ('action_flag', 'content_type',)
+    list_filter = (
+        'action_flag',
+        ('content_type', admin.RelatedOnlyFieldListFilter),
+    )
     date_hierarchy = 'action_time'
-    search_fields = ('object_repr', 'change_message')
+    search_fields = ('object_repr', 'change_message', 'user__username')
     fields = (
-        'user_link', 'content_object_link', 'display_action_time', 'display_action', 'change_message'
+        'user_link', 'content_object_link', 'display_action_time', 'display_action',
+        'change_message'
     )
     readonly_fields = (
         'user_link', 'content_object_link', 'display_action_time', 'display_action',
     )
     actions = None
+    list_select_related = ('user', 'content_type')
     
     user_link = admin_link('user')
     display_action_time = admin_date('action_time', short_description=_("Time"))
+    
+    def display_message(self, log):
+        edit = '<a href="%(url)s"><img src="%(img)s"></img></a>' % {
+            'url': reverse('admin:admin_logentry_change', args=(log.pk,)),
+            'img': static('admin/img/icon_changelink.gif'),
+        }
+        if log.is_addition():
+            return _('Added "%(link)s". %(edit)s') % {
+                'link': self.content_object_link(log),
+                'edit': edit
+            }
+        elif log.is_change():
+            return _('Changed "%(link)s" - %(changes)s %(edit)s') % {
+                'link': self.content_object_link(log),
+                'changes': log.change_message,
+                'edit': edit,
+            }
+        elif log.is_deletion():
+            return _('Deleted "%(object)s." %(edit)s') % {
+                'object': log.object_repr,
+                'edit': edit,
+            }
+    display_message.short_description = _("Message")
+    display_message.admin_order_field = 'action_flag'
+    display_message.allow_tags = True
     
     def display_action(self, log):
         if log.is_addition():

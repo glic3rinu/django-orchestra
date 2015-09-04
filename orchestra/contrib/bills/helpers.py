@@ -17,7 +17,7 @@ def validate_contact(request, bill, error=True):
         message = msg.format(relation=_("Related"), account=account, url=url)
         send(request, mark_safe(message))
         valid = False
-    main = type(bill).account.field.rel.to.get_main()
+    main = type(bill).account.field.rel.to.objects.get_main()
     if not hasattr(main, 'billcontact'):
         account = force_text(main)
         url = reverse('admin:accounts_account_change', args=(main.id,))

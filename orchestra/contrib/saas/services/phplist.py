@@ -57,7 +57,8 @@ class PHPListService(SoftwareService):
         return settings.SAAS_PHPLIST_DB_USER
     
     def get_account(self):
-        return self.instance.account.get_main()
+        account_model = self.instance._meta.get_field_by_name('account')[0]
+        return account_model.objects.get_main()
     
     def validate(self):
         super(PHPListService, self).validate()

@@ -202,6 +202,7 @@ class MonitorDataAdmin(ExtendedModelAdmin):
     change_readonly_fields = fields
     list_select_related = ('content_type',)
     search_fields = ('content_object_repr',)
+    date_hierarchy = 'created_at'
     
     display_created = admin_date('created_at', short_description=_("Created"))
     

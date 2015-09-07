@@ -271,6 +271,7 @@ class MailmanTraffic(ServiceMonitor):
                 'Nov': '11',
                 'Dec': '12',
             }}
+            mailman_addr = re.compile(r'.*-(admin|bounces|confirm|join|leave|owner|request|subscribe|unsubscribe)@.*')
             
             def prepare(object_id, list_name, ini_date):
                 global lists
@@ -283,12 +284,15 @@ class MailmanTraffic(ServiceMonitor):
                     try:
                         with open(postlog, 'r') as postlog:
                             for line in postlog.readlines():
-                                month, day, time, year, __, __, __, list_name, __, __, size = line.split()[:11]
+                                month, day, time, year, __, __, __, list_name, __, addr, size = line.split()[:11]
                                 try:
                                     list = lists[list_name]
                                 except KeyError:
                                     continue
                                 else:
+                                    # discard mailman messages because of inconsistent POST logging
+                                    if mailman_addr.match(addr):
+                                        continue
                                     date = year + months[month] + day + time.replace(':', '')
                                     if list[0] < int(date) < end_date:
                                         size = size[5:-1]

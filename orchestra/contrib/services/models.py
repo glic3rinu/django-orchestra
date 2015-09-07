@@ -1,3 +1,4 @@
+import calendar
 import decimal
 
 from django.contrib.contenttypes.models import ContentType
@@ -70,9 +71,8 @@ class Service(models.Model):
             "<tt>&nbsp;contractedplan.plan.name == 'association_fee''</tt><br>"
             "<tt>&nbsp;instance.active</tt>"))
     handler_type = models.CharField(_("handler"), max_length=256, blank=True,
-        help_text=_("Handler used for processing this Service. A handler "
-                    "enables customized behaviour far beyond what options "
-                    "here allow to."),
+        help_text=_("Handler used for processing this Service. A handler enables customized "
+                    "behaviour far beyond what options here allow to."),
         choices=ServiceHandler.get_choices())
     is_active = models.BooleanField(_("active"), default=True)
     ignore_superusers = models.BooleanField(_("ignore %s") % _ignore_types, default=True,
@@ -87,16 +87,16 @@ class Service(models.Model):
         ),
         default=ANUAL, blank=True)
     billing_point = models.CharField(_("billing point"), max_length=16,
-        help_text=_("Reference point for calculating the renewal date "
-                    "on recurring invoices"),
+        help_text=_("Reference point for calculating the renewal date on recurring invoices"),
         choices=(
             (ON_REGISTER, _("Registration date")),
-            (FIXED_DATE, _("Fixed billing date")),
+            (FIXED_DATE, _("Every %(month)s") % {
+                'month': calendar.month_name[settings.SERVICES_SERVICE_ANUAL_BILLING_MONTH]
+            }),
         ),
         default=FIXED_DATE)
     is_fee = models.BooleanField(_("fee"), default=False,
-        help_text=_("Designates whether this service should be billed as "
-                    " membership fee or not"))
+        help_text=_("Designates whether this service should be billed as membership fee or not"))
     order_description = models.CharField(_("Order description"), max_length=128, blank=True,
         help_text=_(
             "Python <a href='https://docs.python.org/2/library/functions.html#eval'>expression</a> "

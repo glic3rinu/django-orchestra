@@ -189,7 +189,11 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     
     def get_price_size(self, ini, end):
         rdelta = relativedelta.relativedelta(end, ini)
-        if self.billing_period == self.MONTHLY:
+        anual_prepay_of_monthly_pricing = bool(
+            self.billing_period == self.ANUAL and
+            self.payment_style == self.PREPAY and
+            self.get_pricing_period() == self.MONTHLY)
+        if self.billing_period == self.MONTHLY or anual_prepay_of_monthly_pricing:
             size = rdelta.years * 12
             size += rdelta.months
             days = calendar.monthrange(end.year, end.month)[1]
@@ -508,7 +512,9 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                         recharges = []
                         rini = order.billed_on
                         rend = min(bp, order.billed_until)
-                        bmetric = order.billed_metric or 0
+                        bmetric = order.billed_metric
+                        if bmetric is None:
+                            bmetric = order.get_metric(order.billed_on)
                         bsize = self.get_price_size(rini, order.billed_until)
                         prepay_discount = self.get_price(account, bmetric) * bsize
                         prepay_discount = round(prepay_discount, 2)
@@ -580,6 +586,17 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                             line = self.generate_line(order, price, cini, cend, metric=metric,
                                 discounts=discounts)
                             lines.append(line)
+                elif self.get_pricing_period() in (self.MONTHLY, self.ANUAL):
+                    if self.payment_style == self.PREPAY:
+                        # Traffic Prepay
+                        metric = order.get_metric(timezone.now().date())
+                        if metric > 0:
+                            price = self.get_price(account, metric)
+                            for cini, cend in self.get_pricing_slots(ini, bp):
+                                line = self.generate_line(order, price, cini, cend, metric=metric)
+                                lines.append(line)
+                    else:
+                        raise NotImplementedError
                 else:
                     raise NotImplementedError
             else:

@@ -156,7 +156,6 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 #    * add ini, end dates on bill lines and breakup quanity into size(defaut:1) and metric
 #    * threshold for significative metric accountancy on services.handler
 #    * http://orchestra.pangea.org/admin/orders/order/6418/
-#    * http://orchestra.pangea.org/admin/orders/order/6495/bill_selected_orders/
 
 * move normurlpath to orchestra.utils from websites.utils
 
@@ -183,22 +182,11 @@ ugettext("Description")
 
 * saas validate_creation generic approach, for all backends. standard output
 
-* html code x: &times; for bill line verbose quantity
-
-* periodic task to cleanup backendlogs, monitor data and metricstorage 
-* create orchestrate databases.Database pk=1 -n --dry-run | --noinput --action save (default)|delete --backend name (limit to this backend) --help
-
-* uwsgi     --max-requests=5000 \           # respawn processes after serving 5000 requests and
-celery max-tasks-per-child
-
-* generate settings.py more like django (installed_apps, middlewares, etc,,,)
+* periodic task to cleanup metricstorage
+# create orchestrate databases.Database pk=1 -n --dry-run | --noinput --action save (default)|delete --backend name (limit to this backend) --help
 
 * postupgradeorchestra send signals in order to hook custom stuff
 
-* autoscale celery workers http://docs.celeryproject.org/en/latest/userguide/workers.html#autoscaling
-
-
-glic3rinu's django-fluent-dashboard
 * gevent is not ported to python3 :'(
 
 # FIXME account deletion generates an integrity error
@@ -247,8 +235,6 @@ https://code.djangoproject.com/ticket/24576
 
 # Determine the difference between data serializer used for validation and used for the rest API!
 # Make PluginApiView that fills metadata and other stuff like modeladmin plugin support
-
-# TODO orchestra related services code reload: celery/uwsgi reloading find aonther way without root and implement reload
 
 # reset setting button 
 

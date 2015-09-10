@@ -36,3 +36,9 @@ ORDERS_METRIC_ERROR = Setting('ORDERS_METRIC_ERROR',
     help_text=("Only account for significative changes.<br>"
                "metric_storage new value: <tt>lastvalue*(1+threshold) > currentvalue or lastvalue*threshold < currentvalue</tt>."),
 )
+
+
+ORDERS_BILLED_METRIC_CLEANUP_DAYS = Setting('ORDERS_BILLED_METRIC_CLEANUP_DAYS',
+    40,
+    help_text=("Number of days after a billed stored metric is deleted."),
+)

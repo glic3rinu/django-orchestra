@@ -182,7 +182,6 @@ ugettext("Description")
 
 * saas validate_creation generic approach, for all backends. standard output
 
-* periodic task to cleanup metricstorage
 # create orchestrate databases.Database pk=1 -n --dry-run | --noinput --action save (default)|delete --backend name (limit to this backend) --help
 
 * postupgradeorchestra send signals in order to hook custom stuff
@@ -394,6 +393,3 @@ Case
 # Don't enforce one contact per account? remove account.email in favour of contacts?
 
 # Mailer: mark as sent
-
-# Pending filter filter out orders zero metric from pending
-

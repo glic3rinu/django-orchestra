@@ -40,18 +40,18 @@ class WordpressMuBackend(ServiceController):
             errors = re.findall(r'<body id="error-page">\n\t<p>(.*)</p></body>', response.content.decode('utf8'))
             raise RuntimeError(errors[0] if errors else 'Unknown %i error' % response.status_code)
     
-    def get_id(self, session, webapp):
+    def get_id(self, session, saas):
         search = self.get_base_url()
-        search += '/wp-admin/network/sites.php?s=%s&action=blogs' % webapp.name
+        search += '/wp-admin/network/sites.php?s=%s&action=blogs' % saas.name
         regex = re.compile(
             '<a href="http://[\.\-\w]+/wp-admin/network/site-info\.php\?id=([0-9]+)"\s+'
-            'class="edit">%s</a>' % webapp.name
+            'class="edit">%s</a>' % saas.name
         )
         content = session.get(search).content.decode('utf8')
         # Get id
         ids = regex.search(content)
         if not ids:
-            raise RuntimeError("Blog '%s' not found" % webapp.name)
+            raise RuntimeError("Blog '%s' not found" % saas.name)
         ids = ids.groups()
         if len(ids) > 1:
             raise ValueError("Multiple matches")
@@ -60,13 +60,13 @@ class WordpressMuBackend(ServiceController):
         wpnonce = re.search(r'_wpnonce=([^"]*)"', wpnonce).groups()[0]
         return int(ids[0]), wpnonce
     
-    def create_blog(self, webapp, server):
+    def create_blog(self, saas, server):
         session = requests.Session()
         self.login(session)
         
         # Check if blog already exists
         try:
-            self.get_id(session, webapp)
+            self.get_id(session, saas)
         except RuntimeError:
             url = self.get_base_url()
             url += '/wp-admin/network/site-new.php'
@@ -77,9 +77,9 @@ class WordpressMuBackend(ServiceController):
             
             url += '?action=add-site'
             data = {
-                'blog[domain]': webapp.name,
-                'blog[title]': webapp.name,
-                'blog[email]': webapp.account.email,
+                'blog[domain]': saas.name,
+                'blog[title]': saas.name,
+                'blog[email]': saas.account.email,
                 '_wpnonce_add-blog': wpnonce,
             }
             
@@ -87,12 +87,12 @@ class WordpressMuBackend(ServiceController):
             response = session.post(url, data=data)
             self.validate_response(response)
     
-    def delete_blog(self, webapp, server):
+    def delete_blog(self, saas, server):
         session = requests.Session()
         self.login(session)
         
         try:
-            id, wpnonce = self.get_id(session, webapp)
+            id, wpnonce = self.get_id(session, saas)
         except RuntimeError:
             pass
         else:
@@ -114,8 +114,8 @@ class WordpressMuBackend(ServiceController):
             response = session.post(delete, data=data)
             self.validate_response(response)
     
-    def save(self, webapp):
-        self.append(self.create_blog, webapp)
+    def save(self, saas):
+        self.append(self.create_blog, saas)
     
-    def delete(self, webapp):
-        self.append(self.delete_blog, webapp)
+    def delete(self, saas):
+        self.append(self.delete_blog, saas)

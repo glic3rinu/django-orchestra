@@ -25,6 +25,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
     """
     _PLAN = 'plan'
     _COMPENSATION = 'compensation'
+    _PREPAY = 'prepay'
     
     model = None
     
@@ -275,14 +276,15 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             'metric': metric,
             'discounts': [],
         })
+        
         if subtotal > price:
             plan_discount = price-subtotal
             self.generate_discount(line, self._PLAN, plan_discount)
             subtotal += plan_discount
         for dtype, dprice in discounts:
             subtotal += dprice
-            # Prevent compensations to refund money
-            if dtype == self._COMPENSATION and subtotal < 0:
+            # Prevent compensations/prepays to refund money
+            if dtype in (self._COMPENSATION, self._PREPAY) and subtotal < 0:
                 dprice -= subtotal
             if dprice:
                 self.generate_discount(line, dtype, dprice)
@@ -527,7 +529,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                             if discount > 0:
                                 price -= discount
                                 discounts = (
-                                    ('prepay', -discount),
+                                    (self._PREPAY, -discount),
                                 )
                             # Don't overdload bills with lots of lines
                             if price > 0:
@@ -535,6 +537,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                         if prepay_discount < 0:
                             # User has prepaid less than the actual consumption
                             for order, price, cini, cend, metric, discounts in recharges:
+                                if discounts:
+                                    price -= discounts[0][1]
                                 line = self.generate_line(order, price, cini, cend, metric=metric,
                                     computed=True, discounts=discounts)
                                 lines.append(line)
@@ -561,7 +565,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
 #                            price -= discount
 #                            prepay_discount -= discount
 #                            discounts = (
-#                                ('prepay', -discount),
+#                                (self._PREPAY', -discount),
 #                            )
                         if metric > 0:
                             line = self.generate_line(order, price, cini, cend, metric=metric,
@@ -580,7 +584,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
 #                            price -= discount
 #                            prepay_discount -= discount
 #                            discounts = (
-#                                ('prepay', -discount),
+#                                (self._PREPAY, -discount),
 #                            )
                         if metric > 0:
                             line = self.generate_line(order, price, cini, cend, metric=metric,

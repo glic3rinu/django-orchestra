@@ -33,7 +33,7 @@ class Domain(models.Model):
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"), blank=True,
         related_name='domains', help_text=_("Automatically selected for subdomains."))
     top = models.ForeignKey('domains.Domain', null=True, related_name='subdomain_set',
-        editable=False)
+        editable=False, verbose_name=_("top domain"))
     serial = models.IntegerField(_("serial"), default=utils.generate_zone_serial, editable=False,
         help_text=_("A revision number that changes whenever this domain is updated."))
     refresh = models.CharField(_("refresh"), max_length=16, blank=True,

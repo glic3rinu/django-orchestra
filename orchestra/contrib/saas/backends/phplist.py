@@ -7,6 +7,7 @@ import requests
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.resources import ServiceMonitor
 from orchestra.utils.sys import sshrun
 
 from .. import settings
@@ -120,4 +121,115 @@ class PhpListSaaSBackend(ServiceController):
             'crontab': settings.SAAS_PHPLIST_CRONTAB % context,
             'db_name': context['db_name'] % context,
         })
+        return context
+
+
+class PhpListTraffic(ServiceMonitor):
+    verbose_name = _("phpList SaaS Traffic")
+    model = 'saas.SaaS'
+    default_route_match = "saas.service == 'phplist'"
+    resource = ServiceMonitor.TRAFFIC
+    script_executable = '/usr/bin/python'
+    monthly_sum_old_values = True
+    doc_settings = (settings,
+        ('SAAS_PHPLIST_MAIL_LOG_PATH',)
+    )
+    
+    def prepare(self):
+        mail_log = settings.SAAS_PHPLIST_MAIL_LOG_PATH
+        context = {
+            'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
+            'mail_logs': str((mail_log, mail_log+'.1')),
+        }
+        self.append(textwrap.dedent("""\
+            import sys
+            from datetime import datetime
+            from dateutil import tz
+            
+            def prepare(object_id, list_domain, ini_date):
+                global lists
+                ini_date = to_local_timezone(ini_date)
+                ini_date = int(ini_date.strftime('%Y%m%d%H%M%S'))
+                lists[list_domain] = [ini_date, object_id, 0]
+            
+            def inside_period(month, day, time, ini_date):
+                global months
+                global end_datetime
+                # Mar  9 17:13:22
+                month = months[month]
+                year = end_datetime.year
+                if month == '12' and end_datetime.month == 1:
+                    year = year+1
+                if len(day) == 1:
+                    day = '0' + day
+                date = str(year) + month + day
+                date += time.replace(':', '')
+                return ini_date < int(date) < end_date
+            
+            def to_local_timezone(date, tzlocal=tz.tzlocal()):
+                # Converts orchestra's UTC dates to local timezone
+                date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %Z')
+                date = date.replace(tzinfo=tz.tzutc())
+                date = date.astimezone(tzlocal)
+                return date
+            
+            maillogs = {mail_logs}
+            end_datetime = to_local_timezone('{current_date}')
+            end_date = int(end_datetime.strftime('%Y%m%d%H%M%S'))
+            months = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+            months = dict((m, '%02d' % n) for n, m in enumerate(months, 1))
+            
+            lists = {{}}
+            id_to_domain = {{}}
+            
+            def monitor(lists, id_to_domain, maillogs):
+                for maillog in maillogs:
+                    try:
+                        with open(maillog, 'r') as maillog:
+                            for line in maillog.readlines():
+                                if ': message-id=<' in line:
+                                    # Sep 15 09:36:51 web postfix/cleanup[8138]: C20FF244283: message-id=<fe94cc3afd20a9dc634cc9d9ed03fee0@u-romani.lists.pangea.org>
+                                    month, day, time, __, __, id, message_id = line.split()[:7]
+                                    list_domain = message_id.split('@')[1][:-1]
+                                    try:
+                                        opts = lists[list_domain]
+                                    except KeyError:
+                                        pass
+                                    else:
+                                        ini_date = opts[0]
+                                        if inside_period(month, day, time, ini_date):
+                                            id = id[:-1]
+                                            id_to_domain[id] = list_domain
+                                elif '>, size=' in line:
+                                    # Sep 15 09:36:51 web postfix/qmgr[2296]: C20FF244283: from=<u-romani@pangea.org>, size=12252, nrcpt=1 (queue active)
+                                    month, day, time, __, __, id, __, size = line.split()[:8]
+                                    id = id[:-1]
+                                    try:
+                                        list_domain = id_to_domain[id]
+                                    except KeyError:
+                                        pass
+                                    else:
+                                        opts = lists[list_domain]
+                                        size = int(size[5:-1])
+                                        opts[2] += size
+                    except IOError as e:
+                        sys.stderr.write(str(e))
+                for opts in lists.values():
+                    print opts[1], opts[2]
+            """).format(**context)
+        )
+
+    def commit(self):
+        self.append('monitor(lists, id_to_domain, maillogs)')
+    
+    def monitor(self, saas):
+        context = self.get_context(saas)
+        self.append("prepare(%(object_id)s, '%(list_domain)s', '%(last_date)s')" % context)
+    
+    def get_context(self, saas):
+        context = {
+            'list_domain': saas.get_site_domain(),
+            'object_id': saas.pk,
+            'last_date': self.get_last_date(saas.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
+        }
         return context

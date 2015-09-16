@@ -393,3 +393,6 @@ Case
 # Don't enforce one contact per account? remove account.email in favour of contacts?
 
 # Mailer: mark as sent
+
+
+# Implement wordpressmu change password or remove password from the form

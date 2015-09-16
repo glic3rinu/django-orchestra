@@ -60,7 +60,7 @@ class Resource(models.Model):
     scale = models.CharField(_("scale"), max_length=32, validators=[validate_scale],
         help_text=_("Scale in which this resource monitoring resoults should "
                     "be prorcessed to match with unit. e.g. <tt>10**9</tt>"))
-    disable_trigger = models.BooleanField(_("disable trigger"), default=False,
+    disable_trigger = models.BooleanField(_("disable trigger"), default=True,
         help_text=_("Disables monitors exeeded and recovery triggers"))
     crontab = models.ForeignKey('djcelery.CrontabSchedule', verbose_name=_("crontab"),
         null=True, blank=True,

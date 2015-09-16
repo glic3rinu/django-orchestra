@@ -23,6 +23,16 @@ SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES',
 )
 
 
+SAAS_TRAFFIC_IGNORE_HOSTS = Setting('SAAS_TRAFFIC_IGNORE_HOSTS',
+    (),
+)
+
+
+SAAS_WORDPRESS_LOG_PATH = Setting('SAAS_WORDPRESS_LOG_PATH',
+    '',
+)
+
+
 SAAS_WORDPRESS_ADMIN_PASSWORD = Setting('SAAS_WORDPRESS_ADMIN_PASSWORD',
     'secret'
 )
@@ -131,6 +141,11 @@ SAAS_PHPLIST_CRONTAB = Setting('SAAS_PHPLIST_CRONTAB',
     help_text=_("<tt>processqueue</tt> and <tt>processbounce</tt> phpList cron execution. "
                 "Left blank if you don't want crontab to be configured")
 )
+
+SAAS_PHPLIST_MAIL_LOG_PATH = Setting('SAAS_PHPLIST_MAIL_LOG_PATH',
+    '/var/log/mail.log',
+)
+
 
 SAAS_SEAFILE_DOMAIN = Setting('SAAS_SEAFILE_DOMAIN',
     'seafile.{}'.format(ORCHESTRA_BASE_DOMAIN),

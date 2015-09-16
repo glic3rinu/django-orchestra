@@ -58,7 +58,7 @@ class PHPListService(SoftwareService):
     
     def get_account(self):
         account_model = self.instance._meta.get_field_by_name('account')[0]
-        return account_model.objects.get_main()
+        return account_model.rel.to.objects.get_main()
     
     def validate(self):
         super(PHPListService, self).validate()

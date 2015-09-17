@@ -79,7 +79,7 @@
     {% for line in lines %}
         {% with sublines=line.sublines.all description=line.description|slice:"38:" %}
         <span class="{% if not sublines and not description %}last {% endif %}column-id">{% if not line.order_id %}L{% endif %}{{ line.order_id|default:line.pk }}</span>
-        <span class="{% if not sublines and not description %}last {% endif %}column-description">{{ line.description|slice:":38" }}</span>
+        <span class="{% if not sublines and not description %}last {% endif %}column-description">{{ line.description|safe|slice:":38" }}</span>
         <span class="{% if not sublines and not description %}last {% endif %}column-period">{{ line.get_verbose_period }}</span>
         <span class="{% if not sublines and not description %}last {% endif %}column-quantity">{{ line.get_verbose_quantity|default:"&nbsp;"|safe }}</span>
         <span class="{% if not sublines and not description %}last {% endif %}column-rate">{% if line.rate %}{{ line.rate }} &{{ currency.lower }};{% else %}&nbsp;{% endif %}</span>
@@ -87,7 +87,7 @@
         <br>
             {% if description %}
                 <span class="{% if not sublines %}last {% endif %}subline column-id">&nbsp;</span>
-                <span class="{% if not sublines %}last {% endif %}subline column-description">{{ description|truncatechars:39 }}</span>
+                <span class="{% if not sublines %}last {% endif %}subline column-description">{{ description|safe|truncatechars:39 }}</span>
                 <span class="{% if not sublines %}last {% endif %}subline column-period">&nbsp;</span>
                 <span class="{% if not sublines %}last {% endif %}subline column-quantity">&nbsp;</span>
                 <span class="{% if not sublines %}last {% endif %}subline column-rate">&nbsp;</span>
@@ -95,7 +95,7 @@
             {% endif %}
             {% for subline in sublines %}
                 <span class="{% if forloop.last %}last {% endif %}subline column-id">&nbsp;</span>
-                <span class="{% if forloop.last %}last {% endif %}subline column-description">{{ subline.description|truncatechars:39 }}</span>
+                <span class="{% if forloop.last %}last {% endif %}subline column-description">{{ subline.description|safe|truncatechars:39 }}</span>
                 <span class="{% if forloop.last %}last {% endif %}subline column-period">&nbsp;</span>
                 <span class="{% if forloop.last %}last {% endif %}subline column-quantity">&nbsp;</span>
                 <span class="{% if forloop.last %}last {% endif %}subline column-rate">&nbsp;</span>
@@ -126,9 +126,11 @@
 <div class="footer">
     <div id="footer-column-1">
         <div id="comments">
+            {% block comments %}
             {% if bill.comments %}
             <span class="title">{% trans "COMMENTS" %}</span> {{ bill.comments|linebreaksbr }}
             {% endif %}
+            {% endblock %}
         </div>
     </div>
     <div id="footer-column-2">

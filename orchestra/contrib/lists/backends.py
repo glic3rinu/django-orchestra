@@ -302,7 +302,7 @@ class MailmanTraffic(ServiceMonitor):
                                             # anonymized post
                                             pass
                     except IOError as e:
-                        sys.stderr.write(str(e))
+                        sys.stderr.write(str(e)+'\\n')
                 
                 for list_name, opts in lists.items():
                     __, object_id, size = opts

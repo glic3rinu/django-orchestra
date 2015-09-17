@@ -458,3 +458,6 @@ class BillSubline(models.Model):
     description = models.CharField(_("description"), max_length=256)
     total = models.DecimalField(max_digits=12, decimal_places=2)
     type = models.CharField(_("type"), max_length=16, choices=TYPES, default=OTHER)
+    
+    def __str__(self):
+        return "%s %i" % (self.description, self.total)

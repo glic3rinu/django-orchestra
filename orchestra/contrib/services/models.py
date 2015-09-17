@@ -97,7 +97,7 @@ class Service(models.Model):
         default=FIXED_DATE)
     is_fee = models.BooleanField(_("fee"), default=False,
         help_text=_("Designates whether this service should be billed as membership fee or not"))
-    order_description = models.CharField(_("Order description"), max_length=128, blank=True,
+    order_description = models.CharField(_("Order description"), max_length=256, blank=True,
         help_text=_(
             "Python <a href='https://docs.python.org/2/library/functions.html#eval'>expression</a> "
             "used for generating the description for the bill lines of this services.<br>"

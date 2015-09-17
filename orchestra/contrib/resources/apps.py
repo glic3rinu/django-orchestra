@@ -21,6 +21,7 @@ class ResourcesConfig(AppConfig):
         administration.register(Resource, icon='gauge.png')
         administration.register(ResourceData, parent=Resource, icon='monitor.png')
         administration.register(MonitorData, parent=Resource, dashboard=False)
+        from . import signals
     
     def reload_relations(self):
         from .admin import insert_resource_inlines

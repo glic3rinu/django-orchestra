@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.contrib.orchestration import ServiceController
 from orchestra.utils.python import random_ascii
 
+from . import SaaSWebTraffic
 from .. import settings
 
 
@@ -64,3 +65,13 @@ class DokuWikiMuBackend(ServiceController):
             'users_path': os.path.join(context['app_path'], 'conf/users.auth.php'),
         })
         return context
+
+
+class DokuWikiMuTraffic(SaaSWebTraffic):
+    __doc__ = SaaSWebTraffic.__doc__
+    verbose_name = _("DokuWiki MU Traffic")
+    default_route_match = "saas.service == 'dokuwiki'"
+    doc_settings = (settings,
+        ('SAAS_TRAFFIC_IGNORE_HOSTS', 'SAAS_DOKUWIKI_LOG_PATH')
+    )
+    log_path = settings.SAAS_DOKUWIKI_LOG_PATH

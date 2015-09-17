@@ -213,7 +213,7 @@ class PhpListTraffic(ServiceMonitor):
                                         size = int(size[5:-1])
                                         opts[2] += size
                     except IOError as e:
-                        sys.stderr.write(str(e))
+                        sys.stderr.write(str(e)+'\\n')
                 for opts in lists.values():
                     print opts[1], opts[2]
             """).format(**context)

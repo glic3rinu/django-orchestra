@@ -116,17 +116,12 @@ class Resource(models.Model):
                 ]})
     
     def save(self, *args, **kwargs):
-        created = not self.pk
         super(Resource, self).save(*args, **kwargs)
-        self.sync_periodic_task()
         # This only works on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
     
-    def delete(self, *args, **kwargs):
-        super(Resource, self).delete(*args, **kwargs)
-        self.sync_periodic_task()
-    
     def sync_periodic_task(self):
+        """ sync periodic task on save/delete resource operations """
         name = 'monitor.%s' % str(self)
         if self.pk and self.crontab and self.is_active:
             try:

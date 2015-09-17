@@ -549,7 +549,7 @@ class PostfixMailscannerTraffic(ServiceMonitor):
                                                     except KeyError:
                                                         counter[req_id] = 1
                     except IOError as e:
-                        sys.stderr.write(str(e))
+                        sys.stderr.write(str(e)+'\\n')
                     
                 for username, opts in users.iteritems():
                     size = 0

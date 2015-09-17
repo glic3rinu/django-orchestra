@@ -25,11 +25,14 @@ SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES',
 
 SAAS_TRAFFIC_IGNORE_HOSTS = Setting('SAAS_TRAFFIC_IGNORE_HOSTS',
     (),
+    help_text=_("IP addresses to ignore during traffic accountability."),
 )
 
 
 SAAS_WORDPRESS_LOG_PATH = Setting('SAAS_WORDPRESS_LOG_PATH',
     '',
+    help_text=_('Filesystem path for the webserver access logs.<br>'
+                '<tt>LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Host}i\"" host</tt>'),
 )
 
 
@@ -80,6 +83,11 @@ SAAS_DOKUWIKI_USER = Setting('SAAS_DOKUWIKI_USER',
 
 SAAS_DOKUWIKI_GROUP = Setting('SAAS_DOKUWIKI_GROUP',
     'orchestra'
+)
+
+
+SAAS_DOKUWIKI_LOG_PATH = Setting('SAAS_DOKUWIKI_LOG_PATH',
+    '',
 )
 
 

@@ -69,8 +69,10 @@ class SaaSWebTraffic(ServiceMonitor):
                     try:
                         with open(access_log, 'r') as handler:
                             for line in handler.readlines():
-                                meta, request, response, hostname, __ = line.split('"')
+                                line = line.split()
+                                meta = line[:4]
                                 host, __, __, date, tz = meta.split()
+                                size, hostname = line[-2:]
                                 if host in {ignore_hosts}:
                                     continue
                                 try:
@@ -78,7 +80,7 @@ class SaaSWebTraffic(ServiceMonitor):
                                 except KeyError:
                                     continue
                                 else:
-                                    # [16/Sep/2015:11:40:38 +0200]
+                                    # [16/Sep/2015:11:40:38
                                     day, month, date = date[1:].split('/')
                                     year, hour, min, sec = date.split(':')
                                     date = year + months[month] + day + hour + min + sec

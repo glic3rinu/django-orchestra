@@ -120,10 +120,12 @@ class Resource(models.Model):
         # This only works on tests (multiprocessing used on real deployments)
         apps.get_app_config('resources').reload_relations()
     
-    def sync_periodic_task(self):
+    def sync_periodic_task(self, delete=False):
         """ sync periodic task on save/delete resource operations """
         name = 'monitor.%s' % str(self)
-        if self.pk and self.crontab and self.is_active:
+        if delete or not self.crontab or not self.is_active:
+            PeriodicTask.objects.filter(name=name).delete()
+        elif self.pk:
             try:
                 task = PeriodicTask.objects.get(name=name)
             except PeriodicTask.DoesNotExist:
@@ -138,8 +140,6 @@ class Resource(models.Model):
                 if task.crontab != self.crontab:
                     task.crontab = self.crontab
                     task.save(update_fields=['crontab'])
-        else:
-            PeriodicTask.objects.filter(name=name).delete()
     
     def get_model_path(self, monitor):
         """ returns a model path between self.content_type and monitor.model """

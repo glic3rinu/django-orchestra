@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.html import format_html
 from django.utils.text import capfirst
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.core import services
 
@@ -146,16 +146,24 @@ def delete_related_services(modeladmin, request, queryset):
     # The user has already confirmed the deletion.
     # Do the deletion and return a None to display the change list view again.
     if request.POST.get('post'):
-        n = queryset.count()
-        if n:
+        accounts = len(queryset)
+        msg = _("Related services deleted and account disabled.")
+        for account in queryset:
+            account.is_active = False
+            account.save(update_fields=('is_active',))
+            modeladmin.log_change(request, account, msg)
+        if accounts:
+            relateds = len(to_delete)
             for obj in to_delete:
                 obj_display = force_text(obj)
                 modeladmin.log_deletion(request, obj, obj_display)
-                # TODO This probably will fail in certain conditions, just capture exception
                 obj.delete()
-            modeladmin.message_user(request, _("Successfully deleted %(count)d %(items)s.") % {
-                "count": n, "items": model_ngettext(modeladmin.opts, n)
-            }, messages.SUCCESS)
+            context = {
+                'accounts': accounts,
+                'relateds': relateds,
+            }
+            msg = _("Successfully disabled %(accounts)d account and deleted %(relateds)d related services.") % context
+            modeladmin.message_user(request, msg, messages.SUCCESS)
         # Return None to display the change list page again.
         return None
     
@@ -165,7 +173,7 @@ def delete_related_services(modeladmin, request, queryset):
         objects_name = force_text(opts.verbose_name_plural)
     
     context = dict(
-        modeladmin.admin_site.each_context(request),
+        admin_site.each_context(request),
         title=_("Are you sure?"),
         objects_name=objects_name,
         deletable_objects=[related_services],
@@ -174,11 +182,85 @@ def delete_related_services(modeladmin, request, queryset):
         opts=opts,
         action_checkbox_name=helpers.ACTION_CHECKBOX_NAME,
     )
-    request.current_app = modeladmin.admin_site.name
+    request.current_app = admin_site.name
     # Display the confirmation page
-    return TemplateResponse(request, modeladmin.delete_selected_confirmation_template or [
-        "admin/%s/%s/delete_selected_confirmation.html" % (app_label, opts.model_name),
-        "admin/%s/delete_selected_confirmation.html" % app_label,
-        "admin/delete_selected_confirmation.html"
-    ], context)
+    template = 'admin/%s/%s/delete_related_services_confirmation.html' % (app_label, opts.model_name)
+    return TemplateResponse(request, template, context)
 delete_related_services.short_description = _("Delete related services")
+
+
+def disable_selected(modeladmin, request, queryset):
+    opts = modeladmin.model._meta
+    app_label = opts.app_label
+    
+    # The user has already confirmed the deletion.
+    # Do the disable and return a None to display the change list view again.
+    if request.POST.get('post'):
+        n = 0
+        for account in queryset:
+            account.disable()
+            modeladmin.log_change(request, account, _("Disabled"))
+            n += 1
+        modeladmin.message_user(request, ungettext(
+            _("One account has been successfully disabled."),
+            _("%i accounts have been successfully disabled.") % n,
+            n)
+        )
+        return None
+    
+    user = request.user
+    admin_site = modeladmin.admin_site
+    
+    def format(obj):
+        has_admin = obj.__class__ in admin_site._registry
+        opts = obj._meta
+        no_edit_link = '%s: %s' % (capfirst(opts.verbose_name), force_text(obj))
+        if has_admin:
+            try:
+                admin_url = reverse(
+                    'admin:%s_%s_change' % (opts.app_label, opts.model_name),
+                    None,
+                    (quote(obj._get_pk_val()),)
+                )
+            except NoReverseMatch:
+                # Change url doesn't exist -- don't display link to edit
+                return no_edit_link
+            
+            p = '%s.%s' % (opts.app_label, get_permission_codename('delete', opts))
+            if not user.has_perm(p):
+                perms_needed.add(opts.verbose_name)
+            # Display a link to the admin page.
+            context = (capfirst(opts.verbose_name), admin_url, obj)
+            return format_html('{}: <a href="{}">{}</a>', *context)
+        else:
+            # Don't display link to edit, because it either has no
+            # admin or is edited inline.
+            return no_edit_link
+    
+    display = []
+    for account in queryset:
+        current = []
+        for related in account.get_services_to_disable():
+            current.append(format(related))
+        display.append([format(account), current])
+    
+    if len(queryset) == 1:
+        objects_name = force_text(opts.verbose_name)
+    else:
+        objects_name = force_text(opts.verbose_name_plural)
+    
+    context = dict(
+        admin_site.each_context(request),
+        title=_("Are you sure?"),
+        objects_name=objects_name,
+        deletable_objects=display,
+        queryset=queryset,
+        opts=opts,
+        action_checkbox_name=helpers.ACTION_CHECKBOX_NAME,
+    )
+    request.current_app = admin_site.name
+    template = 'admin/%s/%s/disable_selected_confirmation.html' % (app_label, opts.model_name)
+    return TemplateResponse(request, template, context)
+disable_selected.short_description = _("Disable selected accounts")
+disable_selected.url = 'disable'
+disable_selected.tool_description = _("Disable")

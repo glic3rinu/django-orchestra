@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
 from orchestra.contrib.orchestration import Operation
+from orchestra.core import services
 from orchestra.utils.mail import send_email_template
 
 from . import settings
@@ -82,13 +83,17 @@ class Account(auth.AbstractBaseUser):
         self.save(update_fields=['is_active'])
         self.notify_related()
     
-    def notify_related(self):
-        # Trigger save() on related objects that depend on this account
+    def get_services_to_disable(self):
         for rel in self._meta.get_all_related_objects():
             source = getattr(rel, 'related_model', rel.model)
             if source in services and hasattr(source, 'active'):
                 for obj in getattr(self, rel.get_accessor_name()).all():
-                    OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=[])
+                    yield obj
+    
+    def notify_related(self):
+        """ Trigger save() on related objects that depend on this account """
+        for obj in self.get_services_to_disable():
+            OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=[])
     
     def send_email(self, template, context, email_from=None, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)

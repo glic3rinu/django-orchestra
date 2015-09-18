@@ -116,25 +116,21 @@ class Apache2Backend(ServiceController):
         if context['server_name'] and site.active:
             self.append(textwrap.dedent("""
                 # Enable site %(site_name)s
-                if [[ ! -f %(sites_enabled)s ]]; then
-                    a2ensite %(site_unique_name)s.conf
-                    UPDATED_APACHE=1
-                fi""") % context
+                [[ $(a2ensite %(site_unique_name)s) =~ "already enabled" ]] || UPDATED_APACHE=1\
+                """) % context
             )
         else:
             self.append(textwrap.dedent("""
                 # Disable site %(site_name)s
-                if [[ -f %(sites_enabled)s ]]; then
-                    a2dissite %(site_unique_name)s.conf;
-                    UPDATED_APACHE=1
-                fi""") % context
+                [[ $(a2dissite %(site_unique_name)s) =~ "already disabled" ]] || UPDATED_APACHE=1\
+                """) % context
             )
     
     def delete(self, site):
         context = self.get_context(site)
         self.append(textwrap.dedent("""
             # Remove site configuration for %(site_name)s
-            a2dissite %(site_unique_name)s.conf && UPDATED_APACHE=1
+            [[ $(a2dissite %(site_unique_name)s) =~ "already disabled" ]] || UPDATED_APACHE=1
             rm -f %(sites_available)s\
             """) % context
         )

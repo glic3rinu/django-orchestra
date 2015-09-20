@@ -130,11 +130,12 @@ class MailmanBackend(MailmanVirtualDomainBackend):
             self.append(textwrap.dedent("""\
                 # Create list alias for custom domain
                 aliases='%(aliases)s'
-                if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
+                if ( ! grep '\s\s*%(name)s\s*$' %(virtual_alias)s ); then
                     echo "${aliases}" >> %(virtual_alias)s
                     UPDATED_VIRTUAL_ALIAS=1
                 else
-                    if [[ $(grep -E '^\s*(%(address_name)s|%(name)s)@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s|wc -l) -ne %(num_entries)s ]]; then
+                    existing=$(grep -E '^\s*(%(address_name)s|%(name)s)@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s|wc -l)
+                    if [[ $existing -ne %(num_entries)s ]]; then
                         sed -i -e '/^.*\s%(name)s\(%(suffixes_regex)s\)\s*$/d' \\
                                -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s
                         echo "${aliases}" >> %(virtual_alias)s
@@ -149,7 +150,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
         else:
             self.append(textwrap.dedent("""\
                 # Cleanup possible ex-custom domain
-                if [[ ! $(grep '\s\s*%(name)s\s*$' %(virtual_alias)s) ]]; then
+                if ( ! grep '\s\s*%(name)s\s*$' %(virtual_alias)s ); then
                     sed -i "/^.*\s%(name)s\s*$/d" %(virtual_alias)s
                 fi""") % context
             )

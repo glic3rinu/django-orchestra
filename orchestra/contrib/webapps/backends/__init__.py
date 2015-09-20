@@ -32,7 +32,7 @@ class WebAppServiceMixin(object):
                     # Async wait 2 more seconds for other backends to lock app_path or cp under construction
                     nohup bash -c '
                         sleep 2
-                        if [[ ! $(ls -A %(app_path)s) ]]; then
+                        if ( ! ls -A %(app_path)s ); then
                             cp -r %(under_construction_path)s %(app_path)s
                             chown -R %(user)s:%(group)s %(app_path)s
                         fi' &> /dev/null &

@@ -70,11 +70,11 @@ class SaaSWebTraffic(ServiceMonitor):
                         with open(access_log, 'r') as handler:
                             for line in handler.readlines():
                                 line = line.split()
-                                meta = line[:4]
-                                host, __, __, date, tz = meta.split()
-                                size, hostname = line[-2:]
+                                host, __, __, date = line[:4]
                                 if host in {ignore_hosts}:
                                     continue
+                                size, hostname = line[-2:]
+                                hostname = hostname.replace('"', '')
                                 try:
                                     site = sites[hostname]
                                 except KeyError:

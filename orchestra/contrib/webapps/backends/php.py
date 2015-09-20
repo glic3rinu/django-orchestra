@@ -168,7 +168,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             }
             if [[ $is_last -eq 1 ]]; then
                 if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
-                    if [[ $(service apache2 status) ]]; then
+                    if ( service apache2 status ); then
                         service apache2 reload
                     else
                         service apache2 start

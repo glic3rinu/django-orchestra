@@ -37,7 +37,7 @@ class DokuWikiMuBackend(ServiceController):
         )
         if context['password']:
             self.append(textwrap.dedent("""\
-                if [[ $(grep '^admin:' %(users_path)s) ]]; then
+                if ( grep '^admin:' %(users_path)s ); then
                     sed -i 's#^admin:.*$#admin:%(password)s:admin:%(email)s:admin,user#' %(users_path)s
                 else
                     echo 'admin:%(password)s:admin:%(email)s:admin,user' >> %(users_path)s

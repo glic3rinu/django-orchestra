@@ -28,7 +28,7 @@ class DrupalMuBackend(ServiceController):
             # the following assumes settings.php to be previously configured
             REGEX='^\s*$databases\[.default.\]\[.default.\]\[.prefix.\]'
             CONFIG='$databases[\'default\'][\'default\'][\'prefix\'] = \'%(app_name)s_\';'
-            if [[ ! $(grep $REGEX %(drupal_settings)s) ]]; then
+            if ( ! grep $REGEX %(drupal_settings)s ); then
                echo $CONFIG >> %(drupal_settings)s
             fi""") % context
         )

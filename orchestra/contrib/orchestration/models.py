@@ -3,6 +3,7 @@ import socket
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
@@ -107,11 +108,8 @@ class BackendLog(models.Model):
 class BackendOperationQuerySet(models.QuerySet):
     def create(self, **kwargs):
         instance = kwargs.get('instance')
-        if instance and not instance.pk and 'instance_repr' not in kwargs:
-            try:
-                kwargs['instance_repr'] = str(instance)[:256]
-            except:
-                pass
+        if instance and 'instance_repr' not in kwargs:
+            kwargs['instance_repr'] = force_text(instance)[:256]
         return super(BackendOperationQuerySet, self).create(**kwargs)
 
 

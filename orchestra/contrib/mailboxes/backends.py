@@ -27,7 +27,7 @@ class SieveFilteringMixin(object):
                 su %(user)s --shell /bin/bash << 'EOF'
                     mkdir -p "%(maildir)s/.%(box)s"
                 EOF
-                if ( ! grep '%(box)s' %(maildir)s/subscriptions ); then
+                if ! grep '%(box)s' %(maildir)s/subscriptions > /dev/null; then
                     echo '%(box)s' >> %(maildir)s/subscriptions
                     chown %(user)s:%(user)s %(maildir)s/subscriptions
                 fi
@@ -68,7 +68,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         context = self.get_context(mailbox)
         self.append(textwrap.dedent("""
             # Update/create %(user)s user state
-            if ( id %(user)s ); then
+            if id %(user)s ; then
                 old_password=$(getent shadow %(user)s | cut -d':' -f2)
                 usermod  %(user)s \\
                     --shell %(initial_shell)s \\
@@ -148,7 +148,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
     
     def set_user(self, context):
         self.append(textwrap.dedent("""
-            if ( grep '^%(user)s:' %(passwd_path)s ); then
+            if grep '^%(user)s:' %(passwd_path)s > /dev/null ; then
                sed -i 's#^%(user)s:.*#%(passwd)s#' %(passwd_path)s
             else
                echo '%(passwd)s' >> %(passwd_path)s
@@ -159,7 +159,7 @@ class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceControl
     
     def set_mailbox(self, context):
         self.append(textwrap.dedent("""
-            if ( ! grep '^%(user)s@%(mailbox_domain)s\s' %(virtual_mailbox_maps)s ); then
+            if ! grep '^%(user)s@%(mailbox_domain)s\s' %(virtual_mailbox_maps)s > /dev/null; then
                 echo "%(user)s@%(mailbox_domain)s\tOK" >> %(virtual_mailbox_maps)s
                 UPDATED_VIRTUAL_MAILBOX_MAPS=1
             fi""") % context
@@ -252,7 +252,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         if domain.name != context['local_domain'] and self.is_hosted_domain(domain):
             self.append(textwrap.dedent("""
                 # %(domain)s is a virtual domain belonging to this server
-                if ( ! grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s) ); then
+                if ! grep '^\s*%(domain)s\s*$' %(virtual_alias_domains)s > /dev/null; then
                     echo '%(domain)s' >> %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
                 fi""") % context
@@ -266,7 +266,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         if self.is_last_domain(domain):
             self.append(textwrap.dedent("""
                 # Delete %(domain)s virtual domain
-                if ( grep '^%(domain)s\s*$' %(virtual_alias_domains)s ); then
+                if grep '^%(domain)s\s*$' %(virtual_alias_domains)s > /dev/null; then
                     sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s
                     UPDATED_VIRTUAL_ALIAS_DOMAINS=1
                 fi""") % context
@@ -326,13 +326,13 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
             self.append(textwrap.dedent("""
                 # Set virtual alias entry for %(email)s
                 LINE='%(email)s\t%(destination)s'
-                if ( ! grep '^%(email)s\s' %(virtual_alias_maps)s ); then
+                if ! grep '^%(email)s\s' %(virtual_alias_maps)s > /dev/null; then
                     # Add new line
                     echo "${LINE}" >> %(virtual_alias_maps)s
                     UPDATED_VIRTUAL_ALIAS_MAPS=1
                 else
                     # Update existing line, if needed
-                    if ( ! grep "^${LINE}$" %(virtual_alias_maps)s ); then
+                    if ! grep "^${LINE}$" %(virtual_alias_maps)s > /dev/null; then
                         sed -i "s/^%(email)s\s.*$/${LINE}/" %(virtual_alias_maps)s
                         UPDATED_VIRTUAL_ALIAS_MAPS=1
                     fi
@@ -352,7 +352,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
     def exclude_virtual_alias_maps(self, context):
         self.append(textwrap.dedent("""
             # Remove %(email)s virtual alias entry
-            if ( grep '^%(email)s\s' %(virtual_alias_maps)s ); then
+            if grep '^%(email)s\s' %(virtual_alias_maps)s > /dev/null; then
                 sed -i '/^%(email)s\s/d' %(virtual_alias_maps)s
                 UPDATED_VIRTUAL_ALIAS_MAPS=1
             fi""") % context

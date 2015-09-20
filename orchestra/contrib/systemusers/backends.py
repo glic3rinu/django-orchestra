@@ -33,7 +33,7 @@ class UNIXUserBackend(ServiceController):
         # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
             # Update/create user state for %(user)s
-            if ( id %(user)s ); then
+            if id %(user)s ; then
                 usermod %(user)s --home %(home)s \\
                     --password '%(password)s' \\
                     --shell %(shell)s %(groups_arg)s
@@ -60,7 +60,7 @@ class UNIXUserBackend(ServiceController):
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""
                 # Set extra permissions: %(user)s home is inside %(mainuser)s home
-                if ( mount | grep "^$(df %(home)s|grep '^/')\s" | grep acl ); then
+                if mount | grep "^$(df %(home)s|grep '^/')\s" | grep acl > /dev/null; then
                     # Accountn group as the owner
                     chown %(mainuser)s:%(mainuser)s %(home)s
                     chmod g+s %(home)s

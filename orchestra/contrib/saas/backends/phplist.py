@@ -83,7 +83,7 @@ class PhpListSaaSBackend(ServiceController):
             context['escaped_crontab'] = context['crontab'].replace('$', '\\$')
             self.append(textwrap.dedent("""\
                 # Configuring phpList crontabs
-                if ( ! crontab -u %(user)s -l | grep 'phpList:"%(site_name)s"' ); then
+                if ! crontab -u %(user)s -l | grep 'phpList:"%(site_name)s"' > /dev/null; then
                 cat << EOF | su %(user)s --shell /bin/bash -c 'crontab'
                 $(crontab -u %(user)s -l)
                 

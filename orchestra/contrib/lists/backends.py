@@ -130,7 +130,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
             self.append(textwrap.dedent("""\
                 # Create list alias for custom domain
                 aliases='%(aliases)s'
-                if ( ! grep '\s\s*%(name)s\s*$' %(virtual_alias)s ); then
+                if ! grep '\s\s*%(name)s\s*$' %(virtual_alias)s > /dev/null; then
                     echo "${aliases}" >> %(virtual_alias)s
                     UPDATED_VIRTUAL_ALIAS=1
                 else
@@ -150,7 +150,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
         else:
             self.append(textwrap.dedent("""\
                 # Cleanup possible ex-custom domain
-                if ( ! grep '\s\s*%(name)s\s*$' %(virtual_alias)s ); then
+                if ! grep '\s\s*%(name)s\s*$' %(virtual_alias)s > /dev/null; then
                     sed -i "/^.*\s%(name)s\s*$/d" %(virtual_alias)s
                 fi""") % context
             )

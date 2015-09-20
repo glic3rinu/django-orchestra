@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.settings import Setting
+from orchestra.core.validators import validate_ip_address
 
 from .. import websites
 
@@ -89,7 +90,9 @@ WEBSITES_WEBSITE_WWW_ERROR_LOG_PATH = Setting('WEBSITES_WEBSITE_WWW_ERROR_LOG_PA
 
 
 WEBSITES_TRAFFIC_IGNORE_HOSTS = Setting('WEBSITES_TRAFFIC_IGNORE_HOSTS',
-    ('127.0.0.1',)
+    ('127.0.0.1',),
+    help_text=_("IP addresses to ignore during traffic accountability."),
+    validators=[lambda hosts: (validate_ip_address(host) for host in hosts)],
 )
 
 

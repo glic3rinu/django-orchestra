@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.settings import Setting
+from orchestra.core.validators import validate_ip_address
 from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
 from .. import saas
@@ -24,10 +25,13 @@ SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES',
 
 
 SAAS_TRAFFIC_IGNORE_HOSTS = Setting('SAAS_TRAFFIC_IGNORE_HOSTS',
-    (),
+    ('127.0.0.1',),
     help_text=_("IP addresses to ignore during traffic accountability."),
+    validators=[lambda hosts: (validate_ip_address(host) for host in hosts)]
 )
 
+
+# WordPress
 
 SAAS_WORDPRESS_LOG_PATH = Setting('SAAS_WORDPRESS_LOG_PATH',
     '',
@@ -35,37 +39,33 @@ SAAS_WORDPRESS_LOG_PATH = Setting('SAAS_WORDPRESS_LOG_PATH',
                 '<tt>LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Host}i\"" host</tt>'),
 )
 
-
 SAAS_WORDPRESS_ADMIN_PASSWORD = Setting('SAAS_WORDPRESS_ADMIN_PASSWORD',
     'secret'
 )
-
 
 SAAS_WORDPRESS_BASE_URL = Setting('SAAS_WORDPRESS_BASE_URL',
     'https://blogs.{}/'.format(ORCHESTRA_BASE_DOMAIN),
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
-
 SAAS_WORDPRESS_BASE_DOMAIN = Setting('SAAS_WORDPRESS_BASE_DOMAIN',
     'blogs.{}'.format(ORCHESTRA_BASE_DOMAIN),
 )
 
 
+# DokuWiki
+
 SAAS_DOKUWIKI_TEMPLATE_PATH = Setting('SAAS_DOKUWIKI_TEMPLATE_PATH',
     '/home/httpd/htdocs/wikifarm/template.tar.gz'
 )
-
 
 SAAS_DOKUWIKI_FARM_PATH = Setting('WEBSITES_DOKUWIKI_FARM_PATH',
     '/home/httpd/htdocs/wikifarm/farm'
 )
 
-
 SAAS_DOKUWIKI_BASE_DOMAIN = Setting('SAAS_DOKUWIKI_BASE_DOMAIN',
     'dokuwiki.{}'.format(ORCHESTRA_BASE_DOMAIN),
 )
-
 
 SAAS_DOKUWIKI_TEMPLATE_PATH = Setting('SAAS_DOKUWIKI_TEMPLATE_PATH',
     '/var/www/wikifarm/template.tar.gz',
@@ -75,44 +75,42 @@ SAAS_DOKUWIKI_FARM_PATH = Setting('SAAS_DOKUWIKI_FARM_PATH',
     '/var/www/wikifarm/farm'
 )
 
-
 SAAS_DOKUWIKI_USER = Setting('SAAS_DOKUWIKI_USER',
     'orchestra'
 )
 
-
 SAAS_DOKUWIKI_GROUP = Setting('SAAS_DOKUWIKI_GROUP',
     'orchestra'
 )
-
 
 SAAS_DOKUWIKI_LOG_PATH = Setting('SAAS_DOKUWIKI_LOG_PATH',
     '',
 )
 
 
+# Drupal
+
 SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
     '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s',
 )
 
+
+# PhpList
 
 SAAS_PHPLIST_DB_USER = Setting('SAAS_PHPLIST_DB_USER',
     'phplist_mu',
     help_text=_("Needed for password changing support."),
 )
 
-
 SAAS_PHPLIST_DB_PASS = Setting('SAAS_PHPLIST_DB_PASS',
     'secret',
     help_text=_("Needed for password changing support."),
 )
 
-
 SAAS_PHPLIST_DB_NAME = Setting('SAAS_PHPLIST_DB_NAME',
     'phplist_mu_%(site_name)s',
     help_text=_("Needed for password changing support."),
 )
-
 
 SAAS_PHPLIST_DB_HOST = Setting('SAAS_PHPLIST_DB_HOST',
     'loclahost',
@@ -124,7 +122,6 @@ SAAS_PHPLIST_BASE_DOMAIN = Setting('SAAS_PHPLIST_BASE_DOMAIN',
     'lists.{}'.format(ORCHESTRA_BASE_DOMAIN),
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
-
 
 SAAS_PHPLIST_VERIFY_SSL = Setting('SAAS_PHPLIST_VERIFY_SSL',
     True,
@@ -155,37 +152,39 @@ SAAS_PHPLIST_MAIL_LOG_PATH = Setting('SAAS_PHPLIST_MAIL_LOG_PATH',
 )
 
 
+# SeaFile
+
 SAAS_SEAFILE_DOMAIN = Setting('SAAS_SEAFILE_DOMAIN',
     'seafile.{}'.format(ORCHESTRA_BASE_DOMAIN),
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
-
 
 SAAS_SEAFILE_DEFAULT_QUOTA = Setting('SAAS_SEAFILE_DEFAULT_QUOTA',
     50
 )
 
 
+# BSCW
+
 SAAS_BSCW_DOMAIN = Setting('SAAS_BSCW_DOMAIN',
     'bscw.{}'.format(ORCHESTRA_BASE_DOMAIN),
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
-
 SAAS_BSCW_DEFAULT_QUOTA = Setting('SAAS_BSCW_DEFAULT_QUOTA',
     50,
 )
-
 
 SAAS_BSCW_BSADMIN_PATH = Setting('SAAS_BSCW_BSADMIN_PATH', 
     '/home/httpd/bscw/bin/bsadmin',
 )
 
 
+# GitLab
+
 SAAS_GITLAB_ROOT_PASSWORD = Setting('SAAS_GITLAB_ROOT_PASSWORD',
     'secret',
 )
-
 
 SAAS_GITLAB_DOMAIN = Setting('SAAS_GITLAB_DOMAIN',
     'gitlab.{}'.format(ORCHESTRA_BASE_DOMAIN),

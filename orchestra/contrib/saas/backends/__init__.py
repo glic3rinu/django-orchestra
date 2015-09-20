@@ -6,13 +6,13 @@ from orchestra.contrib.resources import ServiceMonitor
 from .. import settings
 
 
-class SaaSWebTraffic(ServiceMonitor):
+class ApacheTrafficByHost(ServiceMonitor):
     """
     Parses apache logs,
     looking for the size of each request on the last word of the log line.
     
     Compatible log format:
-    <tt>LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Host}i\"" host</tt>
+    <tt>LogFormat "%h %l %u %t \"%r\" %>s %O %{Host}i" host</tt>
     <tt>CustomLog /home/pangea/logs/apache/host_blog.pangea.org.log host</tt>
     """
     model = 'saas.SaaS'
@@ -74,7 +74,6 @@ class SaaSWebTraffic(ServiceMonitor):
                                 if host in {ignore_hosts}:
                                     continue
                                 size, hostname = line[-2:]
-                                hostname = hostname.replace('"', '')
                                 try:
                                     site = sites[hostname]
                                 except KeyError:
@@ -85,7 +84,6 @@ class SaaSWebTraffic(ServiceMonitor):
                                     year, hour, min, sec = date.split(':')
                                     date = year + months[month] + day + hour + min + sec
                                     if site[0] < int(date) < end_date:
-                                        status, size = response.split()
                                         site[2] += int(size)
                     except IOError as e:
                         sys.stderr.write(str(e)+'\\n')

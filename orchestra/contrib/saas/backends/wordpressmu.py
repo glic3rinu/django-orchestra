@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController
 
-from . import SaaSWebTraffic
+from . import ApacheTrafficByHost
 from .. import settings
 
 
@@ -122,8 +122,8 @@ class WordpressMuBackend(ServiceController):
         self.append(self.delete_blog, saas)
 
 
-class WordpressMuTraffic(SaaSWebTraffic):
-    __doc__ = SaaSWebTraffic.__doc__
+class WordpressMuTraffic(ApacheTrafficByHost):
+    __doc__ = ApacheTrafficByHost.__doc__
     verbose_name = _("Wordpress MU Traffic")
     default_route_match = "saas.service == 'wordpress'"
     doc_settings = (settings,

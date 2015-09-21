@@ -210,18 +210,10 @@ https://code.djangoproject.com/ticket/24576
 * move all tests to django-orchestra/tests
 * *natural keys: those fields that uniquely identify a service, list.name, website.name, webapp.name+account, make sure rest api can not edit thos things
 
-
 * MultiCHoiceField proper serialization
 
-* UNIFY PHP FPM settings name
-# virtualhost name: name-account?
-* add a delay to changes on the webserver apache to no overwelm it with backend executions?
 * replace unique_name by natural_key?
 * do not require contact or create default
-* send signals for backend triggers
-* force ignore slack billing period overridig when billing
-* fpm reload starts new pools?
-* rename resource.monitors to resource.backends ?
 * abstract model classes that enabling overriding, and ORCHESTRA_DATABASE_MODEL settings + orchestra.get_database_model() instead of explicitly importing from orchestra.contrib.databases.models import Database.. (Admin and REST API are fucked then?)
 
 # billing order list filter detect metrics that are greater from those of billing_date
@@ -380,8 +372,6 @@ Case
 
 # round decimals on every billing operation
 
-# PHPlist cron, bounces and traffic (maybe specific mail script with sitename)
-
 # use "su $user --shell /bin/bash" on backends for security : MKDIR -p...
 
 # model.field.flatchoices
@@ -396,3 +386,7 @@ Case
 
 
 # Implement wordpressmu change password or remove password from the form
+
+# Deprecate orchestra start/stop/restart services management commands?
+
+# Enable/disable ignore period orders list filter

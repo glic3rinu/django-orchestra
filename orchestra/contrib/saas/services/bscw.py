@@ -3,10 +3,11 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from .. import settings
-from .options import SoftwareService, SoftwareServiceForm
+from ..forms import SaaSPasswordForm
+from .options import SoftwareService
 
 
-class BSCWForm(SoftwareServiceForm):
+class BSCWForm(SaaSPasswordForm):
     email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size':'40'}))
 
 

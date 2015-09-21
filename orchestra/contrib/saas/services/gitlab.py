@@ -4,12 +4,12 @@ from rest_framework import serializers
 
 from orchestra.forms import widgets
 
-from .options import SoftwareService, SoftwareServiceForm
-
 from .. import settings
+from ..forms import SaaSPasswordForm
+from .options import SoftwareService
 
 
-class GitLabForm(SoftwareServiceForm):
+class GitLabForm(SaaSPasswordForm):
     email = forms.EmailField(label=_("Email"),
         help_text=_("Initial email address, changes on the GitLab server are not reflected here."))
 

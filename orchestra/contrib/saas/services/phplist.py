@@ -8,10 +8,11 @@ from orchestra.contrib.databases.models import Database, DatabaseUser
 from orchestra.forms.widgets import SpanWidget
 
 from .. import settings
-from .options import SoftwareService, SoftwareServiceForm
+from ..forms import SaaSPasswordForm
+from .options import SoftwareService
 
 
-class PHPListForm(SoftwareServiceForm):
+class PHPListForm(SaaSPasswordForm):
     admin_username = forms.CharField(label=_("Admin username"), required=False,
             widget=SpanWidget(display='admin'))
     

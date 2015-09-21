@@ -1,10 +1,11 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from .options import SoftwareService, SoftwareServiceForm
+from ..forms import SaaSPasswordForm
+from .options import SoftwareService
 
 
-class MoodleForm(SoftwareServiceForm):
+class MoodleForm(SaaSPasswordForm):
     email = forms.EmailField(label=_("Email"))
 
 

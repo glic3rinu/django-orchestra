@@ -124,15 +124,11 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 
 * make account available on all admin forms
 
-# WPMU blog traffic
-
 * more robust backend error handling, continue executing but exit code > 0 if failure: failing_cmd || exit_code=1 and don't forget to call super.commit()!!
 
 * website directives uniquenes validation on serializers
 
 + is_Active custom filter with support for instance.account.is_Active annotate with F() needed (django 1.8)
-
-# delete apache logs and php logs
 
 * document service help things: discount/refound/compensation effect and metric table
 * Document metric interpretation help_text
@@ -384,8 +380,6 @@ Case
 
 # Mailer: mark as sent
 
-
-# Implement wordpressmu change password or remove password from the form
 
 # Deprecate orchestra start/stop/restart services management commands?
 

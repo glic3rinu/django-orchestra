@@ -19,6 +19,7 @@ class WordPressForm(SaaSBaseForm):
             help_text = 'Admin URL: <a href="{0}">{0}</a>'.format(admin_url)
             self.fields['site_url'].help_text = mark_safe(help_text)
 
+
 class WordPressDataSerializer(serializers.Serializer):
     email = serializers.EmailField(label=_("Email"))
 

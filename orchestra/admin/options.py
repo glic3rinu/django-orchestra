@@ -236,45 +236,50 @@ class ChangePasswordAdminMixin(object):
                 name='%s_%s_change_password' % info)
         ] + super(ChangePasswordAdminMixin, self).get_urls()
     
+    def get_change_password_username(self, obj):
+        return str(obj)
+    
     @sensitive_post_parameters_m
     def change_password(self, request, id, form_url=''):
         if not self.has_change_permission(request):
             raise PermissionDenied
         # TODO use this insetad of self.get_object(), in other places
-        user = get_object_or_404(self.get_queryset(request), pk=id)
+        obj = get_object_or_404(self.get_queryset(request), pk=id)
         
         related = []
-        try:
-            # don't know why getattr(user, 'username', user.name) doesn't work
-            username = user.username
-        except AttributeError:
-            username = user.name
-        if hasattr(user, 'account'):
-            account = user.account
-            if user.account.username == username:
-                related.append(user.account)
+        for obj_name_attr in ('username', 'name', 'hostname'):
+            try:
+                obj_name = getattr(obj, obj_name_attr)
+            except AttributeError:
+                pass
+            else:
+                break
+        if hasattr(obj, 'account'):
+            account = obj.account
+            if obj.account.username == obj_name:
+                related.append(obj.account)
         else:
-            account = user
-        if account.username == username:
+            account = obj
+        if account.username == obj_name:
             for rel in account.get_related_passwords():
-                if not isinstance(user, type(rel)):
+                if not isinstance(obj, type(rel)):
                     related.append(rel)
         
         if request.method == 'POST':
-            form = self.change_password_form(user, request.POST, related=related)
+            form = self.change_password_form(obj, request.POST, related=related)
             if form.is_valid():
                 form.save()
                 change_message = self.construct_change_message(request, form, None)
-                self.log_change(request, user, change_message)
+                self.log_change(request, obj, change_message)
                 msg = _('Password changed successfully.')
                 messages.success(request, msg)
                 update_session_auth_hash(request, form.user) # This is safe
                 return HttpResponseRedirect('..')
         else:
-            form = self.change_password_form(user, related=related)
+            form = self.change_password_form(obj, related=related)
         
         fieldsets = [
-            (user._meta.verbose_name.capitalize(), {
+            (obj._meta.verbose_name.capitalize(), {
                 'classes': ('wide',),
                 'fields': ('password1', 'password2')
             }),
@@ -285,9 +290,10 @@ class ChangePasswordAdminMixin(object):
                 'fields': ('password1_%i' % ix, 'password2_%i' % ix)
             }))
         
+        obj_username = self.get_change_password_username(obj)
         adminForm = admin.helpers.AdminForm(form, fieldsets, {})
         context = {
-            'title': _('Change password: %s') % escape(username),
+            'title': _('Change password: %s') % obj_username,
             'adminform': adminForm,
             'errors': admin.helpers.AdminErrorList(form, []),
             'form_url': form_url,
@@ -299,7 +305,8 @@ class ChangePasswordAdminMixin(object):
             'has_change_permission': True,
             'has_absolute_url': False,
             'opts': self.model._meta,
-            'original': user,
+            'original': obj,
+            'obj_username': obj_username,
             'save_as': False,
             'show_save': True,
             'password': random_ascii(10),

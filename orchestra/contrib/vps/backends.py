@@ -4,6 +4,8 @@ import textwrap
 from orchestra.contrib.orchestration import ServiceController
 from orchestra.contrib.resources import ServiceMonitor
 
+from . import settings
+
 
 class ProxmoxOVZ(ServiceController):
     model = 'vps.VPS'
@@ -34,39 +36,58 @@ class ProxmoxOVZ(ServiceController):
         super(ProxmoxOVZ, self).prepare()
         self.append(self.GET_PROXMOX_INFO)
     
-    def get_vzset_args(self, vps):
-        args = []
+    def get_vzset_args(self, context):
+        args = list(settings.VPS_DEFAULT_VZSET_ARGS)
         for resource, arg_name in self.RESOURCES:
             try:
-                allocation = getattr(vps.resources, resource).allocated
-            except AttributeError:
+                allocation = context[resource]
+            except KeyError:
                 pass
             else:
                 args.append('--%s %i' % (arg_name, allocation))
         return ' '.join(args)
     
+    def run_ssh_commands(self, ssh_commands):
+        commands = '\n    '.join(ssh_commands)
+        self.append(textwrap.dedent("""\
+            cat << EOF | ssh root@${info[1]}
+                %s
+            EOF""") % commands
+        )
+    
     def save(self, vps):
+        # TODO create the container
         context = self.get_context(vps)
-        self.append('info=( $(get_vz_info %(hostname)s) )' % context)
-        vzset_args = self.get_vzset_args(vps)
+        self.append(textwrap.dedent("""
+            info=( $(get_vz_info %(hostname)s) )
+            echo "Managing ${info[@]}"\
+            """) % context
+        )
+        ssh_commands = []
+        vzset_args = self.get_vzset_args(context)
         if vzset_args:
             context['vzset_args'] = vzset_args
-            self.append(textwrap.dedent("""\
-                cat << EOF | ssh root@${info[1]}
-                    pvectl vzset ${info[0]} %(vzset_args)s
-                EOF""") % context
-            )
+            ssh_commands.append("pvectl vzset ${info[0]} %(vzset_args)s" % context)
         if hasattr(vps, 'password'):
             context['password'] = vps.password.replace('$', '\\$')
-            self.append(textwrap.dedent("""\
-                cat << EOF | ssh root@${info[1]}
-                    echo 'root:%(password)s' | vzctl exec ${info[0]} chpasswd -e
-                EOF""") % context
+            ssh_commands.append(textwrap.dedent("""\
+                echo 'root:%(password)s' \\
+                        | chroot /var/lib/vz/private/${info[0]} chpasswd -e""") % context
             )
+        self.run_ssh_commands(ssh_commands)
+    
     def get_context(self, vps):
-        return {
+        context = {
             'hostname': vps.hostname,
         }
+        for resource, __ in self.RESOURCES:
+            try:
+                allocation = getattr(vps.resources, resource).allocated
+            except AttributeError:
+                pass
+            else:
+                context[resource] = allocation
+        return context
 
 
 # TODO rename to proxmox

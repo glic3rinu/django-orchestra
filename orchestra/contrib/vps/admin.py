@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.forms import UserCreationForm, NonStoredUserChangeForm
@@ -11,7 +11,7 @@ from orchestra.forms import UserCreationForm, NonStoredUserChangeForm
 from .models import VPS
 
 
-class VPSAdmin(AccountAdminMixin, ExtendedModelAdmin):
+class VPSAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('hostname', 'type', 'template', 'account_link')
     list_filter = ('type', 'template')
     form = NonStoredUserChangeForm
@@ -40,12 +40,8 @@ class VPSAdmin(AccountAdminMixin, ExtendedModelAdmin):
     )
     actions = (list_accounts,)
     
-    def get_urls(self):
-        useradmin = UserAdmin(VPS, self.admin_site)
-        return [
-            url(r'^(\d+)/password/$',
-                self.admin_site.admin_view(useradmin.user_change_password))
-        ] + super(VPSAdmin, self).get_urls()
+    def get_change_password_username(self, obj):
+        return 'root@%s' % obj.hostname
 
 
 admin.site.register(VPS, VPSAdmin)

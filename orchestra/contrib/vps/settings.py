@@ -27,3 +27,8 @@ VPS_DEFAULT_TEMPLATE = Setting('VPS_DEFAULT_TEMPLATE',
     'debian7',
     choices=VPS_TEMPLATES
 )
+
+
+VPS_DEFAULT_VZSET_ARGS = Setting('VPS_DEFAULT_VZSET_ARGS',
+    ('--onboot yes',),
+)

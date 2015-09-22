@@ -31,6 +31,7 @@ class RouteAdmin(ExtendedModelAdmin):
     )
     list_editable = ('host', 'match', 'async', 'is_active')
     list_filter = ('host', 'is_active', 'async', 'backend')
+    list_prefetch_related = ('host',)
     ordering = ('backend',)
     add_fields = ('backend', 'host', 'match', 'async', 'is_active')
     change_form = RouteForm
@@ -60,7 +61,16 @@ class RouteAdmin(ExtendedModelAdmin):
         """ Provides dynamic help text on backend form field """
         if db_field.name == 'backend':
             kwargs['widget'] = RouteBackendSelect('this.id', self.BACKEND_HELP_TEXT, self.DEFAULT_MATCH)
-        return super(RouteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        field =  super(RouteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'host':
+            # Cache host choices
+            request = kwargs['request']
+            choices = getattr(request, '_host_choices_cache', None)
+            if choices is None:
+                request._host_choices_cache = choices = list(field.choices)
+            field.choices = choices
+        return field
+
     
     def get_form(self, request, obj=None, **kwargs):
         """ Include dynamic help text for existing objects """

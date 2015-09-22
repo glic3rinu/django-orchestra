@@ -117,6 +117,13 @@ SAAS_PHPLIST_DB_HOST = Setting('SAAS_PHPLIST_DB_HOST',
     help_text=_("Needed for password changing support."),
 )
 
+SAAS_PHPLIST_BOUNCES_MAILBOX_NAME = Setting('SAAS_PHPLIST_BOUNCES_MAILBOX_NAME',
+    '%(site_name)s-list-bounces',
+)
+
+SAAS_PHPLIST_BOUNCES_MAILBOX_PASSWORD = Setting('SAAS_PHPLIST_BOUNCES_MAILBOX_PASSWORD',
+    'secret',
+)
 
 SAAS_PHPLIST_BASE_DOMAIN = Setting('SAAS_PHPLIST_BASE_DOMAIN',
     'lists.{}'.format(ORCHESTRA_BASE_DOMAIN),

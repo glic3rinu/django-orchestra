@@ -120,7 +120,7 @@ class MessageAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         qs = super(MessageAdmin, self).get_queryset(request)
-        return qs.annotate(Count('logs')).prefetch_related('logs')
+        return qs.annotate(Count('logs')).prefetch_related('logs').defer('content')
     
     def send_pending_view(self, request):
         task(send_pending).apply_async()

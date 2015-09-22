@@ -80,7 +80,7 @@ class Account(auth.AbstractBaseUser):
     
     def disable(self):
         self.is_active = False
-        self.save(update_fields=['is_active'])
+        self.save(update_fields=('is_active',))
         self.notify_related()
     
     def get_services_to_disable(self):
@@ -93,7 +93,7 @@ class Account(auth.AbstractBaseUser):
     def notify_related(self):
         """ Trigger save() on related objects that depend on this account """
         for obj in self.get_services_to_disable():
-            OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=[])
+            OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=())
     
     def send_email(self, template, context, email_from=None, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)

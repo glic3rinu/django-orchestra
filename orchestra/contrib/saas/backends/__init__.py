@@ -89,7 +89,7 @@ class ApacheTrafficByHost(ServiceMonitor):
                         sys.stderr.write(str(e)+'\\n')
                 for opts in sites.values():
                     ini_date, object_id, size = opts
-                    sys.stdout.write('%s %s\n' % (object_id, size))
+                    sys.stdout.write('%s %s\\n' % (object_id, size))
             """).format(**context)
         )
     

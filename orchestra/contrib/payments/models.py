@@ -134,21 +134,21 @@ class Transaction(models.Model):
     def mark_as_processed(self):
         self.check_state(self.WAITTING_PROCESSING)
         self.state = self.WAITTING_EXECUTION
-        self.save(update_fields=['state', 'modified_at'])
+        self.save(update_fields=('state', 'modified_at'))
     
     def mark_as_executed(self):
         self.check_state(self.WAITTING_EXECUTION)
         self.state = self.EXECUTED
-        self.save(update_fields=['state', 'modified_at'])
+        self.save(update_fields=('state', 'modified_at'))
     
     def mark_as_secured(self):
         self.check_state(self.EXECUTED)
         self.state = self.SECURED
-        self.save(update_fields=['state', 'modified_at'])
+        self.save(update_fields=('state', 'modified_at'))
     
     def mark_as_rejected(self):
         self.state = self.REJECTED
-        self.save(update_fields=['state', 'modified_at'])
+        self.save(update_fields=('state', 'modified_at'))
 
 
 class TransactionProcess(models.Model):
@@ -187,18 +187,18 @@ class TransactionProcess(models.Model):
         self.state = self.EXECUTED
         for transaction in self.transactions.all():
             transaction.mark_as_executed()
-        self.save(update_fields=['state'])
+        self.save(update_fields=('state',))
     
     def abort(self):
         self.check_state(self.CREATED, self.EXCECUTED)
         self.state = self.ABORTED
         for transaction in self.transaction.all():
             transaction.mark_as_aborted()
-        self.save(update_fields=['state'])
+        self.save(update_fields=('state',))
     
     def commit(self):
         self.check_state(self.CREATED, self.EXECUTED)
         self.state = self.COMMITED
         for transaction in self.transactions.processing():
             transaction.mark_as_secured()
-        self.save(update_fields=['state'])
+        self.save(update_fields=('state',))

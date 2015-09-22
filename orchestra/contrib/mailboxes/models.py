@@ -13,9 +13,9 @@ class Mailbox(models.Model):
     CUSTOM = 'CUSTOM'
     
     name = models.CharField(_("name"), max_length=64, unique=True,
-        help_text=_("Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only."),
+        help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
         validators=[
-            RegexValidator(r'^[\w.@+-]+$', _("Enter a valid mailbox name.")),
+            RegexValidator(r'^[\w.-]+$', _("Enter a valid mailbox name.")),
         ])
     password = models.CharField(_("password"), max_length=128)
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),

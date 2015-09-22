@@ -12,6 +12,7 @@ def type_save(sender, *args, **kwargs):
     instance = kwargs['instance']
     instance.service_instance.save()
 
+
 @receiver(pre_delete, sender=SaaS, dispatch_uid='saas.service.delete')
 def type_delete(sender, *args, **kwargs):
     instance = kwargs['instance']

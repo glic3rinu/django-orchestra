@@ -70,7 +70,7 @@ class SaaSPasswordForm(SaaSBaseForm):
             return password2
     
     def save(self, commit=True):
-        obj = super(SoftwareServiceForm, self).save(commit=commit)
+        obj = super(SaaSPasswordForm, self).save(commit=commit)
         if not self.is_change:
             obj.set_password(self.cleaned_data["password1"])
         return obj

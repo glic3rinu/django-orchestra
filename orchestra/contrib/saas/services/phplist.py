@@ -17,6 +17,14 @@ from .options import SoftwareService
 class PHPListForm(SaaSPasswordForm):
     admin_username = forms.CharField(label=_("Admin username"), required=False,
         widget=SpanWidget(display='admin'))
+    database = forms.CharField(label=_("Database"), required=False,
+        help_text=_("Database used for this instance."),
+        widget=SpanWidget(display=settings.SAAS_PHPLIST_DB_NAME.replace(
+            '%(', '&lt;').replace(')s', '&gt;')))
+    mailbox = forms.CharField(label=_("Bounces mailbox"), required=False,
+        help_text=_("Mailbox used for reciving bounces."),
+        widget=SpanWidget(display=settings.SAAS_PHPLIST_BOUNCES_MAILBOX_NAME.replace(
+            '%(', '&lt;').replace(')s', '&gt;')))
     
     def __init__(self, *args, **kwargs):
         super(PHPListForm, self).__init__(*args, **kwargs)
@@ -27,11 +35,6 @@ class PHPListForm(SaaSPasswordForm):
 
 
 class PHPListChangeForm(PHPListForm):
-    database = forms.CharField(label=_("Database"), required=False,
-        help_text=_("Database used for this instance."))
-    mailbox = forms.CharField(label=_("Bounces mailbox"), required=False,
-        help_text=_("Mailbox used for reciving bounces."), widget=SpanWidget(display=''))
-    
     def __init__(self, *args, **kwargs):
         super(PHPListChangeForm, self).__init__(*args, **kwargs)
         site_domain = self.instance.get_site_domain()

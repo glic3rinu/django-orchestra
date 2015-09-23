@@ -38,9 +38,7 @@ class Apache2Backend(ServiceController):
         'WEBSITES_SAAS_DIRECTIVES',
     ))
     
-    def render_virtual_host(self, site, context, ssl=False):
-        context['port'] = self.HTTPS_PORT if ssl else self.HTTP_PORT
-        context['vhost_set_fcgid'] = False
+    def get_extra_conf(self, site, context, ssl=False):
         extra_conf = self.get_content_directives(site, context)
         directives = site.get_directives()
         if ssl:
@@ -54,7 +52,12 @@ class Apache2Backend(ServiceController):
             extra_conf.append((location, directive % settings_context))
         # Order extra conf directives based on directives (longer first)
         extra_conf = sorted(extra_conf, key=lambda a: len(a[0]), reverse=True)
-        context['extra_conf'] = '\n'.join([conf for location, conf in extra_conf])
+        return '\n'.join([conf for location, conf in extra_conf])
+    
+    def render_virtual_host(self, site, context, ssl=False):
+        context['port'] = self.HTTPS_PORT if ssl else self.HTTP_PORT
+        context['vhost_set_fcgid'] = False
+        context['extra_conf'] = self.get_extra_conf(site, context, ssl)
         return Template(textwrap.dedent("""\
             <VirtualHost{% for ip in ips %} {{ ip }}:{{ port }}{% endfor %}>
                 IncludeOptional /etc/apache2/site[s]-override/{{ site_unique_name }}.con[f]

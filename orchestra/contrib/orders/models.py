@@ -181,7 +181,7 @@ class Order(models.Model):
         return import_class(settings.ORDERS_BILLING_BACKEND)()
     
     def clean(self):
-        if self.billed_on < self.registered_on:
+        if self.billed_on and self.billed_on < self.registered_on:
             raise ValidationError(_("Billed date can not be earlier than registered on."))
         if self.billed_until and not self.billed_on:
             raise ValidationError(_("Billed on is missing while billed until is being provided."))

@@ -24,7 +24,8 @@ def get_history_data(queryset):
                 'objects': [],
             }
             resources[resource] = (options, aggregation)
-        
+        if aggregation.aggregated_history:
+            needs_aggregation = True
         monitors = []
         scale = options['scale']
         all_dates = options['dates']
@@ -32,7 +33,6 @@ def get_history_data(queryset):
             datasets = {}
             for content_object, datas in aggregation.aggregate_history(dataset):
                 if aggregation.aggregated_history:
-                    needs_aggregation = True
                     serie = {}
                     for data in datas:
                         value = round(float(data.value)/scale, 3) if data.value is not None else None
@@ -54,9 +54,9 @@ def get_history_data(queryset):
             })
         options['objects'].append({
             'object_name': rdata.content_object_repr,
-            'current': round(float(rdata.used), 3),
+            'current': round(float(rdata.used or 0), 3),
             'allocated': float(rdata.allocated) if rdata.allocated is not None else None,
-            'updated_at': rdata.updated_at.isoformat(),
+            'updated_at': rdata.updated_at.isoformat() if rdata.updated_at else None,
             'monitors': monitors,
         })
     if needs_aggregation:

@@ -169,6 +169,7 @@ class SecEngine(SecRuleRemove):
     verbose_name = _("SecRuleEngine Off")
     help_text = _("URL path with disabled modsecurity engine.")
     regex = r'^/[^ ]*$'
+    unique_location = False
 
 
 class WordPressSaaS(SiteDirective):

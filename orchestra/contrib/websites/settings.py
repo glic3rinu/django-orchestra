@@ -109,8 +109,8 @@ WEBSITES_TRAFFIC_IGNORE_HOSTS = Setting('WEBSITES_TRAFFIC_IGNORE_HOSTS',
 WEBSITES_SAAS_DIRECTIVES = Setting('WEBSITES_SAAS_DIRECTIVES',
     {
         'wordpress-saas': ('fpm', '/var/run/fpm/pangea-5.4-fpm.sock', '/home/httpd/wordpress-mu/'),
-        'drupal-saas': ('fpm', '/var/run/fpm/pangea-5.4-fpm.sock','/home/httpd/drupal-mu/'),
-        'dokuwiki-saas': ('fpm', '/var/run/fpm/pangea-5.4-fpm.sock','/home/httpd/moodle-mu/'),
+        'drupal-saas': ('fpm', '/var/run/fpm/pangea-5.4-fpm.sock', '/home/httpd/drupal-mu/'),
+        'dokuwiki-saas': ('fpm', '/var/run/fpm/pangea-5.4-fpm.sock', '/home/httpd/moodle-mu/'),
     },
 )
 

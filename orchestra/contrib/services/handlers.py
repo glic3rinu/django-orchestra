@@ -374,7 +374,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                     priced[order][0] += price
                     priced[order][1] += cprice
                 else:
-                    priced[order] = (price, cprice)
+                    priced[order] = [price, cprice]
         lines = []
         for order, prices in priced.items():
             if hasattr(order, 'new_billed_until'):

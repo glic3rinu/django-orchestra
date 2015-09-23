@@ -384,3 +384,6 @@ Case
 # Deprecate orchestra start/stop/restart services management commands?
 
 # Enable/disable ignore period orders list filter
+
+
+# Modsecurity rules template by cms (wordpress, joomla, dokuwiki (973337 973338 973347 958057), ...

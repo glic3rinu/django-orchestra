@@ -102,6 +102,11 @@ class PHPEnableFunctions(PHPAppOption):
         ])
     regex = r'^[\w\.,-]+$'
     comma_separated = True
+    
+    def validate(self):
+        # Clean value removing spaces
+        self.instance.value = self.instance.value.replace(' ', '')
+        super(PHPEnableFunctions, self).validate()
 
 
 class PHPAllowURLInclude(PHPAppOption):

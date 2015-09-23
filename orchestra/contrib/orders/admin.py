@@ -39,11 +39,11 @@ class MetricStorageInline(admin.TabularInline):
         if change_view:
             qs = qs.order_by('-id')
             try:
-                tenth_id = qs.values_list('id', flat=True)[9]
+                tenth_id = qs.filter(order_id=self.parent_object.pk).values_list('id', flat=True)[9]
             except IndexError:
                 pass
             else:
-                return qs.filter(pk__lte=tenth_id)
+                return qs.filter(pk__gte=tenth_id)
         return qs
 
 

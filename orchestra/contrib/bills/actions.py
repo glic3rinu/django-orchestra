@@ -37,13 +37,13 @@ view_bill.url_name = 'view'
 
 @transaction.atomic
 def close_bills(modeladmin, request, queryset, action='close_bills'):
-    queryset = queryset.filter(is_open=True)
-    if not queryset:
-        messages.warning(request, _("Selected bills should be in open state"))
-        return
+    # Validate bills
     for bill in queryset:
         if not validate_contact(request, bill):
-            return
+            return False
+        if not bill.is_open:
+            messages.warning(request, _("Selected bills should be in open state"))
+            return False
     SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm, extra=0)
     formset = SelectSourceFormSet(queryset=queryset)
     if request.POST.get('post') == 'generic_confirmation':
@@ -143,9 +143,13 @@ download_bills.url_name = 'download'
 
 def close_send_download_bills(modeladmin, request, queryset):
     response = close_bills(modeladmin, request, queryset, action='close_send_download_bills')
+    if response is False:
+        # Not a valid contact or closed bill
+        return
     if request.POST.get('post') == 'generic_confirmation':
         response = send_bills_action(modeladmin, request, queryset)
         if response is False:
+            # Not a valid contact
             return
         return download_bills(modeladmin, request, queryset)
     return response

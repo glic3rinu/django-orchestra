@@ -80,15 +80,20 @@ class MessageAdmin(admin.ModelAdmin):
         part = email.message_from_string(instance.content)
         payload = part.get_payload()
         if isinstance(payload, list):
-            for part in payload:
-                payload = part.get_payload()
-                if part.get_content_type() == 'text/html':
-                    payload = '<div style="padding-left:110px">%s</div>' % payload
-                    # prioritize HTML
-                    break
+            for cpart in payload:
+                cpayload = cpart.get_payload()
+                if cpart.get_content_type().startswith('text/'):
+                    part = cpart
+                    payload = cpayload
+                    if cpart.get_content_type() == 'text/html':
+                        payload = '<div style="padding-left:110px">%s</div>' % payload
+                        # prioritize HTML
+                        break
         if part.get('Content-Transfer-Encoding') == 'base64':
             payload = base64.b64decode(payload)
-            payload = payload.decode(part.get_charsets()[0])
+            charset = part.get_charsets()[0]
+            if charset:
+                payload = payload.decode(charset)
         if part.get_content_type() == 'text/plain':
             payload = payload.replace('\n', '<br>').replace(' ', '&nbsp;')
         return payload

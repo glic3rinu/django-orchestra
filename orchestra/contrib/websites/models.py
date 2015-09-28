@@ -148,6 +148,10 @@ class Content(models.Model):
         except Website.DoesNotExist:
             return self.path
     
+    def clean_fields(self, *args, **kwargs):
+        self.path = self.path.strip()
+        return super(Content, self).clean_fields(*args, **kwargs)
+    
     def clean(self):
         if not self.path:
             self.path = '/'

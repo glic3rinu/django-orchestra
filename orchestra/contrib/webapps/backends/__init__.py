@@ -28,11 +28,11 @@ class WebAppServiceMixin(object):
         if context['under_construction_path']:
             self.append(textwrap.dedent("""
                 # Set under construction if needed
-                if [[ $CREATED == 1 ]] && ! ls -A %(app_path)s > /dev/null; then
+                if [[ $CREATED == 1 && ! $(ls -A %(app_path)s) ]]; then
                     # Async wait 2 more seconds for other backends to lock app_path or cp under construction
                     nohup bash -c '
                         sleep 2
-                        if ! ls -A %(app_path)s > /dev/null; then
+                        if [[ ! $(ls -A %(app_path)s) ]]; then
                             cp -r %(under_construction_path)s %(app_path)s
                             chown -R %(user)s:%(group)s %(app_path)s
                         fi' &> /dev/null &

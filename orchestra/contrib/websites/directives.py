@@ -106,7 +106,7 @@ class Redirect(SiteDirective):
     unique_location = True
     
     def validate(self, directive):
-        """ inserts default url path if not provided """
+        """ inserts default url-path if not provided """
         values = directive.value.strip().split()
         if len(values) == 1:
             values.insert(0, '/')
@@ -167,7 +167,7 @@ class SecRuleRemove(SiteDirective):
 class SecEngine(SecRuleRemove):
     name = 'sec-engine'
     verbose_name = _("SecRuleEngine Off")
-    help_text = _("URL path with disabled modsecurity engine.")
+    help_text = _("URL-path with disabled modsecurity engine.")
     regex = r'^/[^ ]*$'
     unique_location = False
 
@@ -175,7 +175,7 @@ class SecEngine(SecRuleRemove):
 class WordPressSaaS(SiteDirective):
     name = 'wordpress-saas'
     verbose_name = "WordPress SaaS"
-    help_text = _("URL path for mounting wordpress multisite.")
+    help_text = _("URL-path for mounting wordpress multisite.")
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
@@ -185,10 +185,10 @@ class WordPressSaaS(SiteDirective):
 class DokuWikiSaaS(WordPressSaaS):
     name = 'dokuwiki-saas'
     verbose_name = "DokuWiki SaaS"
-    help_text = _("URL path for mounting wordpress multisite.")
+    help_text = _("URL-path for mounting wordpress multisite.")
 
 
 class DrupalSaaS(WordPressSaaS):
     name = 'drupal-saas'
     verbose_name = "Drupdal SaaS"
-    help_text = _("URL path for mounting wordpress multisite.")
+    help_text = _("URL-path for mounting wordpress multisite.")

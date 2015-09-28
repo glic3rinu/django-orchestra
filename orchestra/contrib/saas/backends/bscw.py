@@ -19,10 +19,10 @@ class BSCWBackend(ServiceController):
     def validate_creation(self, saas):
         context = self.get_context(saas)
         self.append(textwrap.dedent("""\
-            if %(bsadmin)s register %(email)s > /dev/null; then
+            if [[ $(%(bsadmin)s register %(email)s) ]]; then
                 echo 'ValidationError: email-exists'
             fi
-            if %(bsadmin)s users -n %(username)s > /dev/null; then
+            if [[ $(%(bsadmin)s users -n %(username)s) ]]; then
                 echo 'ValidationError: user-exists'
             fi""") % context
         )

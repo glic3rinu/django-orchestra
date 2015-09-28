@@ -291,24 +291,26 @@ class Apache2Backend(ServiceController):
         ]
         
     def get_security(self, directives):
-        remove_rules = []
+        rules = []
         for values in directives.get('sec-rule-remove', []):
             for rule in values.split():
-                sec_rule = "    SecRuleRemoveById %i" % int(rule)
-                remove_rules.append(sec_rule)
-        security = []
-        if remove_rules:
-            remove_rules.insert(0, '<IfModule mod_security2.c>')
-            remove_rules.append('</IfModule>')
-            security.append(('', '\n'.join(remove_rules)))
+                rules.append('SecRuleRemoveById %i' % int(rule))
         for location in directives.get('sec-engine', []):
-            sec_rule = textwrap.dedent("""\
-                <IfModule mod_security2.c>
+            if location == '/':
+                rules.append('SecRuleEngine Off')
+            else:
+                rules.append(textwrap.dedent("""\
                     <Location %s>
                         SecRuleEngine Off
-                    </Location>
-                </IfModule>""") % location
-            security.append((location, sec_rule))
+                    </Location>""") % location
+                )
+        security = []
+        if rules:
+            rules = textwrap.dedent("""\
+                <IfModule mod_security2.c>
+                    %s
+                </IfModule>""") % '\n    '.join(rules)
+            security.append((location, rules))
         return security
     
     def get_redirects(self, directives):

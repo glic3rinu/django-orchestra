@@ -98,6 +98,16 @@ class Transaction(models.Model):
         (SECURED, _("Secured")),
         (REJECTED, _("Rejected")),
     )
+    STATE_HELP = {
+        WAITTING_PROCESSING: _("The transaction is created and requires processing by the "
+                               "specific payment method."),
+        WAITTING_EXECUTION: _("The transaction is processed and its pending execution on "
+                              "the related financial institution."),
+        EXECUTED: _("The transaction is executed on the financial institution."),
+        SECURED: _("The transaction ammount is secured."),
+        REJECTED: _("The transaction has failed and the ammount is lost, a new transaction "
+                    "should be created for recharging."),
+    }
     
     bill = models.ForeignKey('bills.bill', verbose_name=_("bill"),
         related_name='transactions')
@@ -127,22 +137,20 @@ class Transaction(models.Model):
             if amount >= self.bill.total:
                 raise ValidationError(_("New transactions can not be allocated for this bill."))
     
-    def check_state(self, *args):
-        if self.state not in args:
-            raise TypeError("Transaction not in %s" % ' or '.join(args))
+    def get_state_help(self):
+        if self.source:
+            return self.source.method_instance.state_help.get(self.state) or self.STATE_HELP.get(self.state)
+        return self.STATE_HELP.get(self.state)
     
     def mark_as_processed(self):
-        self.check_state(self.WAITTING_PROCESSING)
         self.state = self.WAITTING_EXECUTION
         self.save(update_fields=('state', 'modified_at'))
     
     def mark_as_executed(self):
-        self.check_state(self.WAITTING_EXECUTION)
         self.state = self.EXECUTED
         self.save(update_fields=('state', 'modified_at'))
     
     def mark_as_secured(self):
-        self.check_state(self.EXECUTED)
         self.state = self.SECURED
         self.save(update_fields=('state', 'modified_at'))
     
@@ -178,26 +186,19 @@ class TransactionProcess(models.Model):
     def __str__(self):
         return '#%i' % self.id
     
-    def check_state(self, *args):
-        if self.state not in args:
-            raise TypeError("Transaction process not in %s" % ' or '.join(args))
-    
     def mark_as_executed(self):
-        self.check_state(self.CREATED)
         self.state = self.EXECUTED
         for transaction in self.transactions.all():
             transaction.mark_as_executed()
         self.save(update_fields=('state',))
     
     def abort(self):
-        self.check_state(self.CREATED, self.EXCECUTED)
         self.state = self.ABORTED
         for transaction in self.transaction.all():
             transaction.mark_as_aborted()
         self.save(update_fields=('state',))
     
     def commit(self):
-        self.check_state(self.CREATED, self.EXECUTED)
         self.state = self.COMMITED
         for transaction in self.transactions.processing():
             transaction.mark_as_secured()

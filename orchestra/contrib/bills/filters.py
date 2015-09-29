@@ -101,16 +101,16 @@ class PaymentStateListFilter(SimpleListFilter):
         elif self.value() == 'PAID':
             zeros = queryset.filter(approx_total=0, approx_total__isnull=True)
             zeros = zeros.values_list('id', flat=True)
-            ammounts = Transaction.objects.exclude(bill_id__in=zeros).secured().group_by('bill_id')
+            amounts = Transaction.objects.exclude(bill_id__in=zeros).secured().group_by('bill_id')
             paid = []
             relevant = queryset.exclude(approx_total=0, approx_total__isnull=True, is_open=True)
             for bill_id, total in relevant.values_list('id', 'approx_total'):
                 try:
-                    ammount = sum([t.ammount for t in ammounts[bill_id]])
+                    amount = sum([t.amount for t in amounts[bill_id]])
                 except KeyError:
                     pass
                 else:
-                    if abs(total) <= abs(ammount):
+                    if abs(total) <= abs(amount):
                         paid.append(bill_id)
             return queryset.filter(
                 Q(approx_total=0) |
@@ -120,8 +120,9 @@ class PaymentStateListFilter(SimpleListFilter):
         elif self.value() == 'PENDING':
             has_transaction = queryset.exclude(transactions__isnull=True)
             non_rejected = has_transaction.exclude(transactions__state=Transaction.REJECTED)
-            non_rejected = non_rejected.values_list('id', flat=True).distinct()
-            return queryset.filter(pk__in=non_rejected)
+            paid = non_rejected.exclude(transactions__state=Transaction.SECURED)
+            paid = paid.values_list('id', flat=True).distinct()
+            return queryset.filter(pk__in=paid)
         elif self.value() == 'BAD_DEBT':
             closed = queryset.filter(is_open=False).exclude(approx_total=0)
             return closed.filter(

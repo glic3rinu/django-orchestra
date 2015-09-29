@@ -13,7 +13,6 @@ from ..forms import SaaSPasswordForm
 class SoftwareService(plugins.Plugin):
     form = SaaSPasswordForm
     site_domain = None
-    site_base_domain = None
     has_custom_domain = False
     icon = 'orchestra/icons/apps.png'
     class_verbose_name = _("Software as a Service")
@@ -32,9 +31,11 @@ class SoftwareService(plugins.Plugin):
         return fields + ('name',)
     
     def get_site_domain(self):
-        return self.site_domain or '.'.join(
-            (self.instance.name, self.site_base_domain)
-        )
+        context = {
+            'site_name': self.instance.name,
+            'name': self.instance.name,
+        }
+        return self.site_domain % context
     
     def clean_data(self):
         data = super(SoftwareService, self).clean_data()

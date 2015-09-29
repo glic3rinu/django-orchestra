@@ -4,6 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from .options import SoftwareService
+from .. import settings
 from ..forms import SaaSBaseForm
 
 
@@ -31,8 +32,4 @@ class WordPressService(SoftwareService):
     serializer = WordPressDataSerializer
     icon = 'orchestra/icons/apps/WordPress.png'
     change_readonly_fileds = ('email',)
-    
-    @property
-    def site_base_domain(self):
-        from .. import settings
-        return settings.SAAS_WORDPRESS_BASE_DOMAIN
+    site_domain = settings.SAAS_WORDPRESS_DOMAIN

@@ -43,6 +43,12 @@ class SEPADirectDebit(PaymentMethod):
     form = SEPADirectDebitForm
     serializer = SEPADirectDebitSerializer
     due_delta = datetime.timedelta(days=5)
+    state_help = {
+        'WAITTING_PROCESSING': _("The transaction is created and requires the generation of "
+                                 "the SEPA direct debit XML file."),
+        'WAITTING_EXECUTION': _("SEPA Direct Debit XML file is generated but needs to be sent "
+                                "to the financial institution."),
+    }
     
     def get_bill_message(self):
         context = {

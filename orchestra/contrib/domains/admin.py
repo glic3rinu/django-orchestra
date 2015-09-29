@@ -94,7 +94,13 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                     link = '<a href="%s">%s %s</a>' % (admin_url, website.name, site_link)
                     links.append(link)
                 return '<br>'.join(links)
-        return _("No website")
+        context = {
+            'title': _("View on site"),
+            'url': 'http://%s' % domain.name,
+            'image': '<img src="%s"></img>' % static('orchestra/images/view-on-site.png'),
+        }
+        site_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
+        return _("No website %s") % site_link
     display_websites.admin_order_field = 'websites__name'
     display_websites.short_description = _("Websites")
     display_websites.allow_tags = True

@@ -17,6 +17,7 @@ class PaymentMethod(plugins.Plugin):
     process_credit = False
     due_delta = relativedelta.relativedelta(months=1)
     plugin_field = 'method'
+    state_help = {}
     
     @classmethod
     @cached

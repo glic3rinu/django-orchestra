@@ -29,8 +29,12 @@ class PHPListForm(SaaSPasswordForm):
     def __init__(self, *args, **kwargs):
         super(PHPListForm, self).__init__(*args, **kwargs)
         self.fields['name'].label = _("Site name")
-        base_domain = self.plugin.site_base_domain
-        help_text = _("Admin URL http://&lt;site_name&gt;.{}/admin/").format(base_domain)
+        context = {
+            'site_name': '&lt;site_name&gt;',
+            'name': '&lt;site_name&gt;',
+        }
+        domain = self.plugin.site_domain % context
+        help_text = _("Admin URL http://{}/admin/").format(domain)
         self.fields['site_url'].help_text = help_text
 
 
@@ -66,7 +70,7 @@ class PHPListService(SoftwareService):
     form = PHPListForm
     change_form = PHPListChangeForm
     icon = 'orchestra/icons/apps/Phplist.png'
-    site_base_domain = settings.SAAS_PHPLIST_BASE_DOMAIN
+    site_domain = settings.SAAS_PHPLIST_DOMAIN
     
     def get_db_name(self):
         context = {

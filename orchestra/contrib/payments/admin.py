@@ -105,7 +105,6 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     source_link = admin_link('source')
     process_link = admin_link('process', short_description=_("proc"))
     account_link = admin_link('bill__account')
-    display_state = admin_colored('state', colors=STATE_COLORS)
     
     def get_change_view_actions(self, obj=None):
         actions = super(TransactionAdmin, self).get_change_view_actions()
@@ -120,6 +119,15 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
             elif obj.state in [Transaction.REJECTED, Transaction.SECURED]:
                 return []
         return [action for action in actions if action.__name__ not in exclude]
+    
+    def display_state(self, obj):
+        state = admin_colored('state', colors=STATE_COLORS)(obj)
+        help_text = obj.get_state_help()
+        state = state.replace('<span ', '<span title="%s" ' % help_text)
+        return state
+    display_state.admin_order_field = 'state'
+    display_state.short_description = _("State")
+    display_state.allow_tags = True
 
 
 class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):

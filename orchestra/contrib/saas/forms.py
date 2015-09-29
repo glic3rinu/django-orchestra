@@ -22,12 +22,17 @@ class SaaSBaseForm(PluginDataForm):
             site_domain = self.instance.get_site_domain()
         else:
             site_domain = self.plugin.site_domain
-        if site_domain:
-            site_link = '<a href="http://%s">%s</a>' % (site_domain, site_domain)
+        context = {
+            'site_name': '&lt;site_name&gt;',
+            'name': '&lt;site_name&gt;',
+        }
+        site_domain = site_domain % context
+        if '&lt;site_name&gt;' in site_domain:
+            site_link = site_domain
         else:
-            site_link = '&lt;site_name&gt;.%s' % self.plugin.site_base_domain
+            site_link = '<a href="http://%s">%s</a>' % (site_domain, site_domain)
         self.fields['site_url'].widget.display = site_link
-        self.fields['name'].label = _("Site name") if self.plugin.site_base_domain else _("Username")
+        self.fields['name'].label = _("Site name") if '%(' in self.plugin.site_domain else _("Username")
 
 
 class SaaSPasswordForm(SaaSBaseForm):

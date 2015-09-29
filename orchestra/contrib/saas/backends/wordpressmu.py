@@ -17,24 +17,24 @@ class WordpressMuBackend(ServiceController):
     model = 'saas.SaaS'
     default_route_match = "saas.service == 'wordpress'"
     doc_settings = (settings,
-        ('SAAS_WORDPRESS_ADMIN_PASSWORD', 'SAAS_WORDPRESS_BASE_URL')
+        ('SAAS_WORDPRESS_ADMIN_PASSWORD', 'SAAS_WORDPRESS_MAIN_URL')
     )
     
     def login(self, session):
-        base_url = self.get_base_url()
-        login_url = base_url + '/wp-login.php'
+        main_url = self.get_main_url()
+        login_url = main_url + '/wp-login.php'
         login_data = {
             'log': 'admin',
             'pwd': settings.SAAS_WORDPRESS_ADMIN_PASSWORD,
             'redirect_to': '/wp-admin/'
         }
         response = session.post(login_url, data=login_data)
-        if response.url != base_url + '/wp-admin/':
+        if response.url != main_url + '/wp-admin/':
             raise IOError("Failure login to remote application")
     
-    def get_base_url(self):
-        base_url = settings.SAAS_WORDPRESS_BASE_URL
-        return base_url.rstrip('/')
+    def get_main_url(self):
+        main_url = settings.SAAS_WORDPRESS_MAIN_URL
+        return main_url.rstrip('/')
     
     def validate_response(self, response):
         if response.status_code != 200:
@@ -42,7 +42,7 @@ class WordpressMuBackend(ServiceController):
             raise RuntimeError(errors[0] if errors else 'Unknown %i error' % response.status_code)
     
     def get_id(self, session, saas):
-        search = self.get_base_url()
+        search = self.get_main_url()
         search += '/wp-admin/network/sites.php?s=%s&action=blogs' % saas.name
         regex = re.compile(
             '<a href="http://[\.\-\w]+/wp-admin/network/site-info\.php\?id=([0-9]+)"\s+'
@@ -69,7 +69,7 @@ class WordpressMuBackend(ServiceController):
         try:
             self.get_id(session, saas)
         except RuntimeError:
-            url = self.get_base_url()
+            url = self.get_main_url()
             url += '/wp-admin/network/site-new.php'
             content = session.get(url).content.decode('utf8')
             
@@ -97,7 +97,7 @@ class WordpressMuBackend(ServiceController):
         except RuntimeError:
             pass
         else:
-            delete = self.get_base_url()
+            delete = self.get_main_url()
             delete += '/wp-admin/network/sites.php?action=confirm&action2=deleteblog'
             delete += '&id=%d&_wpnonce=%s' % (id, wpnonce)
             
@@ -110,7 +110,7 @@ class WordpressMuBackend(ServiceController):
                 '_wpnonce': wpnonce,
                 '_wp_http_referer': '/wp-admin/network/sites.php',
             }
-            delete = self.get_base_url()
+            delete = self.get_main_url()
             delete += '/wp-admin/network/sites.php?action=deleteblog'
             response = session.post(delete, data=data)
             self.validate_response(response)

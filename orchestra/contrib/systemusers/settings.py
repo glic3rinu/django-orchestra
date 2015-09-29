@@ -11,7 +11,6 @@ SYSTEMUSERS_SHELLS = Setting('SYSTEMUSERS_SHELLS',
     (
         ('/dev/null', _("No shell, FTP only")),
         ('/bin/rssh', _("No shell, SFTP/RSYNC only")),
-        ('/usr/bin/git-shell', _("No shell, GIT only")),
         ('/bin/bash', "/bin/bash"),
         ('/bin/sh', "/bin/sh"),
     ),
@@ -29,7 +28,6 @@ SYSTEMUSERS_DISABLED_SHELLS = Setting('SYSTEMUSERS_DISABLED_SHELLS',
     default=(
         '/dev/null',
         '/bin/rssh',
-        '/usr/bin/git-shell',
     ),
 )
 

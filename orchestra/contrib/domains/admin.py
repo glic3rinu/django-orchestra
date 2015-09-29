@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.db.models.functions import Concat, Coalesce
+from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -79,12 +80,19 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     
     def display_websites(self, domain):
         if apps.isinstalled('orchestra.contrib.websites'):
-            webs = domain.websites.all()
-            if webs:
+            websites = domain.websites.all()
+            if websites:
                 links = []
-                for web in webs:
-                    url = change_url(web)
-                    links.append('<a href="%s">%s</a>' % (url, web.name))
+                for website in websites:
+                    context = {
+                        'title': _("View on site"),
+                        'url': website.get_absolute_url(),
+                        'image': '<img src="%s"></img>' % static('orchestra/images/view-on-site.png'),
+                    }
+                    site_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
+                    admin_url = change_url(website)
+                    link = '<a href="%s">%s %s</a>' % (admin_url, website.name, site_link)
+                    links.append(link)
                 return '<br>'.join(links)
         return _("No website")
     display_websites.admin_order_field = 'websites__name'

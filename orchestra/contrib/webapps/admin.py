@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.templatetags.static import static
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -64,10 +65,17 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     def display_websites(self, webapp):
         websites = []
         for content in webapp.content_set.all():
+            context = {
+                'title': _("View on site"),
+                'url': content.get_absolute_url(),
+                'image': '<img src="%s"></img>' % static('orchestra/images/view-on-site.png'),
+            }
+            site_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
             website = content.website
-            url = change_url(website)
+            admin_url = change_url(website)
             name = "%s on %s" % (website.name, content.path)
-            websites.append('<a href="%s">%s</a>' % (url, name))
+            link = '<a href="%s">%s %s</a>' % (admin_url, name, site_link)
+            websites.append(link)
         if not websites:
             add_url = reverse('admin:websites_website_add')
             add_url += '?account=%s' % webapp.account_id

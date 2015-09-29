@@ -1,7 +1,4 @@
-import os
 import textwrap
-
-from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController
 
@@ -10,7 +7,7 @@ class WordPressURLBackend(ServiceController):
     """
     Configures WordPress site URL with associated website domain.
     """
-    verbose_name = _("WordPress URL")
+    verbose_name = "WordPress URL"
     model = 'websites.Content'
     default_route_match = "content.webapp.type == 'wordpress-php'"
     

@@ -40,10 +40,14 @@ sed -i "s/\tlocalhost$/\tlocalhost $NAME/" $CONTAINER/etc/hosts
 sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" $CONTAINER/etc/locale.gen
 chroot $CONTAINER locale-gen
 
+echo -e "#!/bin/sh\nexit 101\n" > $CONTAINER/usr/sbin/policy-rc.d
+chmod 755 $CONTAINER/usr/sbin/policy-rc.d
+
 chroot $CONTAINER apt-get update
 chroot $CONTAINER apt-get install -y --force-yes \
     nano git screen sudo iputils-ping python3 python3-pip wget curl dnsutils rsyslog
 
+rm $CONTAINER/usr/sbin/policy-rc.d
 chroot $CONTAINER apt-get clean
 
 

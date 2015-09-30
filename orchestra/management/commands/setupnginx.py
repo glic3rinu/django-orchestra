@@ -231,7 +231,7 @@ class Command(BaseCommand):
                 # File is different, save the old one
                 if interactive:
                     if not confirm("\n\nFile %(file)s be updated, do you like to overide "
-                                   "it? (yes/no): " % context)
+                                   "it? (yes/no): " % context):
                         return
                 run("cp %(file)s %(file)s.save" % context, display=True)
                 run("cat << 'EOF' > %(file)s\n%(conf)s\nEOF" % context, display=True)

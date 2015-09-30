@@ -19,7 +19,9 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 2. Install django-orchestra's source code
     ```bash
     sudo apt-get install python3-pip
-    sudo pip3 install django-orchestra==dev
+    sudo pip3 install django-orchestra==dev \
+        --allow-external django-orchestra \
+        --allow-unverified django-orchestra
     ```
 
 3. Install requirements
@@ -42,17 +44,12 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
     ```
 
 
-6. See the Django deployment checklist
-    ```bash
-    python3 panel/manage.py check --deploy
-    ```
-
 
 6. Configure periodic execution of tasks (choose one)
     1. Use cron
         ```bash
         python3 manage.py setupcronbeat
-        python3 panel/manage.py syncperiodictasks
+        python3 manage.py syncperiodictasks
         ```
 
     2. Use celeryd
@@ -73,6 +70,10 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
     sudo python3 manage.py setupnginx --user orchestra
     ```
 
+6. See the Django deployment checklist
+    ```bash
+    python3 manage.py check --deploy
+    ```
 
 9. Start all services:
     ```bash

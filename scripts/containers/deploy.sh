@@ -2,6 +2,7 @@
 
 set -ue
 
+
 function main () {
     bold=$(tput -T ${TERM:-xterm} bold)
     normal=$(tput -T ${TERM:-xterm} sgr0)
@@ -16,55 +17,66 @@ function main () {
         ${@}
     }
 
+    while true; do
+        read -p "Enter a project name [panel]: " project_name
+        if [[ "$project_name" == "" ]]; then
+            project_name="panel"
+            break
+        elif [[ ! $(echo "$project_name" | grep '^[_a-zA-Z]\w*$') ]]; then
+            if [[ ! $(echo "$project_name" | grep '^[_a-zA-Z]') ]]; then
+                message='make sure the name begins with a letter or underscore'
+            else
+                message='use only numbers, letters and underscores'
+            fi
+            echo "'$project_name' is not a valid %s name. Please $message."
+        else
+            break
+       fi
+    done
+    
+    # TODO Password:  Password (again): 
+
+    read -p "Enter a new database password: " db_password
+    
+    while true; do
+        read -p "Do you want to use celery or cronbeat for task execution [cronbeat]?" task
+        case $task in
+            'celery' ) task=celery; break;;
+            'cronbeat' ) task=cronbeat; break;;
+            '' ) task=cronbeat; break;;
+            * ) echo "Please answer celery or cronbeat.";;
+        esac
+    done
+
     run sudo pip3 install django-orchestra==dev \
         --allow-external django-orchestra \
         --allow-unverified django-orchestra
     run sudo orchestra-admin install_requirements
     run cd $(eval echo ~$USER)
 
-    while true; do
-        read -p "Enter a project name: " project_name
-        if [[ "$project_name" =~ ' ' ]]; then
-            echo "Spaces not allowed"
-        else
-            run orchestra-admin startproject $project_name
-            run cd $project_name
-            break
-       fi
-    done
-
-    read -p "Enter a new database password: " db_password
+    run orchestra-admin startproject $project_name
+    run cd $project_name
+    
+    sudo service postgresql start
     run sudo python3 manage.py setuppostgres --db_password "$db_password"
 
     run python3 manage.py migrate
-    run python3 panel/manage.py check --deploy
 
-    function cronbeat () {
+    if [[ "$task" == "cronbeat" ]]; then
         run python3 manage.py setupcronbeat
-        run python3 panel/manage.py syncperiodictasks
-    }
-
-    function celery () {
+        run python3 manage.py syncperiodictasks
+    else
         run sudo apt-get install rabbitmq
         run sudo python3 manage.py setupcelery --username $USER
-    }
+    fi
 
-    while true; do
-        read -p "Do you want to use celery or cronbeat for task execution [cronbeat]?" task
-        case $task in
-            'celery' ) celery; break;;
-            'cronbeat' ) cronbeat; break;;
-            '' ) cronbeat; break;;
-            * ) echo "Please answer celery or cronbeat.";;
-        esac
-    done
-
-    run sudo python3 manage.py setuplog
+    run sudo python3 manage.py setuplog --noinput
 
     run python3 manage.py collectstatic --noinput
     run sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
     run sudo python3 manage.py setupnginx --user $USER
     run sudo python manage.py startservices
+    run python3 manage.py check --deploy
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl

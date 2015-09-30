@@ -393,25 +393,19 @@ Case
 
 
 
+deploy --dev
+deploy.sh  and deploy-dev.sh autoupgrade
+chown orchestra:orchestra /home/orchestra/panel/orchestra.log
+orchestra home autocomplete
 
-CommandError: 
-run() encountered an error (return code 2) while executing 'su postgres -c "psql -c \"CREATE USER orchestra PASSWORD 'pane';\""'
- b'could not change directory to "/home/orchestra/panel": Permission denied\npsql: could not connect to server: No such file or directory\n\tIs the server running locally and accepting\n\tconnections on Unix domain socket "/var/run/postgresql/.s.PGSQL.5432"?'
+short URLS: https://github.com/rsvp/gitio
 
+link backend help text variables to settings/#var_name
+saas changelist domain: add <br>custom domain<img>
 
-    warning: no previously-included files matching '__pycache__' found under directory '*'
-    warning: no previously-included files matching '*~' found under directory '*'
-    warning: no previously-included files matching '*.save' found under directory '*'
-    changing mode of build/scripts-3.4/orchestra-beat from 644 to 755
-    changing mode of /usr/local/bin/orchestra-admin to 755
-    changing mode of /usr/local/bin/orchestra-beat to 755
-      File "/usr/local/lib/python3.4/dist-packages/orchestra/getips.py", line 15
-        print sliver['mgmt_net']['address']
-                   ^
-    SyntaxError: Missing parentheses in call to 'print'
-    
-      File "/usr/local/lib/python3.4/dist-packages/orchestra/management/commands/setupnginx.py", line 234
-        "it? (yes/no): " % context)
-                                  ^
-    SyntaxError: invalid syntax
+ $ sudo python manage.py startservices
+Traceback (most recent call last):
+  File "manage.py", line 8, in <module>
+    from django.core.management import execute_from_command_line
+ImportError: No module named django.core.management
 

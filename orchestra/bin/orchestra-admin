@@ -111,7 +111,6 @@ function install_requirements () {
     ORCHESTRA_PATH=$(get_orchestra_dir) || true
     
     # lxml: libxml2-dev, libxslt1-dev, zlib1g-dev
-    # wkhtmltopdf: xfonts-75dpi, xvfb
     APT="python3 \
          python3-pip \
          python3-dev \
@@ -119,8 +118,6 @@ function install_requirements () {
          libxslt1-dev \
          zlib1g-dev \
          bind9utils \
-         wkhtmltopdf \
-         xfonts-75dpi \
          xvfb \
          ca-certificates \
          gettext \
@@ -152,7 +149,7 @@ function install_requirements () {
     # Install a more recent version of wkhtmltopdf (0.12.2) (PDF page number support)
     wkhtmltox=$(mktemp)
     wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb -O ${wkhtmltox}
-    dpkg -i ${wkhtmltox}
+    dpkg -i ${wkhtmltox} || { echo "Installing missing dependencies for wkhtmltox..." && apt-get -f install; }
     
     # Make sure locales are in place before installing postgres
     if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then

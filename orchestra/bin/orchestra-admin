@@ -3,8 +3,8 @@
 set -u
 set -e
 
-bold=$(tput bold)
-normal=$(tput sgr0)
+bold=$(tput -T ${TERM:-xterm} bold)
+normal=$(tput -T ${TERM:-xterm} sgr0)
 
 
 PYTHON_BIN='python3'

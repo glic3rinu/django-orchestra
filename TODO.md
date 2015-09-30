@@ -379,7 +379,7 @@ Case
 # Don't enforce one contact per account? remove account.email in favour of contacts?
 
 # Mailer: mark as sent
-
+# Mailer: download attachments
 
 # Deprecate orchestra start/stop/restart services management commands?
 
@@ -387,3 +387,4 @@ Case
 
 
 # Modsecurity rules template by cms (wordpress, joomla, dokuwiki (973337 973338 973347 958057), ...
+

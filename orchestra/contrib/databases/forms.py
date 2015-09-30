@@ -12,7 +12,8 @@ from .models import DatabaseUser, Database
 
 class DatabaseUserCreationForm(forms.ModelForm):
     password1 = forms.CharField(label=_("Password"), required=False,
-        widget=forms.PasswordInput, validators=[validate_password])
+        widget=forms.PasswordInput(attrs={'autocomplete': 'off'}),
+        validators=[validate_password])
     password2 = forms.CharField(label=_("Password confirmation"), required=False,
         widget=forms.PasswordInput,
         help_text=_("Enter the same password as above, for verification."))
@@ -57,6 +58,7 @@ class DatabaseCreationForm(DatabaseUserCreationForm):
         username = self.cleaned_data.get('username')
         if DatabaseUser.objects.filter(username=username).exists():
             raise ValidationError("Provided username already exists.")
+        return username
     
     def clean_password2(self):
         username = self.cleaned_data.get('username')
@@ -79,7 +81,7 @@ class DatabaseCreationForm(DatabaseUserCreationForm):
     def clean(self):
         cleaned_data = super(DatabaseCreationForm, self).clean()
         if 'user' in cleaned_data and 'username' in cleaned_data:
-            msg = _("Use existing user or create a new one?")
+            msg = _("Use existing user or create a new one? you have provided both.")
             if cleaned_data['user'] and self.cleaned_data['username']:
                 raise ValidationError(msg)
             elif not (cleaned_data['username'] or cleaned_data['user']):

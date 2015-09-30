@@ -85,7 +85,7 @@ class MySQLUserBackend(ServiceController):
         context = self.get_context(user)
         self.append(textwrap.dedent("""\
             # Create user %(username)s
-            mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true
+            mysql -e 'CREATE USER "%(username)s"@"%(host)s";' || true # User already exists
             mysql -e 'UPDATE mysql.user SET Password="%(password)s" WHERE User="%(username)s";'\
             """) % context
         )

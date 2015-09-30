@@ -90,9 +90,11 @@ def action_to_view(action, modeladmin):
 
 
 def change_url(obj):
-    opts = obj._meta
-    view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
-    return reverse(view_name, args=(obj.pk,))
+    if obj is not None:
+        opts = obj._meta
+        view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
+        return reverse(view_name, args=(obj.pk,))
+    raise NoReverseMatch
 
 
 @admin_field

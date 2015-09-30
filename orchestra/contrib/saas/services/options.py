@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra import plugins
+from orchestra.contrib.databases.models import Database, DatabaseUser
 from orchestra.contrib.orchestration import Operation
 from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
@@ -64,3 +65,58 @@ class SoftwareService(plugins.Plugin):
     
     def get_related(self):
         return []
+
+
+class DBSoftwareService(SoftwareService):
+    db_name = None
+    db_user = None
+    
+    def get_db_name(self):
+        context = {
+            'name': self.instance.name,
+            'site_name': self.instance.name,
+        }
+        db_name = self.db_name % context
+        # Limit for mysql database names
+        return db_name[:65]
+    
+    def get_db_user(self):
+        return self.db_user
+    
+    @cached
+    def get_account(self):
+        account_model = self.instance._meta.get_field_by_name('account')[0]
+        return account_model.rel.to.objects.get_main()
+    
+    def validate(self):
+        super(DBSoftwareService, self).validate()
+        create = not self.instance.pk
+        if create:
+            account = self.get_account()
+            # Validated Database
+            db_user = self.get_db_user()
+            try:
+                DatabaseUser.objects.get(username=db_user)
+            except DatabaseUser.DoesNotExist:
+                raise ValidationError(
+                    _("Global database user for PHPList '%(db_user)s' does not exists.") % {
+                        'db_user': db_user
+                    }
+                )
+            db = Database(name=self.get_db_name(), account=account)
+            try:
+                db.full_clean()
+            except ValidationError as e:
+                raise ValidationError({
+                    'name': e.messages,
+                })
+    
+    def save(self):
+        account = self.get_account()
+        # Database
+        db_name = self.get_db_name()
+        db_user = self.get_db_user()
+        db, db_created = account.databases.get_or_create(name=db_name, type=Database.MYSQL)
+        user = DatabaseUser.objects.get(username=db_user)
+        db.users.add(user)
+        self.instance.database_id = db.pk

@@ -151,9 +151,10 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         lines = []
         counter = 0
         # Because of values_list this query doesn't benefit from prefetch_related
-        tx_ids = process.transactions.values_list('id', flat=True)
-        for tx_id in tx_ids:
-            ids.append(str(tx_id))
+        for trans in process.transactions.only('id', 'state'):
+            color = STATE_COLORS.get(trans.state, 'black')
+            state = trans.get_state_display()
+            ids.append('<span style="color:%s" title="%s">%i</span>' % (color, state, trans.id))
             counter += 1
             if counter > 10:
                 counter = 0

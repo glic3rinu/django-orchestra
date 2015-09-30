@@ -19,6 +19,9 @@ class PhpListSaaSBackend(ServiceController):
     The site is created by means of creating a new database per phpList site,
     but all sites share the same code.
     
+    Different databases are used instead of prefixes because php-list reacts by launching
+    the installation process.
+    
     <tt>// config/config.php
     $site = getenv("SITE");
     if ( $site == '' ) {

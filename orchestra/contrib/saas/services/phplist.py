@@ -5,13 +5,12 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.databases.models import Database, DatabaseUser
 from orchestra.contrib.mailboxes.models import Mailbox
 from orchestra.forms.widgets import SpanWidget
 
 from .. import settings
 from ..forms import SaaSPasswordForm
-from .options import SoftwareService
+from .options import DBSoftwareService
 
 
 class PHPListForm(SaaSPasswordForm):
@@ -64,26 +63,15 @@ class PHPListChangeForm(PHPListForm):
                     original=mailbox.name, display=mailbox_link)
 
 
-class PHPListService(SoftwareService):
+class PHPListService(DBSoftwareService):
     name = 'phplist'
     verbose_name = "phpList"
     form = PHPListForm
     change_form = PHPListChangeForm
     icon = 'orchestra/icons/apps/Phplist.png'
     site_domain = settings.SAAS_PHPLIST_DOMAIN
-    
-    def get_db_name(self):
-        context = {
-            'name': self.instance.name,
-            'site_name': self.instance.name,
-        }
-        return settings.SAAS_PHPLIST_DB_NAME % context
-        db_name = 'phplist_mu_%s' % self.instance.name
-        # Limit for mysql database names
-        return db_name[:65]
-    
-    def get_db_user(self):
-        return settings.SAAS_PHPLIST_DB_USER
+    db_name = settings.SAAS_PHPLIST_DB_NAME
+    db_user = settings.SAAS_PHPLIST_DB_USER
     
     def get_mailbox_name(self):
         context = {
@@ -92,32 +80,11 @@ class PHPListService(SoftwareService):
         }
         return settings.SAAS_PHPLIST_BOUNCES_MAILBOX_NAME % context
     
-    def get_account(self):
-        account_model = self.instance._meta.get_field_by_name('account')[0]
-        return account_model.rel.to.objects.get_main()
-    
     def validate(self):
         super(PHPListService, self).validate()
         create = not self.instance.pk
         if create:
             account = self.get_account()
-            # Validated Database
-            db_user = self.get_db_user()
-            try:
-                DatabaseUser.objects.get(username=db_user)
-            except DatabaseUser.DoesNotExist:
-                raise ValidationError(
-                    _("Global database user for PHPList '%(db_user)s' does not exists.") % {
-                        'db_user': db_user
-                    }
-                )
-            db = Database(name=self.get_db_name(), account=account)
-            try:
-                db.full_clean()
-            except ValidationError as e:
-                raise ValidationError({
-                    'name': e.messages,
-                })
             # Validate mailbox
             mailbox = Mailbox(name=self.get_mailbox_name(), account=account)
             try:
@@ -129,13 +96,6 @@ class PHPListService(SoftwareService):
     
     def save(self):
         account = self.get_account()
-        # Database
-        db_name = self.get_db_name()
-        db_user = self.get_db_user()
-        db, db_created = account.databases.get_or_create(name=db_name, type=Database.MYSQL)
-        user = DatabaseUser.objects.get(username=db_user)
-        db.users.add(user)
-        self.instance.database_id = db.pk
         # Mailbox
         mailbox_name = self.get_mailbox_name()
         mailbox, mb_created = account.mailboxes.get_or_create(name=mailbox_name)

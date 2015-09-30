@@ -1,0 +1,136 @@
+import os
+import textwrap
+
+from django.utils.translation import ugettext_lazy as _
+
+from orchestra.contrib.orchestration import ServiceController, replace
+
+from .. import settings
+
+
+class MoodleMuBackend(ServiceController):
+    """
+    Creates a Moodle site on a Moodle multisite installation
+    
+    // config.php
+    $site_map = array(
+        // "<HTTP_HOST>" => ["<SITE_NAME>", "<WWWROOT>"],
+    );
+    
+    wwwroot = "https://{$site}-courses.pangea.org";
+    $site = getenv("SITE");
+    if ( $site == '' ) {
+        http_host = $_SERVER['HTTP_HOST'];
+        if (array_key_exists($http_host, $site_map)) {
+            $site = $site_map[$http_host][0];
+            $wwwroot = $site_map[$http_host][1];
+        } elseif (strpos($http_host, '-courses.') !== false) {
+            $site = array_shift((explode("-courses.", $http_host)));
+        } else {
+            $site = array_shift((explode(".", $http_host)));
+        }
+    }
+    $CFG->prefix    = "${site}_";
+    $CFG->wwwroot   = $wwwroot;
+    $CFG->dataroot  = "/home/pangea/moodledata/{$site}/";
+    """
+    verbose_name = _("Moodle multisite")
+    model = 'saas.SaaS'
+    default_route_match = "saas.service == 'moodle'"
+    
+    def save(self, webapp):
+        context = self.get_context(webapp)
+        self.append(textwrap.dedent("""\
+            mkdir -p %(moodledata_path)s
+            chown %(user)s:%(user)s %(moodledata_path)s
+            export SITE=%(site_name)s
+            CHANGE_PASSWORD=0
+            php %(moodle_path)s/admin/cli/install_database.php \\
+                --fullname="%(site_name)s" \\
+                --shortname="%(site_name)s" \\
+                --adminpass="%(password)s" \\
+                --adminemail="%(email)s" \\
+                --non-interactive \\
+                --agree-license \\
+                --allow-unstable || CHANGE_PASSWORD=1
+            """) % context
+        )
+        if context['password']:
+            self.append(textwrap.dedent("""\
+                mysql \\
+                    --host="%(db_host)s" \\
+                    --user="%(db_user)s" \\
+                    --password="%(db_pass)s" \\
+                    --execute='UPDATE %(site_name)s_user
+                               SET password=MD5("%(password)s")
+                               WHERE username="admin"' \\
+                    %(db_name)s
+            """) % context
+        )
+        if context['crontab']:
+            context['escaped_crontab'] = context['crontab'].replace('$', '\\$')
+            self.append(textwrap.dedent("""\
+                # Configuring Moodle crontabs
+                if ! crontab -u %(user)s -l | grep 'Moodle:"%(site_name)s"' > /dev/null; then
+                cat << EOF | su %(user)s --shell /bin/bash -c 'crontab'
+                $(crontab -u %(user)s -l)
+                
+                # %(banner)s - Moodle:"%(site_name)s"
+                %(escaped_crontab)s
+                EOF
+                fi""") % context
+            )
+    
+    def delete(self, saas):
+        context = self.get_context(saas)
+        self.append(textwrap.dedent("""
+            rm -rf %(moodledata_path)s
+            # Delete tables with prefix %(site_name)s
+            mysql -Nrs \\
+                --host="%(db_host)s" \\
+                --user="%(db_user)s" \\
+                --password="%(db_pass)s" \\
+                --execute='SET GROUP_CONCAT_MAX_LEN=10000;
+                           SET @tbls = (SELECT GROUP_CONCAT(TABLE_NAME)
+                                        FROM information_schema.TABLES
+                                        WHERE TABLE_SCHEMA = "%(db_name)s"
+                                        AND TABLE_NAME LIKE "%(site_name)s_%%");
+                           SET @delStmt = CONCAT("DROP TABLE ",  @tbls);
+                           -- SELECT @delStmt;
+                           PREPARE stmt FROM @delStmt;
+                           EXECUTE stmt;
+                           DEALLOCATE PREPARE stmt;' \\
+                %(db_name)s
+            """) % context
+        )
+        if context['crontab']:
+            context['crontab_regex'] = '\\|'.join(context['crontab'].splitlines())
+            context['crontab_regex'] = context['crontab_regex'].replace('*', '\\*')
+            self.append(textwrap.dedent("""\
+                crontab -u %(user)s -l \\
+                    | grep -v 'Moodle:"%(site_name)s"\\|%(crontab_regex)s' \\
+                    | su %(user)s --shell /bin/bash -c 'crontab'
+                """) % context
+            )
+    
+    def get_context(self, saas):
+        context = {
+            'banner': self.get_banner(),
+            'name': saas.name,
+            'site_name': saas.name,
+            'full_name': "%s course" % saas.name.capitalize(),
+            'moodle_path': settings.SAAS_MOODLE_PATH,
+            'user': settings.SAAS_MOODLE_SYSTEMUSER,
+            'db_user': settings.SAAS_MOODLE_DB_USER,
+            'db_pass': settings.SAAS_MOODLE_DB_PASS,
+            'db_name': settings.SAAS_MOODLE_DB_NAME,
+            'db_host': settings.SAAS_MOODLE_DB_HOST,
+            'email': saas.account.email,
+            'password': getattr(saas, 'password', None),
+        }
+        context.update({
+            'crontab': settings.SAAS_MOODLE_CRONTAB % context,
+            'db_name': context['db_name'] % context,
+            'moodledata_path': settings.SAAS_MOODLE_DATA_PATH % context,
+        })
+        return context

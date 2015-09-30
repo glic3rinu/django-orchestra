@@ -49,7 +49,7 @@ class MetricStorageInline(admin.TabularInline):
 
 class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'id', 'service_link', 'account_link', 'content_object_link',
+        'display_description', 'service_link', 'account_link', 'content_object_link',
         'display_registered_on', 'display_billed_until', 'display_cancelled_on',
         'display_metric'
     )
@@ -77,6 +77,12 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     service_link = admin_link('service')
     display_registered_on = admin_date('registered_on')
     display_cancelled_on = admin_date('cancelled_on')
+    
+    def display_description(self, order):
+        return order.description[:64]
+    display_description.short_description = _("Description")
+    display_description.allow_tags = True
+    display_description.admin_order_field = 'description'
     
     def content_object_link(self, order):
         if order.content_object:

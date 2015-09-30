@@ -197,3 +197,54 @@ SAAS_GITLAB_DOMAIN = Setting('SAAS_GITLAB_DOMAIN',
     'gitlab.{}'.format(ORCHESTRA_BASE_DOMAIN),
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
+
+
+# Moodle
+
+SAAS_MOODLE_DB_USER = Setting('SAAS_MOODLE_DB_USER',
+    'moodle_mu',
+    help_text=_("Needed for password changing support."),
+)
+
+SAAS_MOODLE_DB_PASS = Setting('SAAS_MOODLE_DB_PASS',
+    'secret',
+    help_text=_("Needed for password changing support."),
+)
+
+SAAS_MOODLE_DB_NAME = Setting('SAAS_MOODLE_DB_NAME',
+    'moodle_mu',
+    help_text=_("Needed for password changing support."),
+)
+
+SAAS_MOODLE_DB_HOST = Setting('SAAS_MOODLE_DB_HOST',
+    'loclahost',
+    help_text=_("Needed for password changing support."),
+)
+
+SAAS_MOODLE_DOMAIN = Setting('SAAS_MOODLE_DOMAIN',
+    '%(site_name)s.courses.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
+)
+
+SAAS_MOODLE_PATH = Setting('SAAS_MOODLE_PATH',
+    '/var/www/moodle-mu',
+    help_text=_("Filesystem path to the Moodle source code installed on the server. "
+                "Used by <tt>SAAS_MOODLE_CRONTAB</tt>.")
+)
+
+SAAS_MOODLE_DATA_PATH = Setting('SAAS_MOODLE_DATA_PATH',
+    '/var/moodledata/%(site_name)s',
+    help_text=_("Filesystem path to the Moodle source code installed on the server. "
+                "Used by <tt>SAAS_MOODLE_CRONTAB</tt>.")
+)
+
+SAAS_MOODLE_SYSTEMUSER = Setting('SAAS_MOODLE_SYSTEMUSER',
+    'root',
+    help_text=_("System user running Moodle on the server."
+                "Used by <tt>SAAS_MOODLE_CRONTAB</tt>.")
+)
+
+SAAS_MOODLE_CRONTAB = Setting('SAAS_MOODLE_CRONTAB',
+    '*/15 * * * * export SITE="%(site_name)s"; php %(moodle_path)s/admin/cli/cron.php >/dev/null',
+    help_text=_("Left blank if you don't want crontab to be configured")
+)

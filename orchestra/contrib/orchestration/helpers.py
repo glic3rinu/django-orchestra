@@ -19,8 +19,10 @@ def get_backends_help_text(backends):
             'model': backend.model,
             'related_models': str(backend.related_models),
             'script_executable': backend.script_executable,
-            'script_method': '.'.join((backend.script_method.__module__, backend.script_method.__name__)),
-            'function_method': '.'.join((backend.function_method.__module__, backend.function_method.__name__)),
+            'script_method': '.'.join(
+                (backend.script_method.__module__, backend.script_method.__name__)),
+            'function_method': '.'.join(
+                (backend.function_method.__module__, backend.function_method.__name__)),
             'actions': str(backend.actions),
         }
         help_text += textwrap.dedent("""
@@ -61,7 +63,9 @@ def send_report(method, args, log):
     backend = method.__self__.__class__.__name__
     subject = '[Orchestra] %s execution %s on %s'  % (backend, log.state, server)
     separator = "\n%s\n\n" % ('~ '*40,)
-    operations = '\n'.join([' '.join((op.action, get_instance_url(op))) for op in log.operations.all()])
+    operations = '\n'.join(
+        [' '.join((op.action, get_instance_url(op))) for op in log.operations.all()]
+    )
     log_url = reverse('admin:orchestration_backendlog_change', args=(log.pk,))
     log_url = orchestra_settings.ORCHESTRA_SITE_URL + log_url
     message = separator.join([
@@ -143,7 +147,9 @@ def message_user(request, logs):
                 _('<a href="{url}">{total} backend</a> has been executed'),
                 _('<a href="{url}">{total} backends</a> have been executed'),
                 total)
-        msg = msg.format(total=total, url=url, async_url=async_url, async=async, successes=successes)
+        msg = msg.format(
+            total=total, url=url, async_url=async_url, async=async, successes=successes
+        )
         messages.success(request, mark_safe(msg + '.'))
     else:
         msg = async_msg.format(url=url, async_url=async_url, async=async)

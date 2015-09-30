@@ -6,8 +6,22 @@
 
 set -ue
 
-bold=$(tput bold)
-normal=$(tput sgr0)
+function main () {
+
+
+bold=$(tput -T ${TERM:-xterm} bold)
+normal=$(tput -T ${TERM:-xterm} sgr0)
+
+surun () {
+    echo " ${bold}\$ su $USER -c \"${@}\"${normal}"
+    su $USER -c "${@}"
+}
+
+
+run () {
+    echo " ${bold}\$ ${@}${normal}"
+    ${@}
+}
 
 
 [ $(whoami) != 'root' ] && {
@@ -23,17 +37,6 @@ BASE_DIR="$HOME/$PROJECT_NAME"
 MANAGE="$BASE_DIR/manage.py"
 PYTHON_BIN="python3"
 CELERY=false
-
-
-surun () {
-    echo " ${bold}\$ su $USER -c \"${@}\"${normal}"
-    su $USER -c "${@}"
-}
-
-run () {
-    echo " ${bold}\$ ${@}${normal}"
-    ${@}
-}
 
 
 # Create a system user for running Orchestra
@@ -72,7 +75,7 @@ fi
 
 run "apt-get -y install postgresql"
 if [[ ! $(sudo su postgres -c "psql -lqt" | awk {'print $1'} | grep '^orchestra$') ]]; then
-    # orchestra database does not esists
+    # orchestra database does not exists
     # Speeding up tests, don't do this in production!
     . /usr/share/postgresql-common/init.d-functions
     POSTGRES_VERSION=$(psql --version | head -n1 | sed -r "s/^.*\s([0-9]+\.[0-9]+).*/\1/")
@@ -142,3 +145,8 @@ ${bold}
     - password: $PASSWORD
 ${normal}
 EOF
+
+}
+
+# Wrap it all on a function to avoid partial executions when running through wget/curl
+main

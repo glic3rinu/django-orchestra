@@ -77,8 +77,6 @@
 
 * prevent @pangea.org email addresses on contacts, enforce at least one email without @pangea.org
 
-* forms autocomplete="off", doesn't work in chrome
-
 ln -s /proc/self/fd /dev/fd
 
 
@@ -388,3 +386,7 @@ Case
 
 # Modsecurity rules template by cms (wordpress, joomla, dokuwiki (973337 973338 973347 958057), ...
 
+
+# saas custom domains support (maybe a new form field with custom url? autoconfigure websites?)
+    custom_url form field and validate/create/delete related website
+    SAAS_PHPLIST_ALLOW_CUSTOM_URL = False

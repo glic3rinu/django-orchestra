@@ -28,19 +28,7 @@ function print_help () {
 		${bold}OPTIONS${normal}
 		    ${bold}install_requirements${normal}
 		        Installs Orchestra requirements using apt-get and pip
-
-		    ${bold}install_postfix${normal}
-		        Installs postfix packages including dovecot, amavis, spamassassin and clamav
-
-		    ${bold}uninstall_postfix${normal}
-		        Uninstall postfix packages including dovecot, amavis, spamassassin and clamav
-
-		    ${bold}install_certificate${normal}
-		        Installs a valid all-purpose self signed certificate that is valid for the next ten years
-
-		    ${bold}uninstall_certificate${normal}
-		        Uninstall certificate
-
+		
 		    ${bold}startproject${normal}
 		        Creates a new Django-orchestra instance
 		    

@@ -48,11 +48,12 @@ class SaaSPasswordForm(SaaSBaseForm):
         help_text=_("Passwords are not stored, so there is no way to see this "
                     "service's password, but you can change the password using "
                     "<a href=\"password/\">this form</a>."))
-    password1 = forms.CharField(label=_("Password"), validators=[validators.validate_password],
-            widget=forms.PasswordInput(attrs={'autocomplete': 'off'}))
+    password1 = forms.CharField(label=_("Password"),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'off'}),
+        validators=[validators.validate_password])
     password2 = forms.CharField(label=_("Password confirmation"),
-            widget=forms.PasswordInput,
-            help_text=_("Enter the same password as above, for verification."))
+        widget=forms.PasswordInput,
+        help_text=_("Enter the same password as above, for verification."))
     
     def __init__(self, *args, **kwargs):
         super(SaaSPasswordForm, self).__init__(*args, **kwargs)

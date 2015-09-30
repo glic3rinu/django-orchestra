@@ -1,5 +1,6 @@
 import ast
 import copy
+import json
 import os
 import re
 
@@ -91,7 +92,11 @@ def serialize(obj, init=True):
 def _format_setting(name, value):
     if isinstance(value, Remove):
         return ""
-    value = serialize(eval(value), get_eval_context())
+    value = eval(value, get_eval_context())
+    try:
+        value = json.dumps(value, indent=4)
+    except TypeError:
+        value = serialize(value)
     return "{name} = {value}".format(name=name, value=value)
 
 

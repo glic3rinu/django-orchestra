@@ -43,7 +43,9 @@ class Command(BaseCommand):
         }
         
         run(textwrap.dedent("""\
-            su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD '%(db_password)s';\\""
+            su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD '%(db_password)s';\\"" || {
+                su postgres -c "psql -c \\"ALTER USER %(db_user)s WITH PASSWORD '%(db_password)s';\\""
+            }
             su postgres -c "psql -c \\"CREATE DATABASE %(db_name)s OWNER %(db_user)s;\\""\
             """) % context, valid_codes=(0,1)
         )

@@ -18,17 +18,19 @@ class MoodleMuBackend(ServiceController):
         // "<HTTP_HOST>" => ["<SITE_NAME>", "<WWWROOT>"],
     );
     
-    wwwroot = "https://{$site}-courses.pangea.org";
     $site = getenv("SITE");
+    $wwwroot = "https://{$site}-courses.pangea.org";
     if ( $site == '' ) {
-        http_host = $_SERVER['HTTP_HOST'];
+        $http_host = $_SERVER['HTTP_HOST'];
         if (array_key_exists($http_host, $site_map)) {
             $site = $site_map[$http_host][0];
             $wwwroot = $site_map[$http_host][1];
         } elseif (strpos($http_host, '-courses.') !== false) {
             $site = array_shift((explode("-courses.", $http_host)));
+            $wwwroot = "https://{$site}-courses.pangea.org";
         } else {
             $site = array_shift((explode(".", $http_host)));
+            $wwwroot = "https://{$site}-courses.pangea.org";
         }
     }
     $CFG->prefix    = "${site}_";

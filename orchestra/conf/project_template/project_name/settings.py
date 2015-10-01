@@ -51,7 +51,9 @@ INSTALLED_APPS = [
     'orchestra.contrib.bills',
     'orchestra.contrib.payments',
     'orchestra.contrib.tasks',
-    
+    'orchestra.contrib.mailer',
+    'orchestra.contrib.history',
+
     # Third-party apps
     'django_extensions',
     'djcelery',
@@ -65,9 +67,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'passlib.ext.django',
     'django_countries',
-#    'django_mailer',
 #    'debug_toolbar',
-    
+
     # Django.contrib
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -75,25 +76,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin.apps.SimpleAdminConfig',
-    
+
     # Last to load
     'orchestra.contrib.resources',
     'orchestra.contrib.settings',
-]
-
-
-MIDDLEWARE_CLASSES = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'orchestra.core.caches.RequestCacheMiddleware',
-    # also handles transations, ATOMIC_REQUESTS does not wrap middlewares
-    'orchestra.contrib.orchestration.middlewares.OperationsMiddleware',
 ]
 
 
@@ -173,6 +159,22 @@ LOCALE_PATHS = (
 ORCHESTRA_SITE_NAME = '{{ project_name }}'
 
 
+MIDDLEWARE_CLASSES = (
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'orchestra.core.caches.RequestCacheMiddleware',
+    # also handles transations, ATOMIC_REQUESTS does not wrap middlewares
+    'orchestra.contrib.orchestration.middlewares.OperationsMiddleware',
+)
+
+
 AUTH_USER_MODEL = 'accounts.Account'
 
 
@@ -182,48 +184,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'simple': {
-            'format': '%(asctime)s %(name)s %(levelname)s %(message)s'
-        },
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
-        },
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'orchestra.log'),
-            'formatter': 'simple'
-        },
-        'console': {
-            'level': 'INFO',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'orchestra': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'orm': {
-            'handlers': ['file',],
-            'level': 'INFO',
-            'propagate': True,
-        },
-    },
-}
+EMAIL_BACKEND = 'orchestra.contrib.mailer.backends.EmailBackend'
 
 
 #################################
@@ -242,3 +203,37 @@ FLUENT_DASHBOARD_ICON_THEME = '../orchestra/icons'
 import djcelery
 djcelery.setup_loader()
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+
+# rest_framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'orchestra.permissions.api.OrchestraPermissionBackend',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        ('rest_framework.filters.DjangoFilterBackend',)
+    ),
+}
+
+
+# Use a UNIX compatible hash
+PASSLIB_CONFIG = (
+    "[passlib]\n"
+    "schemes = sha512_crypt, django_pbkdf2_sha256, django_pbkdf2_sha1, "
+    "    django_bcrypt, django_bcrypt_sha256, django_salted_sha1, des_crypt, "
+    "    django_salted_md5, django_des_crypt, hex_md5, bcrypt, phpass\n"
+    "default = sha512_crypt\n"
+    "deprecated = django_pbkdf2_sha1, django_salted_sha1, django_salted_md5, "
+    "    django_des_crypt, des_crypt, hex_md5\n"
+    "all__vary_rounds = 0.05\n"
+    "django_pbkdf2_sha256__min_rounds = 10000\n"
+    "sha512_crypt__min_rounds = 80000\n"
+    "staff__django_pbkdf2_sha256__default_rounds = 12500\n"
+    "staff__sha512_crypt__default_rounds = 100000\n"
+    "superuser__django_pbkdf2_sha256__default_rounds = 15000\n"
+    "superuser__sha512_crypt__default_rounds = 120000\n"
+)

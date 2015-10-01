@@ -36,9 +36,9 @@ ORCHESTRA_SITE_VERBOSE_NAME = Setting('ORCHESTRA_SITE_VERBOSE_NAME',
 ORCHESTRA_START_SERVICES = Setting('ORCHESTRA_START_SERVICES',
     default=(
         'postgresql',
-        'celeryevcam',
-        'celeryd',
-        'celerybeat',
+#        'celeryevcam',
+#        'celeryd',
+#        'celerybeat',
         ('uwsgi', 'nginx'),
     ),
 )
@@ -46,8 +46,8 @@ ORCHESTRA_START_SERVICES = Setting('ORCHESTRA_START_SERVICES',
 
 ORCHESTRA_RESTART_SERVICES = Setting('ORCHESTRA_RESTART_SERVICES',
     default=(
-        'celeryd',
-        'celerybeat',
+#        'celeryd',
+#        'celerybeat',
         'uwsgi'
     ),
 )
@@ -56,9 +56,9 @@ ORCHESTRA_RESTART_SERVICES = Setting('ORCHESTRA_RESTART_SERVICES',
 ORCHESTRA_STOP_SERVICES = Setting('ORCHESTRA_STOP_SERVICES', 
     default=(
         ('uwsgi', 'nginx'),
-        'celerybeat',
-        'celeryd',
-        'celeryevcam',
+#        'celerybeat',
+#        'celeryd',
+#        'celeryevcam',
         'postgresql'
     ),
 )

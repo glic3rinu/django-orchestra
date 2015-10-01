@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand
 
+from orchestra import settings
 from orchestra.management.commands.startservices import ManageServiceCommand
-from orchestra.settings import ORCHESTRA_STOP_SERVICES
 
 
 class Command(ManageServiceCommand):
-    services = ORCHESTRA_STOP_SERVICES
+    services = settings.ORCHESTRA_STOP_SERVICES
     action = 'stop'
     option_list = BaseCommand.option_list
     help = 'Stop all related services. Usefull for reload configuration and files.'

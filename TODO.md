@@ -390,8 +390,7 @@ Case
 
 deploy --dev
 deploy.sh  and deploy-dev.sh autoupgrade
-chown orchestra:orchestra /home/orchestra/panel/orchestra.log
-orchestra home autocomplete
+orchestra home autocomplete skeleton
 
 short URLS: https://github.com/rsvp/gitio
 

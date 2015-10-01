@@ -60,8 +60,8 @@ class Command(BaseCommand):
                 sed -i "s/'NAME':[^#]*/'NAME': '%(db_name)s',/" %(settings)s
                 sed -i "s/'USER':[^#]*/'USER': '%(db_user)s',/" %(settings)s
                 sed -i "s/'PASSWORD':[^#]*/'PASSWORD': '%(db_password)s',/" %(settings)s
-                sed -i "s/'HOST': [^#]*/'HOST': '%(db_host)s',/" %(settings)s
-                sed -i "s/'PORT': [^#]*/'PORT': '%(db_port)s',/" %(settings)s\
+                sed -i "s/'HOST':[^#]*/'HOST': '%(db_host)s',/" %(settings)s
+                sed -i "s/'PORT':[^#]*/'PORT': '%(db_port)s',/" %(settings)s\
                 """) % context
             )
         else:

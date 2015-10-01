@@ -390,18 +390,12 @@ Case
 
 deploy --dev
 deploy.sh  and deploy-dev.sh autoupgrade
-orchestra home autocomplete skeleton
 
 short URLS: https://github.com/rsvp/gitio
 
 link backend help text variables to settings/#var_name
 
- $ sudo python manage.py startservices
-Traceback (most recent call last):
-  File "manage.py", line 8, in <module>
-    from django.core.management import execute_from_command_line
-ImportError: No module named django.core.management
-
+make python3 default python on the fucking docker container
 
 autocomplete; on the form header and type="search"
 To latest developers to post on this thread: I implemented the workaround I described in comment #14 nearly three months ago, and it has worked perfectly since then. While we would all prefer that "autocomplete=off" function properly at all times, it still functions properly if you include in your form an input element with any other autocomplete value.
@@ -419,17 +413,3 @@ http://makandracards.com/makandra/24933-chrome-34+-firefox-38+-ie11+-ignore-auto
 
 
 mkhomedir_helper or create ssh homes with bash.rc and such
-
- $ sudo python3 manage.py setupnginx --user orchestra
-/usr/lib/python3.4/importlib/_bootstrap.py:321: RemovedInDjango19Warning: django.utils.importlib will be removed in Django 1.9.
-  return f(*args, **kwds)
-
-/usr/local/lib/python3.4/dist-packages/django/contrib/contenttypes/models.py:159: RemovedInDjango19Warning: Model class django.contrib.contenttypes.models.ContentType doesn't declare an explicit app_label and either isn't in an application in INSTALLED_APPS or else was imported before its application was loaded. This will no longer be supported in Django 1.9.
-  class ContentType(models.Model):
-
-/usr/lib/python3.4/importlib/_bootstrap.py:321: RemovedInDjango19Warning: The django.forms.util module has been renamed. Use django.forms.utils instead.
-  return f(*args, **kwds)
-
-/usr/lib/python3.4/importlib/_bootstrap.py:321: RemovedInDjango19Warning: The utilities in django.db.models.loading are deprecated in favor of the new application loading system.
-  return f(*args, **kwds)
-

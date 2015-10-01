@@ -79,7 +79,7 @@ function main () {
     run python3 -W ignore manage.py collectstatic --noinput
     run sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
     run sudo python3 -W ignore manage.py setupnginx --user $USER
-    run sudo python3 -W ignore manage.py startservices
+    run sudo python3 -W ignore manage.py restartservices
     run python3 -W ignore manage.py check --deploy
 }
 

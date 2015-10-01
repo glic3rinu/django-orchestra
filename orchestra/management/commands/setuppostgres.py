@@ -56,12 +56,12 @@ class Command(BaseCommand):
         if run("grep '^DATABASES\s*=\s*{' %(settings)s" % context, valid_codes=(0,1)).exit_code == 0:
             # Update existing settings_file
             run(textwrap.dedent("""\
-                sed -i "s/'ENGINE': '[^']*',/'ENGINE': 'django.db.backends.postgresql_psycopg2',/" %(settings)s
-                sed -i "s/'NAME': '[^']*',/'NAME': '%(db_name)s',/" %(settings)s
-                sed -i "s/'USER': '[^']*',/'USER': '%(db_user)s',/" %(settings)s
-                sed -i "s/'PASSWORD': '[^']*',/'PASSWORD': '%(db_password)s',/" %(settings)s
-                sed -i "s/'HOST': '[^']*',/'HOST': '%(db_host)s',/" %(settings)s
-                sed -i "s/'PORT': '[^']*',/'PORT': '%(db_port)s',/" %(settings)s\
+                sed -i "s/'ENGINE':[^#]*/'ENGINE': 'django.db.backends.postgresql_psycopg2',/" %(settings)s
+                sed -i "s/'NAME':[^#]*/'NAME': '%(db_name)s',/" %(settings)s
+                sed -i "s/'USER':[^#]*/'USER': '%(db_user)s',/" %(settings)s
+                sed -i "s/'PASSWORD':[^#]*/'PASSWORD': '%(db_password)s',/" %(settings)s
+                sed -i "s/'HOST': [^#]*/'HOST': '%(db_host)s',/" %(settings)s
+                sed -i "s/'PORT': [^#]*/'PORT': '%(db_port)s',/" %(settings)s\
                 """) % context
             )
         else:

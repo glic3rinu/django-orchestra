@@ -242,7 +242,7 @@ class Command(BaseCommand):
             run('ln -s /etc/nginx/sites-available/%(server_name)s.conf /etc/nginx/sites-enabled/' % context,
                 valid_codes=[0,1], display=True)
         else:
-            run('rm /etc/nginx/sites-enabled/default')
+            run('rm -f /etc/nginx/sites-enabled/default')
             run('ln -s /etc/nginx/sites-available/%(project_name)s.conf /etc/nginx/sites-enabled/' % context,
                 valid_codes=[0,1], display=True)
         run('ln -s /etc/uwsgi/apps-available/%(project_name)s.ini /etc/uwsgi/apps-enabled/' % context,

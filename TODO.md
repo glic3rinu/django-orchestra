@@ -419,3 +419,17 @@ http://makandracards.com/makandra/24933-chrome-34+-firefox-38+-ie11+-ignore-auto
 
 
 mkhomedir_helper or create ssh homes with bash.rc and such
+
+ $ sudo python3 manage.py setupnginx --user orchestra
+/usr/lib/python3.4/importlib/_bootstrap.py:321: RemovedInDjango19Warning: django.utils.importlib will be removed in Django 1.9.
+  return f(*args, **kwds)
+
+/usr/local/lib/python3.4/dist-packages/django/contrib/contenttypes/models.py:159: RemovedInDjango19Warning: Model class django.contrib.contenttypes.models.ContentType doesn't declare an explicit app_label and either isn't in an application in INSTALLED_APPS or else was imported before its application was loaded. This will no longer be supported in Django 1.9.
+  class ContentType(models.Model):
+
+/usr/lib/python3.4/importlib/_bootstrap.py:321: RemovedInDjango19Warning: The django.forms.util module has been renamed. Use django.forms.utils instead.
+  return f(*args, **kwds)
+
+/usr/lib/python3.4/importlib/_bootstrap.py:321: RemovedInDjango19Warning: The utilities in django.db.models.loading are deprecated in favor of the new application loading system.
+  return f(*args, **kwds)
+

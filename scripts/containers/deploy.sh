@@ -41,7 +41,7 @@ function main () {
     read -p "Enter a new database password: " db_password
     
     while true; do
-        read -p "Do you want to use celery or cronbeat for task execution [cronbeat]?" task
+        read -p "Do you want to use celery or cronbeat for task execution [cronbeat]? " task
         case $task in
             'celery' ) task=celery; break;;
             'cronbeat' ) task=cronbeat; break;;
@@ -77,7 +77,7 @@ function main () {
     run python3 manage.py collectstatic --noinput
     run sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
     run sudo python3 manage.py setupnginx --user $USER
-    run sudo python manage.py startservices
+    run sudo python3 manage.py startservices
     run python3 manage.py check --deploy
 }
 

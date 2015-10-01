@@ -58,6 +58,7 @@ WEBSITES_ENABLED_DIRECTIVES = Setting('WEBSITES_ENABLED_DIRECTIVES',
         'orchestra.contrib.websites.directives.WordPressSaaS',
         'orchestra.contrib.websites.directives.DokuWikiSaaS',
         'orchestra.contrib.websites.directives.DrupalSaaS',
+        'orchestra.contrib.websites.directives.MoodleSaaS',
     ),
     # lazy loading
     choices=lambda : ((d.get_class_path(), d.get_class_path()) for d in websites.directives.SiteDirective.get_plugins()),

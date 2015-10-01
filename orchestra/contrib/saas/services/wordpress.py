@@ -33,3 +33,4 @@ class WordPressService(SoftwareService):
     icon = 'orchestra/icons/apps/WordPress.png'
     change_readonly_fileds = ('email',)
     site_domain = settings.SAAS_WORDPRESS_DOMAIN
+    allow_custom_url = settings.SAAS_WORDPRESS_ALLOW_CUSTOM_URL

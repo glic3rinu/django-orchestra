@@ -1,7 +1,9 @@
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin.utils import change_url
 from orchestra.core import validators
 from orchestra.forms.widgets import SpanWidget
 from orchestra.plugins.forms import PluginDataForm
@@ -20,6 +22,17 @@ class SaaSBaseForm(PluginDataForm):
         self.is_change = bool(self.instance and self.instance.pk)
         if self.is_change:
             site_domain = self.instance.get_site_domain()
+            if self.instance.custom_url:
+                try:
+                    website = self.instance.service_instance.get_website()
+                except ObjectDoesNotExist:
+                    link = ('<br><span style="color:red"><b>Warning:</b> '
+                            'Related website directive does not exist for %s URL !</span>' % 
+                            self.instance.custom_url)
+                else:
+                    url = change_url(website)
+                    link = '<br>Related website: <a href="%s">%s</a>' % (url, website.name)
+                self.fields['custom_url'].help_text += link
         else:
             site_domain = self.plugin.site_domain
         context = {

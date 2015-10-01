@@ -95,7 +95,8 @@ class WebApp(models.Model):
 class WebAppOption(models.Model):
     webapp = models.ForeignKey(WebApp, verbose_name=_("Web application"),
         related_name='options')
-    name = models.CharField(_("name"), max_length=128, choices=AppType.get_group_options_choices())
+    name = models.CharField(_("name"), max_length=128,
+        choices=AppType.get_group_options_choices())
     value = models.CharField(_("value"), max_length=256)
     
     class Meta:

@@ -36,15 +36,14 @@ class WebsiteDirectiveInlineFormSet(forms.models.BaseInlineFormSet):
             location = form.cleaned_data.get('path')
             if location is not None:
                 locations.add(normurlpath(location))
-        directives = []
         
         values = defaultdict(list)
         for form in self.forms:
-            website = form.instance
+            wdirective = form.instance
             directive = form.cleaned_data
             if directive.get('name') is not None:
                 try:
-                    website.directive_instance.validate_uniqueness(directive, values, locations)
+                    wdirective.directive_instance.validate_uniqueness(directive, values, locations)
                 except ValidationError as err:
                     for k,v in err.error_dict.items():
                         form.add_error(k, v)

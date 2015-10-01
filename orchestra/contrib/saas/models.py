@@ -32,6 +32,10 @@ class SaaS(models.Model):
         help_text=_("Designates whether this service should be treated as active. "))
     data = JSONField(_("data"), default={},
         help_text=_("Extra information dependent of each service."))
+    custom_url = models.URLField(_("custom URL"), blank=True,
+        help_text=_("Optional and alternative URL for accessing this service instance. "
+                    "i.e. <tt>https://wiki.mydomain/doku/</tt><br>"
+                    "A related website will be automatically configured if needed."))
     database = models.ForeignKey('databases.Database', null=True, blank=True)
     
     # Some SaaS sites may need a database, with this virtual field we tell the ORM to delete them
@@ -68,6 +72,7 @@ class SaaS(models.Model):
     def clean(self):
         if not self.pk:
             self.name = self.name.lower()
+        self.service_instance.clean()
         self.data = self.service_instance.clean_data()
     
     def get_site_domain(self):

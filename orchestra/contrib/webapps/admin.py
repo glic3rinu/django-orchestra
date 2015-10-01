@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse
-from django.templatetags.static import static
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -11,6 +10,7 @@ from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.plugins.admin import SelectPluginAdminMixin
+from orchestra.utils.html import get_on_site_link
 
 from .filters import HasWebsiteListFilter, PHPVersionListFilter
 from .models import WebApp, WebAppOption
@@ -65,12 +65,7 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     def display_websites(self, webapp):
         websites = []
         for content in webapp.content_set.all():
-            context = {
-                'title': _("View on site"),
-                'url': content.get_absolute_url(),
-                'image': '<img src="%s"></img>' % static('orchestra/images/view-on-site.png'),
-            }
-            site_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
+            site_link = get_on_site_link(content.get_absolute_url())
             website = content.website
             admin_url = change_url(website)
             name = "%s on %s" % (website.name, content.path)

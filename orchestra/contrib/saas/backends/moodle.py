@@ -1,5 +1,6 @@
 import os
 import textwrap
+from urllib.parse import urlparse
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -80,6 +81,23 @@ class MoodleMuBackend(ServiceController):
                 EOF
                 fi""") % context
             )
+        self.delete_site_map(context)
+        if context['custom_url']:
+            self.insert_site_map(context)
+    
+    def delete_site_map(self, context):
+        self.append(textwrap.dedent("""\
+            sed -i '/^\s*"[^\s]*"\s*=>\s*\["%(site_name)s",\s*".*/d' %(moodle_path)s/config.php
+            """) % context
+        )
+    
+    def insert_site_map(self, context):
+        self.append(textwrap.dedent("""\
+            regex='\s*\$site_map\s+=\s+array\('
+            newline='    "%(custom_domain)s" => ["%(site_name)s", "%(custom_url)s"],  // %(banner)s'
+            sed -i -r "s#$regex#\$site_map = array(\\n$newline#" %(moodle_path)s/config.php
+            """) % context
+        )
     
     def delete(self, saas):
         context = self.get_context(saas)
@@ -112,6 +130,7 @@ class MoodleMuBackend(ServiceController):
                     | su %(user)s --shell /bin/bash -c 'crontab'
                 """) % context
             )
+        self.delete_site_map(context)
     
     def get_context(self, saas):
         context = {
@@ -127,6 +146,8 @@ class MoodleMuBackend(ServiceController):
             'db_host': settings.SAAS_MOODLE_DB_HOST,
             'email': saas.account.email,
             'password': getattr(saas, 'password', None),
+            'custom_url': saas.custom_url,
+            'custom_domain': urlparse(saas.custom_url).netloc if saas.custom_url else None,
         }
         context.update({
             'crontab': settings.SAAS_MOODLE_CRONTAB % context,

@@ -1,23 +1,36 @@
-from django.core.exceptions import ValidationError
+from urllib.parse import urlparse
+
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra import plugins
 from orchestra.contrib.databases.models import Database, DatabaseUser
 from orchestra.contrib.orchestration import Operation
+from orchestra.contrib.websites.models import Website, WebsiteDirective
+from orchestra.utils.apps import isinstalled
 from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
+from . import helpers
 from .. import settings
 from ..forms import SaaSPasswordForm
 
 
 class SoftwareService(plugins.Plugin):
+    PROTOCOL_MAP = {
+        'http': (Website.HTTP, (Website.HTTP, Website.HTTP_AND_HTTPS)),
+        'https': (Website.HTTPS_ONLY, (Website.HTTPS, Website.HTTP_AND_HTTPS, Website.HTTPS_ONLY)),
+    }
+    
+    name = None
+    verbose_name = None
     form = SaaSPasswordForm
     site_domain = None
     has_custom_domain = False
     icon = 'orchestra/icons/apps.png'
     class_verbose_name = _("Software as a Service")
     plugin_field = 'service'
+    allow_custom_url = False
     
     @classmethod
     @cached
@@ -38,6 +51,16 @@ class SoftwareService(plugins.Plugin):
         }
         return self.site_domain % context
     
+    def clean(self):
+        if self.allow_custom_url:
+            if self.instance.custom_url:
+                if isinstalled('orchestra.contrib.websites'):
+                    helpers.clean_custom_url(self)
+        elif self.instance.custom_url:
+            raise ValidationError({
+                'custom_url': _("Custom URL not allowed for this service."),
+            })
+    
     def clean_data(self):
         data = super(SoftwareService, self).clean_data()
         if not self.instance.pk:
@@ -57,11 +80,58 @@ class SoftwareService(plugins.Plugin):
                     raise ValidationError(errors)
         return data
     
+    def get_directive_name(self):
+        return '%s-saas' % self.name
+    
+    def get_directive(self, *args):
+        if not args:
+            instance = self.instance
+        else:
+            instance = args[0]
+        url = urlparse(instance.custom_url)
+        account = instance.account
+        return WebsiteDirective.objects.get(
+            name=self.get_directive_name(),
+            value=url.path,
+            website__protocol__in=self.PROTOCOL_MAP[url.scheme][1],
+            website__domains__name=url.netloc,
+            website__account=account,
+        )
+    
+    def get_website(self):
+        url = urlparse(self.instance.custom_url)
+        account = self.instance.account
+        return Website.objects.get(
+            protocol__in=self.PROTOCOL_MAP[url.scheme][1],
+            domains__name=url.netloc,
+            account=account,
+            directives__name=self.get_directive_name(),
+            directives__value=url.path,
+        )
+    
+    def create_or_update_directive(self):
+        return helpers.create_or_update_directive(self)
+    
+    def delete_directive(self):
+        try:
+            old = type(self.instance).objects.get(pk=self.instance.pk)
+            directive = self.get_directive(old)
+        except ObjectDoesNotExist:
+            pass
+        else:
+            directive.delete()
+    
     def save(self):
-        pass
+        # pre instance.save()
+        if isinstalled('orchestra.contrib.websites'):
+            if self.instance.custom_url:
+                self.create_or_update_directive()
+            elif self.instance.pk:
+                self.delete_directive()
     
     def delete(self):
-        pass
+        if isinstalled('orchestra.contrib.websites'):
+            self.delete_directive()
     
     def get_related(self):
         return []
@@ -112,6 +182,7 @@ class DBSoftwareService(SoftwareService):
                 })
     
     def save(self):
+        super(DBSoftwareService, self).save()
         account = self.get_account()
         # Database
         db_name = self.get_db_name()

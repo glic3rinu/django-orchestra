@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib import admin
 from django.db.models.functions import Concat, Coalesce
-from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
@@ -9,6 +8,7 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
+from orchestra.utils.html import get_on_site_link
 
 from .actions import view_zone, edit_records, set_soa
 from .filters import TopDomainListFilter
@@ -84,22 +84,12 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
             if websites:
                 links = []
                 for website in websites:
-                    context = {
-                        'title': _("View on site"),
-                        'url': website.get_absolute_url(),
-                        'image': '<img src="%s"></img>' % static('orchestra/images/view-on-site.png'),
-                    }
-                    site_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
+                    site_link = get_on_site_link(website.get_absolute_url())
                     admin_url = change_url(website)
                     link = '<a href="%s">%s %s</a>' % (admin_url, website.name, site_link)
                     links.append(link)
                 return '<br>'.join(links)
-        context = {
-            'title': _("View on site"),
-            'url': 'http://%s' % domain.name,
-            'image': '<img src="%s"></img>' % static('orchestra/images/view-on-site.png'),
-        }
-        site_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
+        site_link = get_on_site_link('http://%s' % domain.name)
         return _("No website %s") % site_link
     display_websites.admin_order_field = 'websites__name'
     display_websites.short_description = _("Websites")

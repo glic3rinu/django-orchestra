@@ -33,6 +33,11 @@ SAAS_TRAFFIC_IGNORE_HOSTS = Setting('SAAS_TRAFFIC_IGNORE_HOSTS',
 
 # WordPress
 
+SAAS_WORDPRESS_ALLOW_CUSTOM_URL = Setting('SAAS_WORDPRESS_ALLOW_CUSTOM_URL',
+    True,
+    help_text=_("Whether allow custom URL to be specified or not."),
+)
+
 SAAS_WORDPRESS_LOG_PATH = Setting('SAAS_WORDPRESS_LOG_PATH',
     '',
     help_text=_('Filesystem path for the webserver access logs.<br>'
@@ -52,8 +57,18 @@ SAAS_WORDPRESS_DOMAIN = Setting('SAAS_WORDPRESS_DOMAIN',
     '%(site_name)s.blogs.{}'.format(ORCHESTRA_BASE_DOMAIN),
 )
 
+SAAS_WORDPRESS_DB_NAME = Setting('SAAS_WORDPRESS_DB_NAME',
+    'wordpressmu',
+    help_text=_("Needed for domain mapping when <tt>SAAS_WORDPRESS_ALLOW_CUSTOM_URL</tt> is enabled."),
+)
+
 
 # DokuWiki
+
+SAAS_DOKUWIKI_ALLOW_CUSTOM_URL = Setting('SAAS_DOKUWIKI_ALLOW_CUSTOM_URL',
+    True,
+    help_text=_("Whether allow custom URL to be specified or not."),
+)
 
 SAAS_DOKUWIKI_TEMPLATE_PATH = Setting('SAAS_DOKUWIKI_TEMPLATE_PATH',
     '/home/httpd/htdocs/wikifarm/template.tar.gz'
@@ -90,12 +105,22 @@ SAAS_DOKUWIKI_LOG_PATH = Setting('SAAS_DOKUWIKI_LOG_PATH',
 
 # Drupal
 
+SAAS_DRUPAL_ALLOW_CUSTOM_URL = Setting('SAAS_DRUPAL_ALLOW_CUSTOM_URL',
+    True,
+    help_text=_("Whether allow custom URL to be specified or not."),
+)
+
 SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
     '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s',
 )
 
 
 # PhpList
+
+SAAS_PHPLIST_ALLOW_CUSTOM_URL = Setting('SAAS_PHPLIST_ALLOW_CUSTOM_URL',
+    False,
+    help_text=_("Whether allow custom URL to be specified or not."),
+)
 
 SAAS_PHPLIST_DB_USER = Setting('SAAS_PHPLIST_DB_USER',
     'phplist_mu',
@@ -200,6 +225,11 @@ SAAS_GITLAB_DOMAIN = Setting('SAAS_GITLAB_DOMAIN',
 
 
 # Moodle
+
+SAAS_MOODLE_ALLOW_CUSTOM_URL = Setting('SAAS_MOODLE_ALLOW_CUSTOM_URL',
+    True,
+    help_text=_("Whether allow custom URL to be specified or not."),
+)
 
 SAAS_MOODLE_DB_USER = Setting('SAAS_MOODLE_DB_USER',
     'moodle_mu',

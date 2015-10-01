@@ -387,11 +387,6 @@ Case
 # Modsecurity rules template by cms (wordpress, joomla, dokuwiki (973337 973338 973347 958057), ...
 
 
-# saas custom domains support (maybe a new form field with custom url? autoconfigure websites?)
-    custom_url form field and validate/create/delete related website
-    SAAS_PHPLIST_ALLOW_CUSTOM_URL = False
-
-
 
 deploy --dev
 deploy.sh  and deploy-dev.sh autoupgrade
@@ -401,11 +396,25 @@ orchestra home autocomplete
 short URLS: https://github.com/rsvp/gitio
 
 link backend help text variables to settings/#var_name
-saas changelist domain: add <br>custom domain<img>
 
  $ sudo python manage.py startservices
 Traceback (most recent call last):
   File "manage.py", line 8, in <module>
     from django.core.management import execute_from_command_line
 ImportError: No module named django.core.management
+
+
+autocomplete; on the form header and type="search"
+To latest developers to post on this thread: I implemented the workaround I described in comment #14 nearly three months ago, and it has worked perfectly since then. While we would all prefer that "autocomplete=off" function properly at all times, it still functions properly if you include in your form an input element with any other autocomplete value.
+
+I simply added this code to my layout:
+
+<div style="display: none;">
+ <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
+</div>
+
+Once I did this, all of my "autocomplete=off" elements were respected by Chrome.
+<input type="password" name="password" value="" style="display: none" /> 
+http://makandracards.com/makandra/24933-chrome-34+-firefox-38+-ie11+-ignore-autocomplete-off
+
 

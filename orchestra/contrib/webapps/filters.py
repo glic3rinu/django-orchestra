@@ -5,7 +5,7 @@ from . import settings
 
 
 class HasWebsiteListFilter(SimpleListFilter):
-    title = _("Has website")
+    title = _("website")
     parameter_name = 'has_website'
     
     def lookups(self, request, model_admin):

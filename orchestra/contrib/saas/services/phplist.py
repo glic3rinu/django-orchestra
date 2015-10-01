@@ -70,6 +70,7 @@ class PHPListService(DBSoftwareService):
     change_form = PHPListChangeForm
     icon = 'orchestra/icons/apps/Phplist.png'
     site_domain = settings.SAAS_PHPLIST_DOMAIN
+    allow_custom_url = settings.SAAS_PHPLIST_ALLOW_CUSTOM_URL
     db_name = settings.SAAS_PHPLIST_DB_NAME
     db_user = settings.SAAS_PHPLIST_DB_USER
     
@@ -95,6 +96,7 @@ class PHPListService(DBSoftwareService):
                 })
     
     def save(self):
+        super(PHPListService, self).save()
         account = self.get_account()
         # Mailbox
         mailbox_name = self.get_mailbox_name()
@@ -108,6 +110,7 @@ class PHPListService(DBSoftwareService):
             })
     
     def delete(self):
+        super(PHPListService, self).save()
         account = self.get_account()
         # delete Mailbox (database will be deleted by ORM's cascade behaviour
         mailbox_name = self.instance.data.get('mailbox_name') or self.get_mailbox_name()

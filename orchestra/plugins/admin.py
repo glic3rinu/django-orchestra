@@ -20,6 +20,7 @@ class SelectPluginAdminMixin(object):
         else:
             plugin = self.plugin.get(self.plugin_value)()
             self.form = plugin.get_form()
+        self.plugin_instance = plugin
         return super(SelectPluginAdminMixin, self).get_form(request, obj, **kwargs)
     
     def get_fields(self, request, obj=None):
@@ -65,7 +66,7 @@ class SelectPluginAdminMixin(object):
         if not plugin_value and request.method == 'POST':
             # HACK baceuse django add_preserved_filters removes extising queryargs
             value = re.search(r"%s=([^&^']+)[&']" % self.plugin_field,
-                    request.META.get('HTTP_REFERER', ''))
+                request.META.get('HTTP_REFERER', ''))
             if value:
                 plugin_value = value.groups()[0]
         return plugin_value
@@ -83,8 +84,8 @@ class SelectPluginAdminMixin(object):
                     'title': _("Add new %s") % plugin.verbose_name,
                 }
                 context.update(extra_context or {})
-                return super(SelectPluginAdminMixin, self).add_view(request, form_url=form_url,
-                        extra_context=context)
+                return super(SelectPluginAdminMixin, self).add_view(
+                    request, form_url=form_url, extra_context=context)
         return redirect('./select-plugin/?%s' % request.META['QUERY_STRING'])
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -94,8 +95,8 @@ class SelectPluginAdminMixin(object):
             'title': _("Change %s") % plugin.verbose_name,
         }
         context.update(extra_context or {})
-        return super(SelectPluginAdminMixin, self).change_view(request, object_id,
-                form_url=form_url, extra_context=context)
+        return super(SelectPluginAdminMixin, self).change_view(
+            request, object_id, form_url=form_url, extra_context=context)
     
     def save_model(self, request, obj, form, change):
         if not change:

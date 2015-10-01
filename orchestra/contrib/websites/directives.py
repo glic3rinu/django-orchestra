@@ -175,7 +175,7 @@ class SecEngine(SecRuleRemove):
 class WordPressSaaS(SiteDirective):
     name = 'wordpress-saas'
     verbose_name = "WordPress SaaS"
-    help_text = _("URL-path for mounting wordpress multisite.")
+    help_text = _("URL-path for mounting WordPress multisite.")
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
@@ -185,10 +185,16 @@ class WordPressSaaS(SiteDirective):
 class DokuWikiSaaS(WordPressSaaS):
     name = 'dokuwiki-saas'
     verbose_name = "DokuWiki SaaS"
-    help_text = _("URL-path for mounting wordpress multisite.")
+    help_text = _("URL-path for mounting DokuWiki multisite.")
 
 
 class DrupalSaaS(WordPressSaaS):
     name = 'drupal-saas'
     verbose_name = "Drupdal SaaS"
-    help_text = _("URL-path for mounting wordpress multisite.")
+    help_text = _("URL-path for mounting Drupal multisite.")
+
+
+class MoodleSaaS(WordPressSaaS):
+    name = 'moodle-saas'
+    verbose_name = "Moodle SaaS"
+    help_text = _("URL-path for mounting Moodle multisite.")

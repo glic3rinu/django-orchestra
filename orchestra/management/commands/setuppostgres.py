@@ -75,6 +75,5 @@ class Command(BaseCommand):
                         'ATOMIC_REQUESTS': True,
                     }
                 }""") % context
-            )
             context.update({'db_config': db_config})
             run('echo "%(db_config)s" >> %(settings)s' % context)

@@ -130,10 +130,15 @@ class Command(BaseCommand):
             'subject': ''.join(('/%s=%s' % (k,v) for k,v in subject.items())),
             'key_path': key_path,
             'cert_path': cert_path,
+            'cert_root': os.path.dirname(cert_path),
         }
         self.stdout.write('writing new cert to \'%s\'' % cert_path)
         self.stdout.write('writing new cert key to \'%s\'' % key_path)
-        run('openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout %(key_path)s -out %(cert_path)s -subj "%(subject)s"' % context, display=True)
+        run(textwrap.dedent("""\
+            openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout %(key_path)s -out %(cert_path)s -subj "%(subject)s"
+            chown --reference=%(cert_root)s %(cert_path)s %(key_path)s\
+            """) % context, display=True
+        )
         return cert_path, key_path
     
     @check_root
@@ -233,8 +238,12 @@ class Command(BaseCommand):
                     if not confirm("\n\nFile %(file)s be updated, do you like to overide "
                                    "it? (yes/no): " % context):
                         return
-                run("cp %(file)s %(file)s.save" % context, display=True)
-                run("cat << 'EOF' > %(file)s\n%(conf)s\nEOF" % context, display=True)
+                run(textwrap.dedent("""\
+                    cp %(file)s %(file)s.save
+                    cat << 'EOF' > %(file)s
+                    %(conf)s
+                    EOF""") % context, display=True
+                )
                 self.stdout.write("\033[1;31mA new version of %(file)s has been installed.\n "
                     "The old version has been placed at %(file)s.save\033[m" % context)
         

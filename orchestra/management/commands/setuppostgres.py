@@ -1,4 +1,5 @@
 import os
+import textwrap
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
@@ -38,32 +39,42 @@ class Command(BaseCommand):
             'db_user': options.get('db_user'),
             'db_password': options.get('db_password'),
             'db_host': options.get('db_host'),
-            'db_port': options.get('db_port') }
+            'db_port': options.get('db_port'),
+        }
         
-        run('su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD \'%(db_password)s\';\\""' % context, valid_codes=(0,1))
-        run('su postgres -c "psql -c \\"CREATE DATABASE %(db_name)s OWNER %(db_user)s;\\""' % context, valid_codes=(0,1))
-        context.update({'settings': os.path.join(get_project_dir(), 'settings.py')})
+        run(textwrap.dedent("""\
+            su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD '%(db_password)s';\\""
+            su postgres -c "psql -c \\"CREATE DATABASE %(db_name)s OWNER %(db_user)s;\\""\
+            """) % context, valid_codes=(0,1)
+        )
+        context.update({
+            'settings': os.path.join(get_project_dir(), 'settings.py')
+        })
         
-        if run("grep 'DATABASES' %(settings)s" % context, valid_codes=(0,1)).exit_code == 0:
+        if run("grep '^DATABASES\s*=\s*{' %(settings)s" % context, valid_codes=(0,1)).exit_code == 0:
             # Update existing settings_file
-            run("sed -i \"s/'ENGINE': '\w*',/'ENGINE': 'django.db.backends.postgresql_psycopg2',/\" %(settings)s" % context)
-            run("sed -i \"s/'NAME': '.*',/'NAME': '%(db_name)s',/\" %(settings)s" % context)
-            run("sed -i \"s/'USER': '.*',/'USER': '%(db_user)s',/\" %(settings)s" % context)
-            run("sed -i \"s/'PASSWORD': '.*',/'PASSWORD': '%(db_password)s',/\" %(settings)s" % context)
-            run("sed -i \"s/'HOST': '.*',/'HOST': '%(db_host)s',/\" %(settings)s" % context)
-            run("sed -i \"s/'PORT': '.*',/'PORT': '%(db_port)s',/\" %(settings)s" % context)
+            run(textwrap.dedent("""\
+                sed -i "s/'ENGINE': '[^']*',/'ENGINE': 'django.db.backends.postgresql_psycopg2',/" %(settings)s
+                sed -i "s/'NAME': '[^']*',/'NAME': '%(db_name)s',/" %(settings)s
+                sed -i "s/'USER': '[^']*',/'USER': '%(db_user)s',/" %(settings)s
+                sed -i "s/'PASSWORD': '[^']*',/'PASSWORD': '%(db_password)s',/" %(settings)s
+                sed -i "s/'HOST': '[^']*',/'HOST': '%(db_host)s',/" %(settings)s
+                sed -i "s/'PORT': '[^']*',/'PORT': '%(db_port)s',/" %(settings)s\
+                """) % context
+            )
         else:
-            db_config = (
-                "DATABASES = {\n"
-                "    'default': {\n"
-                "        'ENGINE': 'django.db.backends.postgresql_psycopg2',\n"
-                "        'NAME': '%(db_name)s',\n"
-                "        'USER': '%(db_user)s',\n"
-                "        'PASSWORD': '%(db_password)s',\n"
-                "        'HOST': '%(db_host)s',\n"
-                "        'PORT': '%(db_port)s',\n"
-                "        'ATOMIC_REQUESTS': True,\n"
-                "    }\n"
-                "}\n" % context)
+            db_config = textwrap.dedent("""\
+                DATABASES = {
+                    'default': {
+                        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                        'NAME': '%(db_name)s',
+                        'USER': '%(db_user)s',
+                        'PASSWORD': '%(db_password)s',
+                        'HOST': '%(db_host)s',
+                        'PORT': '%(db_port)s',
+                        'ATOMIC_REQUESTS': True,
+                    }
+                }""") % context
+            )
             context.update({'db_config': db_config})
             run('echo "%(db_config)s" >> %(settings)s' % context)

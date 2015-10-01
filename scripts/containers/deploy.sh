@@ -37,7 +37,9 @@ function main () {
     done
     
     # TODO Password:  Password (again): 
-
+    # TODO detect if already installed and don't ask stupid question
+    # TODO setupceleryd shoudl change orchestra_start/stop/restart_services
+    # TODO setuppostgres should configure the fucking backend
     read -p "Enter a new database password: " db_password
     
     while true; do
@@ -60,25 +62,25 @@ function main () {
     run cd $project_name
     
     sudo service postgresql start
-    run sudo python3 manage.py setuppostgres --db_password "$db_password"
+    run sudo python3 -W ignore manage.py setuppostgres --db_password "$db_password"
 
-    run python3 manage.py migrate
+    run python3 -W ignore manage.py migrate
 
     if [[ "$task" == "cronbeat" ]]; then
-        run python3 manage.py setupcronbeat
-        run python3 manage.py syncperiodictasks
+        run python3 -W ignore manage.py setupcronbeat
+        run python3 -W ignore manage.py syncperiodictasks
     else
         run sudo apt-get install rabbitmq
-        run sudo python3 manage.py setupcelery --username $USER
+        run sudo python3 -W ignore manage.py setupcelery --username $USER
     fi
 
-    run sudo python3 manage.py setuplog --noinput
+    run sudo python3 -W ignore manage.py setuplog --noinput
 
-    run python3 manage.py collectstatic --noinput
+    run python3 -W ignore manage.py collectstatic --noinput
     run sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
-    run sudo python3 manage.py setupnginx --user $USER
-    run sudo python3 manage.py startservices
-    run python3 manage.py check --deploy
+    run sudo python3 -W ignore manage.py setupnginx --user $USER
+    run sudo python3 -W ignore manage.py startservices
+    run python3 -W ignore manage.py check --deploy
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl

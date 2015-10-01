@@ -417,3 +417,5 @@ Once I did this, all of my "autocomplete=off" elements were respected by Chrome.
 http://makandracards.com/makandra/24933-chrome-34+-firefox-38+-ie11+-ignore-autocomplete-off
 
 
+
+mkhomedir_helper or create ssh homes with bash.rc and such

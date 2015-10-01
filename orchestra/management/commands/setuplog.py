@@ -38,7 +38,7 @@ class Command(BaseCommand):
                 'LOGGING': settings_parser.Remove(),
             })
         setuplogrotate = textwrap.dedent("""\
-            mkdir %(log_dir)s && chown -reference=%(site_dir)s %(log_dir)s
+            mkdir %(log_dir)s && chown --reference=%(site_dir)s %(log_dir)s
             touch %(log_path)s
             chown --reference=%(log_dir)s %(log_path)s
             echo '%(log_dir)s/*.log {

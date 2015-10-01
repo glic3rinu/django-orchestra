@@ -3,6 +3,8 @@
 set -ue
 
 
+# bash <( curl https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/scripts/containers/deploy.sh )
+
 function main () {
     bold=$(tput -T ${TERM:-xterm} bold)
     normal=$(tput -T ${TERM:-xterm} sgr0)

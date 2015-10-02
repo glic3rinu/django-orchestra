@@ -59,7 +59,7 @@ function main () {
     run cd $project_name
     
     sudo service postgresql start
-    run sudo python3 -W ignore manage.py setuppostgres --db_password "$db_password"
+    run sudo python3 -W ignore manage.py setuppostgres
 
     run python3 -W ignore manage.py migrate
 

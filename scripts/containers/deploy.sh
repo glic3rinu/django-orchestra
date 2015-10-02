@@ -15,7 +15,7 @@ function main () {
         echo " ${bold}\$ su $USER -c \"${@}\"${normal}"
         su $USER -c "${@}"
     }
-
+    noinput=0
     if [[ $# -eq 3 ]]; then
         if [[ $1 != '--noinput' ]]; then
             echo "What argument is $1?" >&2
@@ -24,6 +24,7 @@ function main () {
             echo "User $2 does not exist" >&2
             exit 3
         fi
+        noinput=1
         run=surun_
         sudorun=run_
     elif [[ $# -eq 2 ]]; then
@@ -48,7 +49,7 @@ function main () {
     normal=$(tput -T ${TERM:-xterm} sgr0)
 
     project_name="panel"
-    if [[ $1 != '--noinput' ]]; then
+    if [[ $noinput -eq 0 ]]; then
         while true; do
             read -p "Enter a project name [panel]: " project_name
             if [[ "$project_name" == "" ]]; then
@@ -70,7 +71,7 @@ function main () {
     # TODO detect if already installed and don't ask stupid question
     
     task=cronbeat
-    if [[ $1 != '--noinput' ]]; then
+    if [[ $noinput -eq 0 ]]; then
         while true; do
             read -p "Do you want to use celery or cronbeat (orchestra.contrib.tasks) for task execution [cronbeat]? " task
             case $task in

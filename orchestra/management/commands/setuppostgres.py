@@ -65,23 +65,30 @@ class Command(BaseCommand):
             'default_db_password': db_password or random_ascii(10),
         }
         
-        create_user = "CREATE USER %(db_user)s PASSWORD '%(db_password)s';"
+        create_user = "CREATE USER %(db_user)s PASSWORD '%(default_db_password)s';"
         alter_user = "ALTER USER %(db_user)s WITH PASSWORD '%(db_password)s';"
         create_database = "CREATE DATABASE %(db_name)s OWNER %(db_user)s;"
         
         # Create or update user
         if self.run_postgres(create_user % context, valid_codes=(0,1)).exit_code == 1:
-            if interactive and not options.get('db_password'):
+            if interactive and not db_password:
                 msg = ("Postgres user '%(db_user)s' already exists, "
                        "please provide a password [%(default_db_password)s]: " % context)
                 context['db_password'] = input(msg) or context['default_db_password']
                 self.run_postgres(alter_user % context)
-            elif options.get('db_password'):
+                msg = "Updated Postgres user '%(db_user)s' password '%(db_password)s'"
+                self.stdout.write(msg % context)
+            elif db_password:
                 self.run_postgres(alter_user % context)
+                msg = "Updated Postgres user '%(db_user)s' password '%(db_password)s'"
+                self.stdout.write(msg % context)
             else:
                 raise CommandError("Postgres user '%(db_user)s' already exists and "
                                    "--db_pass has not been provided." % context)
-        self.run_postgres(create_database % context)
+        else:
+            msg = "Created new Postgres user '%(db_user)s' with password '%(default_db_password)s'"
+            self.stdout.write(msg % context)
+        self.run_postgres(create_database % context, valid_codes=(0,1))
         
 #        run(textwrap.dedent("""\
 #            su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD '%(db_password)s';\\"" || {

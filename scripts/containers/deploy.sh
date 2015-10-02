@@ -6,15 +6,6 @@ set -ue
 # bash <( curl https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/scripts/containers/deploy.sh ) [--noinput username]
 
 function main () {
-    run_ () {
-        echo " ${bold}\$ ${@}${normal}"
-        ${@}
-    }
-    surun_ () {
-        echo " ${bold}\$ su $user -c \"${@}\"${normal}"
-        su $user -c "${@}"
-    }
-    
     noinput=''
     user=$USER
     if [[ $# -eq 2 ]]; then
@@ -30,14 +21,8 @@ function main () {
             exit 1
         }
         noinput='--noinput'
-        run () {
-            echo " ${bold}\$ ${@}${normal}"
-            ${@}
-        }
-        surun () {
-            echo " ${bold}\$ su $user -c \"${@}\"${normal}"
-            su $user -c "${@}"
-        }
+        run () { echo " ${bold}\$ ${@}${normal}"; ${@}; }
+        surun () { echo " ${bold}\$ su $user -c \"${@}\"${normal}"; su $user -c "${@}"; }
         user=$2
     elif [[ $# -eq 1 ]]; then
         if [[ $1 != '--noinput' ]]; then
@@ -51,21 +36,15 @@ function main () {
             echo -e "\nErr. This script should run as a regular user\n" >&2
             exit 1
         }
-        run () {
-            echo " ${bold}\$ ${@}${normal}"
-            ${@}
-        }
-        surun () {
-            echo " ${bold}\$ ${@}${normal}"
-            ${@}
-        }
+        run () { echo " ${bold}\$ ${@}${normal}"; ${@}; }
+        surun () { echo " ${bold}\$ ${@}${normal}"; ${@}; }
         # Test sudo privileges
         sudo true
     fi
     
     bold=$(tput -T ${TERM:-xterm} bold)
     normal=$(tput -T ${TERM:-xterm} sgr0)
-
+    
     project_name="panel"
     if [[ $noinput == '' ]]; then
         while true; do
@@ -86,8 +65,6 @@ function main () {
         done
     fi
     
-    # TODO detect if already installed and don't ask stupid question
-    
     task=cronbeat
     if [[ $noinput == '' ]]; then
         while true; do
@@ -100,7 +77,7 @@ function main () {
             esac
         done
     fi
-
+    
     run sudo pip3 install django-orchestra==dev \
         --allow-external django-orchestra \
         --allow-unverified django-orchestra
@@ -146,23 +123,33 @@ EOF
     run sudo python3 -W ignore manage.py startservices
     surun "python3 -W ignore manage.py check --deploy"
     
+    # Test if serving requests
     ip_addr=$(ip addr show eth0 | grep 'inet ' | sed -r "s/.*inet ([^\s]*).*/\1/" | cut -d'/' -f1)
     if [[ $ip_addr == '' ]]; then
         ip_addr=127.0.0.1
     fi
     echo
-    echo
-    echo "${bold}> Checking if Orchestra is serving at https://${ip_addr}/admin/${normal} ..."
-    if [[ $(curl https://$ip_addr/admin/ -I -k -s | grep 'HTTP/1.1 302 FOUND') ]]; then
-        echo "${bold}  ** Orchestra appears to be working!${normal}"
-        if [[ $noinput == '--noinput' ]]; then
-            echo -e "${bold}     username: $user${normal}"
-            echo -e "${bold}     password: orchestra"
+    echo ${bold}
+    echo "> Checking if Orchestra is serving on https://${ip_addr}/admin/ ..."
+    if [[ $noinput == '--noinput' ]]; then
+        echo -e "  - username: $user"
+        echo -e "  - password: orchestra"
+    fi
+    
+    if [[ $(curl -L -k -v -c https://$ip_addr/admin/ -c /tmp/cookies.txt -b /tmp/cookies.txt | grep 'Panel Hosting Management') ]]; then
+        token=$(grep csrftoken /tmp/cookies.txt | awk {'print $7'})
+        if [[ $(curl -L -k -v -c /tmp/cookies.txt -b /tmp/cookies.txt \
+            -d "username=$user&password=orchestra&csrfmiddlewaretoken=$token" \
+            https://$ip_addr/admin/login/?next=/admin/ \
+            -e https://$ip_addr/admin/ | grep '<title>Panel Hosting Management</title>') ]]; then
+                echo "  ** Orchestra appears to be working!"
+        else
+            echo "  ** Err. Couldn't login :(" >&2
         fi
     else
-        echo "${bold}  ** Err. Orchestra is not responding responding at https://${ip_addr}/admin/${normal}" >&2
+        echo "  ** Err. Orchestra is not responding responding on https://${ip_addr}/admin/" >&2
     fi
-    echo
+    echo ${normal}
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl

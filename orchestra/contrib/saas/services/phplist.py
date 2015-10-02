@@ -116,5 +116,4 @@ class PHPListService(DBSoftwareService):
         mailbox_name = self.instance.data.get('mailbox_name') or self.get_mailbox_name()
         mailbox_id = self.instance.data.get('mailbox_id')
         qs = Q(Q(name=mailbox_name) | Q(id=mailbox_id))
-        for mailbox in account.mailboxes.filter(qs):
-            mailbox.delete()
+        account.mailboxes.filter(qs).delete()

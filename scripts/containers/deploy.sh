@@ -36,11 +36,8 @@ function main () {
        fi
     done
     
-    # TODO Password:  Password (again): 
     # TODO detect if already installed and don't ask stupid question
     # TODO setupceleryd shoudl change orchestra_start/stop/restart_services
-    # TODO setuppostgres should configure the fucking backend
-    read -p "Enter a new database password: " db_password
     
     while true; do
         read -p "Do you want to use celery or cronbeat for task execution [cronbeat]? " task

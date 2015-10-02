@@ -20,7 +20,7 @@ function help () {
 
 
 function print_help () {
-    cat <<- EOF 
+    cat <<- EOF
 		
 		${bold}NAME${normal}
 		    ${bold}orchestra-admin${normal} - Orchetsra administration script

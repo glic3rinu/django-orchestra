@@ -30,8 +30,14 @@ function main () {
             exit 1
         }
         noinput='--noinput'
-        alias run=run_
-        alias surun=su_run
+        run () {
+            echo " ${bold}\$ ${@}${normal}"
+            ${@}
+        }
+        surun () {
+            echo " ${bold}\$ su $user -c \"${@}\"${normal}"
+            su $user -c "${@}"
+        }
         user=$2
     elif [[ $# -eq 1 ]]; then
         if [[ $1 != '--noinput' ]]; then
@@ -45,8 +51,14 @@ function main () {
             echo -e "\nErr. This script should run as a regular user\n" >&2
             exit 1
         }
-        alias run=run_
-        alias surun=surun_
+        run () {
+            echo " ${bold}\$ ${@}${normal}"
+            ${@}
+        }
+        surun () {
+            echo " ${bold}\$ ${@}${normal}"
+            ${@}
+        }
         # Test sudo privileges
         sudo true
     fi

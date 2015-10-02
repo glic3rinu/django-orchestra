@@ -39,7 +39,7 @@ function main () {
             exit 1
         }
         run=run_
-        sudorun=run_ sudo
+        sudorun="run_ sudo"
         # Test sudo privileges
         sudo true
     fi

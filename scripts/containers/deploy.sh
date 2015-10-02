@@ -43,7 +43,7 @@ function main () {
         read -p "Do you want to use celery or cronbeat (orchestra.contrib.tasks) for task execution [cronbeat]? " task
         case $task in
             'celery' ) task=celery; break;;
-            'orchestra.contrib.tasks' ) task=orchestra.contrib.tasks; break;;
+            'cronbeat' ) task=orchestra.contrib.tasks; break;;
             '' ) task=orchestra.contrib.tasks; break;;
             * ) echo "Please answer celery or cronbeat.";;
         esac
@@ -63,12 +63,12 @@ function main () {
 
     run python3 -W ignore manage.py migrate
 
-    if [[ "$task" == "cronbeat" ]]; then
+    if [[ "$task" == "celery" ]]; then
+        run sudo apt-get install rabbitmq-server
+        run sudo python3 -W ignore manage.py setupcelery --username $USER
+    else
         run python3 -W ignore manage.py setupcronbeat
         run python3 -W ignore manage.py syncperiodictasks
-    else
-        run sudo apt-get install rabbitmq
-        run sudo python3 -W ignore manage.py setupcelery --username $USER
     fi
 
     run sudo python3 -W ignore manage.py setuplog --noinput

@@ -54,7 +54,7 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 
     2. Use celeryd
         ```bash
-        sudo apt-get install rabbitmq
+        sudo apt-get install rabbitmq-server
         sudo python3 manage.py setupcelery --username orchestra
         ```
 

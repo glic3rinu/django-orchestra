@@ -84,7 +84,8 @@ class Command(BaseCommand):
                 raise CommandError("Postgres user '%(db_user)s' already exists and "
                                    "--db_pass has not been provided." % context)
         else:
-            msg = "Created new Postgres user '%(db_user)s' with password '%(default_db_password)s'"
+            context['db_password'] = context['default_db_password']
+            msg = "Created new Postgres user '%(db_user)s' with password '%(db_password)s'"
             self.stdout.write(msg % context)
         self.run_postgres(create_database % context, valid_codes=(0,1))
         

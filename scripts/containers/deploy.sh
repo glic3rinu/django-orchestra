@@ -105,32 +105,42 @@ function main () {
         --allow-external django-orchestra \
         --allow-unverified django-orchestra
     run sudo orchestra-admin install_requirements
-    run cd $(eval echo ~$USER)
+    run cd $(eval echo ~$user)
 
-    surun orchestra-admin startproject $project_name
-    surun cd $project_name
+    surun "orchestra-admin startproject $project_name"
+    surun "cd $project_name"
     
     run sudo service postgresql start
     run sudo python3 -W ignore manage.py setuppostgres $noinput
 
-    surun python3 -W ignore manage.py migrate
+    surun "python3 -W ignore manage.py migrate $noinput"
+    if [[ $noinput == '--noinput' ]]; then
+        # Create orchestra superuser
+        cat <<- EOF | $PYTHON_BIN $MANAGE shell
+from orchestra.contrib.accounts.models import Account
+if not Account.objects.filter(username="$user").exists():
+    print('Creating orchestra superuser')
+    Account.objects.create_superuser("$user", "$user@localhost", "orchestra")
 
+EOF
+    fi
+    
     if [[ "$task" == "celery" ]]; then
         run sudo apt-get install rabbitmq-server
-        run sudo python3 -W ignore manage.py setupcelery --username $USER
+        run sudo python3 -W ignore manage.py setupcelery --username $user
     else
-        surun python3 -W ignore manage.py setupcronbeat
-        surun python3 -W ignore manage.py syncperiodictasks
+        surun "python3 -W ignore manage.py setupcronbeat"
+        surun "python3 -W ignore manage.py syncperiodictasks"
     fi
 
     run sudo python3 -W ignore manage.py setuplog --noinput
 
-    surun python3 -W ignore manage.py collectstatic --noinput
+    surun "python3 -W ignore manage.py collectstatic --noinput"
     run sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
     run sudo python3 -W ignore manage.py setupnginx --user $user $noinput
     run sudo python3 -W ignore manage.py restartservices
     run sudo python3 -W ignore manage.py startservices
-    surun python3 -W ignore manage.py check --deploy
+    surun "python3 -W ignore manage.py check --deploy"
     
     ip_addr=$(ip addr show eth0 | grep 'inet ' | sed -r "s/.*inet ([^\s]*).*/\1/" | cut -d'/' -f1)
     if [[ $ip_addr == '' ]]; then

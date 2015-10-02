@@ -26,7 +26,7 @@ function main () {
         fi
         run=surun_
         sudorun=run_
-    elif [[ $# -eq 2 ]]; then
+    elif [[ $# -eq 2 ]]
         if [[ $1 != '--noinput' ]]; then
             echo "What argument is $1?" >&2
         else

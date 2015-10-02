@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 default=defaults.get('DB_USER', 'orchestra'),
                 help='Specifies the database to create.'),
             make_option('--db_password', dest='db_password',
-                default=defaults.get('PASSWORD'),
+                default=defaults.get('PASSWORD', ''),
                 help='Specifies the database password, random if not specified.'),
             make_option('--db_host', dest='db_host',
                 default=defaults.get('HOST', 'localhost'),
@@ -48,7 +48,6 @@ class Command(BaseCommand):
     help = 'Setup PostgreSQL database.'
     
     def run_postgres(self, cmd, *args, **kwargs):
-        cmd = cmd.replace("'", "\\'")
         return run('su postgres -c "psql -c \\"%s\\""' % cmd, *args, display=True, **kwargs)
     
     @check_root

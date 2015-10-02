@@ -49,10 +49,7 @@ class Command(BaseCommand):
     
     def run_postgres(self, cmd, *args, **kwargs):
         cmd = cmd.replace("'", "\\'")
-        return run('su postgres -c "psql -c \\"%s\\""' % cmd, *args, **kwargs)
-    
-    def run_postgres2(self, cmd, *args, **kwargs):
-        return run('echo su postgres -c "psql -c \\"%s\\""' % cmd, *args, **kwargs)
+        return run('su postgres -c "psql -c \\"%s\\""' % cmd, *args, display=True, **kwargs)
     
     @check_root
     def handle(self, *args, **options):
@@ -77,13 +74,13 @@ class Command(BaseCommand):
                 msg = ("Postgres user '%(db_user)s' already exists, "
                        "please provide a password [%(default_db_password)s]: " % context)
                 context['db_password'] = input(msg) or context['default_db_password']
-                self.run_postgres2(alter_user % context)
+                self.run_postgres(alter_user % context)
             elif options.get('db_password'):
-                self.run_postgres2(alter_user % context)
+                self.run_postgres(alter_user % context)
             else:
                 raise CommandError("Postgres user '%(db_user)s' already exists and "
                                    "--db_pass has not been provided." % context)
-        self.run_postgres2(create_database % context)
+        self.run_postgres(create_database % context)
         
 #        run(textwrap.dedent("""\
 #            su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD '%(db_password)s';\\"" || {

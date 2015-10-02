@@ -120,7 +120,7 @@ function main () {
     surun "python3 -W ignore manage.py migrate $noinput"
     if [[ $noinput == '--noinput' ]]; then
         # Create orchestra superuser
-        cat <<- EOF | $PYTHON_BIN $MANAGE shell
+        cat <<- EOF | surun "python3 -W ignore manage.py shell"
 from orchestra.contrib.accounts.models import Account
 if not Account.objects.filter(username="$user").exists():
     print('Creating orchestra superuser')

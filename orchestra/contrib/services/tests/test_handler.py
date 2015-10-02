@@ -1,12 +1,12 @@
 import datetime
 import decimal
+from functools import cmp_to_key
 
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from orchestra.contrib.systemusers.models import SystemUser
 from orchestra.contrib.plans.models import Plan
-from orchestra.utils.python import cmp_to_key
 from orchestra.utils.tests import BaseTestCase
 
 from .. import helpers

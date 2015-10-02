@@ -4,7 +4,8 @@ from os import path
 
 from django.core.management.base import BaseCommand
 
-from orchestra.utils.paths import get_site_dir, get_orchestra_dir
+from orchestra.contrib.settings import Setting, parser as settings_parser
+from orchestra.utils.paths import get_site_dir, get_orchestra_dir, get_project_dir
 from orchestra.utils.sys import run, check_root
 
 
@@ -32,6 +33,7 @@ class Command(BaseCommand):
             'username': options.get('username'),
             'bin_path': path.join(get_orchestra_dir(), 'bin'),
             'processes': options.get('processes'),
+            'settings': path.join(get_project_dir(), 'settings.py')
         }
         
         celery_config = textwrap.dedent("""\
@@ -103,3 +105,37 @@ class Command(BaseCommand):
             }"""
         )
         run("echo '%s' > /etc/logrotate.d/celeryd" % rotate)
+        
+        changes = {}
+        if Setting.settings['TASKS_BACKEND'].value != 'celery':
+            changes['TASKS_BACKEND'] = 'celery'
+        if Setting.settings['ORCHESTRA_START_SERVICES'].value == Setting.settings['ORCHESTRA_START_SERVICES'].default:
+            changes['ORCHESTRA_START_SERVICES'] = settings_parser.serialize(
+                (
+                    'postgresql',
+                    'celeryevcam',
+                    'celeryd',
+                    'celerybeat',
+                    ('uwsgi', 'nginx'),
+                )
+            )
+        if Setting.settings['ORCHESTRA_RESTART_SERVICES'].value == Setting.settings['ORCHESTRA_RESTART_SERVICES'].default:
+            changes['ORCHESTRA_RESTART_SERVICES'] = settings_parser.serialize(
+                (
+                    'celeryd',
+                    'celerybeat',
+                    'uwsgi',
+                )
+            )
+        if Setting.settings['ORCHESTRA_STOP_SERVICES'].value == Setting.settings['ORCHESTRA_STOP_SERVICES'].default:
+            changes['ORCHESTRA_STOP_SERVICES'] = settings_parser.serialize(
+                (
+                    ('uwsgi', 'nginx'),
+                    'celerybeat',
+                    'celeryd',
+                    'celeryevcam',
+                    'postgresql'
+                )
+            )
+        if changes:
+            settings_parser.apply(changes)

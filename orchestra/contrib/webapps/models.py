@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 from jsonfield import JSONField
 
 from orchestra.core import validators
-from orchestra.utils.functional import cached
 
 from . import settings
 from .fields import VirtualDatabaseRelation, VirtualDatabaseUserRelation

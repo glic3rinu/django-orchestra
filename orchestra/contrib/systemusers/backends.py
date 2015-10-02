@@ -31,6 +31,7 @@ class UNIXUserBackend(ServiceController):
         groups = ','.join(self.get_groups(user))
         context['groups_arg'] = '--groups %s' % groups if groups else ''
         # TODO userd add will fail if %(user)s group already exists
+        # TODO mkhomedir_helper
         self.append(textwrap.dedent("""
             # Update/create user state for %(user)s
             if id %(user)s ; then

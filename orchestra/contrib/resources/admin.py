@@ -1,3 +1,4 @@
+from functools import lru_cache
 from urllib.parse import parse_qs
 
 from django.apps import apps
@@ -19,7 +20,6 @@ from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_
 from orchestra.contrib.orchestration.models import Route
 from orchestra.core import services
 from orchestra.utils import db, sys
-from orchestra.utils.functional import cached
 
 from .actions import run_monitor, show_history
 from .api import history_data
@@ -240,7 +240,7 @@ def resource_inline_factory(resources):
         def total_form_count(self, resources=resources):
             return len(resources)
         
-        @cached
+        @lru_cache()
         def get_queryset(self):
             """ Filter disabled resources """
             queryset = super(ResourceInlineFormSet, self).get_queryset()

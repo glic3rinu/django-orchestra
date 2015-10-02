@@ -1,5 +1,8 @@
 def cached(func):
-    """ caches func return value """
+    """ 
+    DEPRECATED in favour of lru_cahce
+    caches func return value
+    """
     def cached_func(self, *args, **kwargs):
         # id(self) prevents sharing within subclasses
         attr = '_cached_%s_%i' % (func.__name__, id(self))

@@ -33,7 +33,8 @@ class MoodleMuBackend(ServiceController):
             $wwwroot = "https://{$site}-courses.pangea.org";
         }
     }
-    $CFG->prefix    = "${site}_";
+    $prefix = str_replace('-', '_', $site);
+    $CFG->prefix    = "${prefix}_";
     $CFG->wwwroot   = $wwwroot;
     $CFG->dataroot  = "/home/pangea/moodledata/{$site}/";
     """
@@ -43,6 +44,9 @@ class MoodleMuBackend(ServiceController):
     
     def save(self, webapp):
         context = self.get_context(webapp)
+        self.delete_site_map(context)
+        if context['custom_url']:
+            self.insert_site_map(context)
         self.append(textwrap.dedent("""\
             mkdir -p %(moodledata_path)s
             chown %(user)s:%(user)s %(moodledata_path)s
@@ -64,9 +68,9 @@ class MoodleMuBackend(ServiceController):
                     --host="%(db_host)s" \\
                     --user="%(db_user)s" \\
                     --password="%(db_pass)s" \\
-                    --execute='UPDATE %(site_name)s_user
+                    --execute='UPDATE %(db_prefix)s_user
                                SET password=MD5("%(password)s")
-                               WHERE username="admin"' \\
+                               WHERE username="admin";' \\
                     %(db_name)s
             """) % context
         )
@@ -83,9 +87,6 @@ class MoodleMuBackend(ServiceController):
                 EOF
                 fi""") % context
             )
-        self.delete_site_map(context)
-        if context['custom_url']:
-            self.insert_site_map(context)
     
     def delete_site_map(self, context):
         self.append(textwrap.dedent("""\
@@ -105,7 +106,7 @@ class MoodleMuBackend(ServiceController):
         context = self.get_context(saas)
         self.append(textwrap.dedent("""
             rm -rf %(moodledata_path)s
-            # Delete tables with prefix %(site_name)s
+            # Delete tables with prefix %(db_prefix)s
             mysql -Nrs \\
                 --host="%(db_host)s" \\
                 --user="%(db_user)s" \\
@@ -114,7 +115,7 @@ class MoodleMuBackend(ServiceController):
                            SET @tbls = (SELECT GROUP_CONCAT(TABLE_NAME)
                                         FROM information_schema.TABLES
                                         WHERE TABLE_SCHEMA = "%(db_name)s"
-                                        AND TABLE_NAME LIKE "%(site_name)s_%%");
+                                        AND TABLE_NAME LIKE "%(db_prefix)s_%%");
                            SET @delStmt = CONCAT("DROP TABLE ",  @tbls);
                            -- SELECT @delStmt;
                            PREPARE stmt FROM @delStmt;
@@ -146,9 +147,10 @@ class MoodleMuBackend(ServiceController):
             'db_pass': settings.SAAS_MOODLE_DB_PASS,
             'db_name': settings.SAAS_MOODLE_DB_NAME,
             'db_host': settings.SAAS_MOODLE_DB_HOST,
+            'db_prefix': saas.name.replace('-', '_'),
             'email': saas.account.email,
             'password': getattr(saas, 'password', None),
-            'custom_url': saas.custom_url,
+            'custom_url': saas.custom_url.rstrip('/'),
             'custom_domain': urlparse(saas.custom_url).netloc if saas.custom_url else None,
         }
         context.update({

@@ -48,14 +48,12 @@ class Command(BaseCommand):
     help = 'Setup PostgreSQL database.'
     
     def run_postgres(self, cmd, *args, **kwargs):
-        return run('su postgres -c "psql -c \\"%s\\""' % cmd, *args, display=True, **kwargs)
+        return run('su postgres -c "psql -c \\"%s\\""' % cmd, *args, **kwargs)
     
     @check_root
     def handle(self, *args, **options):
         interactive = options.get('interactive')
         db_password = options.get('db_password')
-        print(db_password)
-        print(type(db_password))
         context = {
             'db_name': options.get('db_name'),
             'db_user': options.get('db_user'),
@@ -76,11 +74,11 @@ class Command(BaseCommand):
                        "please provide a password [%(default_db_password)s]: " % context)
                 context['db_password'] = input(msg) or context['default_db_password']
                 self.run_postgres(alter_user % context)
-                msg = "Updated Postgres user '%(db_user)s' password '%(db_password)s'"
+                msg = "Updated Postgres user '%(db_user)s' password: '%(db_password)s'"
                 self.stdout.write(msg % context)
             elif db_password:
                 self.run_postgres(alter_user % context)
-                msg = "Updated Postgres user '%(db_user)s' password '%(db_password)s'"
+                msg = "Updated Postgres user '%(db_user)s' password: '%(db_password)s'"
                 self.stdout.write(msg % context)
             else:
                 raise CommandError("Postgres user '%(db_user)s' already exists and "
@@ -90,13 +88,6 @@ class Command(BaseCommand):
             self.stdout.write(msg % context)
         self.run_postgres(create_database % context, valid_codes=(0,1))
         
-#        run(textwrap.dedent("""\
-#            su postgres -c "psql -c \\"CREATE USER %(db_user)s PASSWORD '%(db_password)s';\\"" || {
-#                su postgres -c "psql -c \\"ALTER USER %(db_user)s WITH PASSWORD '%(db_password)s';\\""
-#            }
-#            su postgres -c "psql -c \\"CREATE DATABASE %(db_name)s OWNER %(db_user)s;\\""\
-#            """) % context, valid_codes=(0,1)
-#        )
         context.update({
             'settings': os.path.join(get_project_dir(), 'settings.py')
         })

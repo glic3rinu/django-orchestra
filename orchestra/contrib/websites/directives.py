@@ -1,11 +1,11 @@
 import re
 from collections import defaultdict
+from functools import lru_cache
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.plugins import Plugin
-from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from . import settings
@@ -24,7 +24,7 @@ class SiteDirective(Plugin):
     unique_location = False
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_plugins(cls):
         plugins = []
         for cls in settings.WEBSITES_ENABLED_DIRECTIVES:
@@ -32,7 +32,7 @@ class SiteDirective(Plugin):
         return plugins
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_option_groups(cls):
         groups = {}
         for opt in cls.get_plugins():
@@ -45,7 +45,7 @@ class SiteDirective(Plugin):
     @classmethod
     def get_choices(cls):
         """ Generates grouped choices ready to use in Field.choices """
-        # generators can not be @cached
+        # generators can not be @lru_cache()
         yield (None, '-------')
         options = cls.get_option_groups()
         for option in options.pop(None, ()):

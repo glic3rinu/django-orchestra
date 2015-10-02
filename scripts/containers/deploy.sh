@@ -40,11 +40,11 @@ function main () {
     # TODO setupceleryd shoudl change orchestra_start/stop/restart_services
     
     while true; do
-        read -p "Do you want to use celery or cronbeat for task execution [cronbeat]? " task
+        read -p "Do you want to use celery or cronbeat (orchestra.contrib.tasks) for task execution [cronbeat]? " task
         case $task in
             'celery' ) task=celery; break;;
-            'cronbeat' ) task=cronbeat; break;;
-            '' ) task=cronbeat; break;;
+            'orchestra.contrib.tasks' ) task=orchestra.contrib.tasks; break;;
+            '' ) task=orchestra.contrib.tasks; break;;
             * ) echo "Please answer celery or cronbeat.";;
         esac
     done

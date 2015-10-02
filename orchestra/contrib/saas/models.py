@@ -24,8 +24,8 @@ class SaaS(models.Model):
     service = models.CharField(_("service"), max_length=32,
         choices=SoftwareService.get_choices())
     name = models.CharField(_("Name"), max_length=64,
-        help_text=_("Required. 64 characters or fewer. Letters, digits and ./-/_ only."),
-        validators=[validators.validate_username])
+        help_text=_("Required. 64 characters or fewer. Letters, digits and ./- only."),
+        validators=[validators.validate_hostname])
     account = models.ForeignKey('accounts.Account', verbose_name=_("account"),
         related_name='saas')
     is_active = models.BooleanField(_("active"), default=True,

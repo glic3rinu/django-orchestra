@@ -417,8 +417,5 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # validate saas setting allow_custom_url check that websites have a related declared directive
 # warnings if some plugins are disabled, like make routes red
 
-# replace cached by https://docs.python.org/3/library/functools.html#functools.lru_cache
-# replace IPy by https://docs.python.org/3/library/ipaddress.html#module-ipaddress
 # replace show emails by https://docs.python.org/3/library/email.contentmanager.html#module-email.contentmanager
-# https://docs.python.org/3/library/functools.html#functools.cmp_to_key
 # tzinfo=datetime.timezone.utc

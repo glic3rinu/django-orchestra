@@ -2,6 +2,7 @@ import calendar
 import datetime
 import decimal
 import math
+from functools import cmp_to_key
 
 from dateutil import relativedelta
 from django.contrib.contenttypes.models import ContentType
@@ -11,7 +12,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra import plugins
 from orchestra.utils.humanize import text2int
-from orchestra.utils.python import AttrDict, cmp_to_key, format_exception
+from orchestra.utils.python import AttrDict, format_exception
 
 from . import settings, helpers
 

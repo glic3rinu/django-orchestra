@@ -1,9 +1,10 @@
+from functools import lru_cache
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra import plugins
 from orchestra.plugins.forms import PluginDataForm
-from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from .. import settings
@@ -22,7 +23,7 @@ class AppType(plugins.Plugin):
     # TODO generic name like 'execution' ?
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_plugins(cls):
         plugins = []
         for cls in settings.WEBAPPS_TYPES:
@@ -38,7 +39,7 @@ class AppType(plugins.Plugin):
                 })
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_group_options(cls):
         """ Get enabled options based on cls.option_groups """
         groups = AppOption.get_option_groups()
@@ -54,7 +55,7 @@ class AppType(plugins.Plugin):
     @classmethod
     def get_group_options_choices(cls):
         """ Generates grouped choices ready to use in Field.choices """
-        # generators can not be @cached
+        # generators can not be @lru_cache
         yield (None, '-------')
         for group, options in cls.get_group_options():
             if group is None:

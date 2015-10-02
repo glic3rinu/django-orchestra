@@ -2,6 +2,7 @@ import os
 
 from django.core.management.base import BaseCommand
 
+from orchestra.contrib.settings import Setting, parser as settings_parser
 from orchestra.utils.paths import get_site_dir
 from orchestra.utils.sys import run, check_non_root
 
@@ -24,3 +25,16 @@ class Command(BaseCommand):
                 content += "\n* * * * * %(orchestra_beat)s %(site_dir)s/manage.py" % context
             context['content'] = content
             run("cat << EOF | crontab\n%(content)s\nEOF" % context, display=True)
+        
+        # Configrue settings to use threaded task backend
+        changes = {}
+        if Setting.settings['TASKS_BACKEND'].value == 'celery':
+            changes['TASKS_BACKEND'] = settings_parser.Remove()
+        if 'celeryd' in Setting.settings['ORCHESTRA_START_SERVICES'].value:
+            changes['ORCHESTRA_START_SERVICES'] = settings_parser.Remove()
+        if 'celeryd' in Setting.settings['ORCHESTRA_RESTART_SERVICES'].value:
+            changes['ORCHESTRA_RESTART_SERVICES'] = settings_parser.Remove()
+        if 'celeryd' in Setting.settings['ORCHESTRA_STOP_SERVICES'].value:
+            changes['ORCHESTRA_STOP_SERVICES'] = settings_parser.Remove()
+        if changes:
+            settings_parser.apply(changes)

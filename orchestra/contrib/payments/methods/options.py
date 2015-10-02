@@ -1,8 +1,8 @@
 import logging
 from dateutil import relativedelta
+from functools import lru_cache
 
 from orchestra import plugins
-from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from .. import settings
@@ -20,7 +20,7 @@ class PaymentMethod(plugins.Plugin):
     state_help = {}
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_plugins(cls):
         plugins = []
         for cls in settings.PAYMENTS_ENABLED_METHODS:

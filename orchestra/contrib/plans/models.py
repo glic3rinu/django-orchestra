@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from django.core.validators import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -6,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_name
 from orchestra.models import queryset
-from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from . import settings
@@ -84,12 +85,12 @@ class Rate(models.Model):
         return "{}-{}".format(str(self.price), self.quantity)
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_methods(cls):
         return dict((method, import_class(method)) for method in settings.PLANS_RATE_METHODS)
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_choices(cls):
         choices = []
         for name, method in cls.get_methods().items():

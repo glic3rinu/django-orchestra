@@ -1,10 +1,10 @@
 import re
+from functools import lru_cache
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.plugins import Plugin
-from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from . import settings
@@ -20,7 +20,7 @@ class AppOption(Plugin):
     comma_separated = False
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_plugins(cls):
         plugins = []
         for cls in settings.WEBAPPS_ENABLED_OPTIONS:
@@ -28,7 +28,7 @@ class AppOption(Plugin):
         return plugins
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_option_groups(cls):
         groups = {}
         for opt in cls.get_plugins():

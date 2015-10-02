@@ -1,3 +1,4 @@
+from functools import lru_cache
 from urllib.parse import urlparse
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -8,7 +9,6 @@ from orchestra.contrib.databases.models import Database, DatabaseUser
 from orchestra.contrib.orchestration import Operation
 from orchestra.contrib.websites.models import Website, WebsiteDirective
 from orchestra.utils.apps import isinstalled
-from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from . import helpers
@@ -33,7 +33,7 @@ class SoftwareService(plugins.Plugin):
     allow_custom_url = False
     
     @classmethod
-    @cached
+    @lru_cache()
     def get_plugins(cls):
         plugins = []
         for cls in settings.SAAS_ENABLED_SERVICES:
@@ -153,7 +153,7 @@ class DBSoftwareService(SoftwareService):
     def get_db_user(self):
         return self.db_user
     
-    @cached
+    @lru_cache()
     def get_account(self):
         account_model = self.instance._meta.get_field_by_name('account')[0]
         return account_model.rel.to.objects.get_main()

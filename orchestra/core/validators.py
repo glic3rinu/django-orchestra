@@ -1,11 +1,11 @@
 import logging
 import re
+from ipaddress import ip_address
 
 import phonenumbers
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
-from IPy import IP
 
 from ..utils.python import import_class
 
@@ -40,28 +40,28 @@ def all_valid(*args):
 def validate_ipv4_address(value):
     msg = _("Not a valid IPv4 address")
     try:
-        ip = IP(value)
-    except:
+        ip = ip_address(value)
+    except ValueError:
         raise ValidationError(msg)
-    if ip.version() != 4:
+    if ip.version != 4:
         raise ValidationError(msg)
 
 
 def validate_ipv6_address(value):
     msg = _("Not a valid IPv6 address")
     try:
-        ip = IP(value)
-    except:
+        ip = ip_address(value)
+    except ValueError:
         raise ValidationError(msg)
-    if ip.version() != 6:
+    if ip.version != 6:
         raise ValidationError(msg)
 
 
 def validate_ip_address(value):
     msg = _("Not a valid IP address")
     try:
-        IP(value)
-    except:
+        ip_address(value)
+    except ValueError:
         raise ValidationError(msg)
 
 

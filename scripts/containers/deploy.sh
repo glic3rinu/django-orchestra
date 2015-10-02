@@ -31,6 +31,7 @@ function main () {
             echo "What argument is $1?" >&2
         else
             echo "--noinput should provide a username" >&2
+        fi
         exit 1
     else
         [ $(whoami) == 'root' ] && {

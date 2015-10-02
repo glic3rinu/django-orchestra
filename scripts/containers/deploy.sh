@@ -133,23 +133,23 @@ EOF
     echo "> Checking if Orchestra is serving on https://${ip_addr}/admin/ ..."
     if [[ $noinput == '--noinput' ]]; then
         echo -e "  - username: $user"
-        echo -e "  - password: orchestra"
+        echo -e "  - password: orchestra${normal}"
     fi
     
-    if [[ $(curl -L -k -v -c /tmp/cookies.txt -b /tmp/cookies.txt https://$ip_addr/admin/ | grep 'Panel Hosting Management') ]]; then
+    if [[ $(curl -L -k -c /tmp/cookies.txt -b /tmp/cookies.txt https://$ip_addr/admin/ | grep 'Panel Hosting Management') ]]; then
         token=$(grep csrftoken /tmp/cookies.txt | awk {'print $7'})
-        if [[ $(curl -L -k -v -c /tmp/cookies.txt -b /tmp/cookies.txt \
+        if [[ $(curl -L -k -c /tmp/cookies.txt -b /tmp/cookies.txt \
             -d "username=$user&password=orchestra&csrfmiddlewaretoken=$token" \
             -e https://$ip_addr/admin/ \
             https://$ip_addr/admin/login/?next=/admin/ | grep '<title>Panel Hosting Management</title>') ]]; then
-                echo "  ** Orchestra appears to be working!"
+                echo "${bold}  ** Orchestra appears to be working!${normal}"
         else
-            echo "  ** Err. Couldn't login :(" >&2
+            echo "${bold}  ** Err. Couldn't login :(${normal}" >&2
         fi
     else
-        echo "  ** Err. Orchestra is not responding responding on https://${ip_addr}/admin/" >&2
+        echo "${bold}  ** Err. Orchestra is not responding responding on https://${ip_addr}/admin/${normal}" >&2
     fi
-    echo ${normal}
+    echo
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl

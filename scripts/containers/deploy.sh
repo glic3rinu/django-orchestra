@@ -105,10 +105,10 @@ function main () {
         --allow-external django-orchestra \
         --allow-unverified django-orchestra
     run sudo orchestra-admin install_requirements
-    run cd $(eval echo ~$user)
+    cd $(eval echo ~$user)
 
     surun "orchestra-admin startproject $project_name"
-    surun "cd $project_name"
+    cd $project_name
     
     run sudo service postgresql start
     run sudo python3 -W ignore manage.py setuppostgres $noinput

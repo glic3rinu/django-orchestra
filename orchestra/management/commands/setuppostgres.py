@@ -54,6 +54,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         interactive = options.get('interactive')
         db_password = options.get('db_password')
+        print(db_password)
+        print(type(db_password))
         context = {
             'db_name': options.get('db_name'),
             'db_user': options.get('db_user'),

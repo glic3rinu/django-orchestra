@@ -8,23 +8,27 @@ set -ue
 function main () {
     noinput=''
     user=$USER
-    if [[ $# -eq 3 ]]; then
+    if [[ $# -eq 2 ]]; then
         if [[ $1 != '--noinput' ]]; then
-            echo "What argument is $1?" >&2
+            echo -e "\nErr. What argument is $1?\n" >&2
             exit 2
         elif ! id $2; then
-            echo "User $2 does not exist" >&2
+            echo -e "\nErr. User $2 does not exist\n" >&2
             exit 3
         fi
+        [ $(whoami) != 'root' ] && {
+            echo -e "\nErr. --noinput should run as root\n" >&2
+            exit 1
+        }
         noinput='--noinput'
         alias run=surun_
         alias sudorun=run_
         user=$2
-    elif [[ $# -eq 2 ]]; then
+    elif [[ $# -eq 1 ]]; then
         if [[ $1 != '--noinput' ]]; then
-            echo "What argument is $1?" >&2
+            echo -e "\nErr. What argument is $1?\n" >&2
         else
-            echo "--noinput should provide a username" >&2
+            echo -e "\nErr. --noinput should provide a username\n" >&2
         fi
         exit 1
     else
@@ -132,4 +136,4 @@ function main () {
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl
-main
+main $@

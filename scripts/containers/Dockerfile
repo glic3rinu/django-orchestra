@@ -8,6 +8,7 @@ RUN apt-get -y update && apt-get install -y \
     python3-pip \
     wget \
     curl \
+    net-tools \
     dnsutils \
     rsyslog \
     nano \

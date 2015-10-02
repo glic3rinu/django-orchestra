@@ -48,7 +48,7 @@ class Command(BaseCommand):
     help = 'Setup PostgreSQL database.'
     
     def run_postgres(self, cmd, *args, **kwargs):
-        return run('su postgres -c "psql -c \\"%s\\""' % cmd, *args, display=True, **kwargs)
+        return run('su postgres -c "psql -c \\"%s\\""' % cmd, *args, **kwargs)
     
     @check_root
     def handle(self, *args, **options):

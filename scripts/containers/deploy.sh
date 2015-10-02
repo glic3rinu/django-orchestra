@@ -18,7 +18,10 @@ function main () {
         echo " ${bold}\$ ${@}${normal}"
         ${@}
     }
-
+    
+    # Test sudo privileges
+    sudo true
+    
     while true; do
         read -p "Enter a project name [panel]: " project_name
         if [[ "$project_name" == "" ]]; then
@@ -37,7 +40,6 @@ function main () {
     done
     
     # TODO detect if already installed and don't ask stupid question
-    # TODO setupceleryd shoudl change orchestra_start/stop/restart_services
     
     while true; do
         read -p "Do you want to use celery or cronbeat (orchestra.contrib.tasks) for task execution [cronbeat]? " task
@@ -77,6 +79,17 @@ function main () {
     run sudo apt-get install nginx-full uwsgi uwsgi-plugin-python3
     run sudo python3 -W ignore manage.py setupnginx --user $USER
     run sudo python3 -W ignore manage.py restartservices
+    run sudo python3 -W ignore manage.py startservices
+    
+    ip_addr=$(ip addr show eth0 | grep 'inet ' | sed -r "s/.*inet ([^\s]*).*/\1/" | cut -d'/' -f1)
+    if [[ $ip_addr == '' ]]; then
+        ip_addr=127.0.0.1
+    fi
+    if curl https://$ip_addr/admin/ -I -k -s | grep 'HTTP/1.1 302 FOUND'; then
+        echo -e "${bold}Orchestra appears to be working at https://${ip_addr}/admin/${normal}\n"
+    else
+        echo -e "${bold}Err. Orchestra is not responding at https://${ip_addr}/admin/${normal}\n" >&2
+    fi
     run python3 -W ignore manage.py check --deploy
 }
 

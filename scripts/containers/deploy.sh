@@ -80,17 +80,19 @@ function main () {
     run sudo python3 -W ignore manage.py setupnginx --user $USER
     run sudo python3 -W ignore manage.py restartservices
     run sudo python3 -W ignore manage.py startservices
+    run python3 -W ignore manage.py check --deploy
     
     ip_addr=$(ip addr show eth0 | grep 'inet ' | sed -r "s/.*inet ([^\s]*).*/\1/" | cut -d'/' -f1)
     if [[ $ip_addr == '' ]]; then
         ip_addr=127.0.0.1
     fi
-    if curl https://$ip_addr/admin/ -I -k -s | grep 'HTTP/1.1 302 FOUND'; then
-        echo -e "${bold}Orchestra appears to be working at https://${ip_addr}/admin/${normal}\n"
+    echo
+    echo -e "${bold}Checking if Orchestra is working at https://${ip_addr}/admin/${normal} ...\n"
+    if [[ $(curl https://$ip_addr/admin/ -I -k -s | grep 'HTTP/1.1 302 FOUND') ]]; then
+        echo -e "${bold}Orchestra appears to be working!\n"
     else
-        echo -e "${bold}Err. Orchestra is not responding at https://${ip_addr}/admin/${normal}\n" >&2
+        echo -e "${bold}Err. Orchestra is not responding responding at https://${ip_addr}/admin/${normal}\n" >&2
     fi
-    run python3 -W ignore manage.py check --deploy
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl

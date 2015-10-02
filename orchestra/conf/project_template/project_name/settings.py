@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     # Last to load
     'orchestra.contrib.resources',
     'orchestra.contrib.settings',
+#    'django_nose',
 ]
 
 

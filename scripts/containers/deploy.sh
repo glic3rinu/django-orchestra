@@ -17,8 +17,8 @@ function main () {
             exit 3
         fi
         noinput='--noinput'
-        run=surun_
-        sudorun=run_
+        alias run=surun_
+        alias sudorun=run_
         user=$2
     elif [[ $# -eq 2 ]]; then
         if [[ $1 != '--noinput' ]]; then
@@ -32,8 +32,8 @@ function main () {
             echo -e "\nErr. This script should run as a regular user\n" >&2
             exit 1
         }
-        run=run_
-        sudorun="run_ sudo"
+        alias run=run_
+        alias sudorun="run_ sudo"
         # Test sudo privileges
         sudo true
     fi

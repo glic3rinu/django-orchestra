@@ -136,12 +136,12 @@ EOF
         echo -e "  - password: orchestra"
     fi
     
-    if [[ $(curl -L -k -v -c https://$ip_addr/admin/ -c /tmp/cookies.txt -b /tmp/cookies.txt | grep 'Panel Hosting Management') ]]; then
+    if [[ $(curl -L -k -v -c /tmp/cookies.txt -b /tmp/cookies.txt https://$ip_addr/admin/ | grep 'Panel Hosting Management') ]]; then
         token=$(grep csrftoken /tmp/cookies.txt | awk {'print $7'})
         if [[ $(curl -L -k -v -c /tmp/cookies.txt -b /tmp/cookies.txt \
             -d "username=$user&password=orchestra&csrfmiddlewaretoken=$token" \
-            https://$ip_addr/admin/login/?next=/admin/ \
-            -e https://$ip_addr/admin/ | grep '<title>Panel Hosting Management</title>') ]]; then
+            -e https://$ip_addr/admin/ \
+            https://$ip_addr/admin/login/?next=/admin/ | grep '<title>Panel Hosting Management</title>') ]]; then
                 echo "  ** Orchestra appears to be working!"
         else
             echo "  ** Err. Couldn't login :(" >&2

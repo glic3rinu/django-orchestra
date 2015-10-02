@@ -6,16 +6,8 @@ set -ue
 # bash <( curl https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/scripts/containers/deploy.sh ) [--noinput username]
 
 function main () {
-    run_ () {
-        echo " ${bold}\$ ${@}${normal}"
-        ${@}
-    }
-    
-    surun_ () {
-        echo " ${bold}\$ su $USER -c \"${@}\"${normal}"
-        su $USER -c "${@}"
-    }
-    noinput=0
+    noinput=''
+    user=$USER
     if [[ $# -eq 3 ]]; then
         if [[ $1 != '--noinput' ]]; then
             echo "What argument is $1?" >&2
@@ -24,9 +16,10 @@ function main () {
             echo "User $2 does not exist" >&2
             exit 3
         fi
-        noinput=1
+        noinput='--noinput'
         run=surun_
         sudorun=run_
+        user=$2
     elif [[ $# -eq 2 ]]; then
         if [[ $1 != '--noinput' ]]; then
             echo "What argument is $1?" >&2
@@ -45,11 +38,21 @@ function main () {
         sudo true
     fi
     
+    run_ () {
+        echo " ${bold}\$ ${@}${normal}"
+        ${@}
+    }
+    
+    surun_ () {
+        echo " ${bold}\$ su $user -c \"${@}\"${normal}"
+        su $user -c "${@}"
+    }
+    
     bold=$(tput -T ${TERM:-xterm} bold)
     normal=$(tput -T ${TERM:-xterm} sgr0)
 
     project_name="panel"
-    if [[ $noinput -eq 0 ]]; then
+    if [[ $noinput == '' ]]; then
         while true; do
             read -p "Enter a project name [panel]: " project_name
             if [[ "$project_name" == "" ]]; then
@@ -71,7 +74,7 @@ function main () {
     # TODO detect if already installed and don't ask stupid question
     
     task=cronbeat
-    if [[ $noinput -eq 0 ]]; then
+    if [[ $noinput == '' ]]; then
         while true; do
             read -p "Do you want to use celery or cronbeat (orchestra.contrib.tasks) for task execution [cronbeat]? " task
             case $task in
@@ -93,7 +96,7 @@ function main () {
     run cd $project_name
     
     sudorun service postgresql start
-    sudorun python3 -W ignore manage.py setuppostgres $1
+    sudorun python3 -W ignore manage.py setuppostgres $noinput
 
     run python3 -W ignore manage.py migrate
 
@@ -109,7 +112,7 @@ function main () {
 
     run python3 -W ignore manage.py collectstatic --noinput
     sudorun apt-get install nginx-full uwsgi uwsgi-plugin-python3
-    sudorun python3 -W ignore manage.py setupnginx --user $USER
+    sudorun python3 -W ignore manage.py setupnginx --user $user $noinput
     sudorun python3 -W ignore manage.py restartservices
     sudorun python3 -W ignore manage.py startservices
     run python3 -W ignore manage.py check --deploy

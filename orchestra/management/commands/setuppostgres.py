@@ -3,7 +3,7 @@ import textwrap
 from optparse import make_option
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from orchestra.utils.paths import get_project_dir
 from orchestra.utils.python import random_ascii

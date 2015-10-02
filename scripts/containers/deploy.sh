@@ -111,8 +111,12 @@ function main () {
     cd $project_name
     
     run sudo service postgresql start
-    run sudo python3 -W ignore manage.py setuppostgres $noinput
-
+    if [[ $noinput == '--noinput' ]]; then
+        db_password=$(ps aux | sha256sum | base64 | head -c 10)
+        run sudo python3 -W ignore manage.py setuppostgres --noinput --db_password $db_password
+    else
+        run sudo python3 -W ignore manage.py setuppostgres
+    fi
     surun "python3 -W ignore manage.py migrate $noinput"
     if [[ $noinput == '--noinput' ]]; then
         # Create orchestra superuser

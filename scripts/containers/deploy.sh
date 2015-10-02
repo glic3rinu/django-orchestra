@@ -6,6 +6,16 @@ set -ue
 # bash <( curl https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/scripts/containers/deploy.sh ) [--noinput username]
 
 function main () {
+    run_ () {
+        echo " ${bold}\$ ${@}${normal}"
+        ${@}
+    }
+    
+    surun_ () {
+        echo " ${bold}\$ su $user -c \"${@}\"${normal}"
+        su $user -c "${@}"
+    }
+    
     noinput=''
     user=$USER
     if [[ $# -eq 2 ]]; then
@@ -41,16 +51,6 @@ function main () {
         # Test sudo privileges
         sudo true
     fi
-    
-    run_ () {
-        echo " ${bold}\$ ${@}${normal}"
-        ${@}
-    }
-    
-    surun_ () {
-        echo " ${bold}\$ su $user -c \"${@}\"${normal}"
-        su $user -c "${@}"
-    }
     
     bold=$(tput -T ${TERM:-xterm} bold)
     normal=$(tput -T ${TERM:-xterm} sgr0)

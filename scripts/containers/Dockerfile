@@ -23,6 +23,6 @@ RUN export TERM=xterm; curl https://raw.githubusercontent.com/glic3rinu/django-o
 RUN apt-get clean
 
 RUN useradd orchestra --shell /bin/bash && \
-    echo "orchestra:orchestra" | chpasswd
+    { echo "orchestra:orchestra" | chpasswd; } && \
     mkhomedir_helper orchestra && \
     adduser orchestra sudo

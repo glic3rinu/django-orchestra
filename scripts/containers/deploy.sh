@@ -5,6 +5,44 @@ set -ue
 
 # bash <( curl https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/scripts/containers/deploy.sh ) [--noinput username]
 
+
+bold=$(tput -T ${TERM:-xterm} bold)
+normal=$(tput -T ${TERM:-xterm} sgr0)
+
+
+function test_orchestra () {
+    user=$1
+    
+    # Test if serving requests
+    ip_addr=$(ip addr show eth0 | grep 'inet ' | sed -r "s/.*inet ([^\s]*).*/\1/" | cut -d'/' -f1)
+    if [[ $ip_addr == '' ]]; then
+        ip_addr=127.0.0.1
+    fi
+    echo
+    echo ${bold}
+    echo "> Checking if Orchestra is serving on https://${ip_addr}/admin/ ..."
+    if [[ $noinput == '--noinput' ]]; then
+        echo -e "  - username: $user"
+        echo -e "  - password: orchestra${normal}"
+    fi
+    
+    if [[ $(curl -s -L -k -c /tmp/cookies.txt -b /tmp/cookies.txt https://$ip_addr/admin/ | grep 'Panel Hosting Management') ]]; then
+        token=$(grep csrftoken /tmp/cookies.txt | awk {'print $7'})
+        if [[ $(curl -s -L -k -c /tmp/cookies.txt -b /tmp/cookies.txt \
+            -d "username=$user&password=orchestra&csrfmiddlewaretoken=$token" \
+            -e https://$ip_addr/admin/ \
+            https://$ip_addr/admin/login/?next=/admin/ | grep '<title>Panel Hosting Management</title>') ]]; then
+                echo "${bold}  ** Orchestra appears to be working!${normal}"
+        else
+            echo "${bold}  ** Err. Couldn't login :(${normal}" >&2
+        fi
+    else
+        echo "${bold}  ** Err. Orchestra is not responding responding on https://${ip_addr}/admin/${normal}" >&2
+    fi
+    echo
+}
+
+
 function main () {
     noinput=''
     user=$USER
@@ -41,9 +79,6 @@ function main () {
         # Test sudo privileges
         sudo true
     fi
-    
-    bold=$(tput -T ${TERM:-xterm} bold)
-    normal=$(tput -T ${TERM:-xterm} sgr0)
     
     project_name="panel"
     if [[ $noinput == '' ]]; then
@@ -123,33 +158,7 @@ EOF
     run sudo python3 -W ignore manage.py startservices
     surun "python3 -W ignore manage.py check --deploy"
     
-    # Test if serving requests
-    ip_addr=$(ip addr show eth0 | grep 'inet ' | sed -r "s/.*inet ([^\s]*).*/\1/" | cut -d'/' -f1)
-    if [[ $ip_addr == '' ]]; then
-        ip_addr=127.0.0.1
-    fi
-    echo
-    echo ${bold}
-    echo "> Checking if Orchestra is serving on https://${ip_addr}/admin/ ..."
-    if [[ $noinput == '--noinput' ]]; then
-        echo -e "  - username: $user"
-        echo -e "  - password: orchestra${normal}"
-    fi
-    
-    if [[ $(curl -L -k -c /tmp/cookies.txt -b /tmp/cookies.txt https://$ip_addr/admin/ | grep 'Panel Hosting Management') ]]; then
-        token=$(grep csrftoken /tmp/cookies.txt | awk {'print $7'})
-        if [[ $(curl -L -k -c /tmp/cookies.txt -b /tmp/cookies.txt \
-            -d "username=$user&password=orchestra&csrfmiddlewaretoken=$token" \
-            -e https://$ip_addr/admin/ \
-            https://$ip_addr/admin/login/?next=/admin/ | grep '<title>Panel Hosting Management</title>') ]]; then
-                echo "${bold}  ** Orchestra appears to be working!${normal}"
-        else
-            echo "${bold}  ** Err. Couldn't login :(${normal}" >&2
-        fi
-    else
-        echo "${bold}  ** Err. Orchestra is not responding responding on https://${ip_addr}/admin/${normal}" >&2
-    fi
-    echo
+    test_orchestra $user
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl

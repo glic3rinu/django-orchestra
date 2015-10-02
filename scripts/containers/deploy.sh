@@ -154,10 +154,15 @@ EOF
     echo
     echo "${bold}> Checking if Orchestra is serving at https://${ip_addr}/admin/${normal} ..."
     if [[ $(curl https://$ip_addr/admin/ -I -k -s | grep 'HTTP/1.1 302 FOUND') ]]; then
-        echo -e "${bold}  ** Orchestra appears to be working!${normal}\n"
+        echo "${bold}  ** Orchestra appears to be working!${normal}"
+        if [[ $noinput == '--noinput' ]]; then
+            echo -e "${bold}     username: $user${normal}"
+            echo -e "${bold}     password: orchestra"
+        fi
     else
-        echo -e "${bold}  ** Err. Orchestra is not responding responding at https://${ip_addr}/admin/${normal}\n" >&2
+        echo "${bold}  ** Err. Orchestra is not responding responding at https://${ip_addr}/admin/${normal}" >&2
     fi
+    echo
 }
 
 # Wrap it all on a function to avoid partial executions when running through wget/curl

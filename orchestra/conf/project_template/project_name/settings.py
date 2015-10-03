@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     # Third-party apps
     'django_extensions',
     'djcelery',
-    'djcelery_email',
     'fluent_dashboard',
     'admin_tools',
     'admin_tools.theming',

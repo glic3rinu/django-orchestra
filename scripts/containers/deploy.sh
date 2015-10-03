@@ -79,6 +79,7 @@ function install_orchestra () {
 function setup_database () {
     dev=$1
     noinput=$2
+    run sudo apt-get install -y postgresql python3-psycopg2
     # Setup Database
     if [[ $dev ]]; then
         # Speeding up tests, don't do this in production!
@@ -212,7 +213,8 @@ function main () {
         echo -e "\nErr. --repo only makes sense with --dev\n" >&2
         exit 5
     fi
-    
+
+    sudo true
     if [[ ! $noinput && ! $bproject_name ]]; then
         while true; do
             read -p "Enter a project name [panel]: " project_name
@@ -249,7 +251,9 @@ function main () {
     cd $home
     
     install_orchestra "$dev" $home $repo
-    surun "orchestra-admin startproject $project_name"
+    if [[ ! -e $project_name ]]; then
+        surun "orchestra-admin startproject $project_name"
+    fi
     cd $project_name
     setup_database "$dev" "$noinput"
     

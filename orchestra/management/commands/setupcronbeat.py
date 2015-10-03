@@ -26,7 +26,7 @@ class Command(BaseCommand):
             context['content'] = content
             run("cat << EOF | crontab\n%(content)s\nEOF" % context, display=True)
         
-        # Configrue settings to use threaded task backend
+        # Configrue settings to use threaded task backend (default)
         changes = {}
         if Setting.settings['TASKS_BACKEND'].value == 'celery':
             changes['TASKS_BACKEND'] = settings_parser.Remove()

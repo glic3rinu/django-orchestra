@@ -1,4 +1,4 @@
-django==1.8.2
+django==1.8.4
 django-fluent-dashboard==0.5.3
 django-admin-tools==0.6.0
 django-extensions==1.5.2

@@ -4,6 +4,7 @@ from orchestra.contrib.settings import Setting
 from orchestra.core.validators import validate_ip_address
 from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 
+from . import validators
 from .. import saas
 
 
@@ -36,6 +37,7 @@ SAAS_TRAFFIC_IGNORE_HOSTS = Setting('SAAS_TRAFFIC_IGNORE_HOSTS',
 SAAS_WORDPRESS_ALLOW_CUSTOM_URL = Setting('SAAS_WORDPRESS_ALLOW_CUSTOM_URL',
     True,
     help_text=_("Whether allow custom URL to be specified or not."),
+    validators=[validators.validate_website_saas_directives('wordpress-saas')],
 )
 
 SAAS_WORDPRESS_LOG_PATH = Setting('SAAS_WORDPRESS_LOG_PATH',
@@ -68,6 +70,7 @@ SAAS_WORDPRESS_DB_NAME = Setting('SAAS_WORDPRESS_DB_NAME',
 SAAS_DOKUWIKI_ALLOW_CUSTOM_URL = Setting('SAAS_DOKUWIKI_ALLOW_CUSTOM_URL',
     True,
     help_text=_("Whether allow custom URL to be specified or not."),
+    validators=[validators.validate_website_saas_directives('dokuwiki-saas')],
 )
 
 SAAS_DOKUWIKI_TEMPLATE_PATH = Setting('SAAS_DOKUWIKI_TEMPLATE_PATH',
@@ -108,6 +111,7 @@ SAAS_DOKUWIKI_LOG_PATH = Setting('SAAS_DOKUWIKI_LOG_PATH',
 SAAS_DRUPAL_ALLOW_CUSTOM_URL = Setting('SAAS_DRUPAL_ALLOW_CUSTOM_URL',
     True,
     help_text=_("Whether allow custom URL to be specified or not."),
+    validators=[validators.validate_website_saas_directives('drupal-saas')],
 )
 
 SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
@@ -120,6 +124,7 @@ SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
 SAAS_PHPLIST_ALLOW_CUSTOM_URL = Setting('SAAS_PHPLIST_ALLOW_CUSTOM_URL',
     False,
     help_text=_("Whether allow custom URL to be specified or not."),
+    validators=[validators.validate_website_saas_directives('phplist-saas')],
 )
 
 SAAS_PHPLIST_DB_USER = Setting('SAAS_PHPLIST_DB_USER',
@@ -229,6 +234,7 @@ SAAS_GITLAB_DOMAIN = Setting('SAAS_GITLAB_DOMAIN',
 SAAS_MOODLE_ALLOW_CUSTOM_URL = Setting('SAAS_MOODLE_ALLOW_CUSTOM_URL',
     True,
     help_text=_("Whether allow custom URL to be specified or not."),
+    validators=[validators.validate_website_saas_directives('moodle-saas')],
 )
 
 SAAS_MOODLE_DB_USER = Setting('SAAS_MOODLE_DB_USER',

@@ -44,7 +44,7 @@ function install_orchestra () {
     home=$2
     repo=$3
     
-    if [[ $dev -eq 1 ]]; then
+    if [[ $dev ]]; then
         # Install from source
         python_path=$(python3 -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][0]);")
         if [[ -d $python_path/orchestra ]]; then
@@ -80,7 +80,7 @@ function setup_database () {
     dev=$1
     noinput=$2
     # Setup Database
-    if [[ $dev -eq 1 ]]; then
+    if [[ $dev ]]; then
         # Speeding up tests, don't do this in production!
         . /usr/share/postgresql-common/init.d-functions
         pg_version=$(psql --version | head -n1 | sed -r "s/^.*\s([0-9]+\.[0-9]+).*/\1/")
@@ -96,7 +96,7 @@ function setup_database () {
     else
         run sudo python3 -W ignore manage.py setuppostgres
     fi
-    if [[ $dev -eq 1 ]]; then
+    if [[ $dev ]]; then
         # Create database permissions are needed for running tests
         sudo su postgres -c 'psql -c "ALTER USER orchestra CREATEDB;"'
     fi
@@ -166,19 +166,19 @@ function main () {
     opts=$(getopt -o n:dr:h -l noinput:,dev,repo:,help -- "$@") || exit 1
     set -- $opts
     
-    dev=0
-    noinput=''
+    dev=
+    noinput=
     user=${USER:-root}
     repo='https://github.com/glic3rinu/django-orchestra.git'
-    brepo=false
+    brepo=
     project_name="panel"
-    bproject_name=false
+    bproject_name=
     
     while [ $# -gt 0 ]; do
         case $1 in
             -n|--noinput) user="${2:1:${#2}-2}"; noinput='--noinput'; shift ;;
             -r|--repo) repo="${2:1:${#2}-2}"; brepo=true; shift ;;
-            -d|--dev) dev=1; ;;
+            -d|--dev) dev=true; ;;
             -p|--project_name) project_name="${2:1:${#2}-2}"; bproject_name=true; shift ;;
             -h|--help) print_help; exit 0 ;;
             (--) shift; break;;
@@ -208,12 +208,12 @@ function main () {
         run () { echo " ${bold}\$ ${@}${normal}"; ${@}; }
         surun () { echo " ${bold}\$ su $user -c \"${@}\"${normal}"; su $user -c "${@}"; }
     fi
-    if [[ $dev -eq 0 && $brepo == true ]]; then
+    if [[ ! $dev && $brepo ]]; then
         echo -e "\nErr. --repo only makes sense with --dev\n" >&2
         exit 5
     fi
     
-    if [[ ! $noinput && $bproject_name == false ]]; then
+    if [[ ! $noinput && ! $bproject_name ]]; then
         while true; do
             read -p "Enter a project name [panel]: " project_name
             if [[ ! "$project_name" ]]; then
@@ -248,10 +248,10 @@ function main () {
     home=$(eval echo ~$user)
     cd $home
     
-    install_orchestra $dev $home $repo
+    install_orchestra "$dev" $home $repo
     surun "orchestra-admin startproject $project_name"
     cd $project_name
-    setup_database $dev "$noinput"
+    setup_database "$dev" "$noinput"
     
     if [[ $noinput ]]; then
         create_orchestra_superuser $user $user@localhost orchestra
@@ -281,7 +281,7 @@ function main () {
     fi
     
     # Configure settings file into debug mode
-    if [[ $dev -eq 1 ]]; then
+    if [[ $dev ]]; then
         sed -i \
             -e "s/^\s*#\s*'debug_toolbar',/    'debug_toolbar',/" \
             -e "s/^\s*#\s*'django_nose',/    'django_nose',/" $project_name/settings.py

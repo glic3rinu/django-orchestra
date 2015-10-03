@@ -82,16 +82,16 @@ class Setting(object):
                 raise ValidationError(errors)
         return validate_string_format
     
-    def validate_value(self, value):
-        if value:
-            validators.all_valid(value, self.validators)
+    def validate(self):
+        if self.value:
+            validators.all_valid(self.value, self.validators)
         valid_types = list(self.types)
         if isinstance(self.default, (list, tuple)):
             valid_types.extend([list, tuple])
         valid_types.append(type(self.default))
-        if not isinstance(value, tuple(valid_types)):
+        if not isinstance(self.value, tuple(valid_types)):
             raise ValidationError("%s is not a valid type (%s)." %
-                (type(value).__name__, ', '.join(t.__name__ for t in valid_types))
+                (type(self.value).__name__, ', '.join(t.__name__ for t in valid_types))
             )
     
     @classmethod

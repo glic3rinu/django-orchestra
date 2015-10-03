@@ -43,9 +43,8 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
     python3 manage.py migrate
     ```
 
-
 6. Configure periodic execution of tasks (choose one)
-    1. Use cron
+    1. Use cron (recommended)
         ```bash
         python3 manage.py setupcronbeat
         python3 manage.py syncperiodictasks
@@ -96,7 +95,6 @@ Additionally the following command can be used in order to determine the current
 ```bash
 python3 manage.py orchestraversion
 ```
-
 
 
 Extra

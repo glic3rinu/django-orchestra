@@ -31,7 +31,6 @@ class UNIXUserBackend(ServiceController):
         groups = ','.join(self.get_groups(user))
         context['groups_arg'] = '--groups %s' % groups if groups else ''
         # TODO userd add will fail if %(user)s group already exists
-        # TODO mkhomedir_helper
         self.append(textwrap.dedent("""
             # Update/create user state for %(user)s
             if id %(user)s ; then
@@ -56,13 +55,19 @@ class UNIXUserBackend(ServiceController):
             fi
             mkdir -p %(base_home)s
             chmod 750 %(base_home)s
-            chown %(user)s:%(user)s %(base_home)s""") % context
+            ls -A /etc/skel/ | while read line; do
+                if [[ ! -e %(home)s/${line} ]]; then
+                    cp -a $line %(home)s/${line}
+                    chown -R %(user)s:%(group)s %(home)s/${line}
+                fi
+            done
+            """) % context
         )
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""
                 # Set extra permissions: %(user)s home is inside %(mainuser)s home
                 if mount | grep "^$(df %(home)s|grep '^/')\s" | grep acl > /dev/null; then
-                    # Accountn group as the owner
+                    # Account group as the owner
                     chown %(mainuser)s:%(mainuser)s %(home)s
                     chmod g+s %(home)s
                     # Home access
@@ -76,6 +81,8 @@ class UNIXUserBackend(ServiceController):
                     chown %(user)s:%(user)s %(home)s
                 fi""") % context
             )
+        else:
+            self.append("chown %(user)s:%(group)s %(home)s" % context)
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
             context['member'] = member
             self.append('usermod -a -G %(user)s %(member)s || exit_code=$?' % context)

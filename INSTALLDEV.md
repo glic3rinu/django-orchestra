@@ -13,7 +13,7 @@ If you are planing to do some development you may want to consider doing it unde
     ```bash
     curl http://git.io/orchestra-Dockerfile > /tmp/Dockerfile
     docker build -t orchestra /tmp/
-    docker create --name orchestra -i -t orchestra bash
+    docker create --name orchestra -i -t -u orchestra -w /home/orchestra orchestra bash
     docker start orchestra
     docker attach orchestra
     ```
@@ -21,7 +21,6 @@ If you are planing to do some development you may want to consider doing it unde
 
 3. Deploy django-orchestra development environment
     ```bash
-    su - orchestra
     bash <( curl -L https://git.io/deploy-orchestra ) --dev
     ```
 
@@ -36,4 +35,3 @@ If you are planing to do some development you may want to consider doing it unde
     ```bash
     bash <( curl -L https://git.io/deploy-orchestra ) --dev
     ```
-

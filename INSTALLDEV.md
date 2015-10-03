@@ -11,7 +11,7 @@ If you are planing to do some development you may want to consider doing it unde
 
 2. Build a new image, create and start a container
     ```bash
-    curl http://git.io/orchestra-Dockerfile > /tmp/Dockerfile
+    curl -L http://git.io/orchestra-Dockerfile > /tmp/Dockerfile
     docker build -t orchestra /tmp/
     docker create --name orchestra -i -t -u orchestra -w /home/orchestra orchestra bash
     docker start orchestra

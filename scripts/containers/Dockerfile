@@ -2,7 +2,7 @@ FROM debian:latest
 
 RUN apt-get -y update && apt-get install -y curl sudo
 
-RUN export TERM=xterm; curl http://git.io/orchestra-admin | bash -s install_requirements
+RUN export TERM=xterm; curl -L http://git.io/orchestra-admin | bash -s install_requirements
 
 RUN apt-get clean
 

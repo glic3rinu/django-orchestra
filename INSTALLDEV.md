@@ -33,5 +33,6 @@ If you are planing to do some development you may want to consider doing it unde
 
 5. To upgrade to current master just re-run the deploy script
     ```bash
+    git pull origin master
     bash <( curl -L http://git.io/orchestra-deploy ) --dev
     ```

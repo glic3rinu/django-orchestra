@@ -253,6 +253,8 @@ function main () {
     install_orchestra "$dev" $home $repo
     if [[ ! -e $project_name ]]; then
         surun "orchestra-admin startproject $project_name"
+    else
+        echo "Not deploying, $project_name already exists."
     fi
     cd $project_name
     setup_database "$dev" "$noinput"

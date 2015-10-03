@@ -82,6 +82,7 @@ def naturaldatetime(date, show_seconds=False):
             ).format(hours=hours, ago=ago)
     
     if delta_midnight.days == 0:
+        date = timezone.localtime(date)
         return _("yesterday at {time}").format(time=date.strftime('%H:%M'))
     
     count = 0

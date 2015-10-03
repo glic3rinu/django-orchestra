@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models
 from django.shortcuts import redirect
+from django.utils import timezone
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -141,16 +142,15 @@ def admin_colored(*args, **kwargs):
 @admin_field
 def admin_date(*args, **kwargs):
     instance = args[-1]
-    value = get_field_value(instance, kwargs['field'])
-    if not value:
+    date = get_field_value(instance, kwargs['field'])
+    if not date:
         return kwargs.get('default', '')
-    if isinstance(value, datetime.datetime):
-        natural = humanize.naturaldatetime(value)
+    if isinstance(date, datetime.datetime):
+        natural = humanize.naturaldatetime(date)
     else:
-        natural = humanize.naturaldate(value)
-    return '<span title="{0}">{1}</span>'.format(
-        escape(str(value)), escape(natural),
-    )
+        natural = humanize.naturaldate(date)
+    local = timezone.localtime(date).strftime("%Y-%m-%d %H:%M:%S %Z")
+    return '<span title="{0}">{1}</span>'.format(local, escape(natural))
 
 
 def get_object_from_url(modeladmin, request):

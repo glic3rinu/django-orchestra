@@ -1,9 +1,7 @@
 django==1.8.2
-django-celery-email==1.0.4
 django-fluent-dashboard==0.5.3
 django-admin-tools==0.6.0
 django-extensions==1.5.2
-django-transaction-signals==1.0.0
 django-celery==3.1.16
 celery==3.1.16
 kombu==3.0.23
@@ -15,7 +13,7 @@ Pygments==1.6
 django-filter==0.7
 jsonfield==0.9.22
 python-dateutil==2.2
-https://github.com/glic3rinu/passlib/archive/master.zip
+passlib==1.6.2
 django-iban==0.3.0
 requests
 phonenumbers

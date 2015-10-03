@@ -50,7 +50,7 @@ function install_orchestra () {
         if [[ -d $python_path/orchestra ]]; then
             run sudo rm -fr $python_path/orchestra
         fi
-        orch_version=$(python3 -c "from orchestra import get_version; print(get_version());" 2> /dev/null || false) || true
+        orch_version=$(python3 -c "from orchestra import get_version; print(get_version());" 2> /dev/null)
         if [[ ! $orch_version ]]; then
             # First Orchestra installation
             run sudo apt-get -y install git python3-pip
@@ -59,6 +59,8 @@ function install_orchestra () {
                 surun "export GIT_DIR=$home/django-orchestra/.git; git pull"
             }
             echo $home/django-orchestra/ | sudo tee "$python_path/orchestra.pth"
+        else
+            echo "You may want to execute 'git pull origin master'?"
         fi
         if [[ -L /usr/local/bin/orchestra-admin || -f /usr/local/bin/orchestra-admin ]]; then
             run sudo rm -f /usr/local/bin/{orchestra-admin,orchestra-beat}

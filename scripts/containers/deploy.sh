@@ -168,7 +168,7 @@ function main () {
     
     dev=
     noinput=
-    user=${USER:-root}
+    user=$(whoami)
     repo='https://github.com/glic3rinu/django-orchestra.git'
     brepo=
     project_name="panel"

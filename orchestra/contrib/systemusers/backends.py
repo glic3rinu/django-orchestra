@@ -57,11 +57,11 @@ class UNIXUserBackend(ServiceController):
             chmod 750 %(base_home)s
             ls -A /etc/skel/ | while read line; do
                 if [[ ! -e %(home)s/${line} ]]; then
-                    cp -a $line %(home)s/${line}
+                    cp -a $line %(home)s/${line} && \
                     chown -R %(user)s:%(group)s %(home)s/${line}
                 fi
             done
-            """) % context
+            fi""") % context
         )
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""

@@ -60,10 +60,6 @@ check_root () {
 export -f check_root
 
 
-verlt () {
-    [ "$1" = "$2" ] && return 1 || verlte $1 $2
-}
-
 get_orchestra_dir () {
     if ! $(echo "import orchestra" | $PYTHON_BIN 2> /dev/null); then
         echo -e "\norchestra not installed.\n" >&2
@@ -139,6 +135,7 @@ function install_requirements () {
             git \
             iceweasel \
             dnsutils"
+    fi
     
     run apt-get update
     run apt-get install -y $APT
@@ -174,13 +171,12 @@ function install_requirements () {
     
     # Install a more recent version of wkhtmltopdf (0.12.2) (PDF page number support)
     wkhtmltox_version=$(dpkg --list | grep wkhtmltox | awk {'print $3'})
-    if [[ ! $wkhtmltox_version || verlt $wkhtmltox_version 0.12.2.1 ]]; then
+    minor=$(echo -e "$wkhtmltox_version\n0.12.2.1" | sort -V | head -n 1)
+    if [[ ! $wkhtmltox_version ]] || [[ $wkhtmltox_version != 0.12.2.1 && $minor == ${wkhtmltox_version} ]]; then
         wkhtmltox=$(mktemp)
         wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb -O ${wkhtmltox}
         dpkg -i ${wkhtmltox} || { echo "Installing missing dependencies for wkhtmltox..." && apt-get -f -y install; }
     fi
-    
-
 }
 export -f install_requirements
 
@@ -246,5 +242,5 @@ function startproject () {
 export -f startproject
 
 
-[ $# -lt 1 ] && print_help
+[ $# -lt 1 ] && { print_help; exit 1; }
 $1 "${@}"

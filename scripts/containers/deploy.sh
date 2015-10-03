@@ -17,7 +17,7 @@ function test_orchestra () {
     echo
     echo ${bold}
     echo "> Checking if Orchestra is serving on https://${ip_addr}/admin/ ..."
-    if [[ $noinput == '--noinput' ]]; then
+    if [[ $noinput ]]; then
         echo "  - username: $user"
         echo "  - password: orchestra${normal}"
     fi
@@ -90,7 +90,7 @@ function setup_database () {
             /etc/postgresql/${pg_version}/main/postgresql.conf
     fi
     run sudo service postgresql start
-    if [[ $noinput == '--noinput' ]]; then
+    if [[ $noinput ]]; then
         db_password=$(ps aux | sha256sum | base64 | head -c 10)
         run sudo python3 -W ignore manage.py setuppostgres --noinput --db_password $db_password
     else
@@ -190,7 +190,7 @@ function main () {
     unset OPTIND
     unset opt
     
-    if [[ $noinput == '' ]]; then
+    if [[ ! $noinput ]]; then
         if [[ $(whoami) == 'root' ]]; then
             echo -e "\nErr. Interactive script should run as a regular user\n" >&2
             exit 2
@@ -213,10 +213,10 @@ function main () {
         exit 5
     fi
     
-    if [[ $noinput == '' && $bproject_name == false ]]; then
+    if [[ ! $noinput && $bproject_name == false ]]; then
         while true; do
             read -p "Enter a project name [panel]: " project_name
-            if [[ "$project_name" == "" ]]; then
+            if [[ ! "$project_name" ]]; then
                 project_name="panel"
                 break
             elif [[ ! $(echo "$project_name" | grep '^[_a-zA-Z]\w*$') ]]; then
@@ -233,7 +233,7 @@ function main () {
     fi
     
     task=cronbeat
-    if [[ $noinput == '' ]]; then
+    if [[ ! $noinput ]]; then
         while true; do
             read -p "Do you want to use celery or cronbeat (orchestra.contrib.tasks) for task execution [cronbeat]? " task
             case $task in
@@ -253,7 +253,7 @@ function main () {
     cd $project_name
     setup_database $dev "$noinput"
     
-    if [[ $noinput == '--noinput' ]]; then
+    if [[ $noinput ]]; then
         create_orchestra_superuser $user $user@localhost orchestra
     fi
     
@@ -276,8 +276,8 @@ function main () {
     
     
     ip_addr=$(ip addr show eth0 | grep 'inet ' | sed -r "s/.*inet ([^\s]*).*/\1/" | cut -d'/' -f1)
-    if [[ $ip_addr == '' ]]; then
-        ip_addr='127.0.0.1'
+    if [[ ! $ip_addr ]]; then
+        ip_addr=127.0.0.1
     fi
     
     # Configure settings file into debug mode

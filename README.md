@@ -50,10 +50,9 @@ pip3 install -r http://git.io/orchestra-requirements.txt
 orchestra-admin startproject panel
 python3 panel/manage.py migrate
 python3 panel/manage.py runserver
-# Browse to http://127.0.0.1:8000/admin/
 ```
 
-Now you can see the web interface on http://localhost:8000/admin
+Now you can see the web interface on http://localhost:8000/admin/
 
 
 Checkout the steps for other deployments: [development](INSTALLDEV.md), [production](INSTALL.md)

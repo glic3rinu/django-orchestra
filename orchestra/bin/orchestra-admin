@@ -60,6 +60,10 @@ check_root () {
 export -f check_root
 
 
+verlt () {
+    [ "$1" = "$2" ] && return 1 || verlte $1 $2
+}
+
 get_orchestra_dir () {
     if ! $(echo "import orchestra" | $PYTHON_BIN 2> /dev/null); then
         echo -e "\norchestra not installed.\n" >&2
@@ -109,6 +113,13 @@ function install_requirements () {
     check_root || true
     ORCHESTRA_PATH=$(get_orchestra_dir) || true
     
+    # Make sure locales are in place before installing postgres
+    if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then
+        run sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /etc/locale.gen
+        run locale-gen
+        update-locale LANG=en_US.UTF-8
+    fi
+    
     # lxml: libxml2-dev, libxslt1-dev, zlib1g-dev
     APT="bind9utils \
          ca-certificates \
@@ -123,44 +134,11 @@ function install_requirements () {
          wget \
          xvfb \
          zlib1g-dev"
-    
-    # cracklib and lxml are excluded on the requirements.txt because they need unconvinient system dependencies
-    PIP="$(wget http://git.io/orchestra-requirements.txt -O - | tr '\n' ' ') \
-        cracklib \
-        lxml==3.3.5"
-    
     if $testing; then
         APT="${APT} \
             git \
             iceweasel \
             dnsutils"
-        
-        PIP="${PIP} \
-            selenium \
-            xvfbwrapper \
-            freezegun \
-            coverage \
-            flake8 \
-            django-debug-toolbar==1.3.0 \
-            django-nose==1.4 \
-            sqlparse \
-            pyinotify \
-            PyMySQL"
-    fi
-    
-    # Install a more recent version of wkhtmltopdf (0.12.2) (PDF page number support)
-    if [[ $(dpkg --list | grep wkhtmltox | awk {'print $3'}) != "0.12.2.1" ]]; then
-        wkhtmltox=$(mktemp)
-        wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb -O ${wkhtmltox}
-        dpkg -i ${wkhtmltox} || { echo "Installing missing dependencies for wkhtmltox..." && apt-get -f -y install; }
-    fi
-    
-    # Make sure locales are in place before installing postgres
-    if [[ $({ perl --help > /dev/null; } 2>&1|grep 'locale failed') ]]; then
-        run sed -i "s/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /etc/locale.gen
-        run locale-gen
-        update-locale LANG=en_US.UTF-8
-    fi
     
     run apt-get update
     run apt-get install -y $APT
@@ -174,7 +152,35 @@ function install_requirements () {
         update-ca-certificates
     fi
     
+    # cracklib and lxml are excluded on the requirements.txt because they need unconvinient system dependencies
+    PIP="$(wget http://git.io/orchestra-requirements.txt -O - | tr '\n' ' ') \
+        cracklib \
+        lxml==3.3.5"
+    if $testing; then
+        PIP="${PIP} \
+            selenium \
+            xvfbwrapper \
+            freezegun \
+            coverage \
+            flake8 \
+            django-debug-toolbar==1.3.0 \
+            django-nose==1.4 \
+            sqlparse \
+            pyinotify \
+            PyMySQL"
+    fi
+    
     run pip3 install $PIP
+    
+    # Install a more recent version of wkhtmltopdf (0.12.2) (PDF page number support)
+    wkhtmltox_version=$(dpkg --list | grep wkhtmltox | awk {'print $3'})
+    if [[ ! $wkhtmltox_version || verlt $wkhtmltox_version 0.12.2.1 ]]; then
+        wkhtmltox=$(mktemp)
+        wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb -O ${wkhtmltox}
+        dpkg -i ${wkhtmltox} || { echo "Installing missing dependencies for wkhtmltox..." && apt-get -f -y install; }
+    fi
+    
+
 }
 export -f install_requirements
 

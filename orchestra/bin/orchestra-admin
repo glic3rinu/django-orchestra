@@ -39,7 +39,6 @@ function print_help () {
 		
 		EOF
 }
-# in
 
 
 show () {
@@ -111,25 +110,28 @@ function install_requirements () {
     ORCHESTRA_PATH=$(get_orchestra_dir) || true
     
     # lxml: libxml2-dev, libxslt1-dev, zlib1g-dev
-    APT="python3 \
-         python3-pip \
-         python3-dev \
-         libxml2-dev \
-         libxslt1-dev \
-         zlib1g-dev \
-         bind9utils \
-         xvfb \
+    APT="bind9utils \
          ca-certificates \
          gettext \
-         libcrack2-dev"
+         libcrack2-dev \
+         libxml2-dev \
+         libxslt1-dev \
+         python3 \
+         python3-pip \
+         python3-dev \
+         ssh-client \
+         wget \
+         xvfb \
+         zlib1g-dev"
     
     # cracklib and lxml are excluded on the requirements.txt because they need unconvinient system dependencies
-    PIP="$(curl https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt | tr '\n' ' ') \
+    PIP="$(wget http://git.io/orchestra-requirements.txt -O - | tr '\n' ' ') \
         cracklib \
         lxml==3.3.5"
     
     if $testing; then
         APT="${APT} \
+            git \
             iceweasel \
             dnsutils"
         

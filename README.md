@@ -44,17 +44,13 @@ pip3 install django-orchestra==dev \
   --allow-unverified django-orchestra
 # The only non-pip required dependency for runing pip install is python3-dev
 #   sudo apt-get install python3.4-dev
-pip3 install -r \
-  https://raw.githubusercontent.com/glic3rinu/django-orchestra/master/requirements.txt
+pip3 install -r http://git.io/orchestra-requirements.txt
 
 # Create a new Orchestra site
 orchestra-admin startproject panel
 python3 panel/manage.py migrate
 python3 panel/manage.py runserver
-
-# Enable periodic tasks with cron (optional)
-python3 panel/manage.py setupcronbeat
-python3 panel/manage.py syncperiodictasks
+# Browse to http://127.0.0.1:8000/admin/
 ```
 
 Now you can see the web interface on http://localhost:8000/admin

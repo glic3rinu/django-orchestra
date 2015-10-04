@@ -110,32 +110,26 @@ class Command(BaseCommand):
         if Setting.settings['TASKS_BACKEND'].value != 'celery':
             changes['TASKS_BACKEND'] = 'celery'
         if Setting.settings['ORCHESTRA_START_SERVICES'].value == Setting.settings['ORCHESTRA_START_SERVICES'].default:
-            changes['ORCHESTRA_START_SERVICES'] = settings_parser.serialize(
-                (
+            changes['ORCHESTRA_START_SERVICES'] = (
                     'postgresql',
                     'celeryevcam',
                     'celeryd',
                     'celerybeat',
                     ('uwsgi', 'nginx'),
                 )
-            )
         if Setting.settings['ORCHESTRA_RESTART_SERVICES'].value == Setting.settings['ORCHESTRA_RESTART_SERVICES'].default:
-            changes['ORCHESTRA_RESTART_SERVICES'] = settings_parser.serialize(
-                (
+            changes['ORCHESTRA_RESTART_SERVICES'] = (
                     'celeryd',
                     'celerybeat',
                     'uwsgi',
                 )
-            )
         if Setting.settings['ORCHESTRA_STOP_SERVICES'].value == Setting.settings['ORCHESTRA_STOP_SERVICES'].default:
-            changes['ORCHESTRA_STOP_SERVICES'] = settings_parser.serialize(
-                (
+            changes['ORCHESTRA_STOP_SERVICES'] = (
                     ('uwsgi', 'nginx'),
                     'celerybeat',
                     'celeryd',
                     'celeryevcam',
                     'postgresql'
                 )
-            )
         if changes:
             settings_parser.apply(changes)

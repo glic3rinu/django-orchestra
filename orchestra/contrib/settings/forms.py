@@ -113,9 +113,9 @@ class SettingForm(ReadOnlyFormMixin, forms.Form):
         except Exception as exc:
             raise ValidationError(format_exception(exc))
         self.setting.validate_value(value)
-        if not isinstance(value, self.setting_type):
-            if self.setting_type in (tuple, list) and isinstance(value, (tuple, list)):
-                value = self.setting_type(value)
+#        if not isinstance(value, self.setting_type):
+#            if self.setting_type in (tuple, list) and isinstance(value, (tuple, list)):
+#                value = self.setting_type(value)
         return value
 
 

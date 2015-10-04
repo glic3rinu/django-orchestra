@@ -237,7 +237,6 @@ https://code.djangoproject.com/ticket/24576
 # TASK_BEAT_BACKEND = ('cron', 'celerybeat', 'uwsgi')
 # Ship orchestra production-ready (no DEBUG etc)
 
-# Settings.parser.changes: if setting.value == default. remove
 # reload generic admin view ?redirect=http...
 # inspecting django db connection for asserting db readines? or performing a query
 * wake up django mailer on send_mail
@@ -379,8 +378,6 @@ Case
 # Mailer: mark as sent
 # Mailer: download attachments
 
-# Deprecate orchestra start/stop/restart services management commands?
-
 # Enable/disable ignore period orders list filter
 
 
@@ -414,8 +411,6 @@ http://makandracards.com/makandra/24933-chrome-34+-firefox-38+-ie11+-ignore-auto
 
 mkhomedir_helper or create ssh homes with bash.rc and such
 
-# validate saas setting allow_custom_url check that websites have a related declared directive
 # warnings if some plugins are disabled, like make routes red
 
 # replace show emails by https://docs.python.org/3/library/email.contentmanager.html#module-email.contentmanager
-# tzinfo=datetime.timezone.utc

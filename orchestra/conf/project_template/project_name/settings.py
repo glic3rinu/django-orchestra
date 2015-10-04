@@ -127,7 +127,11 @@ DATABASES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+
+try:
+    TIME_ZONE = open('/etc/timezone', 'r').read().strip()
+except IOError:
+    TIME_ZONE = 'UTC'
 
 USE_I18N = True
 

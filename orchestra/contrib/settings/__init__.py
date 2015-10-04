@@ -82,17 +82,31 @@ class Setting(object):
                 raise ValidationError(errors)
         return validate_string_format
     
-    def validate(self):
-        if self.value:
-            validators.all_valid(self.value, self.validators)
+    def validate_value(self, value):
+        if value:
+            validators.all_valid(value, self.validators)
         valid_types = list(self.types)
+        if self.choices:
+            choices = self.choices
+            if callable(choices):
+                choices = choices()
+            choices = [n for n,v in choices]
+            values = value
+            if not isinstance(values, (list, tuple)):
+                values = [value]
+            for cvalue in values:
+                if cvalue not in choices:
+                    raise ValidationError("'%s' not in '%s'" % (value, ', '.join(choices)))
         if isinstance(self.default, (list, tuple)):
             valid_types.extend([list, tuple])
         valid_types.append(type(self.default))
-        if not isinstance(self.value, tuple(valid_types)):
+        if not isinstance(value, tuple(valid_types)):
             raise ValidationError("%s is not a valid type (%s)." %
-                (type(self.value).__name__, ', '.join(t.__name__ for t in valid_types))
+                (type(value).__name__, ', '.join(t.__name__ for t in valid_types))
             )
+    
+    def validate(self):
+        self.validate_value(self.value)
     
     @classmethod
     def get_value(cls, name, default):

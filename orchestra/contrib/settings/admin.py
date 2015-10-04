@@ -53,10 +53,15 @@ class SettingView(generic.edit.FormView):
             setting = settings[data['name']]
             if not isinstance(data['value'], parser.NotSupported) and setting.editable:
                 if setting.value != data['value']:
+                    # Ignore differences between lists and tuples
+                    if (type(setting.value) != type(data['value']) and
+                        isinstance(data['value'], list) and
+                        tuple(data['value']) == setting.value):
+                            continue
                     if setting.default == data['value']:
                         changes[setting.name] = parser.Remove()
                     else:
-                        changes[setting.name] = parser.serialize(data['value'])
+                        changes[setting.name] = data['value']
         if changes:
             # Display confirmation
             if not self.request.POST.get('confirmation'):
@@ -66,6 +71,8 @@ class SettingView(generic.edit.FormView):
                 diff = sys.run(cmd, valid_codes=(1, 0)).stdout
                 context = self.get_context_data(form=form)
                 context['diff'] = diff
+                if not diff:
+                    messages.warning(self.request, _("Changes detected but no diff %s.") % changes)
                 return self.render_to_response(context)
             n = len(changes)
             # Save changes

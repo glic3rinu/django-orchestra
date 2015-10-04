@@ -149,8 +149,12 @@ def admin_date(*args, **kwargs):
         natural = humanize.naturaldatetime(date)
     else:
         natural = humanize.naturaldate(date)
-    local = timezone.localtime(date).strftime("%Y-%m-%d %H:%M:%S %Z")
-    return '<span title="{0}">{1}</span>'.format(local, escape(natural))
+    if hasattr(date, 'hour'):
+        date = timezone.localtime(date)
+        date = date.strftime("%Y-%m-%d %H:%M:%S %Z")
+    else:
+        date = date.strftime("%Y-%m-%d")
+    return '<span title="{0}">{1}</span>'.format(date, escape(natural))
 
 
 def get_object_from_url(modeladmin, request):

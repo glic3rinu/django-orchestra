@@ -9,6 +9,8 @@ from django.utils.functional import Promise
 
 from orchestra.utils.paths import get_project_dir
 
+from . import Setting
+
 
 class Remove(object):
     """ used to signal a setting remove """
@@ -92,7 +94,6 @@ def serialize(obj, init=True):
 def _format_setting(name, value):
     if isinstance(value, Remove):
         return ""
-    value = eval(value, get_eval_context())
     try:
         value = json.dumps(value, indent=4)
     except TypeError:
@@ -100,8 +101,20 @@ def _format_setting(name, value):
     return "{name} = {value}".format(name=name, value=value)
 
 
+def validate_changes(changes):
+    for name, value in changes.items():
+        if not isinstance(value, Remove):
+            try:
+                setting = Setting.settings[name]
+            except KeyError:
+                pass
+            else:
+                setting.validate_value(value)
+
+
 def apply(changes, settings_file=get_settings_file()):
     """ returns settings_file content with applied changes """
+    validate_changes(changes)
     updates = _find_updates(changes, settings_file)
     content = []
     _changes = copy.copy(changes)

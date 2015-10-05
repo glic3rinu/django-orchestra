@@ -7,8 +7,8 @@
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
 &rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ original_opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ original_opts.verbose_name_plural|capfirst }}</a>
-&rsaquo; {% trans 'Add' %}
-&rsaquo; {% trans 'Select contact' %}
+&rsaquo; {% trans 'Add' %} {{ opts.verbose_name }}
+&rsaquo; {% trans 'Select account' %}
 </div>
 {% endblock %}
 

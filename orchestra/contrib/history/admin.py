@@ -11,7 +11,7 @@ from orchestra.admin.utils import admin_link, admin_date
 
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'display_message', 'display_action_time', 'user_link',
+        'display_action_time', 'user_link', 'display_message',
     )
     list_filter = (
         'action_flag',
@@ -31,6 +31,10 @@ class LogEntryAdmin(admin.ModelAdmin):
     
     user_link = admin_link('user')
     display_action_time = admin_date('action_time', short_description=_("Time"))
+    
+    def __init__(self, *args, **kwargs):
+        super(LogEntryAdmin, self).__init__(*args, **kwargs)
+        self.list_display_links = (None, )
     
     def display_message(self, log):
         edit = '<a href="%(url)s"><img src="%(img)s"></img></a>' % {
@@ -68,8 +72,9 @@ class LogEntryAdmin(admin.ModelAdmin):
     
     def content_object_link(self, log):
         ct = log.content_type
+        view = 'admin:%s_%s_change' % (ct.app_label, ct.model)
         try:
-            url = reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=(log.object_id,))
+            url = reverse(view, args=(log.object_id,))
         except NoReverseMatch:
             return log.object_repr
         return '<a href="%s">%s</a>' % (url, log.object_repr)
@@ -87,7 +92,8 @@ class LogEntryAdmin(admin.ModelAdmin):
                 'object': obj,
             }
         context.update(extra_context or {})
-        return super(LogEntryAdmin, self).changeform_view(request, object_id, form_url, extra_context=context)
+        return super(LogEntryAdmin, self).changeform_view(
+            request, object_id, form_url, extra_context=context)
 
     def response_change(self, request, obj):
         """ save and continue preserve edit query string """
@@ -100,9 +106,12 @@ class LogEntryAdmin(admin.ModelAdmin):
         """ save redirect to object history """
         if 'edit' in request.GET.urlencode():
             opts = obj.content_type.model_class()._meta
-            post_url = reverse('admin:%s_%s_history' % (opts.app_label, opts.model_name), args=(obj.object_id,))
+            view = 'admin:%s_%s_history' % (opts.app_label, opts.model_name)
+            post_url = reverse(view, args=(obj.object_id,))
             preserved_filters = self.get_preserved_filters(request)
-            post_url = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts}, post_url)
+            post_url = add_preserved_filters({
+                'preserved_filters': preserved_filters, 'opts': opts
+            }, post_url)
             return HttpResponseRedirect(post_url)
         return super(LogEntryAdmin, self).response_post_save_change(request, obj)
     

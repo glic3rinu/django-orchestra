@@ -47,13 +47,14 @@ class BillLineInline(admin.TabularInline):
     order_link = admin_link('order', display='pk')
     
     def display_total(self, line):
-        total = line.compute_total()
-        sublines = line.sublines.all()
-        if sublines:
-            content = '\n'.join(['%s: %s' % (sub.description, sub.total) for sub in sublines])
-            img = static('admin/img/icon_alert.gif')
-            return '<span title="%s">%s <img src="%s"></img></span>' % (content, total, img)
-        return total
+        if line.pk:
+            total = line.compute_total()
+            sublines = line.sublines.all()
+            if sublines:
+                content = '\n'.join(['%s: %s' % (sub.description, sub.total) for sub in sublines])
+                img = static('admin/img/icon_alert.gif')
+                return '<span title="%s">%s <img src="%s"></img></span>' % (content, total, img)
+            return total
     display_total.short_description = _("Total")
     display_total.allow_tags = True
     
@@ -97,7 +98,8 @@ class ClosedBillLineInline(BillLineInline):
     display_subtotal.allow_tags = True
     
     def display_total(self, line):
-        return line.compute_total()
+        if line.pk:
+            return line.compute_total()
     display_total.short_description = _("Total")
     display_total.allow_tags = True
     
@@ -110,8 +112,8 @@ class ClosedBillLineInline(BillLineInline):
 
 class BillLineAdmin(admin.ModelAdmin):
     list_display = (
-        'description', 'bill_link', 'display_is_open', 'account_link', 'rate', 'quantity', 'tax',
-        'subtotal', 'display_sublinetotal', 'display_total'
+        'description', 'bill_link', 'display_is_open', 'account_link', 'rate', 'quantity',
+        'tax', 'subtotal', 'display_sublinetotal', 'display_total'
     )
     actions = (
         actions.undo_billing, actions.move_lines, actions.copy_lines, actions.service_report
@@ -201,7 +203,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         }),
         (_("Dates"), {
             'classes': ('collapse',),
-            'fields': ('created_on_display', 'closed_on_display', 'updated_on_display', 'due_on'),
+            'fields': ('created_on_display', 'closed_on_display', 'updated_on_display',
+                       'due_on'),
         }),
         (_("Raw"), {
             'classes': ('collapse',),
@@ -219,7 +222,9 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         actions.amend_bills, actions.bill_report, actions.service_report,
         actions.close_send_download_bills, list_accounts,
     ]
-    change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link', 'amend_links')
+    change_readonly_fields = (
+        'account_link', 'type', 'is_open', 'amend_of_link', 'amend_links'
+    )
     readonly_fields = (
         'number', 'display_total', 'is_sent', 'display_payment_state', 'created_on_display',
         'closed_on_display', 'updated_on_display'
@@ -265,7 +270,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         transactions = bill.transactions.all()
         if len(transactions) == 1:
             args = (transactions[0].pk,)
-            url = reverse('admin:%s_%s_change' % (t_opts.app_label, t_opts.model_name), args=args)
+            view = 'admin:%s_%s_change' % (t_opts.app_label, t_opts.model_name)
+            url = reverse(view, args=args)
         else:
             url = reverse('admin:%s_%s_changelist' % (t_opts.app_label, t_opts.model_name))
             url += '?bill=%i' % bill.pk

@@ -2,7 +2,7 @@ import copy
 import re
 from urllib.parse import parse_qsl
 
-from django import forms
+from django import apps, forms
 from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
@@ -92,7 +92,7 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
         }
         context.update(extra_context or {})
         return super(AccountAdmin, self).change_view(
-            request, object_id, form_url, context)
+            request, object_id, form_url=form_url, extra_context=context)
     
     def get_fieldsets(self, request, obj=None):
         fieldsets = super(AccountAdmin, self).get_fieldsets(request, obj)
@@ -125,6 +125,7 @@ class AccountListAdmin(AccountAdmin):
     """ Account list to allow account selection when creating new services """
     list_display = ('select_account', 'username', 'type', 'username')
     actions = None
+    change_list_template = 'admin/accounts/account/select_account_list.html'
     
     def select_account(self, instance):
         # TODO get query string from request.META['QUERY_STRING'] to preserve filters
@@ -139,12 +140,13 @@ class AccountListAdmin(AccountAdmin):
     select_account.admin_order_field = 'username'
     
     def changelist_view(self, request, extra_context=None):
-        original_app_label = request.META['PATH_INFO'].split('/')[-5]
-        original_model = request.META['PATH_INFO'].split('/')[-4]
+        app_label = request.META['PATH_INFO'].split('/')[-5]
+        model = request.META['PATH_INFO'].split('/')[-4]
+        model = apps.get_model(app_label, model)
+        opts = model._meta
         context = {
-            'title': _("Select account for adding a new %s") % (original_model),
-            'original_app_label': original_app_label,
-            'original_model': original_model,
+            'title': _("Select account for adding a new %s") % (opts.verbose_name),
+            'original_opts': opts,
         }
         context.update(extra_context or {})
         response = super(AccountListAdmin, self).changelist_view(request, extra_context=context)

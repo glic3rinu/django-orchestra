@@ -2,7 +2,8 @@ import copy
 import re
 from urllib.parse import parse_qsl
 
-from django import apps, forms
+from django import forms
+from django.apps import apps
 from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote

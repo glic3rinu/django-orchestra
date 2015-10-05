@@ -58,7 +58,8 @@ class PhpListSaaSBackend(ServiceController):
                 'adminemail': saas.account.username,
                 'adminpassword': saas.password,
             }
-            response = requests.post(install_link, data=post, verify=settings.SAAS_PHPLIST_VERIFY_SSL)
+            response = requests.post(
+                install_link, data=post, verify=settings.SAAS_PHPLIST_VERIFY_SSL)
             sys.stdout.write(response.content.decode('utf8')+'\n')
             if response.status_code != 200:
                 self.error("Bad status code %i." % response.status_code)

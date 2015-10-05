@@ -45,10 +45,10 @@ class Setting(object):
     @classmethod
     def validate_choices(cls, value):
         if not isinstance(value, (list, tuple)):
-            raise ValidationError("%s is not a valid choices." % str(value))
+            raise ValidationError("%s is not a valid choices." % value)
         for choice in value:
             if not isinstance(choice, (list, tuple)) or len(choice) != 2:
-                raise ValidationError("%s is not a valid choice." % str(choice))
+                raise ValidationError("%s is not a valid choice." % choice)
             value, verbose = choice
             if not isinstance(verbose, (str, Promise)):
                 raise ValidationError("%s is not a valid verbose name." % value)

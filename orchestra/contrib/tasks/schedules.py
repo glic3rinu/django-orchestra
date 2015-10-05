@@ -116,4 +116,3 @@
 #                'Invalid beginning range: {0} < {1}.'.format(i, self.min_))
 
 #        return i
-

@@ -52,8 +52,6 @@ class SendEmail(object):
                     
                 }
                 return self.confirm_email(request, **options)
-        opts = self.modeladmin.model._meta
-        app_label = opts.app_label
         self.context.update({
             'title': _("Send e-mail to %s") % self.opts.verbose_name_plural,
             'content_title': "",

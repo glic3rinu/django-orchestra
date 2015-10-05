@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 from distutils.sysconfig import get_python_lib
 from setuptools import setup, find_packages
 
@@ -17,7 +18,7 @@ setup(
     version = version,
     author = "Marc Aymerich",
     author_email = "marcay@pangea.org",
-    url = "http://orchestra.pangea.org",
+    url = "https://github.com/glic3rinu/django-orchestra",
     license = "GPLv3",
     description = "A framework for building web hosting control panels",
     long_description = (
@@ -40,8 +41,8 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Internet :: WWW/HTTP :: Site Management',

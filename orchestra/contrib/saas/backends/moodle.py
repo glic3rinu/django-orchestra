@@ -1,10 +1,9 @@
-import os
 import textwrap
 from urllib.parse import urlparse
 
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration import ServiceController, replace
+from orchestra.contrib.orchestration import ServiceController
 
 from .. import settings
 

@@ -32,7 +32,7 @@ def keep_log(execute, log, operations):
             log.state = log.EXCEPTION
             log.stderr = trace
             log.save()
-            subject = 'EXCEPTION executing backend(s) %s %s' % (str(args), str(kwargs))
+            subject = 'EXCEPTION executing backend(s) %s %s' % (args, kwargs)
             logger.error(subject)
             logger.error(trace)
             mail_admins(subject, trace)
@@ -40,7 +40,7 @@ def keep_log(execute, log, operations):
         finally:
             # Store and log the operation
             for operation in operations:
-                logger.info("Executed %s" % str(operation))
+                logger.info("Executed %s" % operation)
                 operation.store(log)
             if not log.is_success:
                 send_report(execute, args, log)
@@ -57,7 +57,7 @@ def generate(operations):
     serialize = False
     # Generate scripts per route+backend
     for operation in operations:
-        logger.debug("Queued %s" % str(operation))
+        logger.debug("Queued %s" % operation)
         if operation.routes is None:
             operation.routes = router.objects.get_for_operation(operation, cache=cache)
         for route in operation.routes:

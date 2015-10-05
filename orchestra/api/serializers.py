@@ -1,5 +1,6 @@
 import copy
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import widgets
 from django.utils.translation import ugettext_lazy as _
@@ -69,7 +70,7 @@ class RelatedHyperlinkedModelSerializer(HyperlinkedModelSerializer):
                 'url': "URL is required."
             })
         account = self.get_account()
-        queryset = self.Meta.model.objects.filter(account=self.get_account())
+        queryset = self.Meta.model.objects.filter(account=account)
         self.fields['url'].queryset = queryset
         obj = self.fields['url'].to_internal_value(url)
         return obj
@@ -108,26 +109,3 @@ class SetPasswordHyperlinkedSerializer(HyperlinkedModelSerializer):
         instance.set_password(password)
         instance.save()
         return instance
-
-
-#class MultiSelectField(serializers.ChoiceField):
-#    widget = widgets.CheckboxSelectMultiple
-#    
-#    def field_from_native(self, data, files, field_name, into):
-#        """ convert multiselect data into comma separated string """
-#        if field_name in data:
-#            data = data.copy()
-#            try:
-#                # data is a querydict when using forms
-#                data[field_name] = ','.join(data.getlist(field_name))
-#            except AttributeError:
-#                data[field_name] = ','.join(data[field_name])
-#        return super(MultiSelectField, self).field_from_native(data, files, field_name, into)
-#    
-#    def valid_value(self, value):
-#        """ checks for each item if is a valid value """
-#        for val in value.split(','):
-#            valid = super(MultiSelectField, self).valid_value(val)
-#            if not valid:
-#                return False
-#        return True

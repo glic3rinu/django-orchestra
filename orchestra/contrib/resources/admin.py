@@ -13,7 +13,7 @@ from django.shortcuts import redirect
 from django.templatetags.static import static
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
-from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
+from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import insertattr, get_modeladmin, admin_link, admin_date

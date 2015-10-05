@@ -45,4 +45,3 @@ class HasAddressListFilter(HasMailboxListFilter):
         elif self.value() == 'False':
             return queryset.filter(addresses__isnull=True)
         return queryset
-

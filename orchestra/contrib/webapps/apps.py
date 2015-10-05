@@ -8,6 +8,6 @@ class WebAppsConfig(AppConfig):
     verbose_name = 'Webapps'
     
     def ready(self):
-        from . import signals
         from .models import WebApp
         services.register(WebApp, icon='Applications-other.png')
+        from . import signals

@@ -91,8 +91,8 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
             )
         }
         context.update(extra_context or {})
-        return super(AccountAdmin, self).change_view(request, object_id,
-                form_url=form_url, extra_context=context)
+        return super(AccountAdmin, self).change_view(
+            request, object_id, form_url, context)
     
     def get_fieldsets(self, request, obj=None):
         fieldsets = super(AccountAdmin, self).get_fieldsets(request, obj)
@@ -233,11 +233,14 @@ class AccountAdminMixin(object):
             if self.account:
                 # Hack widget render in order to append ?account=id to the add url
                 old_render = formfield.widget.render
+                
                 def render(*args, **kwargs):
                     output = old_render(*args, **kwargs)
                     output = output.replace('/add/"', '/add/?account=%s"' % self.account.pk)
-                    output = re.sub(r'/add/\?([^".]*)"', r'/add/?\1&account=%s"' % self.account.pk, output)
+                    with_qargs = r'/add/?\1&account=%s"' % self.account.pk
+                    output = re.sub(r'/add/\?([^".]*)"', with_qargs, output)
                     return mark_safe(output)
+                
                 formfield.widget.render = render
                 # Filter related object by account
                 formfield.queryset = formfield.queryset.filter(account=self.account)
@@ -282,8 +285,8 @@ class AccountAdminMixin(object):
             'account_opts': Account._meta,
         }
         context.update(extra_context or {})
-        return super(AccountAdminMixin, self).changeform_view(request,
-                object_id=object_id, form_url=form_url, extra_context=context)
+        return super(AccountAdminMixin, self).changeform_view(
+            request, object_id, form_url=form_url, extra_context=context)
     
     def changelist_view(self, request, extra_context=None):
         account_id = request.GET.get('account')
@@ -318,7 +321,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
             account = self.account
         else:
             account = Account.objects.get(pk=request.GET['account'])
-        [ setattr(inline, 'account', account) for inline in inlines ]
+        [setattr(inline, 'account', account) for inline in inlines]
         return inlines
     
     def get_urls(self):
@@ -333,7 +336,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
                 wrap_admin_view(self, account_list),
                 name='%s_%s_select_account' % info),
         ]
-        return select_urls + urls 
+        return select_urls + urls
     
     def add_view(self, request, form_url='', extra_context=None):
         """ Redirects to select account view if required """
@@ -355,8 +358,8 @@ class SelectAccountAdminMixin(AccountAdminMixin):
                     'account_opts': Account._meta,
                 }
                 context.update(extra_context or {})
-                return super(AccountAdminMixin, self).add_view(request,
-                        form_url=form_url, extra_context=context)
+                return super(AccountAdminMixin, self).add_view(
+                    request, form_url=form_url, extra_context=context)
         return HttpResponseRedirect('./select-account/?%s' % request.META['QUERY_STRING'])
     
     def save_model(self, request, obj, form, change):

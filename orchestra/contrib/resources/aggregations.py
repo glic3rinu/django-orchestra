@@ -1,9 +1,7 @@
-import copy
 import datetime
 import decimal
 import itertools
 
-from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 

@@ -107,14 +107,11 @@ def OpenSSH(backend, log, server, cmds, async=False):
     log.save(update_fields=('script', 'state', 'updated_at'))
     if not cmds:
         return
-    channel = None
-    ssh = None
     try:
         ssh = sshrun(server.get_address(), script, executable=backend.script_executable,
             persist=True, async=async, silent=True)
         logger.debug('%s running on %s' % (backend, server))
         if async:
-            second = False
             for state in ssh:
                 log.stdout += state.stdout.decode('utf8')
                 log.stderr += state.stderr.decode('utf8')
@@ -148,7 +145,7 @@ def SSH(*args, **kwargs):
 def Python(backend, log, server, cmds, async=False):
     script = ''
     for cmd in cmds:
-        script += '# %s\n' % (str(cmd.func.__name__) + str(cmd.args))
+        script += '# %s %s\n' % (cmd.func.__name__, cmd.args)
         script += textwrap.dedent(''.join(inspect.getsourcelines(cmd.func)[0]))
     log.state = log.STARTED
     log.script = '\n'.join((log.script, script))
@@ -160,6 +157,8 @@ def Python(backend, log, server, cmds, async=False):
                 result = cmd(server)
             for line in stdout:
                 log.stdout += line + '\n'
+            if result:
+                log.stdout += '# Result: %s\n' % result
             if async:
                 log.save(update_fields=('stdout', 'updated_at'))
     except:

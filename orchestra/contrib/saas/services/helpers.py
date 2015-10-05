@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.websites.models import Website, WebsiteDirective, Content
-from orchestra.contrib.websites.utils import normurlpath
 from orchestra.contrib.websites.validators import validate_domain_protocol
 from orchestra.utils.python import AttrDict
 
@@ -55,7 +54,7 @@ def clean_custom_url(saas):
                     (url.netloc, account, domain.account),
             })
         # Create new website for custom_url
-        website = Website(name=url.netloc , protocol=protocol, account=account)
+        website = Website(name=url.netloc, protocol=protocol, account=account)
         full_clean(website)
         try:
             validate_domain_protocol(website, domain, protocol)
@@ -78,7 +77,8 @@ def clean_custom_url(saas):
                 Content.objects.filter(website=website).values_list('path', flat=True)
             )
             values = defaultdict(list)
-            for wdirective in WebsiteDirective.objects.filter(website=website).exclude(pk=directive.pk):
+            directives = WebsiteDirective.objects.filter(website=website)
+            for wdirective in directives.exclude(pk=directive.pk):
                 fdirective = AttrDict({
                     'name': wdirective.name,
                     'value': wdirective.value
@@ -110,7 +110,7 @@ def create_or_update_directive(saas):
         Domain = Website.domains.field.rel.to
         domain = Domain.objects.get(name=url.netloc)
         # Create new website for custom_url
-        website = Website(name=url.netloc , protocol=protocol, account=account)
+        website = Website(name=url.netloc, protocol=protocol, account=account)
         website.save()
         website.domains.add(domain)
     # get or create directive

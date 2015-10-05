@@ -41,8 +41,8 @@ source env-django-orchestra/bin/activate
 pip3 install django-orchestra==dev \
   --allow-external django-orchestra \
   --allow-unverified django-orchestra
-# The only non-pip required dependency for runing pip install is python3-dev
-#   sudo apt-get install python3.4-dev
+# The only non-pip required dependency for runing pip3 install is python3-dev
+sudo apt-get install python3-dev
 pip3 install -r http://git.io/orchestra-requirements.txt
 
 # Create a new Orchestra site

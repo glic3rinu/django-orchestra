@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.admin import helpers
-from django.contrib.admin.utils import NestedObjects, quote, model_ngettext
+from django.contrib.admin.utils import NestedObjects, quote
 from django.contrib.auth import get_permission_codename
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import router
@@ -77,7 +77,6 @@ def delete_related_services(modeladmin, request, queryset):
     related_services = []
     to_delete = []
     
-    user = request.user
     admin_site = modeladmin.admin_site
     
     def format(obj, account=False):
@@ -87,16 +86,14 @@ def delete_related_services(modeladmin, request, queryset):
         
         if has_admin:
             try:
-                admin_url = reverse('admin:%s_%s_change' % (opts.app_label, opts.model_name),
-                        None, (quote(obj._get_pk_val()),)
+                admin_url = reverse(
+                    'admin:%s_%s_change' % (opts.app_label, opts.model_name),
+                    None, (quote(obj._get_pk_val()),)
                 )
             except NoReverseMatch:
                 # Change url doesn't exist -- don't display link to edit
                 return no_edit_link
             
-            p = '%s.%s' % (opts.app_label, get_permission_codename('delete', opts))
-            if not user.has_perm(p):
-                perms_needed.add(opts.verbose_name)
             # Display a link to the admin page.
             context = (capfirst(opts.verbose_name), admin_url, obj)
             if account:

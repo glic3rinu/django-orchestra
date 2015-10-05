@@ -80,4 +80,3 @@ class AppType(plugins.Plugin):
             'user': self.instance.account.username,
             'home': self.instance.account.main_systemuser.get_home(),
         }
-

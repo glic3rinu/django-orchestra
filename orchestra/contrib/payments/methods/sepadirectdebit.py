@@ -298,4 +298,3 @@ class SEPADirectDebit(PaymentMethod):
                    pretty_print=True,
                    xml_declaration=True,
                    encoding='UTF-8')
-

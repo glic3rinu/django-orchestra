@@ -21,4 +21,3 @@ def remove_app(INSTALLED_APPS, app):
         apps.remove(app)
         return tuple(apps)
     return INSTALLED_APPS
-

@@ -38,4 +38,3 @@ def send_email_template(template, context, to, email_from=None, html=None, attac
         subject, html_message = render_email_template(html, context)
         msg.attach_alternative(html_message, "text/html")
     msg.send()
-

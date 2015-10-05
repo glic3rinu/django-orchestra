@@ -80,7 +80,7 @@ class Resource(models.Model):
         )
     
     def __str__(self):
-        return "{}-{}".format(str(self.content_type), self.name)
+        return "%s-%s" % (self.content_type, self.name)
     
     @cached_property
     def aggregation_class(self):
@@ -122,7 +122,7 @@ class Resource(models.Model):
     
     def sync_periodic_task(self, delete=False):
         """ sync periodic task on save/delete resource operations """
-        name = 'monitor.%s' % str(self)
+        name = 'monitor.%s' % self
         if delete or not self.crontab or not self.is_active:
             PeriodicTask.objects.filter(name=name).delete()
         elif self.pk:
@@ -196,7 +196,7 @@ class ResourceData(models.Model):
         verbose_name_plural = _("resource data")
     
     def __str__(self):
-        return "%s: %s" % (str(self.resource), str(self.content_object))
+        return "%s: %s" % (self.resource, self.content_object)
     
     @property
     def unit(self):

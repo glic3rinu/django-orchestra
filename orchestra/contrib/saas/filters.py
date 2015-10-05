@@ -18,4 +18,3 @@ class CustomURLListFilter(SimpleListFilter):
         elif self.value() == 'False':
             return queryset.filter(custom_url='')
         return queryset
-

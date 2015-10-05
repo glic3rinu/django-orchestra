@@ -7,4 +7,3 @@ def site(request):
         'ORCHESTRA_SITE_NAME': settings.ORCHESTRA_SITE_NAME,
         'ORCHESTRA_SITE_VERBOSE_NAME': settings.ORCHESTRA_SITE_VERBOSE_NAME
     }
-

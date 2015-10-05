@@ -33,4 +33,3 @@ class GitLabService(SoftwareService):
     change_readonly_fileds = ('email', 'user_id',)
     verbose_name = "GitLab"
     icon = 'orchestra/icons/apps/gitlab.png'
-

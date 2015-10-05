@@ -49,7 +49,7 @@ class SystemUserFormMixin(object):
                 } else {
                    field.removeClass("hidden");
                    input.removeAttr("type");
-                };""" % str(list(settings.SYSTEMUSERS_DISABLED_SHELLS))
+                };""" % list(settings.SYSTEMUSERS_DISABLED_SHELLS)
             )
         self.fields['home'].widget.attrs['onChange'] = textwrap.dedent("""\
             field = $(".field-box.field-directory");

@@ -1,11 +1,9 @@
 import io
 import zipfile
 from datetime import date
-from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.admin import helpers
-from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
@@ -17,7 +15,6 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 from orchestra.admin.forms import adminmodelformset_factory
 from orchestra.admin.decorators import action_with_confirmation
 from orchestra.admin.utils import get_object_from_url, change_url
-from orchestra.utils.html import html_to_pdf
 
 from . import settings
 from .forms import SelectSourceForm

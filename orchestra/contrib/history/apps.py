@@ -1,4 +1,3 @@
-from django import db
 from django.apps import AppConfig
 
 from orchestra.core import administration

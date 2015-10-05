@@ -54,4 +54,3 @@ class TicketStateListFilter(SimpleListFilter):
         choices = iter(super(TicketStateListFilter, self).choices(cl))
         next(choices)
         return choices
-

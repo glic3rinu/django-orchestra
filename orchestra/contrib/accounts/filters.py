@@ -37,5 +37,3 @@ class IsActiveListFilter(SimpleListFilter):
         elif self.value() == 'False':
             return queryset.filter(Q(is_active=False) | Q(account__is_active=False))
         return queryset
-
-

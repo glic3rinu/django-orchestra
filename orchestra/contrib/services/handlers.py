@@ -261,7 +261,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         elif len(dates) == 1:
             ini, end = dates[0], dates[0]
         else:
-            raise AttributeError("WTF is '%s'?" % str(dates))
+            raise AttributeError("WTF is '%s'?" % dates)
         discounts = discounts or ()
         
         size = self.get_price_size(ini, end)

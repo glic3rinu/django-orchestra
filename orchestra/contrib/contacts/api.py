@@ -13,4 +13,3 @@ class ContactViewSet(LogApiMixin, AccountApiMixin, viewsets.ModelViewSet):
 
 
 router.register(r'contacts', ContactViewSet)
-

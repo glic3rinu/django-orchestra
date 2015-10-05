@@ -59,7 +59,7 @@ class PHPAppOption(AppOption):
             php_version = self.instance.webapp.type_instance.get_php_version_number()
             if php_version and self.deprecated and float(php_version) > self.deprecated:
                 raise ValidationError(
-                    _("This option is deprecated since PHP version %s.") % str(self.deprecated)
+                    _("This option is deprecated since PHP version %s.") % self.deprecated
                 )
 
 

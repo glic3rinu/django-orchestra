@@ -8,7 +8,7 @@ from .options import SoftwareService
 
 
 class BSCWForm(SaaSPasswordForm):
-    email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size':'40'}))
+    email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size': '40'}))
 
 
 class BSCWDataSerializer(serializers.Serializer):

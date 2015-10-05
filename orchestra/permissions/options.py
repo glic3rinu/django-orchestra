@@ -104,4 +104,3 @@ class RelatedPermission(Permission):
                 setattr(call, name, func)
         
         return call
-

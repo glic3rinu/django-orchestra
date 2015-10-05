@@ -96,12 +96,12 @@ class Command(BaseCommand):
         if run("grep '^DATABASES\s*=\s*{' %(settings)s" % context, valid_codes=(0,1)).exit_code == 0:
             # Update existing settings_file
             run(textwrap.dedent("""sed -i \\
-                -e "s/'ENGINE':[^#]*/'ENGINE': 'django.db.backends.postgresql_psycopg2', /" \\
-                -e "s/'NAME':[^#]*/'NAME': '%(db_name)s', /" \\
-                -e "s/'USER':[^#]*/'USER': '%(db_user)s', /" \\
-                -e "s/'PASSWORD':[^#]*/'PASSWORD': '%(db_password)s', /" \\
-                -e "s/'HOST':[^#]*/'HOST': '%(db_host)s', /" \\
-                -e "s/'PORT':[^#]*/'PORT': '%(db_port)s', /" %(settings)s\
+                -e "s/'ENGINE':[^#]*/'ENGINE': 'django.db.backends.postgresql_psycopg2',  /" \\
+                -e "s/'NAME':[^#]*/'NAME': '%(db_name)s',  /" \\
+                -e "s/'USER':[^#]*/'USER': '%(db_user)s',  /" \\
+                -e "s/'PASSWORD':[^#]*/'PASSWORD': '%(db_password)s',  /" \\
+                -e "s/'HOST':[^#]*/'HOST': '%(db_host)s',  /" \\
+                -e "s/'PORT':[^#]*/'PORT': '%(db_port)s',  /" %(settings)s\
                 """) % context
             )
         else:

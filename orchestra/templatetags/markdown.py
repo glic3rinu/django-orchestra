@@ -8,4 +8,3 @@ register = template.Library()
 @register.filter(name='markdown')
 def do_markdown(text):
     return markdown(text)
-

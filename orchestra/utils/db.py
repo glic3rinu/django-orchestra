@@ -25,7 +25,7 @@ def close_connection(execute):
     def wrapper(*args, **kwargs):
         try:
             log = execute(*args, **kwargs)
-        except Exception as e:
+        except:
             raise
         else:
             wrapper.log = log

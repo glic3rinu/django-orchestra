@@ -34,7 +34,7 @@ class LogApiMixin(object):
     def partial_update(self, request, *args, **kwargs):
         from django.contrib.admin.models import CHANGE
         response = super(LogApiMixin, self).partial_update(request, *args, **kwargs)
-        message = _('Changed %s') % str(response.data)
+        message = _('Changed %s') % response.data
         self.log(request, message, CHANGE)
         return response
     

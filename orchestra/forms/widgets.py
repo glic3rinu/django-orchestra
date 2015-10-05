@@ -25,7 +25,7 @@ class SpanWidget(forms.Widget):
         # Display icon
         if isinstance(original, bool):
             icon = static('admin/img/icon-%s.gif' % ('yes' if original else 'no',))
-            return mark_safe('<img src="%s" alt="%s">' % (icon, str(display)))
+            return mark_safe('<img src="%s" alt="%s">' % (icon, display))
         tag = self.tag[:-1]
         endtag = '/'.join((self.tag[0], self.tag[1:]))
         return mark_safe('%s%s >%s%s' % (tag, forms.utils.flatatt(final_attrs), display, endtag))

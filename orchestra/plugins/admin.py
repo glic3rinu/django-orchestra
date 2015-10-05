@@ -115,7 +115,7 @@ class SelectPluginAdminMixin(object):
 def display_plugin_field(field_name):
     def inner(modeladmin, obj, field_name=field_name):
         try:
-            plugin_class = getattr(obj, '%s_class' % field_name)
+            getattr(obj, '%s_class' % field_name)
         except KeyError:
             value = getattr(obj, field_name)
             return "<span style='color:red;' title='Not available'>%s</span>" % value

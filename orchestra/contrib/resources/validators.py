@@ -7,5 +7,5 @@ def validate_scale(value):
         int(eval(value))
     except Exception as e:
         raise ValidationError(
-            _("'%s' is not a valid scale expression. (%s)") % (value, str(e))
+            _("'%s' is not a valid scale expression. (%s)") % (value, e)
         )

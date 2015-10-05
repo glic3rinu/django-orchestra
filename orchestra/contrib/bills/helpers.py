@@ -25,4 +25,3 @@ def validate_contact(request, bill, error=True):
         send(request, mark_safe(message))
         valid = False
     return valid
-

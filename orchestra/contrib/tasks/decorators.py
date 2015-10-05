@@ -29,13 +29,14 @@ def keep_state(fn):
             _task_id = get_id()
         if _name is None:
             _name = get_name(fn)
-        state = TaskState.objects.create(state=states.STARTED, task_id=_task_id, name=_name, args=str(args),
-            kwargs=str(kwargs), tstamp=now)
+        state = TaskState.objects.create(
+            state=states.STARTED, task_id=_task_id, name=_name,
+            args=str(args), kwargs=str(kwargs), tstamp=now)
         try:
             result = fn(*args, **kwargs)
         except:
             trace = traceback.format_exc()
-            subject = 'EXCEPTION executing task %s(args=%s, kwargs=%s)' % (_name, str(args), str(kwargs))
+            subject = 'EXCEPTION executing task %s(args=%s, kwargs=%s)' % (_name, args, kwargs)
             logger.error(subject)
             logger.error(trace)
             state.state = states.FAILURE

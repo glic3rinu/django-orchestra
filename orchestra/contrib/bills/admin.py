@@ -52,7 +52,7 @@ class BillLineInline(admin.TabularInline):
         if sublines:
             content = '\n'.join(['%s: %s' % (sub.description, sub.total) for sub in sublines])
             img = static('admin/img/icon_alert.gif')
-            return '<span title="%s">%s <img src="%s"></img></span>' % (content, str(total), img)
+            return '<span title="%s">%s <img src="%s"></img></span>' % (content, total, img)
         return total
     display_total.short_description = _("Total")
     display_total.allow_tags = True

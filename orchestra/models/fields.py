@@ -7,7 +7,6 @@ from django.db.models.fields.files import FileField, FieldFile
 from django.utils.text import capfirst
 
 from ..forms.fields import MultiSelectFormField
-from ..utils.apps import isinstalled
 
 
 class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):

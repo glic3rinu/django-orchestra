@@ -21,7 +21,7 @@ from ..utils.python import random_ascii, pairwise
 
 from .forms import AdminPasswordChangeForm
 #from django.contrib.auth.forms import AdminPasswordChangeForm
-from .utils import set_url_query, action_to_view
+from .utils import action_to_view
 
 
 sensitive_post_parameters_m = method_decorator(sensitive_post_parameters())

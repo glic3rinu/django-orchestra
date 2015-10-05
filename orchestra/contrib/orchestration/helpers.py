@@ -43,7 +43,7 @@ def get_backends_help_text(backends):
                 if isinstance(value, str):
                     help_settings.append("<tt>%s = '%s'</tt>" % (name, value))
                 else:
-                    help_settings.append("<tt>%s = %s</tt>" % (name, str(value)))
+                    help_settings.append("<tt>%s = %s</tt>" % (name, value))
         help_text += help_settings
         help_texts[backend.get_name()] = '<br>'.join(help_text)
     return help_texts
@@ -154,4 +154,3 @@ def message_user(request, logs):
     else:
         msg = async_msg.format(url=url, async_url=async_url, async=async)
         messages.success(request, mark_safe(msg + '.'))
-

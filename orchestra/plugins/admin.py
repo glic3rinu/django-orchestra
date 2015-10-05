@@ -15,8 +15,13 @@ class SelectPluginAdminMixin(object):
     
     def get_form(self, request, obj=None, **kwargs):
         if obj:
-            plugin = getattr(obj, '%s_instance' % self.plugin_field)
-            self.form = getattr(plugin, 'get_change_form', plugin.get_form)()
+            try:
+                plugin = getattr(obj, '%s_instance' % self.plugin_field)
+            except KeyError:
+                plugin_name = getattr(obj, self.plugin_field)
+                raise KeyError(_("Plugin '%s' is not available.") % plugin_name)
+            else:
+                self.form = getattr(plugin, 'get_change_form', plugin.get_form)()
         else:
             plugin = self.plugin.get(self.plugin_value)()
             self.form = plugin.get_form()
@@ -90,9 +95,12 @@ class SelectPluginAdminMixin(object):
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
         obj = self.get_object(request, unquote(object_id))
-        plugin = getattr(obj, '%s_class' % self.plugin_field)
+        try:
+            verbose = getattr(obj, '%s_class' % self.plugin_field).verbose_name
+        except KeyError:
+            raise KeyError(_("Plugin '%s' is not available.") % getattr(obj, self.plugin_field))
         context = {
-            'title': _("Change %s") % plugin.verbose_name,
+            'title': _("Change %s") % verbose,
         }
         context.update(extra_context or {})
         return super(SelectPluginAdminMixin, self).change_view(
@@ -102,3 +110,17 @@ class SelectPluginAdminMixin(object):
         if not change:
             setattr(obj, self.plugin_field, self.plugin_value)
         obj.save()
+
+
+def display_plugin_field(field_name):
+    def inner(modeladmin, obj, field_name=field_name):
+        try:
+            plugin_class = getattr(obj, '%s_class' % field_name)
+        except KeyError:
+            value = getattr(obj, field_name)
+            return "<span style='color:red;' title='Not available'>%s</span>" % value
+        return getattr(obj, 'get_%s_display' % field_name)()
+    inner.short_description = field_name
+    inner.admin_order_field = field_name
+    inner.allow_tags = True
+    return inner

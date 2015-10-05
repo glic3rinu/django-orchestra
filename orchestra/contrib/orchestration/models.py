@@ -1,3 +1,4 @@
+import logging
 import socket
 
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -10,10 +11,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core.validators import validate_ip_address, ValidationError
 from orchestra.models.fields import NullableCharField, MultiSelectField
-#from orchestra.utils.apps import autodiscover
 
 from . import settings
 from .backends import ServiceBackend
+
+
+logger = logging.getLogger(__name__)
 
 
 class Server(models.Model):
@@ -147,12 +150,17 @@ class RouteQuerySet(models.QuerySet):
         cache = kwargs.get('cache', {})
         if not cache:
             for route in self.filter(is_active=True).select_related('host'):
-                for action in route.backend_class.get_actions():
-                    key = (route.backend, action)
-                    try:
-                        cache[key].append(route)
-                    except KeyError:
-                        cache[key] = [route]
+                try:
+                    backend_class = route.backend_class
+                except KeyError:
+                    logger.warning("Backed '%s' not installed." % route.backend)
+                else:
+                    for action in backend_class.get_actions():
+                        key = (route.backend, action)
+                        try:
+                            cache[key].append(route)
+                        except KeyError:
+                            cache[key] = [route]
         routes = []
         backend_cls = operation.backend
         key = (backend_cls.get_name(), operation.action)
@@ -202,7 +210,13 @@ class Route(models.Model):
         if not self.match:
             self.match = 'True'
         if self.backend:
-            backend_model = self.backend_class.model_class()
+            try:
+                backend_class = self.backend_class
+            except KeyError:
+                raise ValidationError({
+                    'backend': _("Backend '%s' is not installed.") % self.backend
+                })
+            backend_model = backend_class.model_class()
             try:
                 obj = backend_model.objects.all()[0]
             except IndexError:

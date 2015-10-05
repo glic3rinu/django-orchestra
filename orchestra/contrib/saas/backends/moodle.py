@@ -14,12 +14,12 @@ class MoodleMuBackend(ServiceController):
     Creates a Moodle site on a Moodle multisite installation
     
     // config.php
+    // map custom domains to sites
     $site_map = array(
         // "<HTTP_HOST>" => ["<SITE_NAME>", "<WWWROOT>"],
     );
     
     $site = getenv("SITE");
-    $wwwroot = "https://{$site}-courses.pangea.org";
     if ( $site == '' ) {
         $http_host = $_SERVER['HTTP_HOST'];
         if (array_key_exists($http_host, $site_map)) {
@@ -32,7 +32,16 @@ class MoodleMuBackend(ServiceController):
             $site = array_shift((explode(".", $http_host)));
             $wwwroot = "https://{$site}-courses.pangea.org";
         }
+    } else {
+        $wwwroot = "https://{$site}-courses.pangea.org";
+        foreach ($site_map as $key => $value) {
+            if ($value[0] == $site) {
+                $wwwroot = $value[1];
+                break;
+            }
+        }
     }
+    
     $prefix = str_replace('-', '_', $site);
     $CFG->prefix    = "${prefix}_";
     $CFG->wwwroot   = $wwwroot;

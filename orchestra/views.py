@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.contrib.admin.util import unquote
+from django.contrib.admin.utils import unquote
 from django.core.exceptions import PermissionDenied
 from django.db.models import get_model
 from django.shortcuts import get_object_or_404

@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, admin_date, admin_colored, display_mono, display_code
+from orchestra.plugins.admin import display_plugin_field
 
 from . import settings, helpers
 from .backends import ServiceBackend
@@ -27,7 +28,8 @@ STATE_COLORS = {
 
 class RouteAdmin(ExtendedModelAdmin):
     list_display = (
-        'backend', 'host', 'match', 'display_model', 'display_actions', 'async', 'is_active'
+        'display_backend', 'host', 'match', 'display_model', 'display_actions', 'async',
+        'is_active'
     )
     list_editable = ('host', 'match', 'async', 'is_active')
     list_filter = ('host', 'is_active', 'async', 'backend')
@@ -40,6 +42,8 @@ class RouteAdmin(ExtendedModelAdmin):
     DEFAULT_MATCH = {
         backend.get_name(): backend.default_route_match for backend in ServiceBackend.get_backends()
     }
+    
+    display_backend = display_plugin_field('backend')
     
     def display_model(self, route):
         try:
@@ -60,7 +64,8 @@ class RouteAdmin(ExtendedModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Provides dynamic help text on backend form field """
         if db_field.name == 'backend':
-            kwargs['widget'] = RouteBackendSelect('this.id', self.BACKEND_HELP_TEXT, self.DEFAULT_MATCH)
+            kwargs['widget'] = RouteBackendSelect(
+                'this.id', self.BACKEND_HELP_TEXT, self.DEFAULT_MATCH)
         field =  super(RouteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
         if db_field.name == 'host':
             # Cache host choices
@@ -70,7 +75,6 @@ class RouteAdmin(ExtendedModelAdmin):
                 request._host_choices_cache = choices = list(field.choices)
             field.choices = choices
         return field
-
     
     def get_form(self, request, obj=None, **kwargs):
         """ Include dynamic help text for existing objects """

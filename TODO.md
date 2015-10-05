@@ -414,3 +414,5 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # warnings if some plugins are disabled, like make routes red
 
 # replace show emails by https://docs.python.org/3/library/email.contentmanager.html#module-email.contentmanager
+
+# SElect contact list breadcrumbs

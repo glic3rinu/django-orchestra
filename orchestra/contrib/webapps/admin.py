@@ -9,7 +9,7 @@ from orchestra.admin.utils import change_url, get_modeladmin
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
-from orchestra.plugins.admin import SelectPluginAdminMixin
+from orchestra.plugins.admin import SelectPluginAdminMixin, display_plugin_field
 from orchestra.utils.html import get_on_site_link
 
 from .filters import HasWebsiteListFilter, PHPVersionListFilter
@@ -50,7 +50,7 @@ class WebAppOptionInline(admin.TabularInline):
 
 
 class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('name', 'type', 'display_detail', 'display_websites', 'account_link')
+    list_display = ('name', 'display_type', 'display_detail', 'display_websites', 'account_link')
     list_filter = ('type', HasWebsiteListFilter, PHPVersionListFilter)
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link', )
@@ -61,6 +61,8 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     plugin_field = 'type'
     plugin_title = _("Web application type")
     actions = (list_accounts,)
+    
+    display_type = display_plugin_field('type')
     
     def display_websites(self, webapp):
         websites = []
@@ -81,8 +83,12 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     display_websites.allow_tags = True
     
     def display_detail(self, webapp):
-        return webapp.type_instance.get_detail()
+        try:
+            return webapp.type_instance.get_detail()
+        except KeyError:
+            return "<span style='color:red;'>Not available</span>"
     display_detail.short_description = _("detail")
+    display_detail.allow_tags = True
     
 #    def get_form(self, request, obj=None, **kwargs):
 #        form = super(WebAppAdmin, self).get_form(request, obj, **kwargs)

@@ -124,10 +124,19 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         search_term = search_term.replace('@', ' ')
         return super(MailboxAdmin, self).get_search_results(request, queryset, search_term)
     
-    def render_change_form(self, request, context, *args, **kwargs):
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        if not add:
+            self.check_unrelated_address(request, obj)
+        return super(MailboxAdmin, self).render_change_form(
+            request, context, add, change, form_url, obj)
+    
+    def log_addition(self, request, object):
+        self.check_unrelated_address(request, object)
+        return super(MailboxAdmin, self).log_addition(request, object)
+    
+    def check_unrelated_address(self, request, obj):
         # Check if there exists an unrelated local Address for this mbox
         local_domain = settings.MAILBOXES_LOCAL_DOMAIN
-        obj = kwargs['obj']
         if local_domain and obj.name:
             non_mbox_addresses = Address.objects.exclude(mailboxes__name=obj.name).exclude(
                 forward__regex=r'.*(^|\s)+%s($|\s)+.*' % obj.name)
@@ -137,11 +146,14 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
                 pass
             else:
                 url = reverse('admin:mailboxes_address_change', args=(addr.pk,))
-                msg = _("Address <a href='{url}'>{addr}</a> clashes with this mailbox "
-                        "local address. Consider adding this mailbox to the address.").format(
-                    url=url, addr=addr)
-                self.message_user(request, mark_safe(msg), level=messages.WARNING)
-        return super(MailboxAdmin, self).render_change_form(request, context, *args, **kwargs)
+                msg = mark_safe(
+                    _("Address <a href='{url}'>{addr}</a> clashes with '{mailbox}' mailbox "
+                      "local address. Consider adding this mailbox to the address.").format(
+                      mailbox=obj.name, url=url, addr=addr)
+                )
+                # Prevent duplication (add_view+continue)
+                if msg not in (m.message for m in messages.get_messages(request)):
+                    self.message_user(request, msg, level=messages.WARNING)
     
     def save_model(self, request, obj, form, change):
         """ save hacky mailbox.addresses and local domain clashing """

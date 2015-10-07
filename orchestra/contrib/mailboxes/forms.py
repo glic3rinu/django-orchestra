@@ -57,7 +57,7 @@ class MailboxForm(forms.ModelForm):
             else:
                 if addr not in cleaned_data.get('addresses', []):
                     raise ValidationError({
-                        'addresses': _("This mailbox matches local address '%s', "
+                        'addresses': _("This mailbox local address matche '%s', "
                                        "please make explicit this fact by selecting it.") % addr
                     })
         return cleaned_data
@@ -98,7 +98,7 @@ class AddressForm(forms.ModelForm):
                     if mailbox.name == name:
                         return
                 raise ValidationError(
-                    _("This address matches mailbox '%s', please make explicit this fact "
-                      "by adding the mailbox on the mailboxes or forward field.") % name
+                    _("This address matches mailbox '%s' local address, please make explicit "
+                      "this fact by adding the mailbox on the mailboxes or forward field.") % name
                 )
         return cleaned_data

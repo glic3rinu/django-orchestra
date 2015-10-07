@@ -333,7 +333,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
         info = opts.app_label, opts.model_name
         account_list = AccountListAdmin(Account, admin_site).changelist_view
         select_urls = [
-            url("/select-account/$",
+            url("add/select-account/$",
                 wrap_admin_view(self, account_list),
                 name='%s_%s_select_account' % info),
         ]
@@ -355,6 +355,7 @@ class SelectAccountAdminMixin(AccountAdminMixin):
                 context = {
                     'title': _("Add %s for %s") % (opts.verbose_name, self.account.username),
                     'from_account': bool(from_account_id),
+                    'from_select': True,
                     'account': self.account,
                     'account_opts': Account._meta,
                 }

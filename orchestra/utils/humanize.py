@@ -86,15 +86,15 @@ def naturaldate(date):
     delta_midnight = today - date
     
     count = 0
-    for chunk, pluralizefun in OLDER_CHUNKS:
+    for chunk, units in OLDER_CHUNKS:
         if days < 7.0:
             count = days
-            fmt = pluralize_day(count)
+            fmt = verbose_time(count, 'days')
             return fmt.format(num=count, ago=ago)
         if days >= chunk:
             count = (delta_midnight.days + 1) / chunk
             count = abs(count)
-            fmt = pluralizefun(count)
+            fmt = verbose_time(count, units)
             return fmt.format(num=count, ago=ago)
 
 

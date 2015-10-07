@@ -186,12 +186,6 @@ MAILBOXES_MAILDIRSIZE_PATH = Setting('MAILBOXES_MAILDIRSIZE_PATH',
 )
 
 
-MAILBOXES_LOCAL_ADDRESS_DOMAIN = Setting('MAILBOXES_LOCAL_ADDRESS_DOMAIN',
-    ORCHESTRA_BASE_DOMAIN,
-    validators=[validate_name],
-    help_text="Defaults to <tt>ORCHESTRA_BASE_DOMAIN</tt>."
-)
-
 
 MAILBOXES_MAIL_LOG_PATH = Setting('MAILBOXES_MAIL_LOG_PATH',
     '/var/log/mail.log'

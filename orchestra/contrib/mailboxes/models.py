@@ -1,4 +1,5 @@
 import os
+import re
 from collections import defaultdict
 
 from django.contrib.auth.hashers import make_password
@@ -72,9 +73,9 @@ class Mailbox(models.Model):
         return (name, content)
     
     def get_local_address(self):
-        if not settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
+        if not settings.MAILBOXES_LOCAL_DOMAIN:
             raise AttributeError("Mailboxes do not have a defined local address domain.")
-        return '@'.join((self.name, settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN))
+        return '@'.join((self.name, settings.MAILBOXES_LOCAL_DOMAIN))
 
 
 class Address(models.Model):
@@ -136,7 +137,9 @@ class Address(models.Model):
             raise ValidationError(errors)
     
     def get_forward_mailboxes(self):
+        rm_local_domain = re.compile(r'@%s$' % settings.MAILBOXES_LOCAL_DOMAIN)
         for forward in self.forward.split():
+            forward = rm_local_domain.sub('', forward)
             if '@' not in forward:
                 try:
                     yield Mailbox.objects.get(name=forward)

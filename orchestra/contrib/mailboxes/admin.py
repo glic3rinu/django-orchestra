@@ -76,7 +76,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     
     def __init__(self, *args, **kwargs):
         super(MailboxAdmin, self).__init__(*args, **kwargs)
-        if settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
+        if settings.MAILBOXES_LOCAL_DOMAIN:
             type(self).actions = self.actions + (SendMailboxEmail(),)
     
     def display_addresses(self, mailbox):

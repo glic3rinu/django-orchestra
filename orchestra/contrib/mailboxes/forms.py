@@ -51,7 +51,8 @@ class MailboxForm(forms.ModelForm):
         local_domain = settings.MAILBOXES_LOCAL_DOMAIN
         if name and local_domain:
             try:
-                addr = Address.objects.get(name=name, domain__name=local_domain, account_id=self.modeladmin.account.pk)
+                addr = Address.objects.get(
+                    name=name, domain__name=local_domain, account_id=self.modeladmin.account.pk)
             except Address.DoesNotExist:
                 pass
             else:

@@ -412,4 +412,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # warnings if some plugins are disabled, like make routes red
 # replace show emails by https://docs.python.org/3/library/email.contentmanager.html#module-email.contentmanager
 
-# put addressform.clean on model.clean and search for other places?
+
+
+# setupforbiddendomains --url alexa -n 5000

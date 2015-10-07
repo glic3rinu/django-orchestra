@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 
 from django.contrib.auth.hashers import make_password
 from django.core.validators import RegexValidator, ValidationError
@@ -59,24 +60,16 @@ class Mailbox(models.Model):
     def clean(self):
         if self.custom_filtering and self.filtering != self.CUSTOM:
             self.custom_filtering = ''
+        elif self.filtering == self.CUSTOM and not self.custom_filtering:
+            raise ValidationError({
+                'custom_filtering': _("Custom filtering is selected but not provided.")
+            })
     
     def get_filtering(self):
         name, content = settings.MAILBOXES_MAILBOX_FILTERINGS[self.filtering]
         if callable(content):
             content = content(self)
         return (name, content)
-    
-    def delete(self, *args, **kwargs):
-        super(Mailbox, self).delete(*args, **kwargs)
-        # Cleanup related addresses
-        for address in Address.objects.filter(forward__regex=r'.*(^|\s)+%s($|\s)+.*' % self.name):
-            forward = address.forward.split()
-            forward.remove(self.name)
-            address.forward = ' '.join(forward)
-            if not address.destination:
-                address.delete()
-            else:
-                address.save()
     
     def get_local_address(self):
         if not settings.MAILBOXES_LOCAL_ADDRESS_DOMAIN:
@@ -117,17 +110,30 @@ class Address(models.Model):
         return ' '.join(destinations)
     
     def clean(self):
+        errors = defaultdict(list)
+        local_domain = settings.MAILBOXES_LOCAL_DOMAIN
+        if local_domain:
+            forwards = self.forward.split()
+            for ix, forward in enumerate(forwards):
+                if forward.endswith('@%s' % local_domain):
+                    name = forward.split('@')[0]
+                    if Mailbox.objects.filter(name=name).exists():
+                        forwards[ix] = name
+            self.forward = ' '.join(forwards)
         if self.account_id:
-            forward_errors = []
             for mailbox in self.get_forward_mailboxes():
                 if mailbox.account_id == self.account_id:
-                    forward_errors.append(ValidationError(
+                    errors['forward'].append(
                         _("Please use mailboxes field for '%s' mailbox.") % mailbox
-                    ))
-            if forward_errors:
-                raise ValidationError({
-                    'forward': forward_errors
-                })
+                    )
+        if self.domain:
+            for forward in self.forward.split():
+                if self.email == forward:
+                    errors['forward'].append(
+                        _("'%s' forwards to itself.") % forward
+                    )
+        if errors:
+            raise ValidationError(errors)
     
     def get_forward_mailboxes(self):
         for forward in self.forward.split():

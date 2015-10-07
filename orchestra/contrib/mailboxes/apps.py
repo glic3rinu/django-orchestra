@@ -11,3 +11,4 @@ class MailboxesConfig(AppConfig):
         from .models import Mailbox, Address
         services.register(Mailbox, icon='email.png')
         services.register(Address, icon='X-office-address-book.png')
+        from . import signals

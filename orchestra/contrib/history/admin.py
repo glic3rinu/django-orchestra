@@ -82,19 +82,16 @@ class LogEntryAdmin(admin.ModelAdmin):
     content_object_link.admin_order_field = 'object_repr'
     content_object_link.allow_tags = True
     
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         """ Add rel_opts and object to context """
-        context = {}
-        if 'edit' in request.GET.urlencode():
-            obj = self.get_object(request, unquote(object_id))
-            context = {
+        if not add and 'edit' in request.GET.urlencode():
+            context.update({
                 'rel_opts': obj.content_type.model_class()._meta,
                 'object': obj,
-            }
-        context.update(extra_context or {})
-        return super(LogEntryAdmin, self).changeform_view(
-            request, object_id, form_url, extra_context=context)
-
+            })
+        return super(LogEntryAdmin, self).render_change_form(
+            request, context, add, change, form_url, obj)
+    
     def response_change(self, request, obj):
         """ save and continue preserve edit query string """
         response = super(LogEntryAdmin, self).response_change(request, obj)

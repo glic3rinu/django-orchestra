@@ -187,8 +187,6 @@ https://code.djangoproject.com/ticket/24576
 # FIXME what to do when deleting accounts? set fk null and fill a username charfield? issues, invoices.. we whant all this to go away?
 * implement delete All related services
 
-# FIXME address name change does not remove old one :P, readonly or perhaps we can regenerate all addresses using backend.prepare()?
-
 * read https://docs.djangoproject.com/en/dev/releases/1.8/ and fix deprecation warnings
 
 * create nice fieldsets for SaaS, WebApp types and services, and helptexts too!
@@ -412,7 +410,6 @@ http://makandracards.com/makandra/24933-chrome-34+-firefox-38+-ie11+-ignore-auto
 mkhomedir_helper or create ssh homes with bash.rc and such
 
 # warnings if some plugins are disabled, like make routes red
-
 # replace show emails by https://docs.python.org/3/library/email.contentmanager.html#module-email.contentmanager
 
-# SElect contact list breadcrumbs
+# put addressform.clean on model.clean and search for other places?

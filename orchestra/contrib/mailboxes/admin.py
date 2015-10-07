@@ -2,9 +2,11 @@ import copy
 from urllib.parse import parse_qs
 
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.core.urlresolvers import reverse
 from django.db.models import F, Value as V
 from django.db.models.functions import Concat
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
@@ -122,8 +124,27 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         search_term = search_term.replace('@', ' ')
         return super(MailboxAdmin, self).get_search_results(request, queryset, search_term)
     
+    def render_change_form(self, request, context, *args, **kwargs):
+        # Check if there exists an unrelated local Address for this mbox
+        local_domain = settings.MAILBOXES_LOCAL_DOMAIN
+        obj = kwargs['obj']
+        if local_domain and obj.name:
+            non_mbox_addresses = Address.objects.exclude(mailboxes__name=obj.name).exclude(
+                forward__regex=r'.*(^|\s)+%s($|\s)+.*' % obj.name)
+            try:
+                addr = non_mbox_addresses.get(name=obj.name, domain__name=local_domain)
+            except Address.DoesNotExist:
+                pass
+            else:
+                url = reverse('admin:mailboxes_address_change', args=(addr.pk,))
+                msg = _("Address <a href='{url}'>{addr}</a> clashes with this mailbox "
+                        "local address. Consider adding this mailbox to the address.").format(
+                    url=url, addr=addr)
+                self.message_user(request, mark_safe(msg), level=messages.WARNING)
+        return super(MailboxAdmin, self).render_change_form(request, context, *args, **kwargs)
+    
     def save_model(self, request, obj, form, change):
-        """ save hacky mailbox.addresses """
+        """ save hacky mailbox.addresses and local domain clashing """
         super(MailboxAdmin, self).save_model(request, obj, form, change)
         obj.addresses = form.cleaned_data['addresses']
 

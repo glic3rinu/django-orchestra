@@ -10,7 +10,7 @@ from orchestra.contrib.orchestration import ServiceController
 from orchestra.contrib.resources import ServiceMonitor
 
 from . import settings
-from .models import Address
+from .models import Address, Mailbox
 
 
 logger = logging.getLogger(__name__)
@@ -137,97 +137,97 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         return context
 
 
-class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceController):
-    """
-    WARNING: This backends is not fully implemented
-    """
-    DEFAULT_GROUP = 'postfix'
-    
-    verbose_name = _("Dovecot-Postfix virtualuser")
-    model = 'mailboxes.Mailbox'
-    
-    def set_user(self, context):
-        self.append(textwrap.dedent("""
-            if grep '^%(user)s:' %(passwd_path)s > /dev/null ; then
-               sed -i 's#^%(user)s:.*#%(passwd)s#' %(passwd_path)s
-            else
-               echo '%(passwd)s' >> %(passwd_path)s
-            fi""") % context
-        )
-        self.append("mkdir -p %(home)s" % context)
-        self.append("chown %(uid)s:%(gid)s %(home)s" % context)
-    
-    def set_mailbox(self, context):
-        self.append(textwrap.dedent("""
-            if ! grep '^%(user)s@%(mailbox_domain)s\s' %(virtual_mailbox_maps)s > /dev/null; then
-                echo "%(user)s@%(mailbox_domain)s\tOK" >> %(virtual_mailbox_maps)s
-                UPDATED_VIRTUAL_MAILBOX_MAPS=1
-            fi""") % context
-        )
-    
-    def save(self, mailbox):
-        context = self.get_context(mailbox)
-        self.set_user(context)
-        self.set_mailbox(context)
-        self.generate_filter(mailbox, context)
-    
-    def delete(self, mailbox):
-        context = self.get_context(mailbox)
-        self.append(textwrap.dedent("""
-            nohup bash -c 'sleep 2 && killall -u %(uid)s -s KILL' &> /dev/null &
-            killall -u %(uid)s || true
-            sed -i '/^%(user)s:.*/d' %(passwd_path)s
-            sed -i '/^%(user)s@%(mailbox_domain)s\s.*/d' %(virtual_mailbox_maps)s
-            UPDATED_VIRTUAL_MAILBOX_MAPS=1""") % context
-        )
-        if context['deleted_home']:
-            self.append("mv %(home)s %(deleted_home)s || exit_code=$?" % context)
-        else:
-            self.append("rm -fr %(home)s" % context)
-    
-    def get_extra_fields(self, mailbox, context):
-        context['quota'] = self.get_quota(mailbox)
-        return 'userdb_mail=maildir:~/Maildir {quota}'.format(**context)
-    
-    def get_quota(self, mailbox):
-        try:
-            quota = mailbox.resources.disk.allocated
-        except (AttributeError, ObjectDoesNotExist):
-            return ''
-        unit = mailbox.resources.disk.unit[0].upper()
-        return 'userdb_quota_rule=*:bytes=%i%s' % (quota, unit)
-    
-    def commit(self):
-        context = {
-            'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH
-        }
-        self.append(textwrap.dedent("""
-            [[ $UPDATED_VIRTUAL_MAILBOX_MAPS == 1 ]] && {
-                postmap %(virtual_mailbox_maps)s
-            }""") % context
-        )
-    
-    def get_context(self, mailbox):
-        context = {
-            'name': mailbox.name,
-            'user': mailbox.name,
-            'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
-            'uid': 10000 + mailbox.pk,
-            'gid': 10000 + mailbox.pk,
-            'group': self.DEFAULT_GROUP,
-            'quota': self.get_quota(mailbox),
-            'passwd_path': settings.MAILBOXES_PASSWD_PATH,
-            'home': mailbox.get_home(),
-            'banner': self.get_banner(),
-            'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH,
-            'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
-        }
-        context['extra_fields'] = self.get_extra_fields(mailbox, context)
-        context.update({
-            'passwd': '{user}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context),
-            'deleted_home': settings.MAILBOXES_MOVE_ON_DELETE_PATH % context,
-        })
-        return context
+#class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceController):
+#    """
+#    WARNING: This backends is not fully implemented
+#    """
+#    DEFAULT_GROUP = 'postfix'
+#    
+#    verbose_name = _("Dovecot-Postfix virtualuser")
+#    model = 'mailboxes.Mailbox'
+#    
+#    def set_user(self, context):
+#        self.append(textwrap.dedent("""
+#            if grep '^%(user)s:' %(passwd_path)s > /dev/null ; then
+#               sed -i 's#^%(user)s:.*#%(passwd)s#' %(passwd_path)s
+#            else
+#               echo '%(passwd)s' >> %(passwd_path)s
+#            fi""") % context
+#        )
+#        self.append("mkdir -p %(home)s" % context)
+#        self.append("chown %(uid)s:%(gid)s %(home)s" % context)
+#    
+#    def set_mailbox(self, context):
+#        self.append(textwrap.dedent("""
+#            if ! grep '^%(user)s@%(mailbox_domain)s\s' %(virtual_mailbox_maps)s > /dev/null; then
+#                echo "%(user)s@%(mailbox_domain)s\tOK" >> %(virtual_mailbox_maps)s
+#                UPDATED_VIRTUAL_MAILBOX_MAPS=1
+#            fi""") % context
+#        )
+#    
+#    def save(self, mailbox):
+#        context = self.get_context(mailbox)
+#        self.set_user(context)
+#        self.set_mailbox(context)
+#        self.generate_filter(mailbox, context)
+#    
+#    def delete(self, mailbox):
+#        context = self.get_context(mailbox)
+#        self.append(textwrap.dedent("""
+#            nohup bash -c 'sleep 2 && killall -u %(uid)s -s KILL' &> /dev/null &
+#            killall -u %(uid)s || true
+#            sed -i '/^%(user)s:.*/d' %(passwd_path)s
+#            sed -i '/^%(user)s@%(mailbox_domain)s\s.*/d' %(virtual_mailbox_maps)s
+#            UPDATED_VIRTUAL_MAILBOX_MAPS=1""") % context
+#        )
+#        if context['deleted_home']:
+#            self.append("mv %(home)s %(deleted_home)s || exit_code=$?" % context)
+#        else:
+#            self.append("rm -fr %(home)s" % context)
+#    
+#    def get_extra_fields(self, mailbox, context):
+#        context['quota'] = self.get_quota(mailbox)
+#        return 'userdb_mail=maildir:~/Maildir {quota}'.format(**context)
+#    
+#    def get_quota(self, mailbox):
+#        try:
+#            quota = mailbox.resources.disk.allocated
+#        except (AttributeError, ObjectDoesNotExist):
+#            return ''
+#        unit = mailbox.resources.disk.unit[0].upper()
+#        return 'userdb_quota_rule=*:bytes=%i%s' % (quota, unit)
+#    
+#    def commit(self):
+#        context = {
+#            'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH
+#        }
+#        self.append(textwrap.dedent("""
+#            [[ $UPDATED_VIRTUAL_MAILBOX_MAPS == 1 ]] && {
+#                postmap %(virtual_mailbox_maps)s
+#            }""") % context
+#        )
+#    
+#    def get_context(self, mailbox):
+#        context = {
+#            'name': mailbox.name,
+#            'user': mailbox.name,
+#            'password': mailbox.password if mailbox.active else '*%s' % mailbox.password,
+#            'uid': 10000 + mailbox.pk,
+#            'gid': 10000 + mailbox.pk,
+#            'group': self.DEFAULT_GROUP,
+#            'quota': self.get_quota(mailbox),
+#            'passwd_path': settings.MAILBOXES_PASSWD_PATH,
+#            'home': mailbox.get_home(),
+#            'banner': self.get_banner(),
+#            'virtual_mailbox_maps': settings.MAILBOXES_VIRTUAL_MAILBOX_MAPS_PATH,
+#            'mailbox_domain': settings.MAILBOXES_VIRTUAL_MAILBOX_DEFAULT_DOMAIN,
+#        }
+#        context['extra_fields'] = self.get_extra_fields(mailbox, context)
+#        context.update({
+#            'passwd': '{user}:{password}:{uid}:{gid}::{home}::{extra_fields}'.format(**context),
+#            'deleted_home': settings.MAILBOXES_MOVE_ON_DELETE_PATH % context,
+#        })
+#        return context
 
 
 class PostfixAddressVirtualDomainBackend(ServiceController):
@@ -301,6 +301,7 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
     def get_context(self, address):
         context = self.get_context_files()
         context.update({
+            'name': address.name,
             'domain': address.domain,
             'email': address.email,
             'local_domain': settings.MAILBOXES_LOCAL_DOMAIN,
@@ -319,10 +320,19 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
         'MAILBOXES_VIRTUAL_ALIAS_MAPS_PATH'
     ))
     
+    def is_implicit_entry(self, context):
+        """
+        check if virtual_alias_map entry can be omitted because the address is
+        equivalent to its local mbox
+        """
+        return bool(
+            context['domain'].name == context['local_domain'] and
+            context['destination'] == context['name'] and
+            Mailbox.objects.filter(name=context['name']).exists())
+    
     def update_virtual_alias_maps(self, address, context):
-        destination = address.destination
-        if destination:
-            context['destination'] = destination
+        context['destination'] = address.destination
+        if not self.is_implicit_entry(context):
             self.append(textwrap.dedent("""
                 # Set virtual alias entry for %(email)s
                 LINE='%(email)s\t%(destination)s'
@@ -338,7 +348,12 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
                     fi
                 fi""") % context)
         else:
-            logger.warning("Address %i is empty" % address.pk)
+            if not context['destination']:
+                msg = "Address %i is empty" % address.pk
+                self.append("\necho 'msg' >&2" % msg)
+                logger.warning(msg)
+            else:
+                self.append("\n# %(email)s %(destination)s entry is redundant" % context)
             self.exclude_virtual_alias_maps(context)
         # Virtual mailbox stuff
 #        destination = []
@@ -350,7 +365,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
 #                destination.append(forward)
     
     def exclude_virtual_alias_maps(self, context):
-        self.append(textwrap.dedent("""
+        self.append(textwrap.dedent("""\
             # Remove %(email)s virtual alias entry
             if grep '^%(email)s\s' %(virtual_alias_maps)s > /dev/null; then
                 sed -i '/^%(email)s\s/d' %(virtual_alias_maps)s

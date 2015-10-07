@@ -76,24 +76,22 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 4})
         return super(AccountAdmin, self).formfield_for_dbfield(db_field, **kwargs)
     
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        if request.method == 'GET':
-            account = self.get_object(request, unquote(object_id))
-            if not account.is_active:
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        if not add:
+            if request.method == 'GET' and not obj.is_active:
                 messages.warning(request, 'This account is disabled.')
-        context = {
-            'services': sorted(
-                [model._meta for model in services.get() if model is not Account],
-                key=lambda i: i.verbose_name_plural.lower()
-            ),
-            'accounts': sorted(
-                [model._meta for model in accounts.get() if model is not Account],
-                key=lambda i: i.verbose_name_plural.lower()
-            )
-        }
-        context.update(extra_context or {})
-        return super(AccountAdmin, self).change_view(
-            request, object_id, form_url=form_url, extra_context=context)
+            context.update({
+                'services': sorted(
+                    [model._meta for model in services.get() if model is not Account],
+                    key=lambda i: i.verbose_name_plural.lower()
+                ),
+                'accounts': sorted(
+                    [model._meta for model in accounts.get() if model is not Account],
+                    key=lambda i: i.verbose_name_plural.lower()
+                )
+            })
+        return super(AccountAdmin, self).render_change_form(
+            request, context, add, change, form_url, obj)
     
     def get_fieldsets(self, request, obj=None):
         fieldsets = super(AccountAdmin, self).get_fieldsets(request, obj)

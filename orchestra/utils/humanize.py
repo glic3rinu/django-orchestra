@@ -4,34 +4,19 @@ from django.utils import timezone
 from django.utils.translation import ungettext, ugettext as _
 
 
-def pluralize_year(n):
+def verbose_time(n, units):
+    if n >= 5:
+        return _("{n} {units} ago").format(n=int(n), units=units)
     return ungettext(
-        _('{num:.1f} year{ago}'),
-        _('{num:.1f} years{ago}'), n)
-
-
-def pluralize_month(n):
-    return ungettext(
-        _('{num:.1f} month{ago}'),
-        _('{num:.1f} months{ago}'), n)
-
-
-def pluralize_week(n):
-    return ungettext(
-        _('{num:.1f} week{ago}'),
-        _('{num:.1f} weeks {ago}'), n)
-
-
-def pluralize_day(n):
-    return ungettext(
-        _('{num:.1f} day{ago}'),
-        _('{num:.1f} days{ago}'), n)
+        _("{n:.1f} {s_units} ago"),
+        _("{n:.1f} {units} ago"), n
+    ).format(n=n, units=units, s_units=units[:-1])
 
 
 OLDER_CHUNKS = (
-    (365.0, pluralize_year),
-    (30.0, pluralize_month),
-    (7.0, pluralize_week),
+    (365.0, 'years'),
+    (30.0, 'months'),
+    (7.0, 'weeks'),
 )
 
 
@@ -52,50 +37,34 @@ def naturaldatetime(date, show_seconds=False):
     delta_midnight = today - date
     
     days = delta.days
-    hours = int(round(delta.seconds / 3600, 0))
-    minutes = delta.seconds / 60
+    hours = float(delta.seconds) / 3600
+    minutes = float(delta.seconds) / 60
     seconds = delta.seconds
     
-    ago = " ago"
-    if days < 0:
-        ago = ""
     days = abs(days)
     
     if days == 0:
-        if hours == 0:
+        if int(hours) == 0:
             if minutes >= 1 or not show_seconds:
-                minutes = float(seconds)/60
-                return ungettext(
-                    _("{minutes:.1f} minute{ago}"),
-                    _("{minutes:.1f} minutes{ago}"), minutes
-                ).format(minutes=minutes, ago=ago)
+                return verbose_time(minutes, 'minutes')
             else:
-                return ungettext(
-                    _("{seconds} second{ago}"),
-                    _("{seconds} seconds{ago}"), seconds
-                ).format(seconds=seconds, ago=ago)
+                return verbose_time(seconds, 'seconds')
         else:
-            hours = float(minutes)/60
-            return ungettext(
-                _("{hours:.1f} hour{ago}"),
-                _("{hours:.1f} hours{ago}"), hours
-            ).format(hours=hours, ago=ago)
+            return verbose_time(hours, 'hours')
     
     if delta_midnight.days == 0:
         date = timezone.localtime(date)
         return _("yesterday at {time}").format(time=date.strftime('%H:%M'))
     
     count = 0
-    for chunk, pluralizefun in OLDER_CHUNKS:
+    for chunk, units in OLDER_CHUNKS:
         if days < 7.0:
             count = days + float(hours)/24
-            fmt = pluralize_day(count)
-            return fmt.format(num=count, ago=ago)
+            return verbose_time(count, 'days')
         if days >= chunk:
             count = (delta_midnight.days + 1) / chunk
             count = abs(count)
-            fmt = pluralizefun(count)
-            return fmt.format(num=count, ago=ago)
+            return verbose_time(count, units)
 
 
 def naturaldate(date):

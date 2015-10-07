@@ -14,6 +14,9 @@ class Register(object):
     def __getitem__(self, key):
         return self._registry[key]
     
+    def __iter__(self):
+        return iter(self._registry.values())
+    
     def register(self, model, **kwargs):
         if model in self._registry:
             raise KeyError("%s already registered" % model)
@@ -23,6 +26,8 @@ class Register(object):
             kwargs['verbose_name_plural'] = model._meta.verbose_name_plural
         defaults = {
             'menu': True,
+            'search': True,
+            'model': model,
         }
         defaults.update(kwargs)
         self._registry[model] = AttrDict(**defaults)

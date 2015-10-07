@@ -9,5 +9,5 @@ class OrdersConfig(AppConfig):
     
     def ready(self):
         from .models import Order
-        accounts.register(Order, icon='basket.png')
+        accounts.register(Order, icon='basket.png', search=False)
         from . import signals

@@ -48,9 +48,12 @@
     <div style="max-width: 1170px; margin:auto;">
     <div id="branding"><a href="/admin/"></a><h1 id="site-name"><a href="/admin/">{{ ORCHESTRA_SITE_VERBOSE_NAME }}<span class="version">0.0.1a1</span></a></h1></div>
     {% for item in menu.children %}{% admin_tools_render_menu_item item forloop.counter %}{% endfor %}
-    <span style="float:right;color:grey;padding:10px;font-size:11px;">{% trans 'Welcome' %},
+    <form action="/search" method="get" name="top_search" style="display: inline;">
+    <input type="text" id="searchbox" style="margin-left:15px;margin-top:7px;" name="q" placeholder="Search" size="25" value="{{ query }}" {% if search_autofocus or app_list %}autofocus="autofocus"{% endif %} title="Use 'username!' for account direct access.">
+    </form>
+    <span style="float:right;color:grey;margin:10px;font-size:11px;">
         {% url 'admin:accounts_account_change' user.pk as user_change_url %}
-        <a href="{{ user_change_url }}" style="color:#555;"><strong>{% filter force_escape %}{% firstof user.get_short_name user.username %}{% endfilter %}</strong></a>.
+        <a href="{{ user_change_url }}" style="color:#555;"><strong>{% filter force_escape %}{% firstof user.get_short_name user.username %}{% endfilter %}</strong></a>
      <a href="{% url 'admin:password_change' %}" style="color:#555;">Change password</a> / <a href="{% url 'admin:logout' %}" style="color:#555;">Log out</a></span>
     </div>
 </ul>

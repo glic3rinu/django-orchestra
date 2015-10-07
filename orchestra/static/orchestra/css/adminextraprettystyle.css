@@ -6,12 +6,12 @@ body {
 #header #branding h1 {
     margin: 0;
     padding: 2px 15px;
-    background: transparent url(/static/orchestra/images/orchestra-logo.png) 10px 2px no-repeat;
+    background: transparent url(/static/orchestra/images/orchestra-logo.png) 5px 2px no-repeat;
     text-indent: 0;
     height: 31px;
     font-size: 16px;
 /*    font-weight: bold;*/
-    padding-left: 50px;
+    padding-left: 45px;
     line-height: 30px;
     border-right: 1px solid #ededed;
 }

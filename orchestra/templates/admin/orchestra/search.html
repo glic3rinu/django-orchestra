@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+{% block content %}
+  <div>
+    <div style="margin:20px;-webkit-column-count:{{ columns }};-moz-column-count:{{ columns }};column-count:{{ columns }};">
+    {% for opts, qs in results.items %}
+    <h3><a href="{% url opts|admin_urlname:'changelist' %}?q={{ query }}">{{ opts.verbose_name_plural|capfirst }}</a>
+        <span style="font-size:11px"> {{ qs|length }} results</span></h3>
+        <ul>
+            {% for instance in qs %}
+                <li><a href="{{ instance|admin_url }}">{{ instance }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    </div>
+{% endblock %}

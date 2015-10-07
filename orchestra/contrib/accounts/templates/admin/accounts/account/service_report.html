@@ -1,4 +1,4 @@
-{% load utils i18n %}
+{% load i18n admin_urls utils %}
 <html>
 <head>
     <title>{% block title %}Account service report{% endblock %}</title>
@@ -50,13 +50,29 @@
     <div class="account-content">
         {{ account.get_type_display }} {% trans "account registered on" %} {{ account.date_joined | date }}<br>
         <ul class="items-ul">
+            <li class="item-title">{% trans 'Resources' %}</li>
+            {% if account.resources %}
+                <ul>
+                {% for resource in account.resources %}
+                    <li><a href="{{ resource|admin_url }}">{{ resource.verbose_name }} {% if resource.used != None %}<span title="{% trans 'Used' %}">{{ resource.used }}</span>{% endif %}{% if resource.allocated != None %}{% if resource.used != None %} / {% endif %}<span title="{% trans 'Allocated' %}">{{ resource.allocated }}</span>{% endif %}</a> {{ resource.unit }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        
         {% for opts, related in items %}
-            <li class="item-title">{{ opts.verbose_name_plural|capfirst }}</li>
+            <li class="item-title"><a href="{% url opts|admin_urlname:'changelist' %}?account_id={{ account.pk }}">{{ opts.verbose_name_plural|capfirst }}</a></li>
             <ul>
             {% for obj in related %}
                 <li class="related"><a href="{{ obj|admin_url }}">{{ obj }}</a>
                     {% if not obj|isactive %} ({% trans "disabled" %}){% endif %}
                     {{ obj.get_description|capfirst }}
+                    {% if obj.resources %}
+                        <ul>
+                        {% for resource in obj.resources %}
+                            <li><a href="{{ resource|admin_url }}">{{ resource.verbose_name }} {% if resource.used != None %}<span title="{% trans 'Used' %}">{{ resource.used }}</span>{% endif %}{% if resource.allocated != None %}{% if resource.used != None %} / {% endif %}<span title="{% trans 'Allocated' %}">{{ resource.allocated }}</span>{% endif %}</a> {{ resource.unit }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
                 </li>
             {% endfor %}
             </ul>

@@ -10,5 +10,5 @@ class PaymentsConfig(AppConfig):
     def ready(self):
         from .models import PaymentSource, Transaction, TransactionProcess
         accounts.register(PaymentSource, dashboard=False)
-        accounts.register(Transaction, icon='transaction.png')
-        accounts.register(TransactionProcess, icon='transactionprocess.png', dashboard=False)
+        accounts.register(Transaction, icon='transaction.png', search=False)
+        accounts.register(TransactionProcess, icon='transactionprocess.png', dashboard=False, search=False)

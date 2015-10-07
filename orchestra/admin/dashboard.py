@@ -19,6 +19,15 @@ class AppDefaultIconList(CmsAppIconList):
 
 class OrchestraIndexDashboard(dashboard.FluentIndexDashboard):
     """ Gets application modules from services, accounts and administration registries """
+    
+    def __init__(self, **kwargs):
+        super(dashboard.FluentIndexDashboard, self).__init__(**kwargs)
+        self.children.append(self.get_personal_module())
+        self.children.extend(self.get_application_modules())
+        recent_actions = self.get_recent_actions_module()
+        recent_actions.enabled = True
+        self.children.append(recent_actions)
+    
     def process_registered_view(self, module, view_name, options):
         app_name, name = view_name.split('_')[:-1]
         module.icons['.'.join((app_name, name))] = options.get('icon')
@@ -44,7 +53,7 @@ class OrchestraIndexDashboard(dashboard.FluentIndexDashboard):
         # Honor settings override, hacky. I Know
         if appsettings.FLUENT_DASHBOARD_APP_GROUPS[0][0] != _('CMS'):
             modules = super(OrchestraIndexDashboard, self).get_application_modules()
-        for register in (accounts, administration, services):
+        for register in (accounts, services, administration):
             title = register.verbose_name
             models = []
             icons = {}

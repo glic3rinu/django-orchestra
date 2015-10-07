@@ -15,6 +15,7 @@ class VPSAdmin(ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     form = NonStoredUserChangeForm
     add_form = UserCreationForm
     readonly_fields = ('account_link',)
+    search_fields = ('hostname', 'account__username', 'template')
     change_readonly_fields = ('account', 'hostname', 'type', 'template')
     fieldsets = (
         (None, {

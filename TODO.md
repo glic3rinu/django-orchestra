@@ -93,7 +93,7 @@ Php binaries should have this format: /usr/bin/php5.2-cgi
 * logs on panel/logs/ ? mkdir ~webapps, backend post save signal? 
 * <IfModule security2_module> and other IfModule on backend SecRule
 
-* Orchestra global search box on the page head, based https://github.com/django/django/blob/master/django/contrib/admin/options.py#L866 and iterating over all registered services and inspectin its admin.search_fields
+# Orchestra global search box on the page head, based https://github.com/django/django/blob/master/django/contrib/admin/options.py#L866 and iterating over all registered services and inspectin its admin.search_fields
 
 * contain error on plugin missing key (plugin dissabled): NOP, fail hard is better than silently, perhaps fail at starttime? apploading machinary
 
@@ -131,6 +131,7 @@ require_once(‘/etc/moodles/’.$moodle_host.‘config.php’);``` moodle/drupl
 * document service help things: discount/refound/compensation effect and metric table
 * Document metric interpretation help_text
 * document plugin serialization, data_serializer?
+* Document strong input validation
 
 # bill line managemente, remove, undo (only when possible), move, copy, paste
     * budgets: no undo feature
@@ -415,3 +416,11 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 
 # setupforbiddendomains --url alexa -n 5000
+
+
+* remove welcome box on dashboard?
+
+# account contacts inline, show provided fields and ignore the rest? 
+# email usage -webkit-column-count:3;-moz-column-count:3;column-count:3;
+
+# resources on service report

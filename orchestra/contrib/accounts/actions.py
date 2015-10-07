@@ -49,7 +49,7 @@ def service_report(modeladmin, request, queryset):
         model = field.related_model
         if model in registered_services and model != queryset.model:
             fields.append((model, name))
-    sorted(fields, key=lambda f: f[0]._meta.verbose_name_plural.lower())
+    fields = sorted(fields, key=lambda f: f[0]._meta.verbose_name_plural.lower())
     fields = [field for model, field in fields]
     
     for account in queryset.prefetch_related(*fields):

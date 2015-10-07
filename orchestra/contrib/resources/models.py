@@ -202,6 +202,10 @@ class ResourceData(models.Model):
     def unit(self):
         return self.resource.unit
     
+    @property
+    def verbose_name(self):
+        return self.resource.verbose_name
+    
     def get_used(self):
         resource = self.resource
         total = 0
@@ -289,6 +293,8 @@ def create_resource_relation():
         """ account.resources.web """
         def __getattr__(self, attr):
             """ get or build ResourceData """
+            if attr.startswith('_'):
+                raise AttributeError
             try:
                 return self.obj.__resource_cache[attr]
             except AttributeError:
@@ -317,6 +323,9 @@ def create_resource_relation():
             """ proxy handled object """
             self.obj = obj
             return self
+        
+        def __iter__(self):
+            return iter(self.obj.resource_set.all())
     
     # Clean previous state
     for related in Resource._related:

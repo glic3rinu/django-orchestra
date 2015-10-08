@@ -39,24 +39,56 @@ def get_urls():
 admin.site.get_urls = get_urls
 
 
+def get_model(model_name, model_name_map):
+    try:
+        return model_name_map[model_name.lower()]
+    except KeyError:
+        return
+
+
 def search(request):
     query = request.GET.get('q', '')
-    if query.endswith('!'):
+    search_term = query
+    models = set()
+    selected_models = set()
+    model_name_map = {}
+    for service in itertools.chain(services, accounts):
+        if service.search:
+            models.add(service.model)
+            model_name_map[service.model._meta.model_name] = service.model
+    
+    # Account direct access
+    if search_term.endswith('!'):
         from ..contrib.accounts.models import Account
-        # Account direct access
-        query = query.replace('!', '')
+        search_term = search_term.replace('!', '')
         try:
-            account = Account.objects.get(username=query)
+            account = Account.objects.get(username=search_term)
         except Account.DoesNotExist:
             pass
         else:
             account_url = reverse('admin:accounts_account_change', args=(account.pk,))
             return redirect(account_url)
+    # Search for specific model
+    elif ':' in search_term:
+        new_search_term = []
+        for part in search_term.split():
+            if ':' in part:
+                model_name, term = part.split(':')
+                model = get_model(model_name, model_name_map)
+                # Retry with singular version
+                if model is None and model_name.endswith('s'):
+                    model = get_model(model_name[:-1], model_name_map)
+                if model is None:
+                    new_search_term.append(':'.join((model_name, term)))
+                else:
+                    selected_models.add(model)
+                    new_search_term.append(term)
+            else:
+                new_search_term.append(part)
+        search_term = ' '.join(new_search_term)
+    if selected_models:
+        models = selected_models
     results = OrderedDict()
-    models = set()
-    for service in itertools.chain(services, accounts):
-        if service.search:
-            models.add(service.model)
     models = sorted(models, key=lambda m: m._meta.verbose_name_plural.lower())
     total = 0
     for model in models:
@@ -66,7 +98,7 @@ def search(request):
             pass
         else:
             qs = modeladmin.get_queryset(request)
-            qs, search_use_distinct = modeladmin.get_search_results(request, qs, query)
+            qs, search_use_distinct = modeladmin.get_search_results(request, qs, search_term)
             if search_use_distinct:
                 qs = qs.distinct()
             num = len(qs)
@@ -79,6 +111,7 @@ def search(request):
         'total': total,
         'columns': min(int(total/17), 3),
         'query': query,
+        'search_term': search_term,
         'results': results,
         'search_autofocus': True,
     }

@@ -1,4 +1,5 @@
 import re
+import sys
 import textwrap
 from urllib.parse import urlparse
 
@@ -46,6 +47,7 @@ class WordpressMuBackend(ServiceController):
             raise RuntimeError(errors[0] if errors else 'Unknown %i error' % response.status_code)
     
     def get_id(self, session, saas):
+        blog_id = saas.data.get('blog_id')
         search = self.get_main_url()
         search += '/wp-admin/network/sites.php?s=%s&action=blogs' % saas.name
         regex = re.compile(
@@ -55,23 +57,31 @@ class WordpressMuBackend(ServiceController):
         content = session.get(search).content.decode('utf8')
         # Get id
         ids = regex.search(content)
-        if not ids:
+        if not ids and not blog_id:
             raise RuntimeError("Blog '%s' not found" % saas.name)
-        ids = ids.groups()
-        if len(ids) > 1:
-            raise ValueError("Multiple matches")
+        if ids:
+            ids = ids.groups()
+            if len(ids) > 1 and not blog_id:
+                raise ValueError("Multiple matches")
         # Get wpnonce
-        wpnonce = re.search(r'<span class="delete">(.*)</span>', content).groups()[0]
+        try:
+            wpnonce = re.search(r'<span class="delete">(.*)</span>', content).groups()[0]
+        except TypeError:
+            # No search results, try some luck
+            wpnonce = content
         wpnonce = re.search(r'_wpnonce=([^"]*)"', wpnonce).groups()[0]
-        return int(ids[0]), wpnonce
+        return blog_id or int(ids[0]), wpnonce
     
     def create_blog(self, saas, server):
+        if saas.data.get('blog_id'):
+            return
+        
         session = requests.Session()
         self.login(session)
         
         # Check if blog already exists
         try:
-            self.get_id(session, saas)
+            blog_id, wpnonce = self.get_id(session, saas)
         except RuntimeError:
             url = self.get_main_url()
             url += '/wp-admin/network/site-new.php'
@@ -91,6 +101,16 @@ class WordpressMuBackend(ServiceController):
             # Validate response
             response = session.post(url, data=data)
             self.validate_response(response)
+            blog_id = re.compile(r'<link id="wp-admin-canonical" rel="canonical" href="http(?:[^ ]+)/wp-admin/network/site-new.php\?id=([0-9]+)" />')
+            content = response.content.decode('utf8')
+            blog_id = blog_id.search(content).groups()[0]
+            sys.stdout.write("Created blog ID: %s\n" % blog_id)
+            saas.data['blog_id'] = int(blog_id)
+            saas.save(update_fields=('data',))
+        else:
+            sys.stdout.write("Retrieved blog ID: %s\n" % blog_id)
+            saas.data['blog_id'] = int(blog_id)
+            saas.save(update_fields=('data',))
     
     def delete_blog(self, saas, server):
         session = requests.Session()
@@ -122,32 +142,37 @@ class WordpressMuBackend(ServiceController):
     def save(self, saas):
         self.append(self.create_blog, saas)
         context = self.get_context(saas)
+        context['IDENT'] =  "b.domain = '%(domain)s'" % context
+        if context['blog_id']:
+            context['IDENT'] =  "b.blog_id = '%(blog_id)s'" % context
         self.append(textwrap.dedent("""
             # Update custom URL mapping
-            existing=( $(mysql -Nrs %(db_name)s --execute='
+            existing=( $(mysql -Nrs %(db_name)s --execute="
                 SELECT b.blog_id, b.domain, m.domain, b.path
                     FROM wp_domain_mapping AS m, wp_blogs AS b
-                    WHERE m.blog_id = b.blog_id AND m.active AND b.domain = "%(domain)s";') )
+                    WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s;") )
             if [[ ${existing[0]} != '' ]]; then
+                # Clear custom domain
                 if [[ "%(custom_domain)s" == "" ]]; then
                     mysql %(db_name)s --execute="
-                        DELETE wp_domain_mapping AS m, wp_blogs AS b
-                            WHERE m.blog_id = b.blog_id AND m.active AND b.domain = '%(domain)s';
+                        DELETE FROM m
+                            USING wp_domain_mapping AS m, wp_blogs AS b
+                            WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s';
                         UPDATE wp_blogs
                             SET path='/'
                             WHERE blog_id=${existing[0]};"
                 elif [[ "${existing[2]}" != "%(custom_domain)s" || "${existing[3]}" != "%(custom_path)s" ]]; then
-                    mysql %(db_name)s --execute='
+                    mysql %(db_name)s --execute="
                         UPDATE wp_domain_mapping as m, wp_blogs as b
-                            SET m.domain = "%(custom_domain)s", b.path = "%(custom_path)s"
-                            WHERE m.blog_id = b.blog_id AND m.active AND b.domain = "%(domain)s";'
+                            SET m.domain = '%(custom_domain)s', b.path = '%(custom_path)s'
+                            WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s';"
                 fi
-            else
-                blog=( $(mysql -Nrs %(db_name)s --execute='
-                    SELECT blog_id, path FROM wp_blogs WHERE domain = "%(domain)s";') )
-                mysql %(db_name)s --execute='
+            elif [[ "%(custom_domain)s" != "" ]]; then
+                blog=( $(mysql -Nrs %(db_name)s --execute="
+                    SELECT blog_id, path FROM wp_blogs WHERE domain = '%(domain)s';") )
+                mysql %(db_name)s --execute="
                     INSERT INTO wp_domain_mapping
-                        VALUES (blog_id, domain, active) ($blog_id, "%(custom_domain)s", 1);'
+                        (blog_id, domain, active) VALUES (${blog[0]}, '%(custom_domain)s', 1);"
                 if [[ "${blog[1]}" != "%(custom_path)s" ]]; then
                     mysql %(db_name)s --execute="
                         UPDATE wp_blogs
@@ -165,6 +190,9 @@ class WordpressMuBackend(ServiceController):
         context = {
             'db_name': settings.SAAS_WORDPRESS_DB_NAME,
             'domain': domain,
+            'custom_domain': '',
+            'custom_path': '/',
+            'blog_id': saas.data.get('blog_id', ''),
         }
         if saas.custom_url:
             custom_url = urlparse(saas.custom_url)

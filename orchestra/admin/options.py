@@ -80,17 +80,24 @@ class EnhaceSearchMixin(object):
     def get_search_results(self, request, queryset, search_term):
         """ allows to specify field <field_name>:<search_term> """
         search_fields = self.get_search_fields(request)
-        if ':' in search_term:
+        if '=' in search_term:
             fields = {field.split('__')[0]: field for field in search_fields}
             new_search_term = []
             for part in search_term.split():
-                cur_search_term = ''
-                for field, term in pairwise(part.split(':')):
+                field = None
+                if '=' in part:
+                    field, term = part.split('=')
+                    kwarg = '%s__icontains'
+                    c_term = term
+                    if term.startswith(('"', "'")) and term.endswith(('"', "'")):
+                        c_term = term[1:-1]
+                        kwarg = '%s__iexact'
                     if field in fields:
-                        queryset = queryset.filter(**{'%s__icontains' % fields[field]: term})
+                        queryset = queryset.filter(**{kwarg % fields[field]: c_term})
                     else:
-                        cur_search_term += ':'.join((field, term))
-                new_search_term.append(cur_search_term)
+                        new_search_term.append('='.join((field, term)))
+                else:
+                    new_search_term.append(part)
             search_term = ' '.join(new_search_term)
         return super(EnhaceSearchMixin, self).get_search_results(request, queryset, search_term)
 

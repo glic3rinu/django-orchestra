@@ -3,6 +3,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from orchestra.forms import widgets
+
 from .options import SoftwareService
 from .. import settings
 from ..forms import SaaSBaseForm
@@ -12,6 +14,8 @@ class WordPressForm(SaaSBaseForm):
     email = forms.EmailField(label=_("Email"), widget=forms.TextInput(attrs={'size':'40'}),
         help_text=_("A new user will be created if the above email address is not in the database.<br>"
                     "The username and password will be mailed to this email address."))
+    blog_id = forms.IntegerField(label=("Blog ID"), widget=widgets.SpanWidget, required=False,
+        help_text=_("ID of this user on the GitLab server, the only attribute that not changes."))
     
     def __init__(self, *args, **kwargs):
         super(WordPressForm, self).__init__(*args, **kwargs)
@@ -23,6 +27,7 @@ class WordPressForm(SaaSBaseForm):
 
 class WordPressDataSerializer(serializers.Serializer):
     email = serializers.EmailField(label=_("Email"))
+    blog_id = serializers.IntegerField(label=_("Blog ID"), required=False)
 
 
 class WordPressService(SoftwareService):
@@ -31,6 +36,6 @@ class WordPressService(SoftwareService):
     form = WordPressForm
     serializer = WordPressDataSerializer
     icon = 'orchestra/icons/apps/WordPress.png'
-    change_readonly_fileds = ('email',)
+    change_readonly_fileds = ('email', 'blog_id')
     site_domain = settings.SAAS_WORDPRESS_DOMAIN
     allow_custom_url = settings.SAAS_WORDPRESS_ALLOW_CUSTOM_URL

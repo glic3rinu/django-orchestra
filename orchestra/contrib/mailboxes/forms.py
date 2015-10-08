@@ -44,24 +44,6 @@ class MailboxForm(forms.ModelForm):
         
         if self.instance and self.instance.pk:
             self.fields['addresses'].initial = self.instance.addresses.all()
-    
-    def clean(self):
-        cleaned_data = super(MailboxForm, self).clean()
-        name = self.instance.name if self.instance.pk else cleaned_data.get('name')
-        local_domain = settings.MAILBOXES_LOCAL_DOMAIN
-        if name and local_domain:
-            try:
-                addr = Address.objects.get(
-                    name=name, domain__name=local_domain, account_id=self.modeladmin.account.pk)
-            except Address.DoesNotExist:
-                pass
-            else:
-                if addr not in cleaned_data.get('addresses', []):
-                    raise ValidationError({
-                        'addresses': _("This mailbox local address matche '%s', "
-                                       "please make explicit this fact by selecting it.") % addr
-                    })
-        return cleaned_data
 
 
 class MailboxChangeForm(UserChangeForm, MailboxForm):
@@ -86,20 +68,3 @@ class AddressForm(forms.ModelForm):
         forward = cleaned_data.get('forward', '')
         if not cleaned_data.get('mailboxes', True) and not forward:
             raise ValidationError(_("Mailboxes or forward address should be provided."))
-        # Check if new addresse matches with a mbox because of having a local domain
-        if self.instance.pk:
-            name = self.instance.name
-            domain = self.instance.domain
-        else:
-            name = cleaned_data.get('name')
-            domain = cleaned_data.get('domain')
-        if domain and name and domain.name == settings.MAILBOXES_LOCAL_DOMAIN:
-            if name not in forward.split() and Mailbox.objects.filter(name=name).exists():
-                for mailbox in cleaned_data.get('mailboxes', []):
-                    if mailbox.name == name:
-                        return
-                raise ValidationError(
-                    _("This address matches mailbox '%s' local address, please make explicit "
-                      "this fact by adding the mailbox on the mailboxes or forward field.") % name
-                )
-        return cleaned_data

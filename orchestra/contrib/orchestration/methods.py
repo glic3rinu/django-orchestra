@@ -103,7 +103,7 @@ def OpenSSH(backend, log, server, cmds, async=False):
     script = '\n'.join(cmds)
     script = script.replace('\r', '')
     log.state = log.STARTED
-    log.script = script
+    log.script = '\n'.join((log.script, script))
     log.save(update_fields=('script', 'state', 'updated_at'))
     if not cmds:
         return
@@ -116,12 +116,14 @@ def OpenSSH(backend, log, server, cmds, async=False):
                 log.stdout += state.stdout.decode('utf8')
                 log.stderr += state.stderr.decode('utf8')
                 log.save(update_fields=('stdout', 'stderr', 'updated_at'))
-            log.exit_code = state.exit_code
+            exit_code = state.exit_code
         else:
-            log.stdout = ssh.stdout.decode('utf8')
-            log.stderr = ssh.stderr.decode('utf8')
-            log.exit_code = ssh.exit_code
-        log.state = log.SUCCESS if log.exit_code == 0 else log.FAILURE
+            log.stdout += ssh.stdout.decode('utf8')
+            log.stderr += ssh.stderr.decode('utf8')
+            exit_code = ssh.exit_code
+        if not log.exit_code:
+            log.exit_code = exit_code
+            log.state = log.SUCCESS if exit_code == 0 else log.FAILURE
         logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
         log.save()
     except:
@@ -164,11 +166,12 @@ def Python(backend, log, server, cmds, async=False):
     except:
         log.exit_code = 1
         log.state = log.FAILURE
-        log.stdout = '\n'.join(stdout)
-        log.traceback = ExceptionInfo(sys.exc_info()).traceback
+        log.stdout += '\n'.join(stdout)
+        log.traceback += ExceptionInfo(sys.exc_info()).traceback
         logger.error('Exception while executing %s on %s' % (backend, server))
     else:
-        log.exit_code = 0
-        log.state = log.SUCCESS
+        if not log.exit_code:
+            log.exit_code = 0
+            log.state = log.SUCCESS
         logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
     log.save()

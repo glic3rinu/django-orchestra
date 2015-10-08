@@ -330,7 +330,7 @@ class Bill(models.Model):
                 subtotals[tax] = total
         result = {}
         for tax, subtotal in subtotals.items():
-            result[tax] = (subtotal, round(tax/100*subtotal, 2))
+            result[tax] = [subtotal, round(tax/100*subtotal, 2)]
         return result
     
     @lru_cache()

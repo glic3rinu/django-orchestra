@@ -113,12 +113,14 @@ class SoftwareService(plugins.Plugin):
         return helpers.create_or_update_directive(self)
     
     def delete_directive(self):
+        directive = None
         try:
             old = type(self.instance).objects.get(pk=self.instance.pk)
-            directive = self.get_directive(old)
+            if old.custom_url:
+                directive = self.get_directive(old)
         except ObjectDoesNotExist:
-            pass
-        else:
+            return
+        if directive is not None:
             directive.delete()
     
     def save(self):

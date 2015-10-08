@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-15 12:08+0000\n"
+"POT-Creation-Date: 2015-10-08 11:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,7 +52,7 @@ msgstr ""
 msgid "Process"
 msgstr ""
 
-#: actions.py:63 actions.py:134 models.py:97 models.py:164
+#: actions.py:63 actions.py:134 models.py:97 models.py:172
 msgid "Executed"
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 msgid "%s selected processes have been marked as executed."
 msgstr ""
 
-#: actions.py:150 models.py:165
+#: actions.py:150 models.py:173
 msgid "Aborted"
 msgstr ""
 
@@ -133,15 +133,19 @@ msgstr ""
 msgid "Commit"
 msgstr ""
 
-#: admin.py:43
+#: admin.py:44
 msgid "ID"
 msgstr ""
 
-#: admin.py:105
+#: admin.py:106
 msgid "proc"
 msgstr ""
 
-#: admin.py:158
+#: admin.py:129 templates/admin/payments/transaction/report.html:62
+msgid "State"
+msgstr ""
+
+#: admin.py:168
 msgid "Transactions"
 msgstr ""
 
@@ -186,6 +190,18 @@ msgstr ""
 msgid "SEPA Direct Debit"
 msgstr ""
 
+#: methods/sepadirectdebit.py:47
+msgid ""
+"The transaction is created and requires the generation of the SEPA direct "
+"debit XML file."
+msgstr ""
+
+#: methods/sepadirectdebit.py:49
+msgid ""
+"SEPA Direct Debit XML file is generated but needs to be sent to the "
+"financial institution."
+msgstr ""
+
 #: models.py:20
 msgid "account"
 msgstr ""
@@ -194,7 +210,7 @@ msgstr ""
 msgid "method"
 msgstr ""
 
-#: models.py:24 models.py:169
+#: models.py:24 models.py:177
 msgid "data"
 msgstr ""
 
@@ -211,68 +227,90 @@ msgid "Waitting execution"
 msgstr ""
 
 #: models.py:102
-msgid "bill"
+msgid ""
+"The transaction is created and requires processing by the specific payment "
+"method."
 msgstr ""
 
-#: models.py:105
-msgid "source"
+#: models.py:104
+msgid ""
+"The transaction is processed and its pending execution on the related "
+"financial institution."
+msgstr ""
+
+#: models.py:106
+msgid "The transaction is executed on the financial institution."
 msgstr ""
 
 #: models.py:107
+msgid "The transaction ammount is secured."
+msgstr ""
+
+#: models.py:108
+msgid ""
+"The transaction has failed and the ammount is lost, a new transaction should "
+"be created for recharging."
+msgstr ""
+
+#: models.py:112
+msgid "bill"
+msgstr ""
+
+#: models.py:115
+msgid "source"
+msgstr ""
+
+#: models.py:117
 msgid "process"
 msgstr ""
 
-#: models.py:108 models.py:171
+#: models.py:118 models.py:179
 msgid "state"
 msgstr ""
 
-#: models.py:110
+#: models.py:120
 msgid "amount"
 msgstr ""
 
-#: models.py:112 models.py:172
+#: models.py:122 models.py:180
 msgid "created"
 msgstr ""
 
-#: models.py:113
+#: models.py:123
 msgid "modified"
 msgstr ""
 
-#: models.py:128
+#: models.py:138
 msgid "New transactions can not be allocated for this bill."
 msgstr ""
 
-#: models.py:163 templates/admin/payments/transaction/report.html:63
+#: models.py:171 templates/admin/payments/transaction/report.html:63
 msgid "Created"
 msgstr ""
 
-#: models.py:166
+#: models.py:174
 msgid "Commited"
 msgstr ""
 
-#: models.py:170
+#: models.py:178
 msgid "file"
 msgstr ""
 
-#: models.py:173
+#: models.py:181
 msgid "updated"
 msgstr ""
 
-#: models.py:176
+#: models.py:184
 msgid "Transaction processes"
 msgstr ""
 
-#: settings.py:12
-#, fuzzy, python-format
-#| msgid ""
-#| "This bill will be automatically charged to your bank account  with IBAN "
-#| "number<br><strong>%s</strong>."
+#: settings.py:14
 msgid ""
 "<strong>Direct debit</strong>, this bill will be automatically charged to "
 "your bank account with IBAN number<br><strong>%(number)s</strong>."
 msgstr ""
 "<strong>Càrrec per domiciliació</strong>, aquesta factura es cobrarà "
-"automaticament en el teu compte bancari amb IBAN <br><strong>%s</strong>."
+"automaticament en el teu compte bancari amb IBAN <br><strong>%(number)s</strong>."
 
 #: templates/admin/payments/transaction/report.html:38
 msgid "Summary"
@@ -297,10 +335,6 @@ msgstr ""
 
 #: templates/admin/payments/transaction/report.html:59
 msgid "Contact"
-msgstr ""
-
-#: templates/admin/payments/transaction/report.html:62
-msgid "State"
 msgstr ""
 
 #: templates/admin/payments/transaction/report.html:64

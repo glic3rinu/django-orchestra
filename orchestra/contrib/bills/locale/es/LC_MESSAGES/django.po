@@ -538,7 +538,7 @@ msgstr ""
 
 #: templates/bills/microspective.html:149
 msgid "QUESTIONS"
-msgstr ""
+msgstr "PREGUNTAS"
 
 #: templates/bills/microspective.html:150
 #, python-format

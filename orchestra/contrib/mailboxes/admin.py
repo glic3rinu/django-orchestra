@@ -127,12 +127,29 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         if not add:
             self.check_unrelated_address(request, obj)
+            self.check_matching_address(request, obj)
         return super(MailboxAdmin, self).render_change_form(
             request, context, add, change, form_url, obj)
     
     def log_addition(self, request, object):
         self.check_unrelated_address(request, object)
+        self.check_matching_address(request, object)
         return super(MailboxAdmin, self).log_addition(request, object)
+    
+    def check_matching_address(self, request, obj):
+        local_domain = settings.MAILBOXES_LOCAL_DOMAIN
+        if obj.name and local_domain:
+            try:
+                addr = Address.objects.get(
+                    name=obj.name, domain__name=local_domain, account_id=self.account.pk)
+            except Address.DoesNotExist:
+                pass
+            else:
+                if addr not in obj.addresses.all():
+                    msg =  _("Mailbox '%s' local address matches '%s', please consider if "
+                             "selecting it makes sense.") % (obj, addr)
+                    if msg not in (m.message for m in messages.get_messages(request)):
+                        self.message_user(request, msg, level=messages.WARNING)
     
     def check_unrelated_address(self, request, obj):
         # Check if there exists an unrelated local Address for this mbox
@@ -169,7 +186,9 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     fields = ('account_link', 'email_link', 'mailboxes', 'forward')
     add_fields = ('account_link', ('name', 'domain'), 'mailboxes', 'forward')
 #    inlines = [AutoresponseInline]
-    search_fields = ('forward', 'mailboxes__name', 'account__username', 'computed_email')
+    search_fields = (
+        'forward', 'mailboxes__name', 'account__username', 'computed_email', 'domain__name'
+    )
     readonly_fields = ('account_link', 'domain_link', 'email_link')
     actions = (SendAddressEmail(),)
     filter_by_account_fields = ('domain', 'mailboxes')
@@ -223,6 +242,29 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     def get_queryset(self, request):
         qs = super(AddressAdmin, self).get_queryset(request)
         return qs.annotate(computed_email=Concat(F('name'), V('@'), F('domain__name')))
+    
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        if not add:
+            self.check_matching_mailbox(request, obj)
+        return super(AddressAdmin, self).render_change_form(
+            request, context, add, change, form_url, obj)
+    
+    def log_addition(self, request, object):
+        self.check_matching_mailbox(request, object)
+        return super(AddressAdmin, self).log_addition(request, object)
+    
+    def check_matching_mailbox(self, request, obj):
+        # Check if new addresse matches with a mbox because of having a local domain
+        if obj.name and obj.domain and obj.domain.name == settings.MAILBOXES_LOCAL_DOMAIN:
+            if obj.name not in obj.forward.split() and Mailbox.objects.filter(name=obj.name).exists():
+                for mailbox in obj.mailboxes.all():
+                    if mailbox.name == obj.name:
+                        return
+                msg = _("Address '%s' matches mailbox '%s' local address, please consider "
+                        "if makes sense adding the mailbox on the mailboxes or forward field."
+                       ) % (obj, obj.name)
+                if msg not in (m.message for m in messages.get_messages(request)):
+                    self.message_user(request, msg, level=messages.WARNING)
 
 
 admin.site.register(Mailbox, MailboxAdmin)

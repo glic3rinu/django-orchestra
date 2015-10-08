@@ -423,4 +423,4 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # account contacts inline, show provided fields and ignore the rest? 
 # email usage -webkit-column-count:3;-moz-column-count:3;column-count:3;
 
-# resources on service report
+# Protect fucking search url and put into /admin/search and admin.py

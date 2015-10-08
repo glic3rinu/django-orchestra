@@ -24,7 +24,7 @@ urlpatterns = [
         'orchestra.views.serve_private_media',
         name='private-media'
     ),
-    url(r'search', 'orchestra.views.search', name='search'),
+#    url(r'search', 'orchestra.views.search', name='search'),
 ]
 
 

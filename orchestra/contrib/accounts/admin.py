@@ -8,6 +8,7 @@ from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import admin as auth
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
@@ -152,6 +153,14 @@ class AccountListAdmin(AccountAdmin):
         if hasattr(response, 'context_data'):
             # user has submitted a change list change, we redirect directly to the add view
             # if there is only one result
+            query = request.GET.get('q', '')
+            if query:
+                try:
+                    account = Account.objects.get(username=query)
+                except Account.DoesNotExist:
+                    pass
+                else:
+                    return HttpResponseRedirect('../?account=%i' % account.pk)
             queryset = response.context_data['cl'].queryset
             if len(queryset) == 1:
                 return HttpResponseRedirect('../?account=%i' % queryset[0].pk)

@@ -13,12 +13,15 @@ class ApacheTrafficByHost(ServiceMonitor):
     
     Compatible log format:
     <tt>LogFormat "%h %l %u %t \"%r\" %>s %O %{Host}i" host</tt>
+    or if include_received_bytes:
+    <tt>LogFormat "%h %l %u %t \"%r\" %>s %I %O %{Host}i" host</tt>
     <tt>CustomLog /home/pangea/logs/apache/host_blog.pangea.org.log host</tt>
     """
     model = 'saas.SaaS'
     script_executable = '/usr/bin/python'
     monthly_sum_old_values = True
     abstract = True
+    include_received_bytes = False
     
     def prepare(self):
         access_log = self.log_path
@@ -26,6 +29,7 @@ class ApacheTrafficByHost(ServiceMonitor):
             'access_logs': str((access_log, access_log+'.1')),
             'current_date': self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z"),
             'ignore_hosts': str(settings.SAAS_TRAFFIC_IGNORE_HOSTS),
+            'include_received_bytes': str(self.include_received_bytes),
         }
         self.append(textwrap.dedent("""\
             import sys
@@ -65,6 +69,7 @@ class ApacheTrafficByHost(ServiceMonitor):
                 sites[site_domain] = [ini_date, object_id, 0]
             
             def monitor(sites, end_date, months, access_logs):
+                include_received = {include_received_bytes}
                 for access_log in access_logs:
                     try:
                         with open(access_log, 'r') as handler:
@@ -74,6 +79,9 @@ class ApacheTrafficByHost(ServiceMonitor):
                                 if host in {ignore_hosts}:
                                     continue
                                 size, hostname = line[-2:]
+                                size = int(size)
+                                if include_received:
+                                    size += int(line[-3])
                                 try:
                                     site = sites[hostname]
                                 except KeyError:
@@ -84,7 +92,7 @@ class ApacheTrafficByHost(ServiceMonitor):
                                     year, hour, min, sec = date.split(':')
                                     date = year + months[month] + day + hour + min + sec
                                     if site[0] < int(date) < end_date:
-                                        site[2] += int(size)
+                                        site[2] += size
                     except IOError as e:
                         sys.stderr.write(str(e)+'\\n')
                 for opts in sites.values():

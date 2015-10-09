@@ -16,12 +16,12 @@ class GitLabForm(SaaSPasswordForm):
 
 class GitLaChangeForm(GitLabForm):
     user_id = forms.IntegerField(label=("User ID"), widget=widgets.SpanWidget,
-        help_text=_("ID of this user on the GitLab server, the only attribute that not changes."))
+        help_text=_("ID of this user used by GitLab, the only attribute that doesn't change."))
 
 
 class GitLabSerializer(serializers.Serializer):
     email = serializers.EmailField(label=_("Email"))
-    user_id = serializers.IntegerField(label=_("User ID"), required=False)
+    user_id = serializers.IntegerField(label=_("User ID"), allow_null=True, required=False)
 
 
 class GitLabService(SoftwareService):

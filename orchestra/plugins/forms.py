@@ -28,7 +28,7 @@ class PluginDataForm(forms.ModelForm):
                     self.plugin_field: plugin_help_text or model_help_text
                 }
                 for field in self.plugin.get_change_readonly_fileds():
-                    value = getattr(self.instance, field, None) or self.instance.data[field]
+                    value = getattr(self.instance, field, None) or self.instance.data.get(field)
                     display = value
                     foo_display = getattr(self.instance, 'get_%s_display' % field, None)
                     if foo_display:

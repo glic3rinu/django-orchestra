@@ -425,3 +425,5 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 
 # wordpressmu custom_url: set blog.domain
+
+# validate_user on saas.wordpress to detect if username already exists before attempting to create a blog

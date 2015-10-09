@@ -72,7 +72,7 @@ class ProxmoxOVZ(ServiceController):
             context['password'] = vps.password.replace('$', '\\$')
             ssh_commands.append(textwrap.dedent("""\
                 echo 'root:%(password)s' \\
-                        | chroot /var/lib/vz/private/${info[0]} chpasswd -e""") % context
+                    | chroot /var/lib/vz/private/${info[0]} chpasswd -e""") % context
             )
         self.run_ssh_commands(ssh_commands)
     

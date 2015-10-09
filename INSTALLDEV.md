@@ -19,7 +19,7 @@ If you are planing to do some development you may want to consider doing it unde
     ```
 
 
-3. Deploy django-orchestra development environment
+3. Deploy django-orchestra development environment, inside the container
     ```bash
     bash <( curl -L http://git.io/orchestra-deploy ) --dev
     ```

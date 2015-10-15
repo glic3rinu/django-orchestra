@@ -55,18 +55,12 @@ class UNIXUserBackend(ServiceController):
             fi
             mkdir -p %(base_home)s
             chmod 750 %(base_home)s
-            ls -A /etc/skel/ | while read line; do
-                if [[ ! -e %(home)s/${line} ]]; then
-                    cp -a $line %(home)s/${line} && \
-                    chown -R %(user)s:%(group)s %(home)s/${line}
-                fi
-            done
-            fi""") % context
+        """) % context
         )
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""
                 # Set extra permissions: %(user)s home is inside %(mainuser)s home
-                if mount | grep "^$(df %(home)s|grep '^/')\s" | grep acl > /dev/null; then
+                if mount | grep "^$(df %(home)s|grep '^/'|cut -d' ' -f1)\s" | grep acl > /dev/null; then
                     # Account group as the owner
                     chown %(mainuser)s:%(mainuser)s %(home)s
                     chmod g+s %(home)s
@@ -78,11 +72,19 @@ class UNIXUserBackend(ServiceController):
                     setfacl -m d:u:%(mainuser)s:rwx %(home)s
                 else
                     chmod g+rxw %(home)s
-                    chown %(user)s:%(user)s %(home)s
                 fi""") % context
             )
         else:
-            self.append("chown %(user)s:%(group)s %(home)s" % context)
+            self.append(textwrap.dedent("""\
+                chown %(user)s:%(group)s %(home)s
+                ls -A /etc/skel/ | while read line; do
+                    if [[ ! -e %(home)s/${line} ]]; then
+                        cp -a /etc/skel/${line} %(home)s/${line} && \\
+                        chown -R %(user)s:%(group)s %(home)s/${line}
+                    fi
+                done
+                """) % context
+            )
         for member in settings.SYSTEMUSERS_DEFAULT_GROUP_MEMBERS:
             context['member'] = member
             self.append('usermod -a -G %(user)s %(member)s || exit_code=$?' % context)

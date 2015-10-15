@@ -18,10 +18,11 @@ class WebAppServiceMixin(object):
         self.append(textwrap.dedent("""
             # Create webapp dir
             CREATED=0
-            [[ ! -e %(app_path)s ]] && CREATED=1
-            mkdir -p %(app_path)s
-            chown %(user)s:%(group)s %(app_path)s\
-            """) % context
+            if [[ ! -e %(app_path)s ]]; then
+                CREATED=1
+                mkdir -p %(app_path)s
+                chown %(user)s:%(group)s %(app_path)s
+            fi""") % context
         )
     
     def set_under_construction(self, context):
@@ -34,7 +35,7 @@ class WebAppServiceMixin(object):
                         sleep 2
                         if [[ ! $(ls -A %(app_path)s | head -n1) ]]; then
                             cp -r %(under_construction_path)s %(app_path)s
-                            chown -R %(user)s:%(group)s %(app_path)s
+                            chown -R %(user)s:%(group)s %(app_path)s/*
                         fi' &> /dev/null &
                 fi""") % context
             )

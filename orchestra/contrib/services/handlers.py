@@ -127,7 +127,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             try:
                 return eval(self.metric, safe_locals)
             except Exception as exc:
-                raise type(exc)("%s on '%s'" %(exc, self.service))
+                raise type(exc)("'%s' evaluating metric for '%s' service" % (exc, self.service))
     
     def get_order_description(self, instance):
         safe_locals = self.get_expression_context(instance)

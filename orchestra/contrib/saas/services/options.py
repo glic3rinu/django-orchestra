@@ -9,6 +9,7 @@ from orchestra.contrib.databases.models import Database, DatabaseUser
 from orchestra.contrib.orchestration import Operation
 from orchestra.contrib.websites.models import Website, WebsiteDirective
 from orchestra.utils.apps import isinstalled
+from orchestra.utils.functional import cached
 from orchestra.utils.python import import_class
 
 from . import helpers
@@ -155,7 +156,7 @@ class DBSoftwareService(SoftwareService):
     def get_db_user(self):
         return self.db_user
     
-    @lru_cache()
+    @cached
     def get_account(self):
         account_model = self.instance._meta.get_field_by_name('account')[0]
         return account_model.rel.to.objects.get_main()

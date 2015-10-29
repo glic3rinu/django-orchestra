@@ -1,6 +1,5 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from functools import lru_cache
 
 from django.core.validators import ValidationError, RegexValidator
 from django.db import models
@@ -15,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.contrib.accounts.models import Account
 from orchestra.contrib.contacts.models import Contact
 from orchestra.core import validators
+from orchestra.utils.functional import cached
 from orchestra.utils.html import html_to_pdf
 
 from . import settings
@@ -319,7 +319,7 @@ class Bill(models.Model):
             self.number = self.get_number()
         super(Bill, self).save(*args, **kwargs)
     
-    @lru_cache()
+    @cached
     def compute_subtotals(self):
         subtotals = {}
         lines = self.lines.annotate(totals=F('subtotal') + Sum(Coalesce('sublines__total', 0)))
@@ -333,21 +333,21 @@ class Bill(models.Model):
             result[tax] = [subtotal, round(tax/100*subtotal, 2)]
         return result
     
-    @lru_cache()
+    @cached
     def compute_base(self):
         bases = self.lines.annotate(
             bases=F('subtotal') + Sum(Coalesce('sublines__total', 0))
         )
         return round(bases.aggregate(Sum('bases'))['bases__sum'] or 0, 2)
     
-    @lru_cache()
+    @cached
     def compute_tax(self):
         taxes = self.lines.annotate(
             taxes=(F('subtotal') + Coalesce(Sum('sublines__total'), 0)) * (F('tax')/100)
         )
         return round(taxes.aggregate(Sum('taxes'))['taxes__sum'] or 0, 2)
     
-    @lru_cache()
+    @cached
     def compute_total(self):
         if 'lines' in getattr(self, '_prefetched_objects_cache', ()):
             total = 0
@@ -409,7 +409,7 @@ class BillLine(models.Model):
         related_name='amendment_lines', null=True, blank=True)
     
     def __str__(self):
-        return "#%i" % self.pk
+        return "#%i" % self.pk if self.pk else self.description
     
     def get_verbose_quantity(self):
         return self.verbose_quantity or self.quantity
@@ -430,7 +430,7 @@ class BillLine(models.Model):
             return ini
         return "{ini} / {end}".format(ini=ini, end=end)
     
-    @lru_cache()
+    @cached
     def compute_total(self):
         total = self.subtotal or 0
         if hasattr(self, 'subline_total'):

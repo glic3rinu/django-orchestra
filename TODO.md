@@ -439,3 +439,8 @@ mkhomedir_helper or create ssh homes with bash.rc and such
     with database_ready:
         shit_happend, otherwise schedule for first query
 # Entry.objects.filter()[:1].first() (LIMIT 1)
+
+# put "Coordinate Apache restart" inside a bash function for clarity
+
+
+# mailscanner phishing, spam, whitelist choices

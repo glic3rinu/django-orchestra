@@ -1,12 +1,12 @@
 import os
 from collections import OrderedDict
-from functools import lru_cache
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from orchestra.plugins.forms import PluginDataForm
+from orchestra.utils.functional import cached
 
 from .. import settings, utils
 from ..options import AppOption
@@ -58,7 +58,7 @@ class PHPApp(AppType):
     def get_detail(self):
         return self.instance.data.get('php_version', '')
     
-    @lru_cache()
+    @cached
     def get_options(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
         """ adapter to webapp.get_options that performs merging of PHP options """
         kwargs = {

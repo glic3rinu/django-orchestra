@@ -160,7 +160,7 @@ class WordpressMuBackend(ServiceController):
                             WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s';
                         UPDATE wp_blogs
                             SET path='/'
-                            WHERE blog_id=${existing[0]};"
+                            WHERE blog_id = ${existing[0]};"
                 elif [[ "${existing[2]}" != "%(custom_domain)s" || "${existing[3]}" != "%(custom_path)s" ]]; then
                     mysql %(db_name)s --execute="
                         UPDATE wp_domain_mapping as m, wp_blogs as b
@@ -169,15 +169,20 @@ class WordpressMuBackend(ServiceController):
                 fi
             elif [[ "%(custom_domain)s" != "" ]]; then
                 blog=( $(mysql -Nrs %(db_name)s --execute="
-                    SELECT blog_id, path FROM wp_blogs WHERE domain = '%(domain)s';") )
+                    SELECT blog_id, path
+                        FROM wp_blogs
+                        WHERE domain = '%(domain)s';") )
                 mysql %(db_name)s --execute="
+                    UPDATE wp_domain_mapping
+                        SET active = 0
+                        WHERE blog_id = ${blog[0]} AND active = 1;
                     INSERT INTO wp_domain_mapping
                         (blog_id, domain, active) VALUES (${blog[0]}, '%(custom_domain)s', 1);"
                 if [[ "${blog[1]}" != "%(custom_path)s" ]]; then
                     mysql %(db_name)s --execute="
                         UPDATE wp_blogs
-                            SET path='%(custom_path)s'
-                            WHERE blog_id=${blog[0]};"
+                            SET path = '%(custom_path)s'
+                            WHERE blog_id = ${blog[0]};"
                 fi
             fi""") % context
         )

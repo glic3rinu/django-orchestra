@@ -1,12 +1,12 @@
 import os
 from collections import OrderedDict
-from functools import lru_cache
 
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.core import validators
+from orchestra.utils.functional import cached
 
 from . import settings
 from .directives import SiteDirective
@@ -72,7 +72,7 @@ class Website(models.Model):
             return self.HTTP
         return self.HTTPS
     
-    @lru_cache()
+    @cached
     def get_directives(self):
         directives = OrderedDict()
         for opt in self.directives.all().order_by('name', 'value'):

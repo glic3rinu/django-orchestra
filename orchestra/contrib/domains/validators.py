@@ -65,18 +65,16 @@ def validate_zone_label(value):
 
 
 def validate_mx_record(value):
-    msg = _("%s is not an appropiate MX record value") % value
+    msg = _("MX record format is 'priority domain.' tuple, with priority being a number.")
     value = value.split()
-    if len(value) == 1:
-        value = value[0]
-    elif len(value) == 2:
+    if len(value) != 2:
+        raise ValidationError(msg)
+    else:
         try:
             int(value[0])
         except ValueError:
             raise ValidationError(msg)
         value = value[1]
-    elif len(value) > 2:
-        raise ValidationError(msg)
     validate_zone_label(value)
 
 

@@ -103,7 +103,7 @@ hr {
 </div>
 
 <div id="amount" class="column-2">
-    <span id="amount-value">{{ bill.get_total }} &{{ currency.lower }};</span><br>
+    <span id="amount-value">{{ bill.compute_total }} &{{ currency.lower }};</span><br>
     <span id="amount-note">{% trans "Due date" %} {{ payment.due_date| default:default_due_date | date:"F j, Y" }}<br>
     {% if not payment.message %}{% blocktrans with bank_account=seller_info.bank_account %}On {{ bank_account }}{% endblocktrans %}{% endif %}<br>
     </span>

@@ -4,12 +4,12 @@ from django.contrib import messages
 from django.contrib.admin import helpers
 from django.db.models import Q
 from django.db.models.functions import Concat, Coalesce
+from django.forms.models import modelformset_factory
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 from django.template.response import TemplateResponse
 
-from orchestra.admin.forms import adminmodelformset_factory
 from orchestra.admin.utils import get_object_from_url, change_url, admin_link
 from orchestra.utils.python import AttrDict
 
@@ -54,8 +54,8 @@ def edit_records(modeladmin, request, queryset):
                                  "but has been automatically added to this list.")
         link = '<a href="%(url)s" title="%(title)s">%(name)s</a>' % context
         modeladmin_copy.verbose_name_plural = mark_safe(link)
-        RecordFormSet = adminmodelformset_factory(
-            modeladmin_copy, RecordForm, formset=RecordEditFormSet, extra=1, can_delete=True)
+        RecordFormSet = modelformset_factory(
+            modeladmin.model, form=RecordForm, formset=RecordEditFormSet, extra=1, can_delete=True)
         formset = RecordFormSet(queryset=domain.records.all(), prefix=domain.id)
         formset.instance = domain
         formset.cls = RecordFormSet

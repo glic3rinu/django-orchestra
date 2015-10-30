@@ -1,3 +1,4 @@
+import textwrap
 from functools import partial
 
 from django import forms
@@ -35,30 +36,45 @@ class AdminFormMixin(object):
 
 class AdminFormSet(BaseModelFormSet):
     def as_admin(self):
-        prepopulated = {}
-        fieldsets = [
-            (None, {'fields': list(self.form().fields.keys())})
-        ]
-        readonly = getattr(self.form.Meta, 'readonly_fields', ())
-        if not hasattr(self.modeladmin, 'verbose_name_plural'):
-            opts = self.modeladmin.model._meta
-            self.modeladmin.verbose_name_plural = opts.verbose_name_plural
-        inline_admin_formset = helpers.InlineAdminFormSet(self.modeladmin, self,
-            fieldsets, prepopulated, readonly, model_admin=self.modeladmin)
-        template = Template(
-            '{% include "admin/edit_inline/tabular.html" %}'
+        template = Template(textwrap.dedent("""\
+        <div class="inline-group">
+        <div class="tabular inline-related last-related">
+        {{ formset.management_form }}
+        <fieldset class="module">
+            {{ formset.non_form_errors.as_ul }}
+            <table id="formset" class="form">
+            {% for form in formset.forms %}
+              {% if forloop.first %}
+              <thead><tr>
+                {% for field in form.visible_fields %}
+                <th>{{ field.label|capfirst }}</th>
+                {% endfor %}
+              </tr></thead>
+              {% endif %}
+              <tr class="{% cycle row1,row2 %}">
+              {% for field in form.visible_fields %}
+                <td>
+                {# Include the hidden fields in the form #}
+                {% if forloop.first %}
+                  {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                  {% endfor %}
+                {% endif %}
+                  {{ field.errors.as_ul }}
+                  {{ field }}
+                </td>
+              {% endfor %}
+              </tr>
+            {% endfor %}
+            </table>
+        </fieldset>
+        </div>
+        </div>""")
         )
         context = Context({
-            'inline_admin_formset': inline_admin_formset
+            'formset': self
         })
         return template.render(context)
-
-
-def adminmodelformset_factory(modeladmin, form, formset=AdminFormSet, **kwargs):
-    model = kwargs.pop('model', modeladmin.model)
-    formset = modelformset_factory(model, form=form, formset=formset, **kwargs)
-    formset.modeladmin = modeladmin
-    return formset
 
 
 class AdminPasswordChangeForm(forms.Form):

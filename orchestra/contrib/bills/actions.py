@@ -6,14 +6,15 @@ from django.contrib import messages
 from django.contrib.admin import helpers
 from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.forms.models import modelformset_factory
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils import translation, timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 
-from orchestra.admin.forms import adminmodelformset_factory
 from orchestra.admin.decorators import action_with_confirmation
+from orchestra.admin.forms import AdminFormSet
 from orchestra.admin.utils import get_object_from_url, change_url
 
 from . import settings
@@ -41,7 +42,7 @@ def close_bills(modeladmin, request, queryset, action='close_bills'):
         if not bill.is_open:
             messages.warning(request, _("Selected bills should be in open state"))
             return False
-    SelectSourceFormSet = adminmodelformset_factory(modeladmin, SelectSourceForm, extra=0)
+    SelectSourceFormSet = modelformset_factory(modeladmin.model, form=SelectSourceForm, formset=AdminFormSet, extra=0)
     formset = SelectSourceFormSet(queryset=queryset)
     if request.POST.get('post') == 'generic_confirmation':
         formset = SelectSourceFormSet(request.POST, request.FILES, queryset=queryset)

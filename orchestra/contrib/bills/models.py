@@ -312,6 +312,10 @@ class Bill(models.Model):
         html = self.html or self.render()
         return html_to_pdf(html, pagination=self.has_multiple_pages)
     
+    def updated(self):
+        self.updated_on = timezone.now()
+        self.save(update_fields=('updated_on',))
+    
     def save(self, *args, **kwargs):
         if not self.type:
             self.type = self.get_type()

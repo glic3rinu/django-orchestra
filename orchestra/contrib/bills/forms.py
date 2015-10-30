@@ -7,7 +7,7 @@ from orchestra.forms import SpanWidget
 
 class SelectSourceForm(forms.ModelForm):
     bill_link = forms.CharField(label=_("Number"), required=False, widget=SpanWidget)
-    account_link = forms.CharField(label=_("Account"), required=False)
+    account_link = forms.CharField(label=_("Account"), required=False, widget=SpanWidget)
     show_total = forms.CharField(label=_("Total"), required=False, widget=SpanWidget)
     display_type = forms.CharField(label=_("Type"), required=False, widget=SpanWidget)
     source = forms.ChoiceField(label=_("Source"), required=False)
@@ -16,7 +16,6 @@ class SelectSourceForm(forms.ModelForm):
         fields = (
             'bill_link', 'display_type', 'account_link', 'show_total', 'source'
         )
-        readonly_fields = ('account_link',)
     
     def __init__(self, *args, **kwargs):
         super(SelectSourceForm, self).__init__(*args, **kwargs)
@@ -34,6 +33,7 @@ class SelectSourceForm(forms.ModelForm):
             self.fields['show_total'].widget.display = total
             self.fields['bill_link'].widget.display = admin_link('__str__')(bill)
             self.fields['display_type'].widget.display = bill.get_type_display()
+            self.fields['account_link'].widget.display = admin_link('account')(bill)
     
     def clean_source(self):
         source_id = self.cleaned_data['source']

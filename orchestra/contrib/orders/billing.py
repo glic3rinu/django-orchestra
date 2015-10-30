@@ -58,6 +58,7 @@ class BillsBackend(object):
                 order_billed_until=line.order.old_billed_until
             )
             self.create_sublines(billine, line.discounts)
+            bill.updated()
         return bills
     
 #    def format_period(self, ini, end):

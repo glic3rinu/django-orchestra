@@ -49,8 +49,9 @@ class TotalListFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         return (
             ('gt', mark_safe("total &gt; 0")),
-            ('eq', "total = 0"),
             ('lt', mark_safe("total &lt; 0")),
+            ('eq', "total = 0"),
+            ('ne', mark_safe("total &ne; 0")),
         )
     
     def queryset(self, request, queryset):
@@ -60,6 +61,8 @@ class TotalListFilter(SimpleListFilter):
             return queryset.filter(approx_total=0)
         elif self.value() == 'lt':
             return queryset.filter(approx_total__lt=0)
+        elif self.value() == 'ne':
+            return queryset.exclude(approx_total=0)
         return queryset
 
 

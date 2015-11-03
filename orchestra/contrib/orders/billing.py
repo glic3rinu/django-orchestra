@@ -22,7 +22,9 @@ class BillsBackend(object):
                         bill = ProForma.objects.create(account=account)
                     else:
                         bill = ProForma.objects.filter(account=account, is_open=True).last()
-                        if not bill:
+                        if bill:
+                            bill.updated()
+                        else:
                             bill = ProForma.objects.create(account=account, is_open=True)
                     bills.append(bill)
                 else:
@@ -37,7 +39,9 @@ class BillsBackend(object):
                         bill = Invoice.objects.create(account=account)
                     else:
                         bill = Invoice.objects.filter(account=account, is_open=True).last()
-                        if not bill:
+                        if bill:
+                            bill.updated()
+                        else:
                             bill = Invoice.objects.create(account=account, is_open=True)
                     bills.append(bill)
                 else:
@@ -58,7 +62,6 @@ class BillsBackend(object):
                 order_billed_until=line.order.old_billed_until
             )
             self.create_sublines(billine, line.discounts)
-            bill.updated()
         return bills
     
 #    def format_period(self, ini, end):

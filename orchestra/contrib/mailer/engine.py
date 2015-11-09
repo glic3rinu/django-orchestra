@@ -14,17 +14,22 @@ from .models import Message
 
 
 def send_message(message, connection=None, bulk=settings.MAILER_BULK_MESSAGES):
-    if connection is None:
-        # Reset connection with django
-        connection = get_connection(backend='django.core.mail.backends.smtp.EmailBackend')
-        connection.open()
-    error = None
     message.last_try = timezone.now()
     update_fields = ['last_try']
     if message.state != message.QUEUED:
         message.retries += 1
         update_fields.append('retries')
     message.save(update_fields=update_fields)
+    if connection is None:
+        connection = get_connection(backend='django.core.mail.backends.smtp.EmailBackend')
+    if connection.connection is None:
+        try:
+            connection.open()
+        except Exception as err:
+            message.defer()
+            message.log(error)
+            return
+    error = None
     try:
         connection.connection.sendmail(message.from_address, [message.to_address], smart_str(message.content))
     except (SocketError,
@@ -42,13 +47,13 @@ def send_message(message, connection=None, bulk=settings.MAILER_BULK_MESSAGES):
 def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
     try:
         with LockFile('/dev/shm/mailer.send_pending.lock'):
-            connection = None
+            connection = get_connection(backend='django.core.mail.backends.smtp.EmailBackend')
             cur, total = 0, 0
             for message in Message.objects.filter(state=Message.QUEUED).order_by('priority', 'last_try', 'created_at'):
-                if cur >= bulk and connection is not None:
+                if cur >= bulk:
                     connection.close()
                     cur = 0
-                connection = send_message(message, connection, bulk)
+                send_message(message, connection, bulk)
                 cur += 1
                 total += 1
             now = timezone.now()
@@ -57,14 +62,15 @@ def send_pending(bulk=settings.MAILER_BULK_MESSAGES):
                 delta = timedelta(seconds=seconds)
                 qs = qs | Q(retries=retries, last_try__lte=now-delta)
             for message in Message.objects.filter(state=Message.DEFERRED).filter(qs).order_by('priority', 'last_try'):
-                if cur >= bulk and connection is not None:
+                if cur >= bulk:
                     connection.close()
                     cur = 0
-                connection = send_message(message, connection, bulk)
+                send_message(message, connection, bulk)
                 cur += 1
                 total += 1
-            if connection is not None:
-                connection.close()
         return total
     except OperationLocked:
         pass
+    finally:
+        if connection.connection is not None:
+            connection.close()

@@ -9,9 +9,9 @@ from . import engine, settings
 
 
 @task
-def send_message(message):
+def send_message(message, connection=None):
     message.save()
-    engine.send_message(message)
+    engine.send_message(message, connection=connection)
 
 
 @periodic_task(run_every=crontab(hour=7, minute=30))

@@ -1,4 +1,5 @@
 from django.conf import settings as djsettings
+from django.core.mail import get_connection
 from django.core.mail.backends.base import BaseEmailBackend
 
 from orchestra.core.caches import get_request_cache
@@ -27,6 +28,7 @@ class EmailBackend(BaseEmailBackend):
             is_bulk = True
         default_priority = Message.NORMAL if is_bulk else Message.CRITICAL
         num_sent = 0
+        connection = None
         for message in email_messages:
             priority = message.extra_headers.get('X-Mail-Priority', default_priority)
             content = message.message().as_string()
@@ -40,8 +42,12 @@ class EmailBackend(BaseEmailBackend):
                 )
                 if priority == Message.CRITICAL:
                     # send immidiately
-                    send_message.apply_async(message)
+                    if connection is None:
+                        connection = get_connection(backend='django.core.mail.backends.smtp.EmailBackend')
+                    send_message.apply_async(message, connection=connection)
                 else:
                     message.save()
             num_sent += 1
+        if connection is not None:
+            connection.close()
         return num_sent

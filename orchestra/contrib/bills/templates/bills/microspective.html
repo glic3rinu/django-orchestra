@@ -27,7 +27,8 @@
         <span class="name">{{ seller.get_name }}</span>
     </div>
     <div class="contact">
-        <p>{{ seller.address }}<br>
+        <p>{{ seller.vat }}<br>
+        {{ seller.address }}<br>
         {{ seller.zipcode }} - {% trans seller.city %}<br>
         {% trans seller.get_country_display %}<br>
         </p>

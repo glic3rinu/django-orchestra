@@ -139,17 +139,20 @@ class UNIXUserBackend(ServiceController):
                 """) % context
             )
     
-    def revoke_permissions(self, context):
+    def revoke_permissions(self, user, context):
         revoke_perms = {
             'rw': '',
             'r': 'w',
             'w': 'r',
         }
-        context['perms'] = revoke_perms[user.set_perm_perms]
+        context.update({
+            'perms': revoke_perms[user.set_perm_perms],
+            'option': '-x' if user.set_perm_perms == 'rw' else '-m'
+        })
         self.append(textwrap.dedent("""\
             # Revoke permissions
             find '%(perm_to)s' %(exclude_acl)s \\
-                -exec setfacl -m u:%(user)s:%(perms)s {} \\;\
+                -exec setfacl %(option)s u:%(user)s:%(perms)s {} \\;\
             """) % context
         )
     

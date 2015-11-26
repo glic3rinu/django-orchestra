@@ -120,7 +120,10 @@ send_bills.url_name = 'send'
 
 
 def download_bills(modeladmin, request, queryset):
-    if queryset.count() > 1:
+    for bill in queryset:
+        if not validate_contact(request, bill):
+            return False
+    if len(queryset) > 1:
         bytesio = io.BytesIO()
         archive = zipfile.ZipFile(bytesio, 'w')
         for bill in queryset:
@@ -130,7 +133,7 @@ def download_bills(modeladmin, request, queryset):
         response = HttpResponse(bytesio.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="orchestra-bills.zip"'
         return response
-    bill = queryset.get()
+    bill = queryset[0]
     pdf = bill.as_pdf()
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="%s.pdf"' % bill.number

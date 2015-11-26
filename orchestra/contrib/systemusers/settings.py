@@ -12,7 +12,6 @@ SYSTEMUSERS_SHELLS = Setting('SYSTEMUSERS_SHELLS',
         ('/dev/null', _("No shell, FTP only")),
         ('/bin/rssh', _("No shell, SFTP/RSYNC only")),
         ('/bin/bash', "/bin/bash"),
-        ('/bin/sh', "/bin/sh"),
     ),
     validators=[Setting.validate_choices]
 )

@@ -157,7 +157,7 @@ class WordpressMuBackend(ServiceController):
                     mysql %(db_name)s --execute="
                         DELETE FROM m
                             USING wp_domain_mapping AS m, wp_blogs AS b
-                            WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s';
+                            WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s;
                         UPDATE wp_blogs
                             SET path='/'
                             WHERE blog_id = ${existing[0]};"
@@ -165,7 +165,7 @@ class WordpressMuBackend(ServiceController):
                     mysql %(db_name)s --execute="
                         UPDATE wp_domain_mapping as m, wp_blogs as b
                             SET m.domain = '%(custom_domain)s', b.path = '%(custom_path)s'
-                            WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s';"
+                            WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s;"
                 fi
             elif [[ "%(custom_domain)s" != "" ]]; then
                 blog=( $(mysql -Nrs %(db_name)s --execute="
@@ -175,7 +175,7 @@ class WordpressMuBackend(ServiceController):
                 mysql %(db_name)s --execute="
                     UPDATE wp_domain_mapping
                         SET active = 0
-                        WHERE blog_id = ${blog[0]} AND active = 1;
+                        WHERE active AND blog_id = ${blog[0]};
                     INSERT INTO wp_domain_mapping
                         (blog_id, domain, active) VALUES (${blog[0]}, '%(custom_domain)s', 1);"
                 if [[ "${blog[1]}" != "%(custom_path)s" ]]; then

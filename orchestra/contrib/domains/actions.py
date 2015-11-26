@@ -55,7 +55,7 @@ def edit_records(modeladmin, request, queryset):
         link = '<a href="%(url)s" title="%(title)s">%(name)s</a>' % context
         modeladmin_copy.verbose_name_plural = mark_safe(link)
         RecordFormSet = modelformset_factory(
-            modeladmin.model, form=RecordForm, formset=RecordEditFormSet, extra=1, can_delete=True)
+            Record, form=RecordForm, formset=RecordEditFormSet, extra=1, can_delete=True)
         formset = RecordFormSet(queryset=domain.records.all(), prefix=domain.id)
         formset.instance = domain
         formset.cls = RecordFormSet

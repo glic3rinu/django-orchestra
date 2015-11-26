@@ -292,6 +292,7 @@ class Apache2Backend(ServiceController):
         
     def get_security(self, directives):
         rules = []
+        location = '/'
         for values in directives.get('sec-rule-remove', []):
             for rule in values.split():
                 rules.append('SecRuleRemoveById %i' % int(rule))

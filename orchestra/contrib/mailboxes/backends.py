@@ -42,7 +42,7 @@ class SieveFilteringMixin(object):
                 su %(user)s --shell /bin/bash << 'EOF'
                     mkdir -p $(dirname "%(filtering_path)s")
                     cat << '    EOF' > %(filtering_path)s
-                        %(filtering)s
+                %(filtering)s
                     EOF
                     sievec %(filtering_path)s
                 EOF

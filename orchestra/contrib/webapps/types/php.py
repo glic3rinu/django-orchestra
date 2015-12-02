@@ -90,14 +90,14 @@ class PHPApp(AppType):
         # Disable functions
         if self.PHP_DISABLED_FUNCTIONS:
             enable_functions = init_vars.pop('enable_functions', '')
-            if enable_functions or self.is_fpm:
+            disable_functions = set(init_vars.pop('disable_functions', '').split(','))
+            if disable_functions or enable_functions or self.is_fpm:
                 # FPM: Defining 'disable_functions' or 'disable_classes' will not overwrite previously
                 #      defined php.ini values, but will append the new value
                 enable_functions = set(enable_functions.split(','))
-                disable_functions = []
                 for function in self.PHP_DISABLED_FUNCTIONS:
                     if function not in enable_functions:
-                        disable_functions.append(function)
+                        disable_functions.add(function)
                 init_vars['disable_functions'] = ','.join(disable_functions)
         # Process timeout
         if timeout:

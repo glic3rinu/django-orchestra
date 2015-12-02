@@ -106,14 +106,33 @@ class PHPEnableFunctions(PHPAppOption):
     def validate(self):
         # Clean value removing spaces
         self.instance.value = self.instance.value.replace(' ', '')
-        super(PHPEnableFunctions, self).validate()
+        super().validate()
+
+
+class PHPDisableFunctions(PHPAppOption):
+    name = 'disable_functions'
+    verbose_name = _("Disable functions")
+    help_text = _("This directive allows you to disable certain functions for security reasons. "
+                  "It takes on a comma-delimited list of function names. disable_functions is not "
+                  "affected by Safe Mode. Default disabled fuctions include:<br>"
+                  "<tt>%s</tt>") % ',<br>'.join([
+            ','.join(settings.WEBAPPS_PHP_DISABLED_FUNCTIONS[i:i+10])
+                for i in range(0, len(settings.WEBAPPS_PHP_DISABLED_FUNCTIONS), 10)
+        ])
+    regex = r'^[\w\.,-]+$'
+    comma_separated = True
+    
+    def validate(self):
+        # Clean value removing spaces
+        self.instance.value = self.instance.value.replace(' ', '')
+        super().validate()
 
 
 class PHPAllowURLInclude(PHPAppOption):
     name = 'allow_url_include'
     verbose_name = _("Allow URL include")
     help_text = _("Allows the use of URL-aware fopen wrappers with include, include_once, require, "
-                "require_once (On or Off).")
+                  "require_once (On or Off).")
     regex = r'^(On|Off|on|off)$'
 
 

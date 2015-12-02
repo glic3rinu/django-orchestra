@@ -449,3 +449,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # show base and total desglosed
 
 # CLOSE&DOWNLOAD doesn't redirect to anything, confusing for users
+
+
+# Reverse lOgHistory order by date (lastest first)

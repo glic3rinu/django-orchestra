@@ -16,7 +16,7 @@ from .models import Address, Mailbox
 logger = logging.getLogger(__name__)
 
 
-class SieveFilteringMixin(object):
+class SieveFilteringMixin:
     def generate_filter(self, mailbox, context):
         name, content = mailbox.get_filtering()
         for box in re.findall(r'fileinto\s+"([^"]+)"', content):
@@ -114,14 +114,14 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         self.append(textwrap.dedent("""
             nohup bash -c '{ sleep 2 && killall -u %(user)s -s KILL; }' &> /dev/null &
             killall -u %(user)s || true
-            # Restart because of Postfix SASL caches credentials
-            userdel %(user)s || true && RESTART_POSTFIX=1
+            # Restart because of Postfix SASL caching credentials
+            userdel %(user)s && RESTART_POSTFIX=1 || true
             groupdel %(user)s || true""") % context
         )
     
     def commit(self):
         self.append('[[ $RESTART_POSTFIX -eq 1 ]] && service postfix restart')
-        super(UNIXUserMaildirBackend, self).commit()
+        super().commit()
     
     def get_context(self, mailbox):
         context = {
@@ -374,11 +374,11 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
         )
     
     def save(self, address):
-        context = super(PostfixAddressBackend, self).save(address)
+        context = super().save(address)
         self.update_virtual_alias_maps(address, context)
     
     def delete(self, address):
-        context = super(PostfixAddressBackend, self).save(address)
+        context = super().save(address)
         self.exclude_virtual_alias_maps(context)
     
     def commit(self):
@@ -418,7 +418,7 @@ class DovecotMaildirDisk(ServiceMonitor):
     )
     
     def prepare(self):
-        super(DovecotMaildirDisk, self).prepare()
+        super().prepare()
         current_date = self.current_date.strftime("%Y-%m-%d %H:%M:%S %Z")
         self.append(textwrap.dedent("""\
             function monitor () {

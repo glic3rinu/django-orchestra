@@ -113,10 +113,10 @@ def _format_display_objects(modeladmin, request, queryset, related):
         )
         subobjects = []
         attr, verb = related
-        for related in getattr(obj.transactions, attr)():
+        for trans in getattr(obj.transactions, attr)():
             subobjects.append(
                 mark_safe('Transaction: <a href="{}">{}</a> will be marked as {}'.format(
-                    change_url(related), related, verb))
+                    change_url(trans), trans, verb))
             )
         objects.append(subobjects)
     return {'display_objects': objects}

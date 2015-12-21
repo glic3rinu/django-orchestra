@@ -264,13 +264,18 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
     def exclude_virtual_alias_domain(self, context):
         domain = context['domain']
         if self.is_last_domain(domain):
-            self.append(textwrap.dedent("""
-                # Delete %(domain)s virtual domain
-                if grep '^%(domain)s\s*$' %(virtual_alias_domains)s > /dev/null; then
-                    sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s
-                    UPDATED_VIRTUAL_ALIAS_DOMAINS=1
-                fi""") % context
-            )
+            # Prevent deleting the same domain multiple times on bulk deletes
+            if not hasattr(self, '_excluded_domains'):
+                self._excluded_domains = set()
+            if domain.name not in self._excluded_domains:
+                self._excluded_domains.add(domain.name)
+                self.append(textwrap.dedent("""
+                    # Delete %(domain)s virtual domain
+                    if grep '^%(domain)s\s*$' %(virtual_alias_domains)s > /dev/null; then
+                        sed -i '/^%(domain)s\s*/d' %(virtual_alias_domains)s
+                        UPDATED_VIRTUAL_ALIAS_DOMAINS=1
+                    fi""") % context
+                )
     
     def save(self, address):
         context = self.get_context(address)
@@ -378,7 +383,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
         self.update_virtual_alias_maps(address, context)
     
     def delete(self, address):
-        context = super().save(address)
+        context = super().delete(address)
         self.exclude_virtual_alias_maps(context)
     
     def commit(self):

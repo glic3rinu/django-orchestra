@@ -38,7 +38,7 @@ python3 -mvenv env-django-orchestra
 source env-django-orchestra/bin/activate
 
 # Install Orchestra and its dependencies
-pip3 install http://github.com/glic3rinu/django-orchestra/tarball/master#egg=django-orchestra-dev
+pip3 install http://git.io/django-orchestra-dev
 # The only non-pip required dependency for runing pip3 install is python3-dev
 sudo apt-get install python3-dev
 pip3 install -r http://git.io/orchestra-requirements.txt

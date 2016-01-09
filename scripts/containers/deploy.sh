@@ -70,7 +70,7 @@ function install_orchestra () {
         run sudo orchestra-admin install_requirements --testing
     else
         # Install from pip
-        run sudo pip3 install http://github.com/glic3rinu/django-orchestra/tarball/master#egg=django-orchestra-dev
+        run sudo pip3 install http://git.io/django-orchestra-dev
         run sudo orchestra-admin install_requirements
     fi
 }

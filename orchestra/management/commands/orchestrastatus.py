@@ -50,7 +50,11 @@ class Command(BaseCommand):
                     regex = r'location\s+([^\s]+)\s+{.*uwsgi_pass unix:///var/run/uwsgi/app/%(project_name)s/socket;.*' % context
                     location = re.findall(regex, config)
                     if location:
-                        self.stdout.write("   * location %s" % location[0])
+                        ip = run("ip a | grep 'inet ' | awk {'print $2'} | grep -v '^127.0.' | head -n 1 | cut -d'/' -f1").stdout.decode()
+                        if not ip:
+                            ip = '127.0.0.1'
+                        location = 'http://%s%s' % (ip, location[0])
+                        self.stdout.write("   * location %s" % location)
                     else:
                         self.stdout.write("   * location not found")
             elif service == 'postgresql':

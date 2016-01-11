@@ -73,7 +73,7 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 
 9. Start all services:
     ```bash
-    sudo python manage.py startservices
+    sudo python3 manage.py startservices
     ```
 
 

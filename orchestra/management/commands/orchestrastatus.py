@@ -41,7 +41,7 @@ class Command(BaseCommand):
                 self.stdout.write(" %(service)s offline" % context)
             if service == 'nginx':
                 try:
-                    config_path = '/etc/nginx/conf.d/%(project_name)s.conf' % context
+                    config_path = '/etc/nginx/sites-enabled/%(project_name)s.conf' % context
                     with open(config_path, 'r') as handler:
                         config = handler.read().replace('\n', ' ')
                 except FileNotFoundError:
@@ -65,6 +65,12 @@ class Command(BaseCommand):
                     self.stdout.write("   * DB connection failed")
                 else:
                     self.stdout.write("   * DB connection succeeded")
+            elif service == 'uwsgi':
+                uwsgi_config = '/etc/uwsgi/apps-enabled/%(project_name)s.ini' % context
+                if os.path.isfile(uwsgi_config):
+                    self.stdout.write("   * %s exists" % uwsgi_config)
+                else:
+                    self.stdout.write("   * %s does not exist" % uwsgi_config)
         cronbeat = 'crontab -l | grep "^.*/orchestra-beat %(site_dir)s/manage.py"' % context
         if run(cronbeat, valid_codes=(0, 1)).exit_code == 0:
             self.stdout.write(" cronbeat installed")

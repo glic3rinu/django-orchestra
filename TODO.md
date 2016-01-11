@@ -454,4 +454,4 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # Reverse lOgHistory order by date (lastest first)
 
 
-* orchestrastatus command, showing if it is runningg, in what URL and stuff
+* setuppostgres use porject_name for db name and user instead of orchestra

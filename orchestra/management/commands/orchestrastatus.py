@@ -4,7 +4,7 @@ from django.conf import settings as djsettings
 from django.core.management.base import BaseCommand
 from django.db import connections
 
-from orchestra import settings
+from orchestra import settings, get_version
 from orchestra.utils import paths
 from orchestra.utils.sys import run
 
@@ -27,6 +27,7 @@ class Command(BaseCommand):
         banner = "%(project_name)s status" % context
         self.stdout.write(banner)
         self.stdout.write('-'*len(banner))
+        self.stdout.write(' Orchestra version: ' + get_version())
         if djsettings.DEBUG:
             self.stdout.write(" debug enabled")
         else:

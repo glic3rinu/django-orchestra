@@ -12,7 +12,7 @@ def run_tuple(services, action, options, optional=False):
     for service in services:
         if options.get(service):
             valid_codes = (0,1) if optional else (0,)
-            e = run('service %s %s' % (service, action), valid_codes=valid_codes)
+            e = run('service %s %s' % (service, action), valid_codes=valid_codes, display=True)
             if e.exit_code == 1:
                 return False
     return True

@@ -452,3 +452,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 
 # Reverse lOgHistory order by date (lastest first)
+
+
+* orchestrastatus command, showing if it is runningg, in what URL and stuff

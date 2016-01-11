@@ -5,7 +5,7 @@ Django-orchestra ships with a set of management commands for automating some of 
 
 These commands are meant to be run within a **clean** Debian-like distribution, you should be specially careful while following this guide on a customized system.
 
-Django-orchestra can be installed on any Linux system, however it is **strongly recommended** to chose the reference platform for your deployment (Debian 8.0 jessie and Python 3.4).
+Django-orchestra can be installed on any Linux system, however it is **strongly recommended** to chose the reference platform for your deployment (Debian 8.0 Jessie and Python 3.4).
 
 
 1. Create a system user for running Orchestra
@@ -19,9 +19,7 @@ Django-orchestra can be installed on any Linux system, however it is **strongly 
 2. Install django-orchestra's source code
     ```bash
     sudo apt-get install python3-pip
-    sudo pip3 install django-orchestra==dev \
-        --allow-external django-orchestra \
-        --allow-unverified django-orchestra
+    sudo pip3 install http://git.io/django-orchestra-dev
     ```
 
 3. Install requirements

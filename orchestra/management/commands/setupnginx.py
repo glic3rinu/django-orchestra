@@ -194,11 +194,11 @@ class Command(BaseCommand):
         
         uwsgi_conf = textwrap.dedent("""\
             [uwsgi]
-            plugins        = python
+            plugins        = python3
             chdir          = %(site_dir)s
             module         = %(project_name)s.wsgi
             master         = true
-            processes      = %(processes)d
+            workers        = %(processes)d
             chmod-socket   = 664
             stats          = /run/uwsgi/%%(deb-confnamespace)/%%(deb-confname)/statsocket
             uid            = %(user)s

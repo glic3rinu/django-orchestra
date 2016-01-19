@@ -319,9 +319,9 @@ class Apache2Backend(ServiceController):
         for redirect in directives.get('redirect', []):
             location, target = redirect.split()
             if re.match(r'^.*[\^\*\$\?\)]+.*$', redirect):
-                redirect = "RedirectMatch %s %s" % (location, target)
+                redirect = "RedirectMatch 301 %s %s" % (location, target)
             else:
-                redirect = "Redirect %s %s" % (location, target)
+                redirect = "Redirect 301 %s %s" % (location, target)
             redirects.append(
                 (location, redirect)
             )

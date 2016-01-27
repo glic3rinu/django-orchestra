@@ -455,3 +455,4 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 
 * setuppostgres use porject_name for db name and user instead of orchestra
+* show all available choices (plugins) on admin settings value i.e. payment methods

@@ -226,14 +226,14 @@ class Bill(models.Model):
         prefix = getattr(settings, 'BILLS_%s_NUMBER_PREFIX' % bill_type)
         if self.is_open:
             prefix = 'O{}'.format(prefix)
-        bills = cls.objects.filter(number__regex=r'^%s[1-9]+' % prefix)
+        year = timezone.now().strftime("%Y")
+        bills = cls.objects.filter(number__regex=r'^%s%s[1-9]+' % (prefix, year)
         last_number = bills.order_by('-number').values_list('number', flat=True).first()
         if last_number is None:
             last_number = 0
         else:
             last_number = int(last_number[len(prefix)+4:])
         number = last_number + 1
-        year = timezone.now().strftime("%Y")
         number_length = settings.BILLS_NUMBER_LENGTH
         zeros = (number_length - len(str(number))) * '0'
         number = zeros + str(number)

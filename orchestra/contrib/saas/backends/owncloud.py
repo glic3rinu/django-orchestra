@@ -8,28 +8,18 @@ import requests
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController
+from orchestra.contrib.resources import ServiceMonitor
 
-from . import ApacheTrafficByHost
+from . import ApacheTrafficByName
 from .. import settings
 
 
-class OwnCloudBackend(ServiceController):
-    """
-    Creates a wordpress site on a WordPress MultiSite installation.
-    
-    You should point it to the database server
-    """
-    verbose_name = _("ownCloud SaaS")
-    model = 'saas.SaaS'
-    default_route_match = "saas.service == 'owncloud'"
-    doc_settings = (settings,
-        ('SAAS_OWNCLOUD_API_URL',)
-    )
-    
+class OwnClouwAPIMixin(object):
     def validate_response(self, response):
+        request = response.request
+        context = (request.method, response.url, request.body, response.status_code)
+        sys.stderr.write("%s %s '%s' HTTP %s\n" % context)
         if response.status_code != requests.codes.ok:
-            request = response.request
-            context = (request.method, response.url, request.body, response.status_code)
             raise RuntimeError("%s %s '%s' HTTP %s" % context)
         root = ET.fromstring(response.text)
         statuscode = root.find("./meta/statuscode").text
@@ -66,10 +56,56 @@ class OwnCloudBackend(ServiceController):
         self.api_post('users', data)
     
     def update(self, saas):
+        """
+        key: email|quota|display|password
+        value: el valor a modificar.
+            Si es un email, tornarà un error si la direcció no te la "@"
+            Si es una quota, sembla que algo per l'estil "5G", "100M", etc. funciona. Quota 0 = infinit
+            "display" es el display name, no crec que el fem servir, és cosmetic
+        """
         data = {
-            'password': saas.password,
+            'key': 'password',
+            'value': saas.password,
         }
         self.api_put('users/%s' % saas.name, data)
+    
+    def get_user(self, saas):
+        """
+        {
+            'displayname'
+            'email'
+            'quota' =>
+            {
+                'free' (en Bytes)
+                'relative' (en tant per cent sense signe %, e.g. 68.17)
+                'total' (en Bytes)
+                'used' (en Bytes)
+            }
+        }
+        """
+        response = self.api_get('users/%s' % saas.name)
+        root = ET.fromstring(response.text)
+        ret = {}
+        for data in root.find('./data'):
+            ret[data.tag] = data.text
+        ret['quota'] = {}
+        for data in root.find('.data/quota'):
+            ret['quota'][data.tag] = data.text
+        return ret
+
+
+class OwnCloudBackend(OwnClouwAPIMixin, ServiceController):
+    """
+    Creates a wordpress site on a WordPress MultiSite installation.
+    
+    You should point it to the database server
+    """
+    verbose_name = _("ownCloud SaaS")
+    model = 'saas.SaaS'
+    default_route_match = "saas.service == 'owncloud'"
+    doc_settings = (settings,
+        ('SAAS_OWNCLOUD_API_URL',)
+    )
     
     def update_or_create(self, saas, server):
         try:
@@ -93,11 +129,41 @@ class OwnCloudBackend(ServiceController):
         self.append(self.remove, saas)
 
 
-class OwncloudTraffic(ApacheTrafficByHost):
-    __doc__ = ApacheTrafficByHost.__doc__
+class OwncloudTraffic(ApacheTrafficByName):
+    __doc__ = ApacheTrafficByName.__doc__
     verbose_name = _("ownCloud SaaS Traffic")
     default_route_match = "saas.service == 'owncloud'"
     doc_settings = (settings,
         ('SAAS_TRAFFIC_IGNORE_HOSTS', 'SAAS_OWNCLOUD_LOG_PATH')
     )
     log_path = settings.SAAS_OWNCLOUD_LOG_PATH
+
+
+class OwnCloudDiskQuota(OwnClouwAPIMixin, ServiceMonitor):
+    model = 'saas.SaaS'
+    verbose_name = _("ownCloud SaaS Disk Quota")
+    default_route_match = "saas.service == 'owncloud'"
+    resource = ServiceMonitor.DISK
+    delete_old_equal_values = True
+    
+    def monitor(self, user):
+        context = self.get_context(user)
+        self.append("echo %(object_id)s $(monitor %(base_home)s)" % context)
+    
+    def get_context(self, user):
+        context = {
+            'object_id': user.pk,
+            'base_home': user.get_base_home(),
+        }
+        return replace(context, "'", '"')
+    
+    def get_quota(self, saas, server):
+        user = self.get_user(saas)
+        context = {
+            'object_id': saas.pk,
+            'used': user['quota'].get('used', 0),
+        }
+        sys.stdout.write('%(object_id)i %(used)i\n' % context)
+    
+    def monitor(self, saas):
+        self.append(self.get_quota, saas)

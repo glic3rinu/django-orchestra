@@ -17,6 +17,7 @@ SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES',
         'orchestra.contrib.saas.services.wordpress.WordPressService',
         'orchestra.contrib.saas.services.dokuwiki.DokuWikiService',
         'orchestra.contrib.saas.services.drupal.DrupalService',
+        'orchestra.contrib.saas.services.owncloud.OwnCloudService',
         'orchestra.contrib.saas.services.seafile.SeaFileService',
     ),
     # lazy loading
@@ -198,6 +199,24 @@ SAAS_SEAFILE_DOMAIN = Setting('SAAS_SEAFILE_DOMAIN',
 
 SAAS_SEAFILE_DEFAULT_QUOTA = Setting('SAAS_SEAFILE_DEFAULT_QUOTA',
     50
+)
+
+
+# ownCloud
+
+SAAS_OWNCLOUD_DOMAIN = Setting('SAAS_OWNCLOUD_DOMAIN',
+    'owncloud.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
+)
+
+SAAS_OWNCLOUD_API_URL = Setting('SAAS_OWNCLOUD_API_URL',
+    'https://admin:secret@owncloud.{}/ocs/v1.php/cloud/'.format(ORCHESTRA_BASE_DOMAIN),
+)
+
+SAAS_OWNCLOUD_LOG_PATH = Setting('SAAS_OWNCLOUD_LOG_PATH',
+    '',
+    help_text=_('Filesystem path for the webserver access logs.<br>'
+                '<tt>LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Host}i\"" host</tt>'),
 )
 
 

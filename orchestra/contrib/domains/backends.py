@@ -25,7 +25,7 @@ class Bind9MasterDomainBackend(ServiceController):
         ('domains.Record', 'domain__origin'),
         ('domains.Domain', 'origin'),
     )
-    ignore_fields = ['serial']
+    ignore_fields = ('serial',)
     doc_settings = (settings,
         ('DOMAINS_MASTERS_PATH',)
     )

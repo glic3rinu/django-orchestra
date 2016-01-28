@@ -102,7 +102,7 @@ class Domain(models.Model):
             for domain in self.subdomains.exclude(pk=self.pk):
                 # queryset.update() is not used because we want to trigger backend to delete ex-topdomains
                 domain.top = self
-                domain.save(update_fields=['top'])
+                domain.save(update_fields=('top',))
     
     def get_description(self):
         if self.is_top:
@@ -151,7 +151,7 @@ class Domain(models.Model):
             serial = str(self.serial)[:8] + '%.2d' % num
             serial = int(serial)
         self.serial = serial
-        self.save(update_fields=['serial'])
+        self.save(update_fields=('serial',))
     
     def get_records(self):
         types = {}

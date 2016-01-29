@@ -1,4 +1,4 @@
-from django.db.models.signals import pre_save, post_delete
+from django.db.models.signals import pre_save, post_delete, post_save
 from django.dispatch import receiver
 
 from . import settings
@@ -37,7 +37,15 @@ def create_local_address(sender, *args, **kwargs):
                 name=mbox.name, domain=domain, account_id=domain.account_id)
             if created:
                 if domain.account_id == mbox.account_id:
-                    addr.mailboxes.add(mbox)
+                    mbox._post_save_add_address = addr
                 else:
                     addr.forward = mbox.name
                     addr.save(update_fields=('forward',))
+
+
+@receiver(post_save, sender=Mailbox, dispatch_uid='mailboxes.add_local_address')
+def add_local_address(sender, *args, **kwargs):
+    mbox = kwargs['instance']
+    addr = getattr(mbox, '_post_save_add_address', None)
+    if addr:
+        addr.mailboxes.add(mbox)

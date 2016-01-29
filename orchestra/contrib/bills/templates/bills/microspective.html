@@ -69,6 +69,7 @@
 {% endblock %}
 
 {% block content %}
+{% block lines %}
 <div id="lines">
     <span class="title column-id">id</span>
     <span class="title column-description">{% trans "description" %}</span>
@@ -106,6 +107,9 @@
         {% endwith %}
     {% endfor %}
 </div>
+{% endblock %}
+
+{% block totals %}
 <div id="totals">
     <br>&nbsp;<br>
     {% for tax, subtotal in bill.compute_subtotals.items %}
@@ -120,6 +124,7 @@
     <span class="total column-value">{{ bill.compute_total }} &{{ currency.lower }};</span>
     <br>
 </div>
+{% endblock %}
 {% endblock %}
 
 {% block footer %}

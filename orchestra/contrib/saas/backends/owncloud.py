@@ -161,7 +161,7 @@ class OwnCloudDiskQuota(OwnClouwAPIMixin, ServiceMonitor):
         user = self.get_user(saas)
         context = {
             'object_id': saas.pk,
-            'used': user['quota'].get('used', 0),
+            'used': int(user['quota'].get('used', 0)),
         }
         sys.stdout.write('%(object_id)i %(used)i\n' % context)
     

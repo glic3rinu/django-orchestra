@@ -24,6 +24,14 @@
     margin: 10px;
 }
 
+#extralines {
+    clear: left;
+    clear: right;
+    text-align: right;
+    color: #A40000;
+    font-weight: bold;
+    text-align: center;
+}
 
 #number-date {
     font-size: large;
@@ -66,7 +74,7 @@
     clear: left;
     clear: right;
     text-align: right;
-    margin: 240px 10px 50px 10px;
+    margin: 40px 10px 50px 10px;
     font-weight: bold;
     color: #666;
 }
@@ -110,18 +118,35 @@ hr {
 </div>
 
 <div id="date" class="column-2">
-{% with line=bill.lines.get %}
+{% with line=bill.lines.first %}
 {% blocktrans with ini=line.start_on|date:"F j, Y" end=line.end_on|date:"F j, Y" %}From {{ ini }} to {{ end }}{% endblocktrans %}
 {% endwith %}
 </div>
 {% endblock %}
 
+
+
 {% block content %}
+{% block lines %}
+<div id="extralines">
+{% for line in bill.lines.all %}
+    <ul>
+    {% if not forloop.first %}
+        <li>{{ line.description }}</li>
+    {% endif %}
+    </ul>
+{% endfor %}
+</div>
+{% endblock %}
+
+{% block text %}
 <div id="text">
 {% blocktrans %}
 <strong>With your membership</strong> you are supporting ...
 {% endblocktrans %}
 </div>
+{% endblock %}
+
 {% endblock %}
 
 {% block footer %}

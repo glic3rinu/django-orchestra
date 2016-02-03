@@ -20,6 +20,12 @@ MAILBOXES_DOMAIN_MODEL = Setting('MAILBOXES_DOMAIN_MODEL', 'domains.Domain',
 )
 
 
+MAILBOXES_NAME_MAX_LENGTH = Setting('MAILBOXES_NAME_MAX_LENGTH',
+    64,
+    help_text=_("Limit for system user based mailbox on Linux should be 32.")
+)
+
+
 MAILBOXES_HOME = Setting('MAILBOXES_HOME',
     '/home/%(name)s',
     help_text="Available fromat names: <tt>%s</tt>" % ', '.join(_names),

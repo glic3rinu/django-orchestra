@@ -3,13 +3,14 @@ import socket
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 from django.utils.module_loading import autodiscover_modules
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.core.validators import validate_ip_address, ValidationError
+from orchestra.core.validators import validate_ip_address, validate_hostname, OrValidator
 from orchestra.models.fields import NullableCharField, MultiSelectField
 
 from . import settings
@@ -21,9 +22,13 @@ logger = logging.getLogger(__name__)
 
 class Server(models.Model):
     """ Machine runing daemons (services) """
-    name = models.CharField(_("name"), max_length=256, unique=True)
+    name = models.CharField(_("name"), max_length=256, unique=True,
+        help_text=_("Verbose name or hostname of this server."))
     address = NullableCharField(_("address"), max_length=256, blank=True,
-        null=True, unique=True, help_text=_("IP address or domain name"))
+        validators=[OrValidator(validate_ip_address, validate_hostname)],
+        null=True, unique=True, help_text=_(
+            "Optional IP address or domain name. Name field will be used if not provided.<br>"
+            "If the IP address never change you can set this field and save DNS requests."))
     description = models.TextField(_("description"), blank=True)
     os = models.CharField(_("operative system"), max_length=32,
         choices=settings.ORCHESTRATION_OS_CHOICES,
@@ -38,14 +43,24 @@ class Server(models.Model):
         return self.name
     
     def get_ip(self):
-        if self.address:
-            return self.address
+        address = self.get_address()
         try:
-            validate_ip_address(self.name)
+            return validate_ip_address(address)
         except ValidationError:
             return socket.gethostbyname(self.name)
-        else:
-            return self.name
+    
+    def clean(self):
+        self.name = self.name.strip()
+        self.address = self.address.strip()
+        if self.name and not self.address:
+            validate = OrValidator(validate_ip_address, validate_hostname)
+            validate_hostname(self.name)
+            try:
+                validate(self.name)
+            except ValidationError as err:
+                raise ValidationError({
+                    'name': _("Name should be a valid hostname or IP address when address is not provided.")
+                })
 
 
 class BackendLog(models.Model):

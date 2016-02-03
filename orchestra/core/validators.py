@@ -37,6 +37,25 @@ def all_valid(*args):
         raise ValidationError(errors)
 
 
+class OrValidator(object):
+    """
+    Run validators with an OR logic
+    """
+    def __init__(self, *validators):
+        self.validators = validators
+    
+    def __call__(self, value):
+        msg = []
+        for validator in self.validators:
+            try:
+                validator(value)
+            except ValidationError as err:
+                msg.append(str(err))
+            else:
+                return
+        raise ValidationError(' OR '.join(msg))
+
+
 def validate_ipv4_address(value):
     msg = _("Not a valid IPv4 address")
     try:

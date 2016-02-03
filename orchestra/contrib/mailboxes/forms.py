@@ -44,6 +44,13 @@ class MailboxForm(forms.ModelForm):
         
         if self.instance and self.instance.pk:
             self.fields['addresses'].initial = self.instance.addresses.all()
+    
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        max_length = settings.MAILBOXES_NAME_MAX_LENGTH
+        if len(name) > max_length:
+            raise ValidationError("Name length should be less than %i" % max_length)
+        return name
 
 
 class MailboxChangeForm(UserChangeForm, MailboxForm):

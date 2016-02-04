@@ -27,7 +27,7 @@ class Server(models.Model):
     address = NullableCharField(_("address"), max_length=256, blank=True,
         validators=[OrValidator(validate_ip_address, validate_hostname)],
         null=True, unique=True, help_text=_(
-            "Optional IP address or domain name. Name field will be used if not provided.<br>"
+            "Optional IP address or domain name. If blank, name field will be used for address resolution.<br>"
             "If the IP address never changes you can set this field and save DNS requests."))
     description = models.TextField(_("description"), blank=True)
     os = models.CharField(_("operative system"), max_length=32,

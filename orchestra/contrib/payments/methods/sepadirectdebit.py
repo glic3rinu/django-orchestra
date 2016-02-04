@@ -1,8 +1,6 @@
 import datetime
-import lxml.builder
+import logging
 import os
-from lxml import etree
-from lxml.builder import E
 from io import StringIO
 
 from django import forms
@@ -15,6 +13,14 @@ from orchestra.plugins.forms import PluginDataForm
 
 from .. import settings
 from .options import PaymentMethod
+
+
+logger = logging.getLogger(__name__)
+
+try:
+    import lxml
+except ImportError:
+    logger.error('Error loading lxml, module not install')
 
 
 class SEPADirectDebitForm(PluginDataForm):
@@ -76,6 +82,8 @@ class SEPADirectDebit(PaymentMethod):
     
     @classmethod
     def process_credits(cls, transactions):
+        import lxml.builder
+        from lxml.builder import E
         from ..models import TransactionProcess
         process = TransactionProcess.objects.create()
         context = cls.get_context(transactions)
@@ -120,6 +128,8 @@ class SEPADirectDebit(PaymentMethod):
     
     @classmethod
     def process_debts(cls, transactions):
+        import lxml.builder
+        from lxml.builder import E
         from ..models import TransactionProcess
         process = TransactionProcess.objects.create()
         context = cls.get_context(transactions)
@@ -185,6 +195,8 @@ class SEPADirectDebit(PaymentMethod):
     
     @classmethod
     def get_debt_transactions(cls, transactions, process):
+        import lxml.builder
+        from lxml.builder import E
         for transaction in transactions:
             transaction.process = process
             transaction.state = transaction.WAITTING_EXECUTION
@@ -228,6 +240,8 @@ class SEPADirectDebit(PaymentMethod):
     
     @classmethod
     def get_credit_transactions(transactions, process):
+        import lxml.builder
+        from lxml.builder import E
         for transaction in transactions:
             transaction.process = process
             transaction.state = transaction.WAITTING_EXECUTION
@@ -263,6 +277,8 @@ class SEPADirectDebit(PaymentMethod):
     
     @classmethod
     def get_header(cls, context, process):
+        import lxml.builder
+        from lxml.builder import E
         return E.GrpHdr(                            # Group Header
             E.MsgId(str(process.id)),           # Message Id
             E.CreDtTm(                              # Creation Date Time
@@ -284,6 +300,7 @@ class SEPADirectDebit(PaymentMethod):
     
     @classmethod
     def process_xml(cls, sepa, xsd, file_name, process):
+        from lxml import etree
         # http://www.iso20022.org/documents/messages/1_0_version/pain/schemas/pain.008.001.02.zip
         path = os.path.dirname(os.path.realpath(__file__))
         xsd_path = os.path.join(path, xsd)

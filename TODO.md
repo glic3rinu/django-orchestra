@@ -460,29 +460,3 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 
 # POSTFIX web traffic monitor '": uid=" from=<%(user)s>'
-
-# orchestra.server PING/SSH+uptime status
-    class ServerState(models.Model):
-        server = models.OneToOneField(Server)
-        ping = models.CharField(max_length=256)
-        uptime = models.CharField(max_length=256)
-    from orchestra.contrib.orchestration.models import Server
-    from orchestra.utils.sys import run, sshrun, joinall
-    def retrieve_state(servers):
-        uptimes = []
-        pings = []
-        for server in servers:
-            address = server.get_address()
-            ping = run('ping -c 1 %s' % address, async=True)
-            pings.append(ping)
-            uptime = sshrun(address, 'uptime', persist=True, async=True)
-            uptimes.append(uptime)
-        
-        pings = joinall(pings, silent=True)
-        uptimes = joinall(uptimes, silent=True)
-        for ping in pings:
-            print(ping.stdout.splitlines()[-1])
-        
-        for uptime in uptimes:
-            print(uptime.stdout)
-    retrieve_state(Server.objects.all())

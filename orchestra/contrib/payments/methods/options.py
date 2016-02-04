@@ -8,9 +8,6 @@ from orchestra.utils.python import import_class
 from .. import settings
 
 
-logger = logging.getLogger(__name__)
-
-
 class PaymentMethod(plugins.Plugin):
     label_field = 'label'
     number_field = 'number'
@@ -24,10 +21,7 @@ class PaymentMethod(plugins.Plugin):
     def get_plugins(cls):
         plugins = []
         for cls in settings.PAYMENTS_ENABLED_METHODS:
-            try:
-                plugins.append(import_class(cls))
-            except ImportError as exc:
-                logger.error('Error loading %s: %s' % (cls, exc))
+            plugins.append(import_class(cls))
         return plugins
     
     def get_label(self):

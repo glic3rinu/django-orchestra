@@ -11,6 +11,7 @@ from . import settings, helpers
 from .backends import ServiceBackend
 from .forms import RouteForm
 from .models import Server, Route, BackendLog, BackendOperation
+from .utils import retrieve_state
 from .widgets import RouteBackendSelect
 
 
@@ -167,9 +168,25 @@ class BackendLogAdmin(admin.ModelAdmin):
 
 
 class ServerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'address', 'os')
+    list_display = ('name', 'address', 'os', 'display_ping', 'display_uptime')
     list_filter = ('os',)
-
+    
+    def display_ping(self, instance):
+        return self._remote_state[instance.pk][0]
+    display_ping.short_description = _("Ping")
+    display_ping.allow_tags = True
+    
+    def display_uptime(self, instance):
+        return self._remote_state[instance.pk][1]
+    display_uptime.short_description = _("Uptime")
+    display_uptime.allow_tags = True
+    
+    def get_queryset(self, request):
+        """ Order by structured name and imporve performance """
+        qs = super(ServerAdmin, self).get_queryset(request)
+        if request.method == 'GET' and request.resolver_match.func.__name__ == 'changelist_view':
+            self._remote_state = retrieve_state(qs)
+        return qs
 
 admin.site.register(Server, ServerAdmin)
 admin.site.register(BackendLog, BackendLogAdmin)

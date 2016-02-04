@@ -348,6 +348,17 @@ class PHPUploadMaxFileSize(PHPAppOption):
     regex = r'^[0-9]{1,3}M$'
 
 
+class PHPUploadTmpDir(PHPAppOption):
+    name = 'upload_tmp_dir'
+    verbose_name = _("Upload tmp dir")
+    help_text = _("The temporary directory used for storing files when doing file upload. "
+                  "Must be writable by whatever user PHP is running as. "
+                  "If not specified PHP will use the system's default.<br>"
+                  "If the directory specified here is not writable, PHP falls back to the "
+                  "system default temporary directory. If open_basedir is on, then the system "
+                  "default directory must be allowed for an upload to succeed.")
+    regex = r'.*$'
+
 class PHPZendExtension(PHPAppOption):
     name = 'zend_extension'
     verbose_name = _("Zend extension")

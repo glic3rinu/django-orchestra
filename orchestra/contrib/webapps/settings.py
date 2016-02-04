@@ -251,6 +251,7 @@ WEBAPPS_ENABLED_OPTIONS = Setting('WEBAPPS_ENABLED_OPTIONS', (
         'orchestra.contrib.webapps.options.PHPSuhosinSimulation',
         'orchestra.contrib.webapps.options.PHPSuhosinExecutorIncludeWhitelist',
         'orchestra.contrib.webapps.options.PHPUploadMaxFileSize',
+        'orchestra.contrib.webapps.options.PHPUploadTmpDir',
         'orchestra.contrib.webapps.options.PHPZendExtension',
     ),
     # lazy loading

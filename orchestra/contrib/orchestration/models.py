@@ -28,7 +28,7 @@ class Server(models.Model):
         validators=[OrValidator(validate_ip_address, validate_hostname)],
         null=True, unique=True, help_text=_(
             "Optional IP address or domain name. Name field will be used if not provided.<br>"
-            "If the IP address never change you can set this field and save DNS requests."))
+            "If the IP address never changes you can set this field and save DNS requests."))
     description = models.TextField(_("description"), blank=True)
     os = models.CharField(_("operative system"), max_length=32,
         choices=settings.ORCHESTRATION_OS_CHOICES,

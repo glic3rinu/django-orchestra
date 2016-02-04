@@ -143,6 +143,14 @@ def join(iterator, display=False, silent=False, valid_codes=(0,)):
     return out
 
 
+def joinall(iterators, **kwargs):
+    results = []
+    for iterator in iterators:
+        out = join(iterator, **kwargs)
+        results.append(out)
+    return results
+
+
 def run(command, display=False, valid_codes=(0,), silent=False, stdin=b'', async=False):
     iterator = runiterator(command, display, stdin)
     next(iterator)
@@ -151,22 +159,24 @@ def run(command, display=False, valid_codes=(0,), silent=False, stdin=b'', async
     return join(iterator, display=display, silent=silent, valid_codes=valid_codes)
 
 
-def sshrun(addr, command, *args, executable='bash', persist=False, **kwargs):
-    from .. import settings
-    options = [
-        'stricthostkeychecking=no',
-        'BatchMode=yes',
-        'EscapeChar=none',
-    ]
+def sshrun(addr, command, *args, executable='bash', persist=False, options=None, **kwargs):
+    base_options = {
+        'stricthostkeychecking': 'no',
+        'BatchMode': 'yes',
+        'EscapeChar': 'none',
+    }
     if persist:
-        options.extend((
-            'ControlMaster=auto',
-            'ControlPersist=yes',
-            'ControlPath=' + settings.ORCHESTRA_SSH_CONTROL_PATH,
-        ))
+        from .. import settings
+        base_options.update({
+            'ControlMaster': 'auto',
+            'ControlPersist': 'yes',
+            'ControlPath': settings.ORCHESTRA_SSH_CONTROL_PATH,
+        })
+    base_options.update(options or {})
+    options = ['%s=%s' % (k, v) for k, v in base_options.items()]
     options = ' -o '.join(options)
-    cmd = 'ssh -o {options} -C root@{addr} {executable}'.format(options=options, addr=addr,
-        executable=executable)
+    cmd = 'ssh -o {options} -C root@{addr} {executable}'.format(
+        options=options, addr=addr, executable=executable)
     return run(cmd, *args, stdin=command.encode('utf8'), **kwargs)
 
 

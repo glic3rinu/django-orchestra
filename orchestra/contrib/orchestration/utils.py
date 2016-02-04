@@ -18,7 +18,7 @@ def retrieve_state(servers):
         if ping.startswith('rtt'):
             ping = '%s ms' % ping.split('/')[4]
         else:
-            ping = '<span style="color:red"><b>Offline<b></span>'
+            ping = '<span style="color:red">Offline</span>'
         
         uptime = join(uptime, silent=True)
         uptime_stderr = uptime.stderr.decode()
@@ -26,7 +26,7 @@ def retrieve_state(servers):
         if uptime:
             uptime = 'Up %s %s load %s %s %s' % (uptime[2], uptime[3], uptime[-3], uptime[-2], uptime[-1])
         else:
-            uptime = '<span style="color:red"><b>%s<b></span>' % uptime_stderr
+            uptime = '<span style="color:red">%s</span>' % uptime_stderr
         state[server.pk] = (ping, uptime)
     
     return state

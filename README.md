@@ -34,6 +34,7 @@ This deployment is not suitable for production but more than enough for checking
 
 ```bash
 # Create and activate a Python virtualenv
+# Make sure python3.x-venv package is installed on your system
 python3 -mvenv env-django-orchestra
 source env-django-orchestra/bin/activate
 

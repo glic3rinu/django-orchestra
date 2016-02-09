@@ -15,7 +15,8 @@ class Mailbox(models.Model):
     CUSTOM = 'CUSTOM'
     
     name = models.CharField(_("name"), max_length=64, unique=True,
-        help_text=_("Required. 30 characters or fewer. Letters, digits and ./-/_ only."),
+        help_text=_("Required. %s characters or fewer. Letters, digits and ./-/_ only.") %
+            settings.MAILBOXES_NAME_MAX_LENGTH,
         validators=[
             RegexValidator(r'^[\w.-]+$', _("Enter a valid mailbox name.")),
         ])

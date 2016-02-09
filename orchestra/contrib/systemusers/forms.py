@@ -9,7 +9,7 @@ from orchestra.forms import UserCreationForm, UserChangeForm
 
 from . import settings
 from .models import SystemUser
-from .validators import validate_home, validate_path_exists
+from .validators import validate_home, validate_paths_exist
 
 
 class SystemUserFormMixin(object):
@@ -89,7 +89,56 @@ class SystemUserChangeForm(SystemUserFormMixin, UserChangeForm):
     pass
 
 
-class PermissionForm(forms.Form):
+class LinkForm(forms.Form):
+    base_home = forms.ChoiceField(label=_("Target path"), choices=(),
+        help_text=_("Target link will be under this directory."))
+    home_extension = forms.CharField(label=_("Home extension"), required=False, initial='',
+        widget=forms.TextInput(attrs={'size':'70'}), help_text=_("Relative to chosen home."))
+    link_name = forms.CharField(label=_("Link name"), required=False, initial='',
+        widget=forms.TextInput(attrs={'size':'70'}),
+        help_text=_("If left blank or relative path: link will be created in each user home."))
+    
+    def __init__(self, *args, **kwargs):
+        self.instance = args[0]
+        self.queryset = kwargs.pop('queryset', [])
+        super_args = []
+        if len(args) > 1:
+            super_args.append(args[1])
+        super(LinkForm, self).__init__(*super_args, **kwargs)
+        related_users = type(self.instance).objects.filter(account=self.instance.account_id)
+        self.fields['base_home'].choices = (
+            (user.get_base_home(), user.get_base_home()) for user in related_users
+        )
+    
+    def clean_home_extension(self):
+        home_extension = self.cleaned_data['home_extension']
+        return home_extension.lstrip('/')
+    
+    def clean_link_name(self):
+        link_name = self.cleaned_data['link_name']
+        if link_name:
+            if link_name.startswith('/'):
+                if len(self.queryset) > 1:
+                    raise ValidationError(_("Link name can not be a full path when multiple users."))
+                link_names = [os.path.dirname(link_name)]
+            else:
+                link_names = [os.path.join(user.home, os.path.dirname(link_names)) for user in self.queryset]
+            validate_paths_exist(self.instance, link_names)
+        return link_name
+    
+    def clean(self):
+        cleaned_data = super(LinkForm, self).clean()
+        path = os.path.join(cleaned_data['base_home'], cleaned_data['home_extension'])
+        try:
+            validate_paths_exist(self.instance, [path])
+        except ValidationError as err:
+            raise ValidationError({
+                'home_extension': err,
+            })
+        return cleaned_data
+
+
+class PermissionForm(LinkForm):
     set_action = forms.ChoiceField(label=_("Action"), initial='grant',
         choices=(
             ('grant', _("Grant")),
@@ -105,29 +154,3 @@ class PermissionForm(forms.Form):
             ('r', _("Read only")),
             ('w', _("Write only"))
         ))
-    
-    def __init__(self, *args, **kwargs):
-        self.instance = args[0]
-        super_args = []
-        if len(args) > 1:
-            super_args.append(args[1])
-        super(PermissionForm, self).__init__(*super_args, **kwargs)
-        related_users = type(self.instance).objects.filter(account=self.instance.account_id)
-        self.fields['base_home'].choices = (
-            (user.get_base_home(), user.get_base_home()) for user in related_users
-        )
-    
-    def clean_home_extension(self):
-        home_extension = self.cleaned_data['home_extension']
-        return home_extension.lstrip('/')
-    
-    def clean(self):
-        cleaned_data = super(PermissionForm, self).clean()
-        path = os.path.join(cleaned_data['base_home'], cleaned_data['home_extension'])
-        try:
-            validate_path_exists(self.instance, path)
-        except ValidationError as err:
-            raise ValidationError({
-                'home_extension': err,
-            })
-        return cleaned_data

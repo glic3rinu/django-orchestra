@@ -37,7 +37,7 @@ class MiscServiceAdmin(ExtendedModelAdmin):
         """ return num slivers as a link to slivers changelist view """
         num = misc.instances__count
         url = reverse('admin:miscellaneous_miscellaneous_changelist')
-        url += '?service={}'.format(misc.pk)
+        url += '?service__name={}'.format(misc.name)
         return mark_safe('<a href="{0}">{1}</a>'.format(url, num))
     num_instances.short_description = _("Instances")
     num_instances.admin_order_field = 'instances__count'

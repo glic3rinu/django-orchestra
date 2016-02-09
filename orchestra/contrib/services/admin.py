@@ -66,7 +66,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     def num_orders(self, service):
         num = service.orders__count
         url = reverse('admin:orders_order_changelist')
-        url += '?service=%i&is_active=True' % service.pk
+        url += '?service__id__exact=%i&is_active=True' % service.pk
         return '<a href="%s">%d</a>' % (url, num)
     num_orders.short_description = _("Orders")
     num_orders.admin_order_field = 'orders__count'

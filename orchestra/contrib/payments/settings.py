@@ -41,6 +41,6 @@ PAYMENTS_ENABLED_METHODS = Setting('PAYMENTS_ENABLED_METHODS',
         'orchestra.contrib.payments.methods.creditcard.CreditCard',
     ),
     # lazy loading
-    choices=lambda : ((m.get_class_path(), m.get_class_path()) for m in payments.methods.PaymentMethod.get_plugins()),
+    choices=lambda : ((m.get_class_path(), m.get_class_path()) for m in payments.methods.PaymentMethod.get_plugins(all=True)),
     multiple=True,
 )

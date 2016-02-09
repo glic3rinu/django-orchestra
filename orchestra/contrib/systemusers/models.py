@@ -123,12 +123,6 @@ class SystemUser(models.Model):
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
     
-    def set_permission(self, base_home, extension, perms='rw', action='grant'):
-        self.set_perm_action = action
-        self.set_perm_base_home = base_home
-        self.set_perm_home_extension = extension
-        self.set_perm_perms = perms
-    
     def get_base_home(self):
         context = {
             'user': self.username,

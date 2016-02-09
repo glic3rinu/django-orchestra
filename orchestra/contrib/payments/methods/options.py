@@ -1,4 +1,6 @@
+import importlib
 import logging
+import os
 from dateutil import relativedelta
 from functools import lru_cache
 
@@ -8,7 +10,7 @@ from orchestra.utils.python import import_class
 from .. import settings
 
 
-class PaymentMethod(plugins.Plugin):
+class PaymentMethod(plugins.Plugin, metaclass=plugins.PluginMount):
     label_field = 'label'
     number_field = 'number'
     process_credit = False
@@ -18,10 +20,16 @@ class PaymentMethod(plugins.Plugin):
     
     @classmethod
     @lru_cache()
-    def get_plugins(cls):
-        plugins = []
-        for cls in settings.PAYMENTS_ENABLED_METHODS:
-            plugins.append(import_class(cls))
+    def get_plugins(cls, all=False):
+        if all:
+            for module in os.listdir(os.path.dirname(__file__)):
+                if module not in ('options.py', '__init__.py') and module[-3:] == '.py':
+                    importlib.import_module('.'+module[:-3], __package__)
+            plugins = super().get_plugins()
+        else:
+            plugins = []
+            for cls in settings.PAYMENTS_ENABLED_METHODS:
+                plugins.append(import_class(cls))
         return plugins
     
     def get_label(self):

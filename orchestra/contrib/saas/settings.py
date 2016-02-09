@@ -21,7 +21,7 @@ SAAS_ENABLED_SERVICES = Setting('SAAS_ENABLED_SERVICES',
 #        'orchestra.contrib.saas.services.seafile.SeaFileService',
     ),
     # lazy loading
-    choices=lambda: ((s.get_class_path(), s.get_class_path()) for s in saas.services.SoftwareService.get_plugins()),
+    choices=lambda: ((s.get_class_path(), s.get_class_path()) for s in saas.services.SoftwareService.get_plugins(all=True)),
     multiple=True,
 )
 

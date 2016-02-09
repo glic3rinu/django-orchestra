@@ -17,7 +17,7 @@ class UNIXUserBackend(ServiceController):
     """
     verbose_name = _("UNIX user")
     model = 'systemusers.SystemUser'
-    actions = ('save', 'delete', 'set_permission', 'validate_path_exists')
+    actions = ('save', 'delete', 'set_permission', 'validate_path_exists', 'create_link')
     doc_settings = (settings, (
         'SYSTEMUSERS_DEFAULT_GROUP_MEMBERS',
         'SYSTEMUSERS_MOVE_ON_DELETE_PATH',
@@ -188,6 +188,24 @@ class UNIXUserBackend(ServiceController):
             self.revoke_permissions(user, context)
         else:
             raise NotImplementedError()
+    
+    def create_link(self, user):
+        context = self.get_context(user)
+        context.update({
+            'link_target': user.create_link_target,
+            'link_name': user.create_link_name,
+        })
+        self.append(textwrap.dedent("""\
+            # Create link
+            su %(user)s --shell /bin/bash << 'EOF' || exit_code=1
+                if [[ ! -e %(link_name)s ]]; then
+                    ln -s %(link_target)s %(link_name)s
+                else
+                    echo "%(link_name)s already exists, doing nothing." >&2
+                    exit 1
+                fi
+            EOF""") % context
+        )
     
     def validate_path_exists(self, user):
         context = {

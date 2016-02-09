@@ -4,13 +4,13 @@ from functools import lru_cache
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.plugins import Plugin
+from orchestra import plugins
 from orchestra.utils.python import import_class
 
 from . import settings
 
 
-class AppOption(Plugin):
+class AppOption(plugins.Plugin, metaclass=plugins.PluginMount):
     PHP = 'PHP'
     PROCESS = 'Process'
     FILESYSTEM = 'FileSystem'
@@ -21,10 +21,13 @@ class AppOption(Plugin):
     
     @classmethod
     @lru_cache()
-    def get_plugins(cls):
-        plugins = []
-        for cls in settings.WEBAPPS_ENABLED_OPTIONS:
-            plugins.append(import_class(cls))
+    def get_plugins(cls, all=False):
+        if all:
+            plugins = super().get_plugins()
+        else:
+            plugins = []
+            for cls in settings.WEBAPPS_ENABLED_OPTIONS:
+                plugins.append(import_class(cls))
         return plugins
     
     @classmethod
@@ -52,6 +55,7 @@ class AppOption(Plugin):
 class PHPAppOption(AppOption):
     deprecated = None
     group = AppOption.PHP
+    abstract = True
     
     def validate(self):
         super(PHPAppOption, self).validate()

@@ -53,6 +53,7 @@ class CMSApp(PHPApp):
     change_form = CMSAppForm
     change_readonly_fileds = ('db_name', 'db_user', 'password',)
     db_type = Database.MYSQL
+    abstract = True
     
     def get_db_name(self):
         db_name = 'wp_%s_%s' % (self.instance.name, self.instance.account)

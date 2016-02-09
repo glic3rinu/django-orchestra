@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 try:
     import lxml
 except ImportError:
-    logger.error('Error loading lxml, module not install')
+    logger.error('Error loading lxml, module not installed.')
 
 
 class SEPADirectDebitForm(PluginDataForm):

@@ -5,14 +5,14 @@ from functools import lru_cache
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.plugins import Plugin
+from orchestra import plugins
 from orchestra.utils.python import import_class
 
 from . import settings
 from .utils import normurlpath
 
 
-class SiteDirective(Plugin):
+class SiteDirective(plugins.Plugin, metaclass=plugins.PluginMount):
     HTTPD = 'HTTPD'
     SEC = 'ModSecurity'
     SSL = 'SSL'
@@ -25,10 +25,13 @@ class SiteDirective(Plugin):
     
     @classmethod
     @lru_cache()
-    def get_plugins(cls):
-        plugins = []
-        for cls in settings.WEBSITES_ENABLED_DIRECTIVES:
-            plugins.append(import_class(cls))
+    def get_plugins(cls, all=False):
+        if all:
+            plugins = super().get_plugins()
+        else:
+            plugins = []
+            for cls in settings.WEBSITES_ENABLED_DIRECTIVES:
+                plugins.append(import_class(cls))
         return plugins
     
     @classmethod

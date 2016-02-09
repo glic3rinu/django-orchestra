@@ -1,3 +1,5 @@
+import importlib
+import os
 from functools import lru_cache
 from urllib.parse import urlparse
 
@@ -17,7 +19,7 @@ from .. import settings
 from ..forms import SaaSPasswordForm
 
 
-class SoftwareService(plugins.Plugin):
+class SoftwareService(plugins.Plugin, metaclass=plugins.PluginMount):
     PROTOCOL_MAP = {
         'http': (Website.HTTP, (Website.HTTP, Website.HTTP_AND_HTTPS)),
         'https': (Website.HTTPS_ONLY, (Website.HTTPS, Website.HTTP_AND_HTTPS, Website.HTTPS_ONLY)),
@@ -35,10 +37,16 @@ class SoftwareService(plugins.Plugin):
     
     @classmethod
     @lru_cache()
-    def get_plugins(cls):
-        plugins = []
-        for cls in settings.SAAS_ENABLED_SERVICES:
-            plugins.append(import_class(cls))
+    def get_plugins(cls, all=False):
+        if all:
+            for module in os.listdir(os.path.dirname(__file__)):
+                if module not in ('options.py', '__init__.py') and module[-3:] == '.py':
+                    importlib.import_module('.'+module[:-3], __package__)
+            plugins = super().get_plugins()
+        else:
+            plugins = []
+            for cls in settings.SAAS_ENABLED_SERVICES:
+                plugins.append(import_class(cls))
         return plugins
     
     def get_change_readonly_fileds(cls):
@@ -143,6 +151,7 @@ class SoftwareService(plugins.Plugin):
 class DBSoftwareService(SoftwareService):
     db_name = None
     db_user = None
+    abstract = True
     
     def get_db_name(self):
         context = {

@@ -82,7 +82,7 @@ WEBAPPS_TYPES = Setting('WEBAPPS_TYPES', (
         'orchestra.contrib.webapps.types.python.PythonApp',
     ),
     # lazy loading
-    choices=lambda : ((t.get_class_path(), t.get_class_path()) for t in webapps.types.AppType.get_plugins()),
+    choices=lambda : ((t.get_class_path(), t.get_class_path()) for t in webapps.types.AppType.get_plugins(all=True)),
     multiple=True,
 )
 
@@ -255,7 +255,7 @@ WEBAPPS_ENABLED_OPTIONS = Setting('WEBAPPS_ENABLED_OPTIONS', (
         'orchestra.contrib.webapps.options.PHPZendExtension',
     ),
     # lazy loading
-    choices=lambda : ((o.get_class_path(), o.get_class_path()) for o in webapps.options.AppOption.get_plugins()),
+    choices=lambda : ((o.get_class_path(), o.get_class_path()) for o in webapps.options.AppOption.get_plugins(all=True)),
     multiple=True,
 )
 

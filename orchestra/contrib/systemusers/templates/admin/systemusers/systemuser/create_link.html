@@ -30,7 +30,7 @@
   <div>
     <div style="margin:20px;">
     {% block introduction %}
-    Create link for {% for user in queryset %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+    Create simbolic link for {% for user in queryset %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}.
     {% endblock %}
     <ul>{{ display_objects | unordered_list }}</ul>
     <form action="" method="post">{% csrf_token %}

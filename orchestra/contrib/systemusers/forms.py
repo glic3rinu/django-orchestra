@@ -93,7 +93,8 @@ class LinkForm(forms.Form):
     base_home = forms.ChoiceField(label=_("Target path"), choices=(),
         help_text=_("Target link will be under this directory."))
     home_extension = forms.CharField(label=_("Home extension"), required=False, initial='',
-        widget=forms.TextInput(attrs={'size':'70'}), help_text=_("Relative to chosen home."))
+        widget=forms.TextInput(attrs={'size':'70'}),
+        help_text=_("Relative path to chosen directory."))
     link_name = forms.CharField(label=_("Link name"), required=False, initial='',
         widget=forms.TextInput(attrs={'size':'70'}),
         help_text=_("If left blank or relative path: link will be created in each user home."))
@@ -119,10 +120,12 @@ class LinkForm(forms.Form):
         if link_name:
             if link_name.startswith('/'):
                 if len(self.queryset) > 1:
-                    raise ValidationError(_("Link name can not be a full path when multiple users."))
+                    raise ValidationError(
+                        _("Link name can not be a full path when multiple users."))
                 link_names = [os.path.dirname(link_name)]
             else:
-                link_names = [os.path.join(user.home, os.path.dirname(link_names)) for user in self.queryset]
+                dir_name = os.path.dirname(link_name)
+                link_names = [os.path.join(user.home, dir_name) for user in self.queryset]
             validate_paths_exist(self.instance, link_names)
         return link_name
     

@@ -96,7 +96,8 @@ def create_link(modeladmin, request, queryset):
                 base_home = cleaned_data['base_home']
                 extension = cleaned_data['home_extension']
                 target = os.path.join(base_home, extension)
-                link_name = cleaned_data['link_name'] or os.path.join(user.home, os.path.basename(target))
+                default_name = os.path.join(user.home, os.path.basename(target))
+                link_name = cleaned_data['link_name'] or default_name
                 user.create_link_target = target
                 user.create_link_name = link_name
                 operations.extend(Operation.create_for_action(user, 'create_link'))

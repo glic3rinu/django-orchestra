@@ -60,6 +60,7 @@ class MoodleMuBackend(ServiceController):
             chown %(user)s:%(user)s %(moodledata_path)s
             export SITE=%(site_name)s
             CHANGE_PASSWORD=0
+            # TODO su moodle user
             php %(moodle_path)s/admin/cli/install_database.php \\
                 --fullname="%(site_name)s" \\
                 --shortname="%(site_name)s" \\

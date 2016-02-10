@@ -79,6 +79,7 @@ WEBAPPS_TYPES = Setting('WEBAPPS_TYPES', (
         'orchestra.contrib.webapps.types.misc.WebalizerApp',
         'orchestra.contrib.webapps.types.misc.SymbolicLinkApp',
         'orchestra.contrib.webapps.types.wordpress.WordPressApp',
+        'orchestra.contrib.webapps.types.moodle.MoodleApp',
         'orchestra.contrib.webapps.types.python.PythonApp',
     ),
     # lazy loading

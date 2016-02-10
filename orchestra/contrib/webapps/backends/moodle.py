@@ -34,7 +34,7 @@ class MoodleBackend(WebAppServiceMixin, ServiceController):
             touch %(app_path)s/.lock
             # Weekly caching
             moodle_date=$(date -r $(readlink %(cms_cache_dir)s/moodle) +%%s || echo 0)
-            if [[ $moodle_date -lt $(($(date +%%s)+7*24*60*60)) ]]; then
+            if [[ $moodle_date -lt $(($(date +%%s)-7*24*60*60)) ]]; then
                 moodle_url=$(wget https://download.moodle.org/releases/latest/ -O - -q \\
                     | tr ' ' '\\n' \\
                     | grep 'moodle-latest.*.tgz"' \\

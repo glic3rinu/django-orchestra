@@ -4,6 +4,7 @@ from datetime import date
 
 from django.contrib import messages
 from django.contrib.admin import helpers
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.forms.models import modelformset_factory
@@ -246,11 +247,16 @@ def copy_lines(modeladmin, request, queryset):
     return move_lines(modeladmin, request, queryset)
 
 
-@action_with_confirmation()
+def validate_amend_bills(bills):
+    for bill in bills:
+        if bill.is_open:
+            raise ValidationError(_("Selected bills should be in closed state"))
+        if bill.type not in bill.AMEND_MAP:
+            raise ValidationError(_("%s can not be amended.") % bill.get_type_display())
+
+
+@action_with_confirmation(validator=validate_amend_bills)
 def amend_bills(modeladmin, request, queryset):
-    if queryset.filter(is_open=True).exists():
-        messages.warning(request, _("Selected bills should be in closed state"))
-        return
     amend_ids = []
     for bill in queryset:
         with translation.override(bill.account.language):

@@ -123,7 +123,10 @@ def OpenSSH(backend, log, server, cmds, async=False):
             exit_code = ssh.exit_code
         if not log.exit_code:
             log.exit_code = exit_code
-            log.state = log.SUCCESS if exit_code == 0 else log.FAILURE
+            if exit_code == 255 and log.stderr.startswith('ssh: connect to host'):
+                log.state = log.TIMEOUT
+            else:
+                log.state = log.SUCCESS if exit_code == 0 else log.FAILURE
         logger.debug('%s execution state on %s is %s' % (backend, server, log.state))
         log.save()
     except:

@@ -462,6 +462,13 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # POSTFIX web traffic monitor '": uid=" from=<%(user)s>'
 
 
+# Mv .deleted make sure it works with nested destinations
+# Re-run backends (save regenerate, delete run same script) warning on confirmation page: DELETED objects will be deleted on the server if you have recreated them.
+# Automatically re-run backends until success? only timedout executions?
+
+
+
+
 ### Quick start
     0. Install orchestra following any of these methods:
         1. [PIP-only, Fast deployment setup (demo)](README.md#fast-deployment-setup)

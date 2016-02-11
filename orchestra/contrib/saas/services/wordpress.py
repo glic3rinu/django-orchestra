@@ -40,6 +40,6 @@ class WordPressService(SoftwareService):
     change_form = WordPressChangeForm
     serializer = WordPressDataSerializer
     icon = 'orchestra/icons/apps/WordPress.png'
-    change_readonly_fileds = ('email', 'blog_id')
+    change_readonly_fields = ('email', 'blog_id')
     site_domain = settings.SAAS_WORDPRESS_DOMAIN
     allow_custom_url = settings.SAAS_WORDPRESS_ALLOW_CUSTOM_URL

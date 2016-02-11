@@ -1,6 +1,8 @@
 from functools import wraps, partial
 
+from django.contrib import messages
 from django.contrib.admin import helpers
+from django.core.exceptions import ValidationError
 from django.template.response import TemplateResponse
 from django.utils.decorators import available_attrs
 from django.utils.encoding import force_text
@@ -13,7 +15,7 @@ def admin_field(method):
     """ Wraps a function to be used as a ModelAdmin method field """
     def admin_field_wrapper(*args, **kwargs):
         """ utility function for creating admin links """
-        kwargs['field'] = args[0] if args else ''
+        kwargs['field'] = args[0] if args else '__str__'
         kwargs['order'] = kwargs.get('order', kwargs['field'])
         kwargs['popup'] = kwargs.get('popup', False)
         # TODO get field verbose name
@@ -38,7 +40,7 @@ def format_display_objects(modeladmin, request, queryset):
     return objects
 
 
-def action_with_confirmation(action_name=None, extra_context={},
+def action_with_confirmation(action_name=None, extra_context=None, validator=None,
                              template='admin/orchestra/generic_confirmation.html'):
     """ 
     Generic pattern for actions that needs confirmation step
@@ -46,9 +48,15 @@ def action_with_confirmation(action_name=None, extra_context={},
     <input type="hidden" name="post" value="generic_confirmation" />
     """
     
-    def decorator(func, extra_context=extra_context, template=template, action_name=action_name):
+    def decorator(func, extra_context=extra_context, template=template, action_name=action_name, validatior=validator):
         @wraps(func, assigned=available_attrs(func))
-        def inner(modeladmin, request, queryset, action_name=action_name, extra_context=extra_context):
+        def inner(modeladmin, request, queryset, action_name=action_name, extra_context=extra_context, validator=validator):
+            if validator is not None:
+                try:
+                    validator(queryset)
+                except ValidationError as e:
+                    messages.error(request, '<br>'.join(e))
+                    return
             # The user has already confirmed the action.
             if request.POST.get('post') == 'generic_confirmation':
                 stay = func(modeladmin, request, queryset)
@@ -82,7 +90,7 @@ def action_with_confirmation(action_name=None, extra_context={},
             
             if callable(extra_context):
                 extra_context = extra_context(modeladmin, request, queryset)
-            context.update(extra_context)
+            context.update(extra_context or {})
             if 'display_objects' not in context:
                 # Compute it only when necessary
                 context['display_objects'] = format_display_objects(modeladmin, request, queryset)

@@ -28,4 +28,4 @@ class SeaFileService(SoftwareService):
     serializer = SeaFileDataSerializer
     icon = 'orchestra/icons/apps/seafile.png'
     site_domain = settings.SAAS_SEAFILE_DOMAIN
-    change_readonly_fileds = ('email',)
+    change_readonly_fields = ('email',)

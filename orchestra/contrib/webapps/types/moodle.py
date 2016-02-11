@@ -13,6 +13,7 @@ class MoodleApp(CMSApp):
         "The password will be visible in the 'password' field after the installer has finished."
     )
     icon = 'orchestra/icons/apps/Moodle.png'
+    db_prefix = 'modl_'
     
     def get_detail(self):
         return self.instance.data.get('php_version', '')

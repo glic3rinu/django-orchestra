@@ -30,6 +30,6 @@ class GitLabService(SoftwareService):
     change_form = GitLaChangeForm
     serializer = GitLabSerializer
     site_domain = settings.SAAS_GITLAB_DOMAIN
-    change_readonly_fileds = ('email', 'user_id',)
+    change_readonly_fields = ('email', 'user_id',)
     verbose_name = "GitLab"
     icon = 'orchestra/icons/apps/gitlab.png'

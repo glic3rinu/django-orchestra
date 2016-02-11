@@ -82,7 +82,7 @@ class ReadOnlyFormMixin(object):
     """
     Mixin class for ModelForm or Form that provides support for SpanField on readonly fields
     Meta:
-        readonly_fileds = (ro_field1, ro_field2)
+        readonly_fields = (ro_field1, ro_field2)
     """
     def __init__(self, *args, **kwargs):
         super(ReadOnlyFormMixin, self).__init__(*args, **kwargs)

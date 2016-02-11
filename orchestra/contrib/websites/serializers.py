@@ -54,7 +54,7 @@ class WebsiteSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     class Meta:
         model = Website
         fields = ('url', 'id', 'name', 'protocol', 'domains', 'is_active', 'contents', 'directives')
-        postonly_fileds = ('name',)
+        postonly_fields = ('name',)
     
     def validate(self, data):
         """ Prevent multiples domains on the same protocol """

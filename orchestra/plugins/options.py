@@ -9,7 +9,7 @@ class Plugin(object):
     change_form = None
     form = None
     serializer = None
-    change_readonly_fileds = ()
+    change_readonly_fields = ()
     plugin_field = None
     
     def __init__(self, instance=None):
@@ -52,8 +52,8 @@ class Plugin(object):
         return sorted(choices, key=lambda e: e[1])
     
     @classmethod
-    def get_change_readonly_fileds(cls):
-        return cls.change_readonly_fileds
+    def get_change_readonly_fields(cls):
+        return cls.change_readonly_fields
     
     @classmethod
     def get_class_path(cls):

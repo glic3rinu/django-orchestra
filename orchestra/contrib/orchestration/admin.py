@@ -134,7 +134,7 @@ class BackendLogAdmin(admin.ModelAdmin):
         'display_created', 'execution_time',
     )
     list_display_links = ('id', 'backend')
-    list_filter = ('state', 'backend', 'server')
+    list_filter = ('state', 'server', 'backend')
     search_fields = ('script',)
     date_hierarchy = 'created_at'
     inlines = (BackendOperationInline,)

@@ -184,7 +184,7 @@ def collect(instance, action, **kwargs):
                 if update_fields is not None:
                     # TODO remove this, django does not execute post_save if update_fields=[]...
                     # Maybe open a ticket at Djangoproject ?
-                    # INITIAL INTENTION: "update_fileds=[]" is a convention for explicitly executing backend
+                    # INITIAL INTENTION: "update_fields=[]" is a convention for explicitly executing backend
                     # i.e. account.disable()
                     if update_fields != []:
                         execute = False

@@ -22,4 +22,4 @@ class BSCWService(SoftwareService):
     serializer = BSCWDataSerializer
     icon = 'orchestra/icons/apps/BSCW.png'
     site_domain = settings.SAAS_BSCW_DOMAIN
-    change_readonly_fileds = ('email',)
+    change_readonly_fields = ('email',)

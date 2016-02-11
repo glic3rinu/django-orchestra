@@ -219,7 +219,14 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     display_mailboxes.allow_tags = True
     
     def display_forward(self, address):
-        values = [ dest for dest in address.forward.split() ]
+        forward_mailboxes = {m.name: m for m in address.get_forward_mailboxes()}
+        values = []
+        for forward in address.forward.split():
+            mbox = forward_mailboxes.get(forward)
+            if mbox:
+                values.append(admin_link()(mbox))
+            else:
+                values.append(forward)
         return '<br>'.join(values)
     display_forward.short_description = _("Forward")
     display_forward.allow_tags = True

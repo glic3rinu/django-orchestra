@@ -49,8 +49,8 @@ class SoftwareService(plugins.Plugin, metaclass=plugins.PluginMount):
                 plugins.append(import_class(cls))
         return plugins
     
-    def get_change_readonly_fileds(cls):
-        fields = super(SoftwareService, cls).get_change_readonly_fileds()
+    def get_change_readonly_fields(cls):
+        fields = super(SoftwareService, cls).get_change_readonly_fields()
         return fields + ('name',)
     
     def get_site_domain(self):

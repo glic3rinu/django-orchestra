@@ -321,6 +321,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         if obj:
             if not obj.is_open:
                 exclude += ['close_bills', 'close_send_download_bills']
+            if obj.type not in obj.AMEND_MAP:
+                exclude += ['amend_bills']
         return [action for action in actions if action.__name__ not in exclude]
     
     def get_inline_instances(self, request, obj=None):

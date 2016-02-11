@@ -51,12 +51,13 @@ class CMSApp(PHPApp):
     """ Abstract AppType with common CMS functionality """
     serializer = CMSAppSerializer
     change_form = CMSAppForm
-    change_readonly_fileds = ('db_name', 'db_user', 'password',)
+    change_readonly_fields = ('db_name', 'db_user', 'password',)
     db_type = Database.MYSQL
     abstract = True
+    db_prefix = 'cms_'
     
     def get_db_name(self):
-        db_name = 'wp_%s_%s' % (self.instance.name, self.instance.account)
+        db_name = '%s%s_%s' % (self.db_prefix, self.instance.name, self.instance.account)
         # Limit for mysql database names
         return db_name[:65]
     

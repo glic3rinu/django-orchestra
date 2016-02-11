@@ -67,7 +67,10 @@ class MoodleBackend(WebAppServiceMixin, ServiceController):
             fi
             rm %(app_path)s/.lock
             chown -R %(user)s:%(group)s %(app_path)s
-            su %(user)s --shell /bin/bash << 'EOF'
+            # Run install moodle cli command on the background, because it takes so long...
+            stdout=$(mktemp)
+            stderr=$(mktemp)
+            nohup su %(user)s --shell /bin/bash << 'EOF' > $stdout 2> $stderr &
                 php %(app_path)s/admin/cli/install_database.php \\
                     --fullname="%(site_name)s" \\
                     --shortname="%(site_name)s" \\
@@ -77,6 +80,14 @@ class MoodleBackend(WebAppServiceMixin, ServiceController):
                     --agree-license \\
                     --allow-unstable
             EOF
+            pid=$!
+            sleep 2
+            if ! ps -p $pid > /dev/null; then
+                cat $stdout
+                cat $stderr >&2
+                exit_code=$(wait $pid)
+            fi
+            rm $stdout $stderr
             """) % context
         )
     

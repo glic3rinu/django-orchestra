@@ -149,9 +149,14 @@ def SSH(*args, **kwargs):
 
 def Python(backend, log, server, cmds, async=False):
     script = ''
+    functions = set()
+    for cmd in cmds:
+        if cmd.func not in functions:
+            functions.add(cmd.func)
+            script += textwrap.dedent(''.join(inspect.getsourcelines(cmd.func)[0]))
+    script += '\n'
     for cmd in cmds:
         script += '# %s %s\n' % (cmd.func.__name__, cmd.args)
-        script += textwrap.dedent(''.join(inspect.getsourcelines(cmd.func)[0]))
     log.state = log.STARTED
     log.script = '\n'.join((log.script, script))
     log.save(update_fields=('script', 'state', 'updated_at'))

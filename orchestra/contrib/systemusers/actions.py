@@ -53,7 +53,7 @@ def set_permission(modeladmin, request, queryset):
                 msg = _("%(action)s %(perms)s permission to %(to)s") % context
                 modeladmin.log_change(request, user, msg)
             if not operations:
-                messages.error(request, "No backend operation has been executed.")
+                messages.error(request, _("No backend operation has been executed."))
             else:
                 logs = Operation.execute(operations)
                 helpers.message_user(request, logs)

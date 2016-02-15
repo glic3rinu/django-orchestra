@@ -150,7 +150,7 @@ class BackendOperation(models.Model):
         verbose_name_plural = _("Operations")
     
     def __str__(self):
-        return '%s.%s(%s)' % (self.backend, self.action, self.instance)
+        return '%s.%s(%s)' % (self.backend, self.action, self.instance or self.instance_repr)
     
     @cached_property
     def backend_class(self):

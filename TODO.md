@@ -457,15 +457,10 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 * setuppostgres use porject_name for db name and user instead of orchestra
 
 
-
-
 # POSTFIX web traffic monitor '": uid=" from=<%(user)s>'
 
-
 # Mv .deleted make sure it works with nested destinations
-# Re-run backends (save regenerate, delete run same script) warning on confirmation page: DELETED objects will be deleted on the server if you have recreated them.
 # Automatically re-run backends until success? only timedout executions?
-
 
 
 

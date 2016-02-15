@@ -1,0 +1,9 @@
+{% extends "admin/orchestra/generic_confirmation.html" %}
+
+
+{% block form %}
+    {% if deleted_objects %}
+        <h4>The following operations refere to deleted objects and will not be executed</h4>
+        <ul>{{ deleted_objects | unordered_list }}</ul>
+    {% endif %}
+{% endblock %}

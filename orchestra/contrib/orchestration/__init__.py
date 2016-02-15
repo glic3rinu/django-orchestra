@@ -1,6 +1,8 @@
 import collections
 import copy
 
+from orchestra.utils.python import AttrDict
+
 from .backends import ServiceBackend, ServiceController, replace
 
 
@@ -77,3 +79,13 @@ class Operation():
             instance=self.instance,
             action=self.action,
         )
+    
+    @classmethod
+    def load(cls, operation, log=None):
+        routes = None
+        if log:
+            routes = {
+                (operation.backend, operation.action): AttrDict(host=log.server)
+            }
+        return cls(operation.backend_class, operation.instance, operation.action, routes=routes)
+    

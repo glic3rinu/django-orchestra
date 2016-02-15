@@ -49,7 +49,7 @@ class MailboxForm(forms.ModelForm):
         name = self.cleaned_data['name']
         max_length = settings.MAILBOXES_NAME_MAX_LENGTH
         if len(name) > max_length:
-            raise ValidationError("Name length should be less than %i" % max_length)
+            raise ValidationError("Name length should be less than %i." % max_length)
         return name
 
 
@@ -61,7 +61,7 @@ class MailboxCreationForm(UserCreationForm, MailboxForm):
     def clean_name(self):
         # Since model.clean() will check this, this is redundant,
         # but it sets a nicer error message than the ORM and avoids conflicts with contrib.auth
-        name = self.cleaned_data["name"]
+        name = super().clean_name()
         try:
             self._meta.model._default_manager.get(name=name)
         except self._meta.model.DoesNotExist:

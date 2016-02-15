@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from orchestra.plugins.forms import PluginDataForm
 from orchestra.utils.functional import cached
+from orchestra.utils.python import OrderedSet
 
 from .. import settings, utils
 from ..options import AppOption
@@ -89,12 +90,13 @@ class PHPApp(AppType):
                     init_vars[name] = value
         # Disable functions
         if self.PHP_DISABLED_FUNCTIONS:
-            enable_functions = init_vars.pop('enable_functions', '')
-            disable_functions = set(init_vars.pop('disable_functions', '').split(','))
+            enable_functions = init_vars.pop('enable_functions', None)
+            enable_functions = OrderedSet(enable_functions.split(',') if enable_functions else ())
+            disable_functions = init_vars.pop('disable_functions', None)
+            disable_functions = OrderedSet(disable_functions.split(',') if disable_functions else ())
             if disable_functions or enable_functions or self.is_fpm:
                 # FPM: Defining 'disable_functions' or 'disable_classes' will not overwrite previously
                 #      defined php.ini values, but will append the new value
-                enable_functions = set(enable_functions.split(','))
                 for function in self.PHP_DISABLED_FUNCTIONS:
                     if function not in enable_functions:
                         disable_functions.add(function)
@@ -119,6 +121,7 @@ class PHPApp(AppType):
             init_vars['post_max_size'] = post_max_size
             if upload_max_filesize_value > post_max_size_value:
                 init_vars['post_max_size'] = upload_max_filesize
+        print(init_vars)
         return init_vars
     
     def get_directive_context(self):

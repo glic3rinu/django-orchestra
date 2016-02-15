@@ -3,11 +3,12 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin import ExtendedModelAdmin, ChangeViewActionsMixin
 from orchestra.admin.utils import admin_link, admin_date, admin_colored, display_mono, display_code
 from orchestra.plugins.admin import display_plugin_field
 
 from . import settings, helpers
+from .actions import retry_backend
 from .backends import ServiceBackend
 from .forms import RouteForm
 from .models import Server, Route, BackendLog, BackendOperation
@@ -128,7 +129,7 @@ class BackendOperationInline(admin.TabularInline):
         return queryset.prefetch_related('instance')
 
 
-class BackendLogAdmin(admin.ModelAdmin):
+class BackendLogAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     list_display = (
         'id', 'backend', 'server_link', 'display_state', 'exit_code',
         'display_created', 'execution_time',
@@ -144,6 +145,8 @@ class BackendLogAdmin(admin.ModelAdmin):
         'execution_time'
     )
     readonly_fields = fields
+    actions = (retry_backend,)
+    change_view_actions = actions
     
     server_link = admin_link('server')
     display_created = admin_date('created_at', short_description=_("Created"))

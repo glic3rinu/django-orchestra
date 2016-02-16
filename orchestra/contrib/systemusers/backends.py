@@ -104,7 +104,15 @@ class UNIXUserBackend(ServiceController):
             """) % context
         )
         if context['deleted_home']:
-            self.append("mv %(base_home)s %(deleted_home)s || exit_code=$?" % context)
+            self.append(textwrap.dedent("""\
+                # Move home into SYSTEMUSERS_MOVE_ON_DELETE_PATH, nesting if exists.
+                deleted_home="%(deleted_home)s"
+                while [[ -e $deleted_home ]]; do
+                    deleted_home="${deleted_home}/$(basename ${deleted_home})"
+                done
+                mv %(base_home)s $deleted_home || exit_code=$?
+                """) % context
+            )
         else:
             self.append("rm -fr %(base_home)s" % context)
     

@@ -42,7 +42,15 @@ class WebAppServiceMixin(object):
     
     def delete_webapp_dir(self, context):
         if context['deleted_app_path']:
-            self.append("mv %(app_path)s %(deleted_app_path)s || exit_code=$?" % context)
+            self.append(textwrap.dedent("""\
+                # Move app into WEBAPPS_MOVE_ON_DELETE_PATH, nesting if exists.
+                deleted_app_path="%(deleted_app_path)s"
+                while [[ -e $deleted_app_path ]]; do
+                    deleted_app_path="${deleted_app_path}/$(basename ${deleted_app_path})"
+                done
+                mv %(app_path)s $deleted_app_path || exit_code=$?
+                """) % context
+            )
         else:
             self.append("rm -fr %(app_path)s" % context)
     

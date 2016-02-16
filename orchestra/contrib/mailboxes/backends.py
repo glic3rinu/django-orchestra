@@ -110,7 +110,18 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
     
     def delete(self, mailbox):
         context = self.get_context(mailbox)
-        self.append('mv %(home)s %(home)s.deleted || exit_code=$?' % context)
+        if context['deleted_home']:
+            self.append(textwrap.dedent("""\
+                # Move home into MAILBOXES_MOVE_ON_DELETE_PATH, nesting if exists.
+                deleted_home="%(deleted_home)s"
+                while [[ -e $deleted_home ]]; do
+                    deleted_home="${deleted_home}/$(basename ${deleted_home})"
+                done
+                mv %(home)s $deleted_home || exit_code=$?
+                """) % context
+            )
+        else:
+            self.append("rm -fr %(base_home)s" % context)
         self.append(textwrap.dedent("""
             nohup bash -c '{ sleep 2 && killall -u %(user)s -s KILL; }' &> /dev/null &
             killall -u %(user)s || true
@@ -134,6 +145,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
             'initial_shell': self.SHELL,
             'banner': self.get_banner(),
         }
+        context['deleted_home'] = settings.MAILBOXES_MOVE_ON_DELETE_PATH % context
         return context
 
 

@@ -1,19 +1,19 @@
 
 ### Quick start
-    0. Install orchestra following any of these methods:
-        1. [PIP-only, Fast deployment setup (demo)](README.md#fast-deployment-setup)
-        2. [Docker container (development)](INSTALLDEV.md)
-        3. [Install on current system (production)](INSTALL.md)
-    1. Add the servers that you want to manage on `/admin/orchestration/servers` and copy orchestra's SSH pubkey to them
-        `orchestra@panel:~ ssh-copy-id root@server.address`
-    2. Now configure service by service (domains, databases, webapps, websites...):
-        1. Add the route through `/admin/orchestration/route/`
-        2. Check and configure related settings on `/admin/settings/setting/`
-        3. Configure related resources if needed `/resources/resource/`, like Account Disc limit and traffic.
-        3. Test that everything works by creating and deleting services
-        4. Do the same for the other services
-    3. Configure billing by adding services `/admin/services/service/add/` and plans `/admin/plans/plan/`
-        1. Once a service is created hit the *Update orders* button
+0. Install orchestra following any of these methods:
+    1. [PIP-only, Fast deployment setup (demo)](README.md#fast-deployment-setup)
+    2. [Docker container (development)](INSTALLDEV.md)
+    3. [Install on current system (production)](INSTALL.md)
+1. Add the servers that you want to manage on `/admin/orchestration/servers` and copy orchestra's SSH pubkey to them
+    `orchestra@panel:~ ssh-copy-id root@server.address`
+2. Now configure service by service (domains, databases, webapps, websites...):
+    1. Add the route through `/admin/orchestration/route/`
+    2. Check and configure related settings on `/admin/settings/setting/`
+    3. Configure related resources if needed `/resources/resource/`, like Account Disc limit and traffic.
+    3. Test that everything works by creating and deleting services
+    4. Do the same for the other services
+3. Configure billing by adding services `/admin/services/service/add/` and plans `/admin/plans/plan/`
+    1. Once a service is created hit the *Update orders* button
 
 
 ### Architecture

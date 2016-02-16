@@ -5,7 +5,7 @@ Django Orchestra
 
 Orchestra is a Django-based framework for building web hosting control panels.
 
-* [Installation](#fast-deployment-setup)
+* [Installation](django-orchestra#fast-deployment-setup)
 * [Roadmap](ROADMAP.md)
 
 
@@ -57,10 +57,10 @@ Now you can see the web interface on http://localhost:8000/admin/
 Checkout the steps for other deployments: [development](INSTALLDEV.md), [production](INSTALL.md)
 
 
-Quick start
+Quick Start
 -----------
 0. Install django-orchestra following any of these methods:
-    1. [PIP-only, Fast deployment setup (demo)](#fast-deployment-setup)
+    1. [PIP-only, Fast deployment setup (demo)](django-orchestra#fast-deployment-setup)
     2. [Docker container (development)](INSTALLDEV.md)
     3. [Install on current system (production)](INSTALL.md)
 
@@ -71,13 +71,13 @@ Quick start
     Then add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra can report the uptime of the servers.
 
 2. It is recommended to configure one service at a time, staring with domains, databases, webapps, websites, ...
-    1. Add the route via `/admin/orchestration/route/`
+    1. Add the [route](orchestra/contrib/orchestration) via `/admin/orchestration/route/`
     2. Configure related settings on `/admin/settings/setting/`
-    3. If required, configure related resources like Account disc limit, VPS traffic, etc `/resources/resource/`
+    3. If required, configure related [resources](orchestra/contrib/resources) like Account disc limit, VPS traffic, etc `/resources/resource/`
     3. Test that everything works as expected by creating and deleting service instances
-    4. Do the same for the other services
+    4. Do the same for the remaining services, you can disable the services that you don't want by editing `INSTALLED_APPS` setting.
 
-3. Configure billing by adding services `/admin/services/service/add/` and plans `/admin/plans/plan/`. Once a service is created hit the *Update orders* button to create the orders for the existing service instances.
+3. Configure billing by adding [services](orchestra/contrib/services) `/admin/services/service/add/` and [plans](orchestra/contrib/plans) `/admin/plans/plan/`. Once a service is created hit the *Update orders* button to create the orders for the existing service instances.
 
 
 

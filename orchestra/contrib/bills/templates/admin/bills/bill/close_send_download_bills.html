@@ -1,0 +1,61 @@
+{% extends "admin/orchestra/generic_confirmation.html" %}
+{% load i18n l10n %}
+{% load url from future %}
+{% load admin_urls static utils %}
+
+{% block extrastyle %}
+{{ block.super }}
+<script type="text/javascript">
+function DoSubmit() {
+    // document.form.button.type = 'hidden';
+    document.getElementsByName("message")[0].innerHTML = "Bills are being generated and download will start shortly...";
+    document.getElementsByTagName("fieldset")[0].style.display = 'none';
+    document.form.button.value = 'Go back';
+    return true;
+}
+</script>
+{% endblock %}
+
+{% block content %}
+  <div name="content">
+    <div style="margin:20px;">
+    <div name="message">
+    <p>{{ content_message | safe }}</p>
+    <ul>{{ display_objects | unordered_list }}</ul>
+    </div>
+    <form name="form" action="" method="post" onsubmit="DoSubmit();">{% csrf_token %}
+    {% block form %}
+    {% if form %}
+        <fieldset class="module aligned">
+        {{ form.non_field_errors }}
+        {% for field in form %}
+        <div class="form-row ">
+            <div >
+            {{ field.errors }}
+            {% if field|is_checkbox %}
+                {{ field }} <label for="{{ field.id_for_label }}" class="vCheckboxLabel">{{ field.label }}</label>
+            {% else %}
+                {{ field.label_tag }} {{ field }}
+            {% endif %}
+            <p class="help">{{ field.help_text|safe }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        </fieldset>
+    {% endif %}
+    {% endblock %}
+    {% block formset %}
+    {% if formset %}
+        {{ formset.as_admin }}
+    {% endif %}
+    {% endblock %}
+    <div>
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_value }}" />
+    <input type="hidden" name="post" value="{{ post_value|default:'generic_confirmation' }}" />
+    <input name="button" type="submit" value="{{ submit_value|default:_("Yes, I'm sure") }}" />
+    </div>
+    </form>
+{% endblock %}

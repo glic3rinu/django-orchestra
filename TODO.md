@@ -448,8 +448,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 # show base and total desglosed
 
-# CLOSE&DOWNLOAD doesn't redirect to anything, confusing for users
-
 
 # Reverse lOgHistory order by date (lastest first)
 
@@ -459,7 +457,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 # POSTFIX web traffic monitor '": uid=" from=<%(user)s>'
 
-# Mv .deleted make sure it works with nested destinations
 # Automatically re-run backends until success? only timedout executions?
 # TODO save serialized versions ob backendoperation.instance in order to allow backend reexecution of deleted objects
 

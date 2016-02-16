@@ -22,7 +22,7 @@ Overview
 * It does **not** provide a **customer-facing interface**, but provides a REST API that allows you to build one.
 * Service [orchestration](orchestra/contrib/orchestration), [resource management](orchestra/contrib/resources), [billing](orchestra/contrib/bills), [accountancy](orchestra/contrib/orders) is provided in a decoupled way, meaning:
     * You can [develop new services](docs/create-services.md) without worring about those parts
-    * You can replace any of these parts by your own implementation without carring about others
+    * You can replace any of these parts by your own implementation without carring about the others
     * You can reuse any of those modules on your Django projects
 * Be advised, because its flexibility Orchestra may be more difficult to deploy than traditional web hosting control panels.
 
@@ -32,7 +32,7 @@ Overview
 
 Fast Deployment Setup
 ---------------------
-This deployment is not suitable for production but more than enough for checking out this project.
+This deployment is **not suitable for production** but more than enough for checking out this project.
 
 ```bash
 # Create and activate a Python virtualenv
@@ -64,13 +64,13 @@ Quick start
     2. [Docker container (development)](INSTALLDEV.md)
     3. [Install on current system (production)](INSTALL.md)
 
-1. Copy orchestra SSH key to the servers to be managed, you can use `ssh-copy-id`:
+1. Copy orchestra SSH pub key to the servers to be managed, you can use `ssh-copy-id`:
     ```bash
     orchestra@panel:~ ssh-copy-id root@server.address
     ```
     Then add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra can report the uptime of the servers.
 
-2. Now configure service by service (domains, databases, webapps, websites, ...):
+2. It is recommended to configure one service at a time, staring with domains, databases, webapps, websites, ...
     1. Add the route via `/admin/orchestration/route/`
     2. Configure related settings on `/admin/settings/setting/`
     3. If required, configure related resources like Account disc limit, VPS traffic, etc `/resources/resource/`

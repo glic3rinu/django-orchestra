@@ -1,11 +1,11 @@
 
 ### Quick start
-0. Install orchestra following any of these methods:
+0. Install django-orchestra following any of these methods:
     1. [PIP-only, Fast deployment setup (demo)](README.md#fast-deployment-setup)
     2. [Docker container (development)](INSTALLDEV.md)
     3. [Install on current system (production)](INSTALL.md)
-1. Add the servers that you want to manage on `/admin/orchestration/servers` and copy orchestra's SSH pubkey to them
-    `orchestra@panel:~ ssh-copy-id root@server.address`
+1. Copy orchestra SSH key to the servers to be managed (you can use <span title="`orchestra@panel:~ ssh-copy-id root@server.address`">`ssh-copy-id`</span>: ), then Add the servers to be managed by orchestra into the servers section `/admin/orchestration/servers`, then copy orchestra's SSH pubkey to them
+    
 2. Now configure service by service (domains, databases, webapps, websites...):
     1. Add the route through `/admin/orchestration/route/`
     2. Check and configure related settings on `/admin/settings/setting/`

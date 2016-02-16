@@ -5,7 +5,7 @@ Django Orchestra
 
 Orchestra is a Django-based framework for building web hosting control panels.
 
-* [Installation](django-orchestra#fast-deployment-setup)
+* [Installation](#fast-deployment-setup)
 * [Roadmap](ROADMAP.md)
 
 
@@ -60,7 +60,7 @@ Checkout the steps for other deployments: [development](INSTALLDEV.md), [product
 Quick Start
 -----------
 0. Install django-orchestra following any of these methods:
-    1. [PIP-only, Fast deployment setup (demo)](django-orchestra#fast-deployment-setup)
+    1. [PIP-only, Fast deployment setup (demo)](#fast-deployment-setup)
     2. [Docker container (development)](INSTALLDEV.md)
     3. [Install on current system (production)](INSTALL.md)
 

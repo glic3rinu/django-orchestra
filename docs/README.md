@@ -1,3 +1,4 @@
+# Documentation
 
 ### Quick start
 0. Install django-orchestra following any of these methods:
@@ -9,7 +10,7 @@
     ```bash
     orchestra@panel:~ ssh-copy-id root@server.address
     ```
-    Then add the servers to orchestra using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra can report the uptime of the servers.
+    Then add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra can report the uptime of the servers.
 
 2. Now configure service by service (domains, databases, webapps, websites, ...):
     1. Add the route via `/admin/orchestration/route/`
@@ -22,12 +23,12 @@
 
 
 ### Architecture
-    Orchestration
-    Orders
-    Resources
+* [Orchestration](../orchestra/contrib/orchestration)
+* [Orders](../orchestra/contrib/orders)
+* [Resources](../orchestra/contrib/resources)
 
+### Creating New Services
 
-### Creating new services
 1. Think about if the service can fit into one of the existing service models like: SaaS or WebApps, refere to the related documentation if that is the case.
 2. Create a new django app using `startapp` management command. For ilustrational purposes we will create a crontab services that will allow orchestra to manage user-based crontabs.
     ```bash

@@ -12,13 +12,15 @@ from .models import BackendOperation
 
 
 def retry_backend(modeladmin, request, queryset):
+    related_operations = queryset.values_list('operations__id', flat=True).distinct()
+    related_operations = BackendOperation.objects.filter(pk__in=related_operations)
+    related_operations = related_operations.select_related('log__server').prefetch_related('instance')
     if request.POST.get('post') == 'generic_confirmation':
         operations = []
-        for log in queryset.prefetch_related('operations__instance'):
-            for operation in log.operations.all():
-                if operation.instance:
-                    op = Operation.load(operation)
-                    operations.append(op)
+        for operation in related_operations:
+            if operation.instance:
+                op = Operation.load(operation)
+                operations.append(op)
         if not operations:
             messages.warning(request, _("No backend operation has been executed."))
         else:
@@ -29,9 +31,7 @@ def retry_backend(modeladmin, request, queryset):
     opts = modeladmin.model._meta
     display_objects = []
     deleted_objects = []
-    related_operations = queryset.values_list('operations__id', flat=True).distinct()
-    related_operations = BackendOperation.objects.filter(pk__in=related_operations)
-    for op in related_operations.select_related('log__server').prefetch_related('instance'):
+    for op in related_operations:
         if not op.instance:
             deleted_objects.append(op)
         else:

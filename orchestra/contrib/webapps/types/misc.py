@@ -26,8 +26,9 @@ class WebalizerApp(AppType):
     name = 'webalizer'
     verbose_name = "Webalizer"
     directive = ('static', '%(app_path)s%(site_name)s')
-    help_text = _("This creates a Webalizer application under "
-                  "~/webapps/&lt;app_name&gt;-&lt;site_name&gt;")
+    help_text = _(
+        "This creates a Webalizer application under ~/webapps/&lt;app_name&gt;-&lt;site_name&gt;<br>"
+        "Statistics will be collected once this app is mounted into one or more Websites.")
     icon = 'orchestra/icons/apps/Stats.png'
     option_groups = ()
     
@@ -39,7 +40,7 @@ class WebalizerApp(AppType):
 
 class SymbolicLinkForm(PHPAppForm):
     path = forms.CharField(label=_("Path"), widget=forms.TextInput(attrs={'size':'100'}),
-            help_text=_("Path for the origin of the symbolic link."))
+        help_text=_("Path for the origin of the symbolic link."))
 
 
 class SymbolicLinkSerializer(PHPAppSerializer):

@@ -13,7 +13,7 @@ Motivation
 ----------
 There are a lot of widely used open source hosting control panels, however, none of them seems apropiate when you already have an existing service infrastructure or simply you want your services to run on a particular architecture.
 
-The goal of this project is to provide the tools for easily build a fully featured control panel that is not tied to any particular service architecture. Orchestra 
+The goal of this project is to provide the tools for easily build a fully featured control panel that is not tied to any particular service architecture.
 
 Overview
 --------
@@ -32,7 +32,10 @@ Overview
 
 Fast Deployment Setup
 ---------------------
-This deployment is **not suitable for production** but more than enough for checking out this project.
+
+This deployment is **not suitable for production** but more than enough for checking out this project. Checkout the steps for other deployments:
+* [development](INSTALLDEV.md)
+* [production](INSTALL.md)
 
 ```bash
 # Create and activate a Python virtualenv
@@ -52,9 +55,8 @@ python3 panel/manage.py migrate
 python3 panel/manage.py runserver
 ```
 
-Now you can see the web interface on http://localhost:8000/admin/
+Now you can see the web interface on `http://localhost:8000/admin/`
 
-Checkout the steps for other deployments: [development](INSTALLDEV.md), [production](INSTALL.md)
 
 
 Quick Start
@@ -70,14 +72,14 @@ Quick Start
     ```
     Then add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra can report the uptime of the servers.
 
-2. It is recommended to configure one service at a time, staring with domains, databases, webapps, websites, ...
-    1. Add the [route](orchestra/contrib/orchestration) via `/admin/orchestration/route/`
+2. Configure the services, one at a time, staring with domains, databases, webapps, websites, ...
+    1. Add related [routes](orchestra/contrib/orchestration) via `/admin/orchestration/route/`
     2. Configure related settings on `/admin/settings/setting/`
     3. If required, configure related [resources](orchestra/contrib/resources) like Account disc limit, VPS traffic, etc `/resources/resource/`
-    3. Test that everything works as expected by creating and deleting service instances
-    4. Do the same for the remaining services, you can disable the services that you don't want by editing `INSTALLED_APPS` setting.
+    3. Test creating and deleting service instances works as expected
+    4. Do the same for the remaining services. You can disable services that you don't want by editing `INSTALLED_APPS` setting
 
-3. Configure billing by adding [services](orchestra/contrib/services) `/admin/services/service/add/` and [plans](orchestra/contrib/plans) `/admin/plans/plan/`. Once a service is created hit the *Update orders* button to create the orders for the existing service instances.
+3. Configure billing by adding [services](orchestra/contrib/services) `/admin/services/service/add/` and [plans](orchestra/contrib/plans) `/admin/plans/plan/`. Once a service is created hit the *Update orders* button to create orders for existing service instances.
 
 
 

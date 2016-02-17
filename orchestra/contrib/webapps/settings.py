@@ -4,8 +4,8 @@ from orchestra.settings import ORCHESTRA_BASE_DOMAIN
 from .. import webapps
 
 
-_names = ('home', 'user', 'group', 'app_type', 'app_name', 'app_type', 'app_id')
-_php_names = _names + ('php_version', 'php_version_number',)
+_names = ('home', 'user', 'user_id', 'group', 'app_type', 'app_name', 'app_type', 'app_id', 'account_id')
+_php_names = _names + ('php_version', 'php_version_number', 'php_version_int')
 _python_names = _names + ('python_version', 'python_version_number',)
 
 
@@ -17,8 +17,11 @@ WEBAPPS_BASE_DIR = Setting('WEBAPPS_BASE_DIR',
 
 
 WEBAPPS_FPM_LISTEN = Setting('WEBAPPS_FPM_LISTEN',
-    '/opt/php/5.4/socks/%(user)s-%(app_name)s.sock',
-    help_text=("TCP socket example: <tt>127.0.0.1:9%(app_id)03d</tt><br>"
+    '127.0.0.1:5%(app_id)04d',
+    help_text=("TCP socket example: <tt>127.0.0.1:5%(app_id)04d</tt><br>"
+               "UDS example: <tt>/var/lib/php/sockets/%(user)s-%(app_name)s.sock</tt><br>"
+               "Merged TCP example: <tt>127.0.0.1:%(php_version_int)02d%(account_id)03d</tt></br>"
+               "Merged UDS example: <tt>/var/lib/php/sockets/%(user)s-%(php_version)s.sock</tt></br>"
                "Available fromat names: <tt>{}</tt>").format(', '.join(_php_names)),
     validators=[Setting.string_format_validator(_php_names)],
 )

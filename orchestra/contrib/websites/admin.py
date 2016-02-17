@@ -11,6 +11,7 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
+from orchestra.utils.html import get_on_site_link
 
 from .directives import SiteDirective
 from .forms import WebsiteAdminForm, WebsiteDirectiveInlineFormSet
@@ -84,10 +85,16 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     def display_webapps(self, website):
         webapps = []
         for content in website.content_set.all():
+            site_link = get_on_site_link(content.get_absolute_url())
             webapp = content.webapp
+            detail = webapp.get_type_display()
+            try:
+                detail += ' ' + webapp.type_instance.get_detail()
+            except KeyError:
+                pass
             url = change_url(webapp)
             name = "%s on %s" % (webapp.name, content.path or '/')
-            webapps.append('<a href="%s">%s</a>' % (url, name))
+            webapps.append('<a href="%s" title="%s">%s %s</a>' % (url, detail, name, site_link))
         return '<br>'.join(webapps)
     display_webapps.allow_tags = True
     display_webapps.short_description = _("Web apps")

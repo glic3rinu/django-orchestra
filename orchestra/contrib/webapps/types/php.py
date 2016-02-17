@@ -121,7 +121,6 @@ class PHPApp(AppType):
             init_vars['post_max_size'] = post_max_size
             if upload_max_filesize_value > post_max_size_value:
                 init_vars['post_max_size'] = upload_max_filesize
-        print(init_vars)
         return init_vars
     
     def get_directive_context(self):
@@ -129,6 +128,7 @@ class PHPApp(AppType):
         context.update({
             'php_version': self.get_php_version(),
             'php_version_number': self.get_php_version_number(),
+            'php_version_int': int(self.get_php_version_number().replace('.', '')),
         })
         return context
     

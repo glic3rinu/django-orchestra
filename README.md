@@ -11,6 +11,7 @@ Orchestra is a Django-based framework for building web hosting control panels.
 
 Motivation
 ----------
+
 There are a lot of widely used open source hosting control panels, however, none of them seems apropiate when you already have an existing service infrastructure or simply you want your services to run on a particular architecture.
 
 The goal of this project is to provide the tools for easily build a fully featured control panel that is not tied to any particular service architecture.
@@ -33,9 +34,9 @@ Overview
 Fast Deployment Setup
 ---------------------
 
-This deployment is **not suitable for production** but more than enough for checking out this project. Checkout the steps for other deployments:
-* [development](INSTALLDEV.md)
-* [production](INSTALL.md)
+This deployment is **not suitable for production** but more than enough for checking out this project. For other deployments checkout these links:
+* [Development](INSTALLDEV.md)
+* [Production](INSTALL.md)
 
 ```bash
 # Create and activate a Python virtualenv

@@ -50,13 +50,15 @@ class WebAppOptionInline(admin.TabularInline):
 
 
 class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('name', 'display_type', 'display_detail', 'display_websites', 'account_link')
+    list_display = (
+        'name', 'display_type', 'display_detail', 'display_websites', 'account_link'
+    )
     list_filter = ('type', HasWebsiteListFilter, PHPVersionListFilter)
     inlines = [WebAppOptionInline]
     readonly_fields = ('account_link', )
     change_readonly_fields = ('name', 'type', 'display_websites')
     search_fields = ('name', 'account__username', 'data', 'website__domains__name')
-    list_prefetch_related = ('content_set__website',)
+    list_prefetch_related = ('content_set__website', 'content_set__website__domains')
     plugin = AppType
     plugin_field = 'type'
     plugin_title = _("Web application type")
@@ -67,7 +69,8 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     def display_websites(self, webapp):
         websites = []
         for content in webapp.content_set.all():
-            site_link = get_on_site_link(content.get_absolute_url())
+            site_url = content.get_absolute_url()
+            site_link = get_on_site_link(site_url)
             website = content.website
             admin_url = change_url(website)
             name = "%s on %s" % (website.name, content.path)

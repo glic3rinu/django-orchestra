@@ -29,7 +29,7 @@ def html_to_pdf(html, pagination=False):
 
 def get_on_site_link(url):
     context = {
-        'title': _("View on site"),
+        'title': _("View on site %s") % url,
         'url': url,
         'image': '<img src="%s"></img>' % static('orchestra/images/view-on-site.png'),
     }

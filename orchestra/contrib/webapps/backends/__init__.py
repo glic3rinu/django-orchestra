@@ -55,7 +55,8 @@ class WebAppServiceMixin(object):
             self.append("rm -fr %(app_path)s" % context)
     
     def get_context(self, webapp):
-        context = {
+        context = webapp.type_instance.get_directive_context()
+        context.update({
             'user': webapp.get_username(),
             'group': webapp.get_groupname(),
             'app_name': webapp.name,
@@ -64,7 +65,7 @@ class WebAppServiceMixin(object):
             'banner': self.get_banner(),
             'under_construction_path': settings.WEBAPPS_UNDER_CONSTRUCTION_PATH,
             'is_mounted': webapp.content_set.exists(),
-        }
+        })
         context['deleted_app_path'] = settings.WEBAPPS_MOVE_ON_DELETE_PATH % context
         return context
 

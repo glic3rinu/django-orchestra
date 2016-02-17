@@ -160,6 +160,7 @@ class Apache2Backend(ServiceController):
                 echo "$state" | grep -v ' RESTART$' || is_last=1
             }
             if [[ $is_last -eq 1 ]]; then
+                echo "Last backend to run, update: $UPDATED_APACHE, state: '$state'"
                 if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
                     if service apache2 status > /dev/null; then
                         service apache2 reload
@@ -218,6 +219,7 @@ class Apache2Backend(ServiceController):
             # UNIX socket
             target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/'
             if context['location']:
+                # FIXME unix sockets do not support $1
                 target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/$1'
         context.update({
             'app_path': os.path.normpath(app_path),

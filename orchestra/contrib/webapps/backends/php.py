@@ -167,6 +167,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
                 echo "$state" | grep -v ' RESTART$' || is_last=1
             }
             if [[ $is_last -eq 1 ]]; then
+                echo "Last backend to run, update: $UPDATED_APACHE, state: '$state'"
                 if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
                     if service apache2 status > /dev/null; then
                         service apache2 reload
@@ -280,10 +281,8 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
         return context
     
     def get_context(self, webapp):
-        context = super(PHPBackend, self).get_context(webapp)
+        context = super().get_context(webapp)
         context.update({
-            'php_version': webapp.type_instance.get_php_version(),
-            'php_version_number': webapp.type_instance.get_php_version_number(),
             'max_requests': settings.WEBAPPS_PHP_MAX_REQUESTS,
         })
         self.update_fpm_context(webapp, context)

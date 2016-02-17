@@ -83,8 +83,11 @@ class Website(models.Model):
         return directives
     
     def get_absolute_url(self):
-        domain = self.domains.first()
-        if domain:
+        try:
+            domain = self.domains.all()[0]
+        except IndexError:
+            return
+        else:
             return '%s://%s' % (self.get_protocol(), domain)
     
     def get_user(self):
@@ -113,7 +116,7 @@ class WebsiteDirective(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
         related_name='directives')
     name = models.CharField(_("name"), max_length=128,
-            choices=SiteDirective.get_choices())
+        choices=SiteDirective.get_choices())
     value = models.CharField(_("value"), max_length=256)
     
     def __str__(self):
@@ -157,6 +160,9 @@ class Content(models.Model):
             self.path = '/'
     
     def get_absolute_url(self):
-        domain = self.website.domains.first()
-        if domain:
+        try:
+            domain = self.website.domains.all()[0]
+        except IndexError:
+            return
+        else:
             return '%s://%s%s' % (self.website.get_protocol(), domain, self.path)

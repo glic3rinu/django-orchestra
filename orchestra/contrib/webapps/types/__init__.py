@@ -85,6 +85,8 @@ class AppType(plugins.Plugin, metaclass=plugins.PluginMount):
         return {
             'app_id': self.instance.id,
             'app_name': self.instance.name,
-            'user': self.instance.account.username,
+            'user': self.instance.get_username(),
+            'user_id': self.instance.account.main_systemuser_id,
             'home': self.instance.account.main_systemuser.get_home(),
+            'account_id': self.instance.account_id,
         }

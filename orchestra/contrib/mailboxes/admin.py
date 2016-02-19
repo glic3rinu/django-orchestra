@@ -174,6 +174,15 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     
     def save_model(self, request, obj, form, change):
         """ save hacky mailbox.addresses and local domain clashing """
+        if obj.filtering != obj.CUSTOM:
+            msg = _("You have provided a custom filtering but filtering "
+                    "selected option is %s") % obj.get_filtering_display()
+            if change:
+                old = Mailbox.objects.get(pk=obj.pk)
+                if old.custom_filtering != obj.custom_filtering:
+                    messages.warning(request, msg)
+            elif obj.custom_filtering:
+                messages.warning(request, msg)
         super(MailboxAdmin, self).save_model(request, obj, form, change)
         obj.addresses = form.cleaned_data['addresses']
 

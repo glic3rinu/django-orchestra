@@ -60,9 +60,7 @@ class Mailbox(models.Model):
         return os.path.normpath(settings.MAILBOXES_HOME % context)
     
     def clean(self):
-        if self.custom_filtering and self.filtering != self.CUSTOM:
-            self.custom_filtering = ''
-        elif self.filtering == self.CUSTOM and not self.custom_filtering:
+        if self.filtering == self.CUSTOM and not self.custom_filtering:
             raise ValidationError({
                 'custom_filtering': _("Custom filtering is selected but not provided.")
             })
@@ -70,6 +68,7 @@ class Mailbox(models.Model):
     def get_filtering(self):
         name, content = settings.MAILBOXES_MAILBOX_FILTERINGS[self.filtering]
         if callable(content):
+            # Custom filtering
             content = content(self)
         return (name, content)
     

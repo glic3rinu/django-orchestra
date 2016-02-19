@@ -15,8 +15,8 @@ class MailboxForm(forms.ModelForm):
     """ hacky form for adding reverse M2M form field for Mailbox.addresses """
     # TODO keep track of this ticket for future reimplementation
     #      https://code.djangoproject.com/ticket/897
-    addresses = forms.ModelMultipleChoiceField(queryset=Address.objects.select_related('domain'),
-        required=False,
+    addresses = forms.ModelMultipleChoiceField(required=False,
+        queryset=Address.objects.select_related('domain'),
         widget=widgets.FilteredSelectMultiple(verbose_name=_('addresses'), is_stacked=False))
     
     def __init__(self, *args, **kwargs):
@@ -30,16 +30,17 @@ class MailboxForm(forms.ModelForm):
         self.fields['addresses'].widget = widgets.RelatedFieldWidgetWrapper(widget, field,
                 self.modeladmin.admin_site, can_add_related=True)
         
+        account = self.modeladmin.account
         # Filter related addresses by account
         old_render = self.fields['addresses'].widget.render
         def render(*args, **kwargs):
             output = old_render(*args, **kwargs)
-            args = 'account=%i' % self.modeladmin.account.pk
+            args = 'account=%i' % account.pk
             output = output.replace('/add/?', '/add/?%s&' % args)
             return mark_safe(output)
         self.fields['addresses'].widget.render = render
         queryset = self.fields['addresses'].queryset
-        realted_addresses = queryset.filter(account_id=self.modeladmin.account.pk).order_by('name')
+        realted_addresses = queryset.filter(account_id=account.pk).order_by('name')
         self.fields['addresses'].queryset = realted_addresses
         
         if self.instance and self.instance.pk:

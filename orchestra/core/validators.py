@@ -5,6 +5,7 @@ from ipaddress import ip_address
 import phonenumbers
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.utils.deconstruct import deconstructible
 from django.utils.translation import ugettext_lazy as _
 
 from ..utils.python import import_class
@@ -37,6 +38,7 @@ def all_valid(*args):
         raise ValidationError(errors)
 
 
+@deconstructible
 class OrValidator(object):
     """
     Run validators with an OR logic

@@ -148,6 +148,9 @@ class BackendOperation(models.Model):
     class Meta:
         verbose_name = _("Operation")
         verbose_name_plural = _("Operations")
+        index_together = (
+            ('content_type', 'object_id'),
+        )
     
     def __str__(self):
         return '%s.%s(%s)' % (self.backend, self.action, self.instance or self.instance_repr)

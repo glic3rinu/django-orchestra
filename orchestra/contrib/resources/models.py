@@ -179,8 +179,8 @@ class ResourceDataQuerySet(models.QuerySet):
 class ResourceData(models.Model):
     """ Stores computed resource usage and allocation """
     resource = models.ForeignKey(Resource, related_name='dataset', verbose_name=_("resource"))
-    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"), db_index=True)
-    object_id = models.PositiveIntegerField(_("object id"), db_index=True)
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
+    object_id = models.PositiveIntegerField(_("object id"))
     used = models.DecimalField(_("used"), max_digits=16, decimal_places=3, null=True,
         editable=False)
     updated_at = models.DateTimeField(_("updated"), null=True, editable=False)
@@ -194,6 +194,9 @@ class ResourceData(models.Model):
     class Meta:
         unique_together = ('resource', 'content_type', 'object_id')
         verbose_name_plural = _("resource data")
+        index_together = (
+            ('content_type', 'object_id'),
+        )
     
     def __str__(self):
         return "%s: %s" % (self.resource, self.content_object)
@@ -264,8 +267,8 @@ class MonitorData(models.Model):
     """ Stores monitored data """
     monitor = models.CharField(_("monitor"), max_length=256, db_index=True,
         choices=ServiceMonitor.get_choices())
-    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"), db_index=True)
-    object_id = models.PositiveIntegerField(_("object id"), db_index=True)
+    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"))
+    object_id = models.PositiveIntegerField(_("object id"))
     created_at = models.DateTimeField(_("created"), default=timezone.now, db_index=True)
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     state = models.DecimalField(_("state"), max_digits=16, decimal_places=2, null=True,
@@ -279,6 +282,9 @@ class MonitorData(models.Model):
     class Meta:
         get_latest_by = 'id'
         verbose_name_plural = _("monitor data")
+        index_together = (
+            ('content_type', 'object_id'),
+        )
     
     def __str__(self):
         return str(self.monitor)

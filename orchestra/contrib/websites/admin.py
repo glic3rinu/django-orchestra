@@ -87,7 +87,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         for content in website.content_set.all():
             site_link = get_on_site_link(content.get_absolute_url())
             webapp = content.webapp
-            detail = webapp.get_type_display()
+            detail = _("Edit Webapp") + ' ' + webapp.get_type_display()
             try:
                 detail += ' ' + webapp.type_instance.get_detail()
             except KeyError:

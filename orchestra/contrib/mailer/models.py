@@ -27,15 +27,17 @@ class Message(models.Model):
         (LOW, _("Low")),
     )
     
-    state = models.CharField(_("State"), max_length=16, choices=STATES, default=QUEUED)
-    priority = models.PositiveIntegerField(_("Priority"), choices=PRIORITIES, default=NORMAL)
+    state = models.CharField(_("State"), max_length=16, choices=STATES, default=QUEUED,
+        db_index=True)
+    priority = models.PositiveIntegerField(_("Priority"), choices=PRIORITIES, default=NORMAL,
+        db_index=True)
     to_address = models.CharField(max_length=256)
     from_address = models.CharField(max_length=256)
     subject = models.TextField(_("subject"))
     content = models.TextField(_("content"))
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
-    retries = models.PositiveIntegerField(_("retries"), default=0)
-    last_try = models.DateTimeField(_("last try"), null=True)
+    retries = models.PositiveIntegerField(_("retries"), default=0, db_index=True)
+    last_try = models.DateTimeField(_("last try"), null=True, db_index=True)
     
     def __str__(self):
         return '%s to %s' % (self.subject, self.to_address)

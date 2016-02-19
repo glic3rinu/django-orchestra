@@ -115,7 +115,7 @@ class Website(models.Model):
 class WebsiteDirective(models.Model):
     website = models.ForeignKey(Website, verbose_name=_("web site"),
         related_name='directives')
-    name = models.CharField(_("name"), max_length=128,
+    name = models.CharField(_("name"), max_length=128, db_index=True,
         choices=SiteDirective.get_choices())
     value = models.CharField(_("value"), max_length=256)
     

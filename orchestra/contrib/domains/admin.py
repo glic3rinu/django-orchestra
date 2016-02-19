@@ -85,7 +85,9 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 for website in websites:
                     site_link = get_on_site_link(website.get_absolute_url())
                     admin_url = change_url(website)
-                    link = '<a href="%s">%s %s</a>' % (admin_url, website.name, site_link)
+                    title = _("Edit website")
+                    link = '<a href="%s" title="%s">%s %s</a>' % (
+                        admin_url, title, website.name, site_link)
                     links.append(link)
                 return '<br>'.join(links)
         site_link = get_on_site_link('http://%s' % domain.name)
@@ -127,7 +129,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 structured_name=Concat('top__name', 'name')
             ).order_by('-structured_id', 'structured_name')
         if apps.isinstalled('orchestra.contrib.websites'):
-            qs = qs.prefetch_related('websites')
+            qs = qs.prefetch_related('websites__domains')
         return qs
     
     def save_model(self, request, obj, form, change):

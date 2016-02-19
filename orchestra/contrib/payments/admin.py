@@ -134,6 +134,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     list_display = ('id', 'file_url', 'display_transactions', 'created_at')
     fields = ('data', 'file_url', 'created_at')
     readonly_fields = ('data', 'file_url', 'display_transactions', 'created_at')
+    list_prefetch_related = ('transactions',)
     inlines = [TransactionInline]
     change_view_actions = (
         actions.mark_process_as_executed, actions.abort, actions.commit, actions.report
@@ -150,8 +151,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         ids = []
         lines = []
         counter = 0
-        # Because of values_list this query doesn't benefit from prefetch_related
-        for trans in process.transactions.only('id', 'state'):
+        for trans in process.transactions.all():
             color = STATE_COLORS.get(trans.state, 'black')
             state = trans.get_state_display()
             ids.append('<span style="color:%s" title="%s">%i</span>' % (color, state, trans.id))
@@ -163,7 +163,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         lines.append(','.join(ids))
         transactions = '<br'.join(lines)
         url = reverse('admin:payments_transaction_changelist')
-        url += '?processes=%i' % process.id
+        url += '?process_id=%i' % process.id
         return '<a href="%s">%s</a>' % (url, transactions)
     display_transactions.short_description = _("Transactions")
     display_transactions.allow_tags = True
@@ -172,7 +172,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         return False
     
     def get_change_view_actions(self, obj=None):
-        actions = super(TransactionProcessAdmin, self).get_change_view_actions()
+        actions = super().get_change_view_actions()
         exclude = []
         if obj:
             if obj.state == TransactionProcess.EXECUTED:
@@ -186,12 +186,10 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     def delete_view(self, request, object_id, extra_context=None):
         queryset = self.model.objects.filter(id=object_id)
         related_transactions = helpers.pre_delete_processes(self, request, queryset)
-        response = super(TransactionProcessAdmin, self).delete_view(
-            request, object_id, extra_context)
+        response = super().delete_view(request, object_id, extra_context)
         if isinstance(response, HttpResponseRedirect):
             helpers.post_delete_processes(self, request, related_transactions)
         return response
-
 
 admin.site.register(PaymentSource, PaymentSourceAdmin)
 admin.site.register(Transaction, TransactionAdmin)

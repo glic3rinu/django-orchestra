@@ -112,7 +112,7 @@ def admin_link(*args, **kwargs):
         return '---'
     display = kwargs.get('display')
     if display:
-        display = getattr(obj, display, None)
+        display = getattr(obj, display, display)
     else:
         display = obj
     try:
@@ -123,7 +123,8 @@ def admin_link(*args, **kwargs):
     extra = ''
     if kwargs['popup']:
         extra = 'onclick="return showAddAnotherPopup(this);"'
-    return mark_safe('<a href="%s" %s>%s</a>' % (url, extra, display))
+    title = "Change %s" % obj._meta.verbose_name
+    return mark_safe('<a href="%s" title="%s" %s>%s</a>' % (url, title, extra, display))
 
 
 @admin_field

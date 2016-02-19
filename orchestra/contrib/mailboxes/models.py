@@ -14,7 +14,7 @@ from . import validators, settings
 class Mailbox(models.Model):
     CUSTOM = 'CUSTOM'
     
-    name = models.CharField(_("name"), max_length=64, unique=True,
+    name = models.CharField(_("name"), max_length=64, unique=True, db_index=True,
         help_text=_("Required. %s characters or fewer. Letters, digits and ./-/_ only.") %
             settings.MAILBOXES_NAME_MAX_LENGTH,
         validators=[

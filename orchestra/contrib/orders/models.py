@@ -172,6 +172,9 @@ class Order(models.Model):
     
     class Meta:
         get_latest_by = 'id'
+        index_together = (
+            ('content_type', 'object_id'),
+        )
     
     def __str__(self):
         return str(self.service)

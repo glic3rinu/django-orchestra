@@ -16,7 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.actions import SendEmail
-from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query, change_url
+from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
 
@@ -189,8 +189,7 @@ class AccountAdminMixin(object):
     
     def account_link(self, instance):
         account = instance.account if instance.pk else self.account
-        url = change_url(account)
-        return '<a href="%s">%s</a>' % (url, account)
+        return admin_link()(account)
     account_link.short_description = _("account")
     account_link.allow_tags = True
     account_link.admin_order_field = 'account__username'

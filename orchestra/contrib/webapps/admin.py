@@ -5,7 +5,7 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import change_url, get_modeladmin
+from orchestra.admin.utils import admin_link, get_modeladmin
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.forms.widgets import DynamicHelpTextSelect
@@ -72,9 +72,8 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
             site_url = content.get_absolute_url()
             site_link = get_on_site_link(site_url)
             website = content.website
-            admin_url = change_url(website)
-            name = "%s on %s" % (website.name, content.path)
-            link = '<a href="%s">%s %s</a>' % (admin_url, name, site_link)
+            name = "%s on %s %s" % (website.name, content.path, site_link)
+            link = admin_link(display=name)(website)
             websites.append(link)
         if not websites:
             add_url = reverse('admin:websites_website_add')

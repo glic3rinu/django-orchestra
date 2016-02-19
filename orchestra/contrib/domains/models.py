@@ -24,7 +24,7 @@ class DomainQuerySet(models.QuerySet):
 
 
 class Domain(models.Model):
-    name = models.CharField(_("name"), max_length=256, unique=True,
+    name = models.CharField(_("name"), max_length=256, unique=True, db_index=True,
         help_text=_("Domain or subdomain name."),
         validators=[
             validators.validate_domain_name,

@@ -461,6 +461,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # TODO save serialized versions ob backendoperation.instance in order to allow backend reexecution of deleted objects
 
 
-
+# INDEXES for most used queries: account FK
 
 

@@ -64,10 +64,10 @@ class BillLineInline(admin.TabularInline):
             kwargs['widget'] = forms.TextInput(attrs={'size':'50'})
         elif db_field.name not in ('start_on', 'end_on'):
             kwargs['widget'] = forms.TextInput(attrs={'size':'6'})
-        return super(BillLineInline, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
     
     def get_queryset(self, request):
-        qs = super(BillLineInline, self).get_queryset(request)
+        qs = super().get_queryset(request)
         return qs.prefetch_related('sublines').select_related('order')
 
 
@@ -141,7 +141,7 @@ class BillLineAdmin(admin.ModelAdmin):
     display_total.admin_order_field = 'computed_total'
     
     def get_queryset(self, request):
-        qs = super(BillLineAdmin, self).get_queryset(request)
+        qs = super().get_queryset(request)
         qs = qs.annotate(
             subline_total=Sum('sublines__total'),
             computed_total=(F('subtotal') + Sum(Coalesce('sublines__total', 0))) * (1+F('tax')/100),
@@ -151,7 +151,7 @@ class BillLineAdmin(admin.ModelAdmin):
 
 class BillLineManagerAdmin(BillLineAdmin):
     def get_queryset(self, request):
-        qset = super(BillLineManagerAdmin, self).get_queryset(request)
+        qset = super().get_queryset(request)
         if self.bill_ids:
             return qset.filter(bill_id__in=self.bill_ids)
         return qset
@@ -182,7 +182,7 @@ class BillLineManagerAdmin(BillLineAdmin):
             'title': title,
         }
         context.update(extra_context or {})
-        return super(BillLineManagerAdmin, self).changelist_view(request, context)
+        return super().changelist_view(request, context)
 
 
 class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
@@ -288,7 +288,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     
     def get_urls(self):
         """ Hook bill lines management URLs on bill admin """
-        urls = super(BillAdmin, self).get_urls()
+        urls = super().get_urls()
         admin_site = self.admin_site
         extra_urls = [
             url("^manage-lines/$",
@@ -298,13 +298,13 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return extra_urls + urls
     
     def get_readonly_fields(self, request, obj=None):
-        fields = super(BillAdmin, self).get_readonly_fields(request, obj)
+        fields = super().get_readonly_fields(request, obj)
         if obj and not obj.is_open:
             fields += self.add_fields
         return fields
     
     def get_fieldsets(self, request, obj=None):
-        fieldsets = super(BillAdmin, self).get_fieldsets(request, obj)
+        fieldsets = super().get_fieldsets(request, obj)
         if obj:
             # Switches between amend_of_link and amend_links fields
             if obj.amend_of_id:
@@ -316,7 +316,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return fieldsets
     
     def get_change_view_actions(self, obj=None):
-        actions = super(BillAdmin, self).get_change_view_actions(obj)
+        actions = super().get_change_view_actions(obj)
         exclude = []
         if obj:
             if not obj.is_open:
@@ -326,7 +326,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return [action for action in actions if action.__name__ not in exclude]
     
     def get_inline_instances(self, request, obj=None):
-        inlines = super(BillAdmin, self).get_inline_instances(request, obj)
+        inlines = super().get_inline_instances(request, obj)
         if obj and not obj.is_open:
             return [inline for inline in inlines if type(inline) != BillLineInline]
         return [inline for inline in inlines if type(inline) != ClosedBillLineInline]
@@ -337,13 +337,13 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 4})
         elif db_field.name == 'html':
             kwargs['widget'] = forms.Textarea(attrs={'cols': 150, 'rows': 20})
-        formfield = super(BillAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        formfield = super().formfield_for_dbfield(db_field, **kwargs)
         if db_field.name == 'amend_of':
             formfield.queryset = formfield.queryset.filter(is_open=False)
         return formfield
     
     def get_queryset(self, request):
-        qs = super(BillAdmin, self).get_queryset(request)
+        qs = super().get_queryset(request)
         qs = qs.annotate(
             models.Count('lines'),
             # FIXME https://code.djangoproject.com/ticket/10060
@@ -360,7 +360,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         # TODO raise404, here and everywhere
         bill = self.get_object(request, unquote(object_id))
         actions.validate_contact(request, bill, error=False)
-        return super(BillAdmin, self).change_view(request, object_id, **kwargs)
+        return super().change_view(request, object_id, **kwargs)
 
 
 admin.site.register(Bill, BillAdmin)
@@ -384,7 +384,7 @@ class BillContactInline(admin.StackedInline):
             kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
         if db_field.name == 'email_usage':
             kwargs['widget'] = paddingCheckboxSelectMultiple(45)
-        return super(BillContactInline, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
 
 def has_bill_contact(account):

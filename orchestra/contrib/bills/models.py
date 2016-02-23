@@ -404,7 +404,8 @@ class BillLine(models.Model):
     start_on = models.DateField(_("start"))
     end_on = models.DateField(_("end"), null=True, blank=True)
     order = models.ForeignKey(settings.BILLS_ORDER_MODEL, null=True, blank=True,
-        help_text=_("Informative link back to the order"), on_delete=models.SET_NULL)
+        related_name='lines', on_delete=models.SET_NULL,
+        help_text=_("Informative link back to the order"))
     order_billed_on = models.DateField(_("order billed"), null=True, blank=True)
     order_billed_until = models.DateField(_("order billed until"), null=True, blank=True)
     created_on = models.DateField(_("created"), auto_now_add=True)

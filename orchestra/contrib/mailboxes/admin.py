@@ -49,6 +49,8 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         }),
         (_("Custom filtering"), {
             'classes': ('collapse',),
+            'description': _("Please remember to select <tt>custom filtering</tt> "
+                             "if you want this filter to be applied."),
             'fields': ('custom_filtering',),
         }),
         (_("Addresses"), {

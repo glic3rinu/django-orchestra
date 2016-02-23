@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db.models import Prefetch
@@ -38,8 +39,9 @@ class MetricStorageInline(admin.TabularInline):
         change_view = bool(self.parent_object and self.parent_object.pk)
         if change_view:
             qs = qs.order_by('-id')
+            parent_id = self.parent_object.pk
             try:
-                tenth_id = qs.filter(order_id=self.parent_object.pk).values_list('id', flat=True)[9]
+                tenth_id = qs.filter(order_id=parent_id).values_list('id', flat=True)[9]
             except IndexError:
                 pass
             else:
@@ -72,7 +74,37 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
         Prefetch('metrics', queryset=MetricStorage.objects.order_by('-id')),
     )
     list_select_related = ('account', 'service')
-    readonly_fields = ('content_object_repr', 'content_object_link')
+    add_fieldsets = (
+        (None, {
+            'fields': ('account', 'service')
+        }),
+        (_("Object"), {
+            'fields': ('content_type', 'object_id',),
+        }),
+        (_("State"), {
+            'fields': ('registered_on', 'cancelled_on', 'billed_on', 'billed_metric',
+                       'billed_until' )
+        }),
+        (None, {
+            'fields': ('description', 'ignore',),
+        }),
+    )
+    fieldsets = (
+        (None, {
+            'fields': ('account_link', 'service_link', 'content_object_link'),
+        }),
+        (_("State"), {
+            'fields': ('registered_on', 'cancelled_on', 'billed_on', 'billed_metric',
+                       'billed_until' )
+        }),
+        (None, {
+            'fields': ('description', 'ignore', 'bills_links'),
+        }),
+    )
+    readonly_fields = (
+        'content_object_repr', 'content_object_link', 'bills_links', 'account_link',
+        'service_link'
+    )
     
     service_link = admin_link('service')
     display_registered_on = admin_date('registered_on')
@@ -98,6 +130,15 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
     content_object_link.short_description = _("Content object")
     content_object_link.allow_tags = True
     content_object_link.admin_order_field = 'content_object_repr'
+    
+    def bills_links(self, order):
+        bills = []
+        make_link = admin_link()
+        for line in order.lines.select_related('bill').distinct('bill'):
+            bills.append(make_link(line.bill))
+        return '<br'.join(bills)
+    bills_links.short_description = _("Bills")
+    bills_links.allow_tags = True
     
     def display_billed_until(self, order):
         billed_until = order.billed_until
@@ -132,6 +173,12 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
             return ''
         return metric.value
     display_metric.short_description = _("Metric")
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """ Make value input widget bigger """
+        if db_field.name == 'description':
+            kwargs['widget'] = forms.Textarea(attrs={'cols': 70, 'rows': 2})
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
 #    def get_changelist(self, request, **kwargs):
 #        ChangeList = super(OrderAdmin, self).get_changelist(request, **kwargs)

@@ -10,6 +10,7 @@ from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
 
+from . import settings
 from .forms import ListCreationForm, ListChangeForm
 from .models import List
 
@@ -39,6 +40,8 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
         }),
         (_("Address"), {
             'classes': ('wide',),
+            'description': _("Additional address besides the default &lt;name&gt;@%s"
+                ) % settings.LISTS_DEFAULT_DOMAIN,
             'fields': (('address_name', 'address_domain'),)
         }),
         (_("Admin"), {

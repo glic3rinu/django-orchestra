@@ -78,16 +78,16 @@ class Command(BaseCommand):
             for instance in queryset:
                 manager.collect(instance, action, operations=operations, route_cache=route_cache)
         scripts, serialize = manager.generate(operations)
-        servers = []
+        servers = set()
         # Print scripts
         for key, value in scripts.items():
             route, __, __ = key
             backend, operations = value
-            servers.append(str(route.host))
+            servers.add(str(route.host))
             self.stdout.write('# Execute %s on %s' % (backend.get_name(), route.host))
             for method, commands in backend.scripts:
                 script = '\n'.join(commands)
-                self.stdout.write(script)
+                self.stdout.write(script.encode('ascii', errors='replace').decode())
         if interactive:
             context = {
                 'servers': ', '.join(servers),

@@ -435,7 +435,7 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 
 # DOmain show implicit records
-#         if not database_ready(): schedule a retry in 60 seconds, otherwise resources and other dynamic content gets fucked, maybe attach some 'signal' when first query goes trough
+# if not database_ready(): schedule a retry in 60 seconds, otherwise resources and other dynamic content gets fucked, maybe attach some 'signal' when first query goes trough
     with database_ready:
         shit_happend, otherwise schedule for first query
 # Entry.objects.filter()[:1].first() (LIMIT 1)
@@ -443,24 +443,14 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # put "Coordinate Apache restart" inside a bash function for clarity
 
 
-# mailscanner phishing, spam, whitelist choices
-
-
 # show base and total desglosed
-
 
 # Reverse lOgHistory order by date (lastest first)
 
-
 * setuppostgres use porject_name for db name and user instead of orchestra
-
 
 # POSTFIX web traffic monitor '": uid=" from=<%(user)s>'
 
 # Automatically re-run backends until success? only timedout executions?
 # TODO save serialized versions ob backendoperation.instance in order to allow backend reexecution of deleted objects
-
-
-# INDEXES for most used queries: account FK
-
 

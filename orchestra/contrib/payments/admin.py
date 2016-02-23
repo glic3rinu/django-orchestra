@@ -53,6 +53,10 @@ class TransactionInline(admin.TabularInline):
     
     def has_add_permission(self, *args, **kwargs):
         return False
+    
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
+        return qs.select_related('source', 'bill')
 
 
 class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):

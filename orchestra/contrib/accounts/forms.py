@@ -1,3 +1,4 @@
+import logging
 from collections import OrderedDict
 
 from django import forms
@@ -11,6 +12,9 @@ from . import settings
 from .models import Account
 
 
+logger = logging.getLogger(__name__)
+
+
 def create_account_creation_form():
     fields = OrderedDict(**{
         'enable_systemuser': forms.BooleanField(initial=True, required=False,
@@ -18,12 +22,18 @@ def create_account_creation_form():
             help_text=_("Designates whether to creates an enabled or disabled related system user. "
                         "Notice that a related system user will be always created."))
     })
-    for model, __, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
-        model = apps.get_model(model)
-        field_name = 'create_%s' % model._meta.model_name
-        label = _("Create %s") % model._meta.verbose_name
-        fields[field_name] = forms.BooleanField(
-            initial=True, required=False, label=label, help_text=help_text)
+    create_related = []
+    for model, key, kwargs, help_text in settings.ACCOUNTS_CREATE_RELATED:
+        try:
+            model = apps.get_model(model)
+        except LookupError:
+            logger.error("%s not installed." % model)
+        else:
+            field_name = 'create_%s' % model._meta.model_name
+            label = _("Create %s") % model._meta.verbose_name
+            fields[field_name] = forms.BooleanField(
+                initial=True, required=False, label=label, help_text=help_text)
+            create_related.append((model, key, kwargs, help_text))
         
     def clean(self):
         """ unique usernames between accounts and system users """
@@ -40,7 +50,7 @@ def create_account_creation_form():
         systemuser_model = Account.main_systemuser.field.rel.to
         if systemuser_model.objects.filter(username=account.username).exists():
             errors['username'] = _("A system user with this name already exists.")
-        for model, key, related_kwargs, __ in settings.ACCOUNTS_CREATE_RELATED:
+        for model, key, related_kwargs, __ in create_related:
             model = apps.get_model(model)
             kwargs = {
                 key: eval(related_kwargs[key], {'account': account})

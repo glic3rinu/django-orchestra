@@ -391,23 +391,6 @@ short URLS: https://github.com/rsvp/gitio
 
 link backend help text variables to settings/#var_name
 
-make python3 default python on the fucking docker container
-
-autocomplete; on the form header and type="search"
-To latest developers to post on this thread: I implemented the workaround I described in comment #14 nearly three months ago, and it has worked perfectly since then. While we would all prefer that "autocomplete=off" function properly at all times, it still functions properly if you include in your form an input element with any other autocomplete value.
-
-I simply added this code to my layout:
-
-<div style="display: none;">
- <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
-</div>
-
-Once I did this, all of my "autocomplete=off" elements were respected by Chrome.
-<input type="password" name="password" value="" style="display: none" /> 
-http://makandracards.com/makandra/24933-chrome-34+-firefox-38+-ie11+-ignore-autocomplete-off
-
-
-
 mkhomedir_helper or create ssh homes with bash.rc and such
 
 # warnings if some plugins are disabled, like make routes red
@@ -424,8 +407,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # email usage -webkit-column-count:3;-moz-column-count:3;column-count:3;
 
 
-# wordpressmu custom_url: set blog.domain
-
 # validate_user on saas.wordpress to detect if username already exists before attempting to create a blog
 
 
@@ -440,10 +421,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
         shit_happend, otherwise schedule for first query
 # Entry.objects.filter()[:1].first() (LIMIT 1)
 
-# put "Coordinate Apache restart" inside a bash function for clarity
-
-
-# show base and total desglosed
 
 # Reverse lOgHistory order by date (lastest first)
 

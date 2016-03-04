@@ -89,7 +89,7 @@ def close_bills(modeladmin, request, queryset, action='close_bills'):
         'formset': formset,
         'obj': get_object_from_url(modeladmin, request),
     }
-    templete = 'admin/orchestra/generic_confirmation.html'
+    template = 'admin/orchestra/generic_confirmation.html'
     if action == 'close_send_download_bills':
         template = 'admin/bills/bill/close_send_download_bills.html'
     return render(request, template, context)

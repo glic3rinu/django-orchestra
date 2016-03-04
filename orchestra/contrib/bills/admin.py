@@ -198,8 +198,9 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_list_template = 'admin/bills/change_list.html'
     fieldsets = (
         (None, {
-            'fields': ['number', 'type', 'amend_of_link', 'account_link', 'display_total',
-                       'display_payment_state', 'is_sent', 'comments'],
+            'fields': ['number', 'type', 'amend_of_link', 'account_link',
+                       'display_total_with_subtotals', 'display_payment_state',
+                       'is_sent', 'comments'],
         }),
         (_("Dates"), {
             'classes': ('collapse',),
@@ -227,7 +228,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     )
     readonly_fields = (
         'number', 'display_total', 'is_sent', 'display_payment_state', 'created_on_display',
-        'closed_on_display', 'updated_on_display'
+        'closed_on_display', 'updated_on_display', 'display_total_with_subtotals',
     )
     inlines = [BillLineInline, ClosedBillLineInline]
     date_hierarchy = 'closed_on'
@@ -252,10 +253,23 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     num_lines.short_description = _("lines")
     
     def display_total(self, bill):
-        return "%s &%s;" % (bill.compute_total(), settings.BILLS_CURRENCY.lower())
+        currency = settings.BILLS_CURRENCY.lower()
+        return '%s &%s;' % (bill.compute_total(), currency)
     display_total.allow_tags = True
     display_total.short_description = _("total")
     display_total.admin_order_field = 'approx_total'
+    
+    def display_total_with_subtotals(self, bill):
+        currency = settings.BILLS_CURRENCY.lower()
+        subtotals = []
+        for tax, subtotal in bill.compute_subtotals().items():
+            subtotals.append(_("Subtotal %s%% VAT   %s &%s;") % (tax, subtotal[0], currency))
+            subtotals.append(_("Taxes %s%% VAT   %s &%s;") % (tax, subtotal[1], currency))
+        subtotals = '\n'.join(subtotals)
+        return '<span title="%s">%s &%s;</span>' % (subtotals, bill.compute_total(), currency)
+    display_total_with_subtotals.allow_tags = True
+    display_total_with_subtotals.short_description = _("total")
+    display_total_with_subtotals.admin_order_field = 'approx_total'
     
     def type_link(self, bill):
         bill_type = bill.type.lower()

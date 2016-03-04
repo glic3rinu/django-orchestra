@@ -140,10 +140,45 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
     
     def prepare(self):
         super(PHPBackend, self).prepare()
-        # Coordinate apache restart with php backend in order not to overdo it
         self.append(textwrap.dedent("""
-            backend="PHPBackend"
-            echo "$backend" >> /dev/shm/restart.apache2""")
+            BACKEND="PHPBackend"
+            echo "$BACKEND" >> /dev/shm/reload.apache2
+            
+            function coordinate_apache_reload () {
+                # Coordinate Apache reload with other concurrent backends (e.g. Apache2Backend)
+                is_last=0
+                counter=0
+                while ! mv /dev/shm/reload.apache2 /dev/shm/reload.apache2.locked; do
+                    sleep 0.1;
+                    if [[ $counter -gt 4 ]]; then
+                        echo "[ERROR]: Apache reload synchronization deadlocked!" >&2
+                        exit 10
+                    fi
+                    counter=$(($counter+1))
+                done
+                state="$(grep -v "$BACKEND" /dev/shm/reload.apache2.locked)" || is_last=1
+                [[ $is_last -eq 0 ]] && {
+                    echo "$state" | grep -v ' RELOAD$' || is_last=1
+                }
+                if [[ $is_last -eq 1 ]]; then
+                    echo "[DEBUG]: Last backend to run, update: $UPDATED_APACHE, state: '$state'"
+                    if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RELOAD$ ]]; then
+                        if service apache2 status > /dev/null; then
+                            service apache2 reload
+                        else
+                            service apache2 start
+                        fi
+                    fi
+                    rm /dev/shm/reload.apache2.locked
+                else
+                    echo -n "$state" > /dev/shm/reload.apache2.locked
+                    if [[ $UPDATED_APACHE -eq 1 ]]; then
+                        echo -e "[DEBUG]: Apache will be reloaded by another backend:\\n${state}"
+                        echo "$BACKEND RELOAD" >> /dev/shm/reload.apache2.locked
+                    fi
+                    mv /dev/shm/reload.apache2.locked /dev/shm/reload.apache2
+                fi
+            }""")
         )
     
     def commit(self):
@@ -155,36 +190,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             if [[ $UPDATED_FPM -eq 1 ]]; then
                 %(reload_pool)s
             fi
-            
-            # Coordinate Apache restart with other concurrent backends (e.g. Apache2Backend)
-            is_last=0
-            mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked || {
-                sleep 0.2
-                mv /dev/shm/restart.apache2 /dev/shm/restart.apache2.locked
-            }
-            state="$(grep -v "$backend" /dev/shm/restart.apache2.locked)" || is_last=1
-            [[ $is_last -eq 0 ]] && {
-                echo "$state" | grep -v ' RESTART$' || is_last=1
-            }
-            if [[ $is_last -eq 1 ]]; then
-                echo "Last backend to run, update: $UPDATED_APACHE, state: '$state'"
-                if [[ $UPDATED_APACHE -eq 1 || "$state" =~ .*RESTART$ ]]; then
-                    if service apache2 status > /dev/null; then
-                        service apache2 reload
-                    else
-                        service apache2 start
-                    fi
-                fi
-                rm /dev/shm/restart.apache2.locked
-            else
-                echo -n "$state" > /dev/shm/restart.apache2.locked
-                if [[ $UPDATED_APACHE -eq 1 ]]; then
-                    echo -e "Apache will be restarted by another backend:\\n${state}"
-                    echo "$backend RESTART" >> /dev/shm/restart.apache2.locked
-                fi
-                mv /dev/shm/restart.apache2.locked /dev/shm/restart.apache2
-            fi
-            # End of coordination
+            coordinate_apache_reload
             """) % context
         )
         super(PHPBackend, self).commit()

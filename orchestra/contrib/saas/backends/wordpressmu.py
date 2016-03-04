@@ -151,7 +151,8 @@ class WordpressMuBackend(ServiceController):
                 SELECT b.blog_id, b.domain, m.domain, b.path
                     FROM wp_domain_mapping AS m, wp_blogs AS b
                     WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s;") )
-            if [[ ${existing[0]} != '' ]]; then
+            if [[ ${existing[0]} != "" ]]; then
+                echo "Existing blog with ID ${existing[0]}"
                 # Clear custom domain
                 if [[ "%(custom_domain)s" == "" ]]; then
                     mysql %(db_name)s --execute="
@@ -168,21 +169,27 @@ class WordpressMuBackend(ServiceController):
                             WHERE m.blog_id = b.blog_id AND m.active AND %(IDENT)s;"
                 fi
             elif [[ "%(custom_domain)s" != "" ]]; then
+                echo "Non existing blog with custom domain %(domain)s"
                 blog=( $(mysql -Nrs %(db_name)s --execute="
                     SELECT blog_id, path
                         FROM wp_blogs
                         WHERE domain = '%(domain)s';") )
-                mysql %(db_name)s --execute="
-                    UPDATE wp_domain_mapping
-                        SET active = 0
-                        WHERE active AND blog_id = ${blog[0]};
-                    INSERT INTO wp_domain_mapping
-                        (blog_id, domain, active) VALUES (${blog[0]}, '%(custom_domain)s', 1);"
-                if [[ "${blog[1]}" != "%(custom_path)s" ]]; then
+                if [[ "${blog[0]}" != "" ]]; then
+                    echo "Blog %(domain)s found, ID: ${blog[0]}"
                     mysql %(db_name)s --execute="
-                        UPDATE wp_blogs
-                            SET path = '%(custom_path)s'
-                            WHERE blog_id = ${blog[0]};"
+                        UPDATE wp_domain_mapping
+                            SET active = 0
+                            WHERE active AND blog_id = ${blog[0]};
+                        INSERT INTO wp_domain_mapping
+                            (blog_id, domain, active) VALUES (${blog[0]}, '%(custom_domain)s', 1);"
+                    if [[ "${blog[1]}" != "%(custom_path)s" ]]; then
+                        mysql %(db_name)s --execute="
+                            UPDATE wp_blogs
+                                SET path = '%(custom_path)s'
+                                WHERE blog_id = ${blog[0]};"
+                    fi
+                else
+                    echo "Blog %(domain)s not found"
                 fi
             fi""") % context
         )
@@ -206,6 +213,7 @@ class WordpressMuBackend(ServiceController):
                 'custom_path': custom_url.path,
             })
         return context
+
 
 class WordpressMuTraffic(ApacheTrafficByHost):
     __doc__ = ApacheTrafficByHost.__doc__

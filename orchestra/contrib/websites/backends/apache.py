@@ -146,7 +146,7 @@ class Apache2Controller(ServiceController):
         # Coordinate apache restart with php backend in order not to overdo it
         self.append(textwrap.dedent("""
             BACKEND="Apache2Controller"
-            echo "$BACKEND" >> /dev/shm/restart.apache2
+            echo "$BACKEND" >> /dev/shm/reload.apache2
             
             function coordinate_apache_reload () {
                 # Coordinate Apache reload with other concurrent backends (e.g. PHPController)

@@ -175,8 +175,9 @@ def sshrun(addr, command, *args, executable='bash', persist=False, options=None,
     base_options.update(options or {})
     options = ['%s=%s' % (k, v) for k, v in base_options.items()]
     options = ' -o '.join(options)
-    cmd = 'ssh -o {options} -C root@{addr} {executable}'.format(
-        options=options, addr=addr, executable=executable)
+    user = kwargs.get('user', settings.ORCHESTRA_SSH_DEFAULT_USER)
+    cmd = 'ssh -o {options} -C {user}@{addr} {executable}'.format(
+        options=options, addr=addr, user=user, executable=executable)
     return run(cmd, *args, stdin=command.encode('utf8'), **kwargs)
 
 

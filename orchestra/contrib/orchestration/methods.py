@@ -7,6 +7,7 @@ import textwrap
 
 from celery.datastructures import ExceptionInfo
 
+from orchestra.settings import ORCHESTRA_SSH_DEFAULT_USER
 from orchestra.utils.sys import sshrun
 from orchestra.utils.python import CaptureStdout, import_class
 
@@ -39,7 +40,7 @@ def Paramiko(backend, log, server, cmds, async=False, paramiko_connections={}):
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             key = settings.ORCHESTRATION_SSH_KEY_PATH
             try:
-                ssh.connect(addr, username='root', key_filename=key)
+                ssh.connect(addr, username=ORCHESTRA_SSH_DEFAULT_USER, key_filename=key)
             except socket.error as e:
                 logger.error('%s timed out on %s' % (backend, addr))
                 log.state = log.TIMEOUT

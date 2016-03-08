@@ -7,7 +7,7 @@ from orchestra.contrib.orchestration import ServiceController, replace
 from .. import settings
 
 
-class BSCWBackend(ServiceController):
+class BSCWController(ServiceController):
     verbose_name = _("BSCW SaaS")
     model = 'saas.SaaS'
     default_route_match = "saas.service == 'bscw'"

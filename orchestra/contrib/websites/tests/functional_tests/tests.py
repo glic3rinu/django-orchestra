@@ -4,7 +4,7 @@ import socket
 import requests
 
 from orchestra.contrib.domains.models import Domain, Record
-from orchestra.contrib.domains.backends import Bind9MasterDomainBackend
+from orchestra.contrib.domains.backends import Bind9MasterDomainController
 from orchestra.contrib.orchestration.models import Server, Route
 from orchestra.contrib.webapps.tests.functional_tests.tests import StaticWebAppMixin, RESTWebAppMixin, WebAppMixin, PHPFcidWebAppMixin, PHPFPMWebAppMixin
 from orchestra.utils.tests import BaseLiveServerTestCase, random_ascii, save_response_on_error
@@ -26,9 +26,9 @@ class WebsiteMixin(WebAppMixin):
     def add_route(self):
         super(WebsiteMixin, self).add_route()
         server = Server.objects.get()
-        backend = backends.apache.Apache2Backend.get_name()
+        backend = backends.apache.Apache2Controller.get_name()
         Route.objects.get_or_create(backend=backend, match=True, host=server)
-        backend = Bind9MasterDomainBackend.get_name()
+        backend = Bind9MasterDomainController.get_name()
         Route.objects.get_or_create(backend=backend, match=True, host=server)
     
     def validate_add_website(self, name, domain):

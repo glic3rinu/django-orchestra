@@ -13,7 +13,7 @@ from orchestra.utils.sys import sshrun
 from .. import settings
 
 
-class PhpListSaaSBackend(ServiceController):
+class PhpListSaaSController(ServiceController):
     """
     Creates a new phplist instance on a phpList multisite installation.
     The site is created by means of creating a new database per phpList site,

@@ -10,7 +10,7 @@ from .. import settings
 from . import WebAppServiceMixin
 
 
-class MoodleBackend(WebAppServiceMixin, ServiceController):
+class MoodleController(WebAppServiceMixin, ServiceController):
     """
     Installs the latest version of Moodle available on download.moodle.org
     """
@@ -92,7 +92,7 @@ class MoodleBackend(WebAppServiceMixin, ServiceController):
         )
     
     def get_context(self, webapp):
-        context = super(MoodleBackend, self).get_context(webapp)
+        context = super(MoodleController, self).get_context(webapp)
         contents = webapp.content_set.all()
         context.update({
             'db_type': 'mysqli',

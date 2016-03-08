@@ -8,7 +8,7 @@ from orchestra.contrib.resources import ServiceMonitor
 from . import settings
 
 
-class MySQLBackend(ServiceController):
+class MySQLController(ServiceController):
     """
     Simple backend for creating MySQL databases using <tt>CREATE DATABASE</tt> statement.
     """
@@ -58,7 +58,7 @@ class MySQLBackend(ServiceController):
             mysql -e 'FLUSH PRIVILEGES;'\
             """)
         )
-        super(MySQLBackend, self).commit()
+        super(MySQLController, self).commit()
     
     def get_context(self, database):
         context = {
@@ -68,7 +68,7 @@ class MySQLBackend(ServiceController):
         return replace(replace(context, "'", '"'), ';', '')
 
 
-class MySQLUserBackend(ServiceController):
+class MySQLUserController(ServiceController):
     """
     Simple backend for creating MySQL users using <tt>CREATE USER</tt> statement.
     """

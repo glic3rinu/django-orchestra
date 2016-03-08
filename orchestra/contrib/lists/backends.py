@@ -9,7 +9,7 @@ from . import settings
 from .models import List
 
 
-class MailmanVirtualDomainBackend(ServiceController):
+class MailmanVirtualDomainController(ServiceController):
     """
     Only syncs virtualdomains used on mailman addresses
     """
@@ -62,7 +62,7 @@ class MailmanVirtualDomainBackend(ServiceController):
                 service postfix reload
             fi""") % context
         )
-        super(MailmanVirtualDomainBackend, self).commit()
+        super(MailmanVirtualDomainController, self).commit()
     
     def get_context_files(self):
         return {
@@ -77,10 +77,10 @@ class MailmanVirtualDomainBackend(ServiceController):
         return replace(context, "'", '"')
 
 
-class MailmanBackend(MailmanVirtualDomainBackend):
+class MailmanController(MailmanVirtualDomainController):
     """
     Mailman 2 backend based on <tt>newlist</tt>, it handles custom domains.
-    Includes <tt>MailmanVirtualDomainBackend</tt>
+    Includes <tt>MailmanVirtualDomainController</tt>
     """
     verbose_name = "Mailman"
     address_suffixes = [
@@ -202,7 +202,7 @@ class MailmanBackend(MailmanVirtualDomainBackend):
         }
     
     def get_banner(self, mail_list):
-        banner = super(MailmanBackend, self).get_banner()
+        banner = super(MailmanController, self).get_banner()
         return '%s %s' % (banner, mail_list.name)
     
     def get_context(self, mail_list):

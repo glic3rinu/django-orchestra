@@ -53,7 +53,7 @@ class WebAppMixin(object):
 
 
 class StaticWebAppMixin(object):
-    backend = backends.static.StaticBackend
+    backend = backends.static.StaticController
     type_value = 'static'
     token = random_ascii(100)
     page = (

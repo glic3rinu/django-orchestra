@@ -79,7 +79,7 @@ class ListMixin(object):
     
     def add_route(self):
         server = Server.objects.create(name=self.MASTER_SERVER)
-        backend = backends.MailmanBackend.get_name()
+        backend = backends.MailmanController.get_name()
         Route.objects.create(backend=backend, match=True, host=server)
     
     def test_add(self):

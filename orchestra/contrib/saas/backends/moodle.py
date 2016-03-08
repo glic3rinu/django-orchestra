@@ -8,7 +8,7 @@ from orchestra.contrib.orchestration import ServiceController
 from .. import settings
 
 
-class MoodleMuBackend(ServiceController):
+class MoodleMuController(ServiceController):
     """
     Creates a Moodle site on a Moodle multisite installation
     

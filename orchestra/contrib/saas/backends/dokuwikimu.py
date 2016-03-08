@@ -12,7 +12,7 @@ from . import ApacheTrafficByHost
 from .. import settings
 
 
-class DokuWikiMuBackend(ServiceController):
+class DokuWikiMuController(ServiceController):
     """
     Creates a DokuWiki site on a DokuWiki multisite installation.
     """
@@ -79,7 +79,7 @@ class DokuWikiMuBackend(ServiceController):
         )
     
     def get_context(self, saas):
-        context = super(DokuWikiMuBackend, self).get_context(saas)
+        context = super(DokuWikiMuController, self).get_context(saas)
         domain = saas.get_site_domain()
         context.update({
             'template': settings.SAAS_DOKUWIKI_TEMPLATE_PATH,

@@ -12,7 +12,7 @@ from .. import settings
 from ..utils import normurlpath
 
 
-class Apache2Backend(ServiceController):
+class Apache2Controller(ServiceController):
     """
     Apache &ge;2.4 backend with support for the following directives:
         <tt>static</tt>, <tt>location</tt>, <tt>fpm</tt>, <tt>fcgid</tt>, <tt>uwsgi</tt>, \
@@ -142,14 +142,14 @@ class Apache2Backend(ServiceController):
         )
     
     def prepare(self):
-        super(Apache2Backend, self).prepare()
+        super(Apache2Controller, self).prepare()
         # Coordinate apache restart with php backend in order not to overdo it
         self.append(textwrap.dedent("""
-            BACKEND="Apache2Backend"
+            BACKEND="Apache2Controller"
             echo "$BACKEND" >> /dev/shm/restart.apache2
             
             function coordinate_apache_reload () {
-                # Coordinate Apache reload with other concurrent backends (e.g. PHPBackend)
+                # Coordinate Apache reload with other concurrent backends (e.g. PHPController)
                 is_last=0
                 counter=0
                 while ! mv /dev/shm/reload.apache2 /dev/shm/reload.apache2.locked; do
@@ -188,7 +188,7 @@ class Apache2Backend(ServiceController):
     def commit(self):
         """ reload Apache2 if necessary """
         self.append("coordinate_apache_reload")
-        super(Apache2Backend, self).commit()
+        super(Apache2Controller, self).commit()
     
     def get_directives(self, directive, context):
         method, args = directive[0], directive[1:]

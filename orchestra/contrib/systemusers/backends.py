@@ -10,7 +10,7 @@ from orchestra.contrib.resources import ServiceMonitor
 from . import settings
 
 
-class UNIXUserBackend(ServiceController):
+class UNIXUserController(ServiceController):
     """
     Basic UNIX system user/group support based on <tt>useradd</tt>, <tt>usermod</tt>, <tt>userdel</tt> and <tt>groupdel</tt>.
     Autodetects and uses ACL if available, for better permission management.

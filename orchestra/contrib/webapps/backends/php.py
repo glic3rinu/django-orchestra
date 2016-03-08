@@ -11,7 +11,7 @@ from . import WebAppServiceMixin
 from .. import settings, utils
 
 
-class PHPBackend(WebAppServiceMixin, ServiceController):
+class PHPController(WebAppServiceMixin, ServiceController):
     """
     PHP support for apache-mod-fcgid and php-fpm.
     It handles switching between these two PHP process management systemes.
@@ -139,13 +139,13 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             self.append("rm -f %(cmd_options_path)s" % context_copy)
     
     def prepare(self):
-        super(PHPBackend, self).prepare()
+        super(PHPController, self).prepare()
         self.append(textwrap.dedent("""
-            BACKEND="PHPBackend"
+            BACKEND="PHPController"
             echo "$BACKEND" >> /dev/shm/reload.apache2
             
             function coordinate_apache_reload () {
-                # Coordinate Apache reload with other concurrent backends (e.g. Apache2Backend)
+                # Coordinate Apache reload with other concurrent backends (e.g. Apache2Controller)
                 is_last=0
                 counter=0
                 while ! mv /dev/shm/reload.apache2 /dev/shm/reload.apache2.locked; do
@@ -193,7 +193,7 @@ class PHPBackend(WebAppServiceMixin, ServiceController):
             coordinate_apache_reload
             """) % context
         )
-        super(PHPBackend, self).commit()
+        super(PHPController, self).commit()
     
     def get_fpm_config(self, webapp, context):
         options = webapp.type_instance.get_options()

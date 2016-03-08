@@ -12,7 +12,7 @@ from . import settings
 from .models import Record, Domain
 
 
-class Bind9MasterDomainBackend(ServiceController):
+class Bind9MasterDomainController(ServiceController):
     """
     Bind9 zone and config generation.
     It auto-discovers slave Bind9 servers based on your routing configuration and NS servers.
@@ -33,7 +33,7 @@ class Bind9MasterDomainBackend(ServiceController):
     @classmethod
     def is_main(cls, obj):
         """ work around Domain.top self relationship """
-        if super(Bind9MasterDomainBackend, cls).is_main(obj):
+        if super(Bind9MasterDomainController, cls).is_main(obj):
             return not obj.top
     
     def save(self, domain):
@@ -118,7 +118,7 @@ class Bind9MasterDomainBackend(ServiceController):
     def get_masters_ips(self, domain):
         ips = list(settings.DOMAINS_MASTERS)
         if not ips:
-            ips += self.get_servers(domain, Bind9MasterDomainBackend)
+            ips += self.get_servers(domain, Bind9MasterDomainController)
         return OrderedSet(sorted(ips))
     
     def get_slaves(self, domain):
@@ -144,7 +144,7 @@ class Bind9MasterDomainBackend(ServiceController):
                 ips.append(addr)
         # Slaves from internal networks
         if not settings.DOMAINS_MASTERS:
-            for server in self.get_servers(domain, Bind9SlaveDomainBackend):
+            for server in self.get_servers(domain, Bind9SlaveDomainController):
                 ips.append(server)
         return OrderedSet(sorted(ips))
     
@@ -171,7 +171,7 @@ class Bind9MasterDomainBackend(ServiceController):
         return context
 
 
-class Bind9SlaveDomainBackend(Bind9MasterDomainBackend):
+class Bind9SlaveDomainController(Bind9MasterDomainController):
     """
     Generate the configuartion for slave servers
     It auto-discover the master server based on your routing configuration or you can use

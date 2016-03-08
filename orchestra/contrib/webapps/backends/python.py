@@ -9,7 +9,7 @@ from . import WebAppServiceMixin
 from .. import settings
 
 
-class uWSGIPythonBackend(WebAppServiceMixin, ServiceController):
+class uWSGIPythonController(WebAppServiceMixin, ServiceController):
     """
     <a href="http://uwsgi-docs.readthedocs.org/en/latest/Emperor.html">Emperor mode</a>
     """
@@ -72,7 +72,7 @@ class uWSGIPythonBackend(WebAppServiceMixin, ServiceController):
         return context
     
     def get_context(self, webapp):
-        context = super(PHPBackend, self).get_context(webapp)
+        context = super(PHPController, self).get_context(webapp)
         options = webapp.get_options()
         context.update({
             'python_version': webapp.type_instance.get_python_version(),

@@ -135,11 +135,11 @@ class DatabaseTestMixin(object):
         self.validate_create_table(dbname, username2, password2)
 
 
-class MySQLBackendMixin(object):
+class MySQLControllerMixin(object):
     db_type = 'mysql'
     
     def setUp(self):
-        super(MySQLBackendMixin, self).setUp()
+        super(MySQLControllerMixin, self).setUp()
         # Get local ip address used to reach self.MASTER_SERVER
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect((self.MASTER_SERVER, 22))
@@ -148,11 +148,11 @@ class MySQLBackendMixin(object):
     
     def add_route(self):
         server = Server.objects.create(name=self.MASTER_SERVER)
-        backend = backends.MySQLBackend.get_name()
+        backend = backends.MySQLController.get_name()
         match = "database.type == '%s'" % self.db_type
         Route.objects.create(backend=backend, match=match, host=server)
         match = "databaseuser.type == '%s'" % self.db_type
-        backend = backends.MySQLUserBackend.get_name()
+        backend = backends.MySQLUserController.get_name()
         Route.objects.create(backend=backend, match=match, host=server)
     
     def validate_create_table(self, name, username, password):
@@ -337,9 +337,9 @@ class AdminDatabaseMixin(DatabaseTestMixin):
         self.admin_delete(user)
 
 
-class RESTMysqlDatabaseTest(MySQLBackendMixin, RESTDatabaseMixin, BaseLiveServerTestCase):
+class RESTMysqlDatabaseTest(MySQLControllerMixin, RESTDatabaseMixin, BaseLiveServerTestCase):
     pass
 
 
-class AdminMysqlDatabaseTest(MySQLBackendMixin, AdminDatabaseMixin, BaseLiveServerTestCase):
+class AdminMysqlDatabaseTest(MySQLControllerMixin, AdminDatabaseMixin, BaseLiveServerTestCase):
     pass

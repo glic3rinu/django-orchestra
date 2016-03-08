@@ -11,7 +11,7 @@ from . import WebAppServiceMixin
 
 
 # Based on https://github.com/mtomic/wordpress-install/blob/master/wpinstall.php
-class WordPressBackend(WebAppServiceMixin, ServiceController):
+class WordPressController(WebAppServiceMixin, ServiceController):
     """
     Installs the latest version of WordPress available on www.wordpress.org
     It fully configures the wp-config.php (keys included) and sets up the database with initial admin password.
@@ -135,7 +135,7 @@ class WordPressBackend(WebAppServiceMixin, ServiceController):
         self.append("exc('rm -rf %(app_path)s');" % context)
     
     def get_context(self, webapp):
-        context = super(WordPressBackend, self).get_context(webapp)
+        context = super(WordPressController, self).get_context(webapp)
         context.update({
             'db_name': webapp.data['db_name'],
             'db_user': webapp.data['db_user'],

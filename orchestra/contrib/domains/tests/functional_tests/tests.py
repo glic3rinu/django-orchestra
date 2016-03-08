@@ -310,10 +310,10 @@ class Bind9BackendMixin(object):
     
     def add_route(self):
         master = Server.objects.create(name=self.MASTER_SERVER, address=self.MASTER_SERVER_ADDR)
-        backend = backends.Bind9MasterDomainBackend.get_name()
+        backend = backends.Bind9MasterDomainController.get_name()
         Route.objects.create(backend=backend, match=True, host=master)
         slave = Server.objects.create(name=self.SLAVE_SERVER, address=self.SLAVE_SERVER_ADDR)
-        backend = backends.Bind9SlaveDomainBackend.get_name()
+        backend = backends.Bind9SlaveDomainController.get_name()
         Route.objects.create(backend=backend, match=True, host=slave)
 
 

@@ -41,7 +41,7 @@ class MailboxMixin(object):
         server = Server.objects.create(name=self.MASTER_SERVER)
         backend = backends.PasswdVirtualUserBackend.get_name()
         Route.objects.create(backend=backend, match=True, host=server)
-        backend = backends.PostfixAddressBackend.get_name()
+        backend = backends.PostfixAddressController.get_name()
         Route.objects.create(backend=backend, match=True, host=server)
     
     def add_quota_resource(self):

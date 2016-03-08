@@ -306,7 +306,7 @@ method(
     arg, arg, arg)
 
 
-Bash/Python/PHPBackend
+Bash/Python/PHPController
 
 # services.handler as generator in order to save memory? not swell like a balloon
 
@@ -430,7 +430,4 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 # Automatically re-run backends until success? only timedout executions?
 # TODO save serialized versions ob backendoperation.instance in order to allow backend reexecution of deleted objects
-
-
-# Rename Backend -> COntroller
 

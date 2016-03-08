@@ -8,7 +8,7 @@ from orchestra.contrib.orchestration import ServiceController, replace
 from .. import settings
 
 
-class DrupalMuBackend(ServiceController):
+class DrupalMuController(ServiceController):
     """
     Creates a Drupal site on a Drupal multisite installation
     """
@@ -38,7 +38,7 @@ class DrupalMuBackend(ServiceController):
         self.append("rm -fr %(app_path)s" % context)
     
     def get_context(self, webapp):
-        context = super(DrupalMuBackend, self).get_context(webapp)
+        context = super(DrupalMuController, self).get_context(webapp)
         context['drupal_path'] = settings.SAAS_DRUPAL_SITES_PATH % context
         context['drupal_settings'] = os.path.join(context['drupal_path'], 'settings.php')
         return replace(context, "'", '"')

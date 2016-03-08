@@ -3,7 +3,7 @@ import textwrap
 from orchestra.contrib.orchestration import ServiceController
 
 
-class WordPressURLBackend(ServiceController):
+class WordPressURLController(ServiceController):
     """
     Configures WordPress site URL with associated website domain.
     """

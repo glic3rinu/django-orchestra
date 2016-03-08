@@ -12,7 +12,7 @@ from . import ApacheTrafficByHost
 from .. import settings
 
 
-class WordpressMuBackend(ServiceController):
+class WordpressMuController(ServiceController):
     """
     Creates a wordpress site on a WordPress MultiSite installation.
     

@@ -53,7 +53,7 @@ class SieveFilteringMixin:
         self.append('chown %(user)s:%(group)s %(filtering_path)s' % context)
 
 
-class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
+class UNIXUserMaildirController(SieveFilteringMixin, ServiceController):
     """
     Assumes that all system users on this servers all mail accounts.
     If you want to have system users AND mailboxes on the same server you should consider using virtual mailboxes.
@@ -149,7 +149,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
         return context
 
 
-#class DovecotPostfixPasswdVirtualUserBackend(SieveFilteringMixin, ServiceController):
+#class DovecotPostfixPasswdVirtualUserController(SieveFilteringMixin, ServiceController):
 #    """
 #    WARNING: This backends is not fully implemented
 #    """
@@ -242,7 +242,7 @@ class UNIXUserMaildirBackend(SieveFilteringMixin, ServiceController):
 #        return context
 
 
-class PostfixAddressVirtualDomainBackend(ServiceController):
+class PostfixAddressVirtualDomainController(ServiceController):
     """
     Secondary SMTP server without mailboxes in it, only syncs virtual domains.
     """
@@ -326,9 +326,9 @@ class PostfixAddressVirtualDomainBackend(ServiceController):
         return context
 
 
-class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
+class PostfixAddressController(PostfixAddressVirtualDomainController):
     """
-    Addresses based on Postfix virtual alias domains, includes <tt>PostfixAddressVirtualDomainBackend</tt>.
+    Addresses based on Postfix virtual alias domains, includes <tt>PostfixAddressVirtualDomainController</tt>.
     """
     verbose_name = _("Postfix address")
     doc_settings = (settings, (
@@ -413,7 +413,7 @@ class PostfixAddressBackend(PostfixAddressVirtualDomainBackend):
         )
 
 
-class AutoresponseBackend(ServiceController):
+class AutoresponseController(ServiceController):
     """
     WARNING: not implemented
     """

@@ -6,7 +6,7 @@ from . import WebAppServiceMixin
 
 
 # TODO DEPRECATE
-class WebalizerAppBackend(WebAppServiceMixin, ServiceController):
+class WebalizerAppController(WebAppServiceMixin, ServiceController):
     """
     Needed for cleaning up webalizer main folder when webapp deleteion withou related contents
     """

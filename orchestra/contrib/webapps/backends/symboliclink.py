@@ -4,12 +4,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.orchestration import ServiceController, replace
 
-from .php import PHPBackend
+from .php import PHPController
 
 
-class SymbolicLinkBackend(PHPBackend, ServiceController):
+class SymbolicLinkController(PHPController, ServiceController):
     """
-    Same as PHPBackend but allows you to have the webapps on a directory diferent than the webapps dir.
+    Same as PHPController but allows you to have the webapps on a directory diferent than the webapps dir.
     """
     verbose_name = _("Symbolic link webapp")
     model = 'webapps.WebApp'
@@ -28,7 +28,7 @@ class SymbolicLinkBackend(PHPBackend, ServiceController):
         pass
     
     def get_context(self, webapp):
-        context = super(SymbolicLinkBackend, self).get_context(webapp)
+        context = super(SymbolicLinkController, self).get_context(webapp)
         context.update({
             'link_path': webapp.data['path'],
         })

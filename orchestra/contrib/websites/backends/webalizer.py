@@ -8,7 +8,7 @@ from orchestra.contrib.orchestration import ServiceController
 from .. import settings
 
 
-class WebalizerBackend(ServiceController):
+class WebalizerController(ServiceController):
     """
     Creates webalizer conf file for each time a webalizer webapp is mounted on a website.
     """

@@ -8,7 +8,7 @@ from orchestra.contrib.orchestration import ServiceController
 from .. import settings
 
 
-class GitLabSaaSBackend(ServiceController):
+class GitLabSaaSController(ServiceController):
     verbose_name = _("GitLab SaaS")
     model = 'saas.SaaS'
     default_route_match = "saas.service == 'gitlab'"

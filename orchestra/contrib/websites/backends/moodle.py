@@ -3,7 +3,7 @@ import textwrap
 from orchestra.contrib.orchestration import ServiceController
 
 
-class MoodleWWWRootBackend(ServiceController):
+class MoodleWWWRootController(ServiceController):
     """
     Configures Moodle site WWWRoot, without it Moodle refuses to work.
     """

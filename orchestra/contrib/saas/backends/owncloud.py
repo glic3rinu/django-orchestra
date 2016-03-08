@@ -94,7 +94,7 @@ class OwnClouwAPIMixin(object):
         return ret
 
 
-class OwnCloudBackend(OwnClouwAPIMixin, ServiceController):
+class OwnCloudController(OwnClouwAPIMixin, ServiceController):
     """
     Creates a wordpress site on a WordPress MultiSite installation.
     

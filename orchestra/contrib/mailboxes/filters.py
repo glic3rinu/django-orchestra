@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class HasMailboxListFilter(SimpleListFilter):
     """ Filter addresses whether they have any mailbox or not """
-    title = _("Has mailbox")
+    title = _("has mailbox")
     parameter_name = 'has_mailbox'
     
     def lookups(self, request, model_admin):
@@ -23,7 +23,7 @@ class HasMailboxListFilter(SimpleListFilter):
 
 class HasForwardListFilter(HasMailboxListFilter):
     """ Filter addresses whether they have any mailbox or not """
-    title = _("Has forward")
+    title = _("has forward")
     parameter_name = 'has_forward'
     
     def queryset(self, request, queryset):
@@ -36,7 +36,7 @@ class HasForwardListFilter(HasMailboxListFilter):
 
 class HasAddressListFilter(HasMailboxListFilter):
     """ Filter addresses whether they have any mailbox or not """
-    title = _("Has address")
+    title = _("has address")
     parameter_name = 'has_address'
     
     def queryset(self, request, queryset):

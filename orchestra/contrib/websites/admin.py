@@ -14,6 +14,7 @@ from orchestra.forms.widgets import DynamicHelpTextSelect
 from orchestra.utils.html import get_on_site_link
 
 from .directives import SiteDirective
+from .filters import HasWebAppsListFilter
 from .forms import WebsiteAdminForm, WebsiteDirectiveInlineFormSet
 from .models import Content, Website, WebsiteDirective
 
@@ -56,7 +57,7 @@ class ContentInline(AccountAdminMixin, admin.TabularInline):
 
 class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'display_domains', 'display_webapps', 'account_link')
-    list_filter = ('protocol', 'is_active',)
+    list_filter = ('protocol', 'is_active', HasWebAppsListFilter)
     change_readonly_fields = ('name',)
     inlines = [ContentInline, WebsiteDirectiveInline]
     filter_horizontal = ['domains']

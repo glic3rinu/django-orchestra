@@ -8,13 +8,14 @@ from orchestra.admin.utils import change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 
+from .filters import HasUserListFilter, HasDatabaseListFilter
 from .forms import DatabaseCreationForm, DatabaseUserChangeForm, DatabaseUserCreationForm
 from .models import Database, DatabaseUser
 
 
 class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_users', 'account_link')
-    list_filter = ('type',)
+    list_filter = ('type', HasUserListFilter)
     search_fields = ('name', 'account__username')
     change_readonly_fields = ('name', 'type')
     extra = 1
@@ -72,7 +73,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
 
 class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, ExtendedModelAdmin):
     list_display = ('username', 'type', 'display_databases', 'account_link')
-    list_filter = ('type',)
+    list_filter = ('type', HasDatabaseListFilter)
     search_fields = ('username', 'account__username')
     form = DatabaseUserChangeForm
     add_form = DatabaseUserCreationForm

@@ -11,7 +11,7 @@ from orchestra.utils.html import get_on_site_link
 
 from . import settings
 from .actions import view_zone, edit_records, set_soa
-from .filters import TopDomainListFilter
+from .filters import TopDomainListFilter, HasWebsiteFilter, HasAddressFilter
 from .forms import RecordForm, RecordInlineFormSet, BatchDomainCreationAdminForm
 from .models import Domain, Record
 
@@ -55,7 +55,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     fields = ('name', 'account_link', 'display_websites')
     readonly_fields = ('account_link', 'top_link', 'display_websites', 'implicit_records')
     inlines = (RecordInline, DomainInline)
-    list_filter = (TopDomainListFilter,)
+    list_filter = (TopDomainListFilter, HasWebsiteFilter, HasAddressFilter)
     change_readonly_fields = ('name', 'serial')
     search_fields = ('name', 'account__username', 'records__value')
     add_form = BatchDomainCreationAdminForm

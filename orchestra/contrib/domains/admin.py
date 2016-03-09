@@ -9,6 +9,7 @@ from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.utils import apps
 from orchestra.utils.html import get_on_site_link
 
+from . import settings
 from .actions import view_zone, edit_records, set_soa
 from .filters import TopDomainListFilter
 from .forms import RecordForm, RecordInlineFormSet, BatchDomainCreationAdminForm
@@ -51,8 +52,8 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'structured_name', 'display_is_top', 'display_websites', 'account_link'
     )
     add_fields = ('name', 'account')
-    fields = ('name', 'account_link')
-    readonly_fields = ('account_link', 'top_link',)
+    fields = ('name', 'account_link', 'display_websites')
+    readonly_fields = ('account_link', 'top_link', 'display_websites', 'implicit_records')
     inlines = (RecordInline, DomainInline)
     list_filter = (TopDomainListFilter,)
     change_readonly_fields = ('name', 'serial')
@@ -96,10 +97,38 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_websites.short_description = _("Websites")
     display_websites.allow_tags = True
     
+    def implicit_records(self, domain):
+        defaults = []
+        types = set(domain.records.values_list('type', flat=True))
+        ttl = settings.DOMAINS_DEFAULT_TTL
+        lines = []
+        for record in domain.get_default_records():
+            line = '{name} {ttl} IN {type} {value}'.format(
+                name=domain.name,
+                ttl=ttl,
+                type=record.type,
+                value=record.value
+            )
+            if not domain.record_is_implicit(record, types):
+                line = '<strike>%s</strike>' % line
+            if record.type is Record.SOA:
+                lines.insert(0, line)
+            else:
+                lines.append(line)
+        return '<br>'.join(lines)
+    implicit_records.short_description = _("Implicit records")
+    implicit_records.allow_tags = True
+    
     def get_fieldsets(self, request, obj=None):
         """ Add SOA fields when domain is top """
         fieldsets = super(DomainAdmin, self).get_fieldsets(request, obj)
         if obj:
+            fieldsets += (
+                (_("Implicit records"), {
+                    'classes': ('collapse',),
+                    'fields': ('implicit_records',),
+                }),
+            )
             if obj.is_top:
                 fieldsets += (
                     (_("SOA"), {

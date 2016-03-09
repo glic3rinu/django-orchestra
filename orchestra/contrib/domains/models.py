@@ -153,11 +153,73 @@ class Domain(models.Model):
         self.serial = serial
         self.save(update_fields=('serial',))
     
+    def get_default_soa(self):
+        return ' '.join([
+            "%s." % settings.DOMAINS_DEFAULT_NAME_SERVER,
+            utils.format_hostmaster(settings.DOMAINS_DEFAULT_HOSTMASTER),
+            str(self.serial),
+            self.refresh or settings.DOMAINS_DEFAULT_REFRESH,
+            self.retry or settings.DOMAINS_DEFAULT_RETRY,
+            self.expire or settings.DOMAINS_DEFAULT_EXPIRE,
+            self.min_ttl or settings.DOMAINS_DEFAULT_MIN_TTL,
+        ])
+    
+    def get_default_records(self):
+        defaults = []
+        if self.is_top:
+            for ns in settings.DOMAINS_DEFAULT_NS:
+                defaults.append(AttrDict(
+                    type=Record.NS,
+                    value=ns
+                ))
+            soa = self.get_default_soa()
+            defaults.insert(0, AttrDict(
+                type=Record.SOA,
+                value=soa
+            ))
+        for mx in settings.DOMAINS_DEFAULT_MX:
+            defaults.append(AttrDict(
+                type=Record.MX,
+                value=mx
+            ))
+        default_a = settings.DOMAINS_DEFAULT_A
+        if default_a:
+            defaults.append(AttrDict(
+                type=Record.A,
+                value=default_a
+            ))
+        default_aaaa = settings.DOMAINS_DEFAULT_AAAA
+        if default_aaaa:
+            defaults.append(AttrDict(
+                type=Record.AAAA,
+                value=default_aaaa
+            ))
+        return defaults
+    
+    def record_is_implicit(self, record, types):
+        if record.type not in types:
+            if record.type is Record.NS:
+                if self.is_top:
+                    return True
+            elif record.type is Record.SOA:
+                if self.is_top:
+                    return True
+            else:
+                has_a = Record.A in types
+                has_aaaa = Record.AAAA in types
+                is_host = self.is_top or not types or has_a or has_aaaa
+                if is_host:
+                    if record.type is Record.MX:
+                        return True
+                    elif not has_a and not has_aaaa:
+                        return True
+        return False
+    
     def get_records(self):
-        types = {}
+        types = set()
         records = utils.RecordStorage()
         for record in self.get_declared_records():
-            types[record.type] = True
+            types.add(record.type)
             if record.type == record.SOA:
                 # Update serial and insert at 0
                 value = record.value.split()
@@ -173,51 +235,12 @@ class Domain(models.Model):
                     ttl=record.get_ttl(),
                     value=record.value
                 ))
-        if self.is_top:
-            if Record.NS not in types:
-                for ns in settings.DOMAINS_DEFAULT_NS:
-                    records.append(AttrDict(
-                        type=Record.NS,
-                        value=ns
-                    ))
-            if Record.SOA not in types:
-                soa = [
-                    "%s." % settings.DOMAINS_DEFAULT_NAME_SERVER,
-                    utils.format_hostmaster(settings.DOMAINS_DEFAULT_HOSTMASTER),
-                    str(self.serial),
-                    self.refresh or settings.DOMAINS_DEFAULT_REFRESH,
-                    self.retry or settings.DOMAINS_DEFAULT_RETRY,
-                    self.expire or settings.DOMAINS_DEFAULT_EXPIRE,
-                    self.min_ttl or settings.DOMAINS_DEFAULT_MIN_TTL,
-                ]
-                records.insert(0, AttrDict(
-                    type=Record.SOA,
-                    value=' '.join(soa)
-                ))
-        has_a = Record.A in types
-        has_aaaa = Record.AAAA in types
-        is_host = self.is_top or not types or has_a or has_aaaa
-        if is_host:
-            if Record.MX not in types:
-                for mx in settings.DOMAINS_DEFAULT_MX:
-                    records.append(AttrDict(
-                        type=Record.MX,
-                        value=mx
-                    ))
-            # A and AAAA point to the same default host
-            if not has_a and not has_aaaa:
-                default_a = settings.DOMAINS_DEFAULT_A
-                if default_a:
-                    records.append(AttrDict(
-                        type=Record.A,
-                        value=default_a
-                    ))
-                default_aaaa = settings.DOMAINS_DEFAULT_AAAA
-                if default_aaaa:
-                    records.append(AttrDict(
-                        type=Record.AAAA,
-                        value=default_aaaa
-                    ))
+        for record in self.get_default_records():
+            if self.record_is_implicit(record, types):
+                if record.type is Record.SOA:
+                    records.insert(0, record)
+                else:
+                    records.append(record)
         return records
     
     def render_records(self):

@@ -415,7 +415,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # get_context signal to overridaconfiguration? best practice: all context on get_context, ever use other context. template rendering as backend generator: proof of concept
 
 
-# DOmain show implicit records
 # if not database_ready(): schedule a retry in 60 seconds, otherwise resources and other dynamic content gets fucked, maybe attach some 'signal' when first query goes trough
     with database_ready:
         shit_happend, otherwise schedule for first query

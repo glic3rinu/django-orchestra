@@ -1,5 +1,6 @@
 from django.contrib import messages, admin
 from django.template.response import TemplateResponse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.contrib.orchestration import Operation, helpers
@@ -75,16 +76,20 @@ def letsencrypt(modeladmin, request, queryset):
                     messages.success(request, msg.format(**context))
                 if no_https:
                     msg = ungettext(
-                        _("{name} website does not have HTTPS protocol enabled."),
-                        _("{no_https} websites do not have HTTPS protocol enabled."),
+                        _("{name} website does not have <b>HTTPS protocol</b> enabled."),
+                        _("{no_https} websites do not have <b>HTTPS protocol</b> enabled."),
                         no_https)
-                    messages.warning(request, msg.format(**context))
+                    messages.warning(request, mark_safe(msg.format(**context)))
                 return
     opts = modeladmin.model._meta
     app_label = opts.app_label
     context = {
         'title': _("Let's encrypt!"),
         'action_name': _("Encrypt"),
+        'content_message': _("You are going to request certificates for the following domains.<br>"
+            "This operation is safe to run multiple times, "
+            "existing certificates will not be regenerated. "
+            "Also notice that let's encrypt does not currently support wildcard certificates."),
         'action_value': action_value,
         'queryset': queryset,
         'opts': opts,

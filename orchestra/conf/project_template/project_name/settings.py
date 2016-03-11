@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'orchestra.contrib.lists',
     'orchestra.contrib.webapps',
     'orchestra.contrib.websites',
+    'orchestra.contrib.letsencrypt',
     'orchestra.contrib.databases',
     'orchestra.contrib.vps',
     'orchestra.contrib.saas',

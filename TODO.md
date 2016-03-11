@@ -435,6 +435,8 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 # upgrade to django 1.9 and make margins wider
 # lets encrypt: DNS vs HTTP challange
+# lets enctypt: autorenew
+# lets encrypt: websites without / content
 
 # Warning websites with ssl options without https protocol
 

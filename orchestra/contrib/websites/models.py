@@ -117,7 +117,7 @@ class WebsiteDirective(models.Model):
         related_name='directives')
     name = models.CharField(_("name"), max_length=128, db_index=True,
         choices=SiteDirective.get_choices())
-    value = models.CharField(_("value"), max_length=256)
+    value = models.CharField(_("value"), max_length=256, blank=True)
     
     def __str__(self):
         return self.name

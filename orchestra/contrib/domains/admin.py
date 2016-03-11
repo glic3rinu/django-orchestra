@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.core.urlresolvers import reverse
 from django.db.models.functions import Concat, Coalesce
-from django.utils.translation import ugettext_lazy as _
+from django.templatetags.static import static
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, change_url
@@ -91,8 +93,16 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                         admin_url, title, website.name, site_link)
                     links.append(link)
                 return '<br>'.join(links)
+        add_url = reverse('admin:websites_website_add')
+        add_url += '?account=%i&domains=%i' % (domain.account_id, domain.pk)
+        context = {
+            'title': _("Add website"),
+            'url': add_url,
+            'image': '<img src="%s"></img>' % static('orchestra/images/add.png'),
+        }
+        add_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
         site_link = get_on_site_link('http://%s' % domain.name)
-        return _("No website %s") % site_link
+        return _("No website %s %s") % (add_link, site_link)
     display_websites.admin_order_field = 'websites__name'
     display_websites.short_description = _("Websites")
     display_websites.allow_tags = True

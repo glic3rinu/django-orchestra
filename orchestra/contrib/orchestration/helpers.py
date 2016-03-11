@@ -123,32 +123,40 @@ def message_user(request, logs):
     async_msg = ''
     if async:
         async_msg = ungettext(
-            _('<a href="{async_url}">{async} backend</a> is running on the background'),
+            _('<a href="{async_url}">{name}</a> is running on the background'),
             _('<a href="{async_url}">{async} backends</a> are running on the background'),
             async)
     if errors:
-        msg = ungettext(
-            _('<a href="{url}">{errors} out of {total} backend</a> has fail to execute'),
-            _('<a href="{url}">{errors} out of {total} backends</a> have fail to execute'),
-            errors)
+        if total == 1:
+            msg = _('<a href="{url}">{name}</a> has fail to execute'),
+        else:
+            msg = ungettext(
+                _('<a href="{url}">{errors} out of {total} backends</a> has fail to execute'),
+                _('<a href="{url}">{errors} out of {total} backends</a> have fail to execute'),
+                errors)
         if async_msg:
             msg += ', ' + str(async_msg)
-        msg = msg.format(errors=errors, async=async, async_url=async_url, total=total, url=url)
+        msg = msg.format(errors=errors, async=async, async_url=async_url, total=total, url=url,
+            name=log.backend)
         messages.error(request, mark_safe(msg + '.'))
     elif successes:
         if async_msg:
-            msg = ungettext(
-                _('<a href="{url}">{successes} out of {total} backend</a> has been executed'),
-                _('<a href="{url}">{successes} out of {total} backends</a> have been executed'),
-                successes)
+            if total == 1:
+                msg = _('<a href="{url}">{name}</a> has been executed')
+            else:
+                msg = ungettext(
+                    _('<a href="{url}">{successes} out of {total} backends</a> has been executed'),
+                    _('<a href="{url}">{successes} out of {total} backends</a> have been executed'),
+                    successes)
             msg += ', ' + str(async_msg)
         else:
             msg = ungettext(
-                _('<a href="{url}">{total} backend</a> has been executed'),
+                _('<a href="{url}">{name}</a> has been executed'),
                 _('<a href="{url}">{total} backends</a> have been executed'),
                 total)
         msg = msg.format(
-            total=total, url=url, async_url=async_url, async=async, successes=successes
+            total=total, url=url, async_url=async_url, async=async, successes=successes,
+            name=log.backend
         )
         messages.success(request, mark_safe(msg + '.'))
     else:

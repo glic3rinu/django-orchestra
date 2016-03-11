@@ -154,8 +154,7 @@ def collect(instance, action, **kwargs):
             if backend_cls.is_main(instance):
                 instances = [(instance, action)]
             else:
-                candidate = backend_cls.get_related(instance)
-                if candidate:
+                for candidate in backend_cls.get_related(instance):
                     if candidate.__class__.__name__ == 'ManyRelatedManager':
                         if 'pk_set' in kwargs:
                             # m2m_changed signal

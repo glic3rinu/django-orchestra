@@ -6,7 +6,7 @@ MONOSPACE_FONTS = ('Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans M
 
 
 def monospace_format(text):
-    style="font-family:%s;padding-left:110px;" % MONOSPACE_FONTS
+    style="font-family:%s;padding-left:110px;white-space:pre-wrap;" % MONOSPACE_FONTS
     return mark_safe('<pre style="%s">%s</pre>' % (style, text))
 
 

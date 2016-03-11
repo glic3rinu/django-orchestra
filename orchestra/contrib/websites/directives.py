@@ -21,7 +21,7 @@ class SiteDirective(plugins.Plugin, metaclass=plugins.PluginMount):
     help_text = ""
     unique_name = False
     unique_value = False
-    unique_location = False
+    is_location = False
     
     @classmethod
     @lru_cache()
@@ -62,8 +62,10 @@ class SiteDirective(plugins.Plugin, metaclass=plugins.PluginMount):
         value = directive.get('value', None)
         # location uniqueness
         location = None
-        if self.unique_location and value is not None:
-            location = normurlpath(directive['value'].split()[0])
+        if self.is_location and value is not None:
+            if not value and self.is_location:
+                value = '/'
+            location = normurlpath(value.split()[0])
         if location is not None and location in locations:
             errors['value'].append(ValidationError(
                 "Location '%s' already in use by other content/directive." % location
@@ -89,6 +91,8 @@ class SiteDirective(plugins.Plugin, metaclass=plugins.PluginMount):
     
     def validate(self, directive):
         directive.value = directive.value.strip()
+        if not directive.value and self.is_location:
+            directive.value = '/'
         if self.regex and not re.match(self.regex, directive.value):
             raise ValidationError({
                 'value': ValidationError(_("'%(value)s' does not match %(regex)s."),
@@ -106,7 +110,7 @@ class Redirect(SiteDirective):
     regex = r'^[^ ]*\s[^ ]+$'
     group = SiteDirective.HTTPD
     unique_value = True
-    unique_location = True
+    is_location = True
     
     def validate(self, directive):
         """ inserts default url-path if not provided """
@@ -164,7 +168,7 @@ class SecRuleRemove(SiteDirective):
     help_text = _("Space separated ModSecurity rule IDs.")
     regex = r'^[0-9\s]+$'
     group = SiteDirective.SEC
-    unique_location = True
+    is_location = True
 
 
 class SecEngine(SecRuleRemove):
@@ -172,7 +176,7 @@ class SecEngine(SecRuleRemove):
     verbose_name = _("SecRuleEngine Off")
     help_text = _("URL-path with disabled modsecurity engine.")
     regex = r'^/[^ ]*$'
-    unique_location = False
+    is_location = False
 
 
 class WordPressSaaS(SiteDirective):
@@ -182,7 +186,7 @@ class WordPressSaaS(SiteDirective):
     group = SiteDirective.SAAS
     regex = r'^/[^ ]*$'
     unique_value = True
-    unique_location = True
+    is_location = True
 
 
 class DokuWikiSaaS(WordPressSaaS):

@@ -113,8 +113,10 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
                 related = obj
                 for attribute in field.split('__'):
                     related = getattr(related, attribute)
-                return related
-        return None
+                if type(related).__name__ == 'RelatedManager':
+                    return related.all()
+                return [related]
+        return []
     
     @classmethod
     def get_backends(cls, instance=None, action=None):

@@ -1,3 +1,4 @@
+import os
 import textwrap
 
 from orchestra.contrib.orchestration import ServiceController
@@ -34,4 +35,32 @@ class WordPressURLController(ServiceController):
         return {
             'url': content.get_absolute_url(),
             'db_name': content.webapp.data.get('db_name'),
+        }
+
+
+class WordPressForceSSLController(ServiceController):
+    """ sets FORCE_SSL_ADMIN to true when website supports HTTPS """
+    verbose_name = "WordPress Force SSL"
+    model = 'websites.Content'
+    related_models = (
+        ('websites.Website', 'content_set'),
+    )
+    default_route_match = "content.webapp.type == 'wordpress-php'"
+    
+    def save(self, content):
+        context = self.get_context(content)
+        site = content.website
+        if site.protocol in (site.HTTP_AND_HTTPS, site.HTTPS_ONLY, site.HTTPS):
+            self.append(textwrap.dedent("""
+                if [[ ! $(grep FORCE_SSL_ADMIN %(wp_conf_path)s) ]]; then
+                    echo "Enabling FORCE_SSL_ADMIN for %(webapp_name)s webapp"
+                    sed -i -E "s#^(define\('NONCE_SALT.*)#\\1\\n\\ndefine\('FORCE_SSL_ADMIN', true\);#" \\
+                        %(wp_conf_path)s
+                fi""") % context
+            )
+    
+    def get_context(self, content):
+        return {
+            'webapp_name': content.webapp.name,
+            'wp_conf_path': os.path.join(content.webapp.get_path(), 'wp-config.php'),
         }

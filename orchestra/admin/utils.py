@@ -169,7 +169,8 @@ def get_object_from_url(modeladmin, request):
 
 def display_mono(field):
     def display(self, log):
-        return monospace_format(escape(getattr(log, field)))
+        content = getattr(log, field)
+        return monospace_format(escape(content))
     display.short_description = field
     return display
 

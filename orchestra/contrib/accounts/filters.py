@@ -21,15 +21,9 @@ class HasMainUserListFilter(SimpleListFilter):
             return queryset.filter(users__isnull=True).distinct()
 
 
-class IsActiveListFilter(SimpleListFilter):
-    title = _("Is active")
+class IsActiveListFilter(HasMainUserListFilter):
+    title = _("is active")
     parameter_name = 'active'
-    
-    def lookups(self, request, model_admin):
-        return (
-            ('True', _("True")),
-            ('False', _("False")),
-        )
     
     def queryset(self, request, queryset):
         if self.value() == 'True':

@@ -430,8 +430,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # Automatically re-run backends until success? only timedout executions?
 # TODO save serialized versions ob backendoperation.instance in order to allow backend reexecution of deleted objects
 
-# websites active list_display
-# account for account.is_active on service is_active filters like systemusers
 
 # upgrade to django 1.9 and make margins wider
 # lets encrypt: DNS vs HTTP challange
@@ -439,6 +437,4 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # lets encrypt: websites without / content
 
 # Warning websites with ssl options without https protocol
-
-
 

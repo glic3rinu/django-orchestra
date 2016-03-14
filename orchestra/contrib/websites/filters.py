@@ -19,3 +19,16 @@ class HasWebAppsListFilter(SimpleListFilter):
         elif self.value() == 'False':
             return queryset.filter(content__isnull=True)
         return queryset
+
+
+class HasDomainsFilter(HasWebAppsListFilter):
+    """ Filter addresses whether they have any domains or not """
+    title = _("has domains")
+    parameter_name = 'has_domains'
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'True':
+            return queryset.filter(domains__isnull=False)
+        elif self.value() == 'False':
+            return queryset.filter(domains__isnull=True)
+        return queryset

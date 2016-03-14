@@ -35,7 +35,7 @@ def letsencrypt(modeladmin, request, queryset):
                         encrypt_domains.add(domain)
                 website.encrypt_domains = encrypt_domains
                 operations.extend(Operation.create_for_action(website, 'encrypt'))
-                modeladmin.log_change(request, request.user, _("Encrypted!"))
+                modeladmin.log_change(request, website, _("Encrypted!"))
             if not operations:
                 messages.error(request, _("No backend operation has been executed."))
             else:

@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link
 from orchestra.contrib.accounts.admin import AccountAdminMixin
+from orchestra.contrib.accounts.filters import IsActiveListFilter
 from orchestra.plugins import PluginModelAdapter
 from orchestra.plugins.admin import SelectPluginAdminMixin
 from orchestra.utils.python import import_class
@@ -26,7 +27,7 @@ class MiscServiceAdmin(ExtendedModelAdmin):
         'name', 'verbose_name', 'num_instances', 'has_identifier', 'has_amount', 'is_active'
     )
     list_editable = ('is_active',)
-    list_filter = ('has_identifier', 'has_amount', 'is_active')
+    list_filter = ('has_identifier', 'has_amount', IsActiveListFilter)
     fields = (
         'verbose_name', 'name', 'description', 'has_identifier', 'has_amount', 'is_active'
     )
@@ -55,7 +56,7 @@ class MiscServiceAdmin(ExtendedModelAdmin):
 
 class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelAdmin):
     list_display = (
-        '__str__', 'service_link', 'amount', 'dispaly_active', 'account_link', 'is_active'
+        '__str__', 'service_link', 'amount', 'account_link', 'dispaly_active'
     )
     list_filter = ('service__name', 'is_active')
     list_select_related = ('service', 'account')

@@ -11,6 +11,7 @@ from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
 
 from . import settings
+from .filters import HasCustomAddressListFilter
 from .forms import ListCreationForm, ListChangeForm
 from .models import List
 
@@ -50,7 +51,7 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
         }),
     )
     search_fields = ('name', 'address_name', 'address_domain__name', 'account__username')
-    list_filter = (IsActiveListFilter,)
+    list_filter = (IsActiveListFilter, HasCustomAddressListFilter)
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name',)
     form = ListChangeForm

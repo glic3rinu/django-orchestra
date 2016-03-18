@@ -202,10 +202,14 @@ class AccountAdminMixin(object):
         except KeyError:
             pass
         else:
-            help_text = (
-                "Designates whether this account should be treated as active. "
-                "Unselect this instead of deleting accounts."
-            )
+            opts = self.model._meta
+            help_text = _(
+                "Designates whether this %(name)s should be treated as active. "
+                "Unselect this instead of deleting %(plural_name)s."
+            ) % {
+                'name': opts.verbose_name,
+                'plural_name': opts.verbose_name_plural,
+            }
             if obj and not obj.account.is_active:
                 help_text += "<br><b style='color:red;'>This user's account is dissabled</b>"
             field.help_text = _(help_text)

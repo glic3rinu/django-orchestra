@@ -45,10 +45,7 @@ class LetsEncryptController(ServiceController):
         super().commit()
     
     def get_context(self, website):
-        try:
-            content = website.content_set.get(path='/')
-        except website.content_set.model.DoesNotExist:
-            raise
+        content = website.content_set.get(path='/')
         return {
             'letsencrypt_auto': settings.LETSENCRYPT_AUTO_PATH,
             'webroot': content.webapp.get_path(),

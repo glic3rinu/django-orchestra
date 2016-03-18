@@ -95,14 +95,11 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                 return '<br>'.join(links)
         add_url = reverse('admin:websites_website_add')
         add_url += '?account=%i&domains=%i' % (domain.account_id, domain.pk)
-        context = {
-            'title': _("Add website"),
-            'url': add_url,
-            'image': '<img src="%s"></img>' % static('orchestra/images/add.png'),
-        }
-        add_link = '<a href="%(url)s" title="%(title)s">%(image)s</a>' % context
-        site_link = get_on_site_link('http://%s' % domain.name)
-        return _("No website %s %s") % (add_link, site_link)
+        image = '<img src="%s"></img>' % static('orchestra/images/add.png')
+        add_link = '<a href="%s" title="%s">%s</a>' % (
+            add_url, _("Add website"), image
+        )
+        return _("No website %s") % (add_link)
     display_websites.admin_order_field = 'websites__name'
     display_websites.short_description = _("Websites")
     display_websites.allow_tags = True

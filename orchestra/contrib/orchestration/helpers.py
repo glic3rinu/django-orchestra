@@ -128,7 +128,7 @@ def message_user(request, logs):
             async)
     if errors:
         if total == 1:
-            msg = _('<a href="{url}">{name}</a> has fail to execute'),
+            msg = _('<a href="{url}">{name}</a> has fail to execute')
         else:
             msg = ungettext(
                 _('<a href="{url}">{errors} out of {total} backends</a> has fail to execute'),

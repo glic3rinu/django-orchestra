@@ -1,8 +1,9 @@
 from django.contrib import messages, admin
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
-from django.utils.translation import ungettext, ugettext_lazy as _
+from django.utils.translation import ungettext, ugettext, ugettext_lazy as _
 
+from orchestra.admin.utils import admin_link
 from orchestra.contrib.orchestration import Operation, helpers
 
 from .helpers import is_valid_domain, read_live_lineages, configure_cert
@@ -12,6 +13,18 @@ from .forms import LetsEncryptForm
 def letsencrypt(modeladmin, request, queryset):
     wildcards = set()
     domains = set()
+    content_error = ''
+    contentless = queryset.exclude(content__path='/').distinct()
+    if contentless:
+        content_error = ungettext(
+            ugettext("Selected website %s doesn't have a webapp mounted on <tt>/</tt>."),
+            ugettext("Selected websites %s don't have a webapp mounted on <tt>/</tt>."),
+            len(contentless),
+        )
+        content_error += ugettext("<br>Websites need a webapp (e.g. static) mounted on </tt>/</tt> "
+                                  "for let's encrypt HTTP-01 challenge to work.")
+        content_error = content_error % ', '.join((admin_link()(website) for website in contentless))
+        content_error = '<ul class="errorlist"><li>%s</li></ul>' % content_error
     queryset = queryset.prefetch_related('domains')
     for website in queryset:
         for domain in website.domains.all():
@@ -23,7 +36,7 @@ def letsencrypt(modeladmin, request, queryset):
     action_value = 'letsencrypt'
     if request.POST.get('post') == 'generic_confirmation':
         form = LetsEncryptForm(domains, wildcards, request.POST)
-        if form.is_valid():
+        if not content_error and form.is_valid():
             cleaned_data = form.cleaned_data
             domains = set(cleaned_data['domains'])
             operations = []
@@ -86,10 +99,10 @@ def letsencrypt(modeladmin, request, queryset):
     context = {
         'title': _("Let's encrypt!"),
         'action_name': _("Encrypt"),
-        'content_message': _("You are going to request certificates for the following domains.<br>"
+        'content_message': ugettext("You are going to request certificates for the following domains.<br>"
             "This operation is safe to run multiple times, "
             "existing certificates will not be regenerated. "
-            "Also notice that let's encrypt does not currently support wildcard certificates."),
+            "Also notice that let's encrypt does not currently support wildcard certificates.") + content_error,
         'action_value': action_value,
         'queryset': queryset,
         'opts': opts,

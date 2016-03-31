@@ -59,6 +59,10 @@ class List(models.Model):
         self.is_active = False
         self.save(update_fields=('is_active',))
     
+    def enable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
     def get_address_name(self):
         return self.address_name or self.name
     

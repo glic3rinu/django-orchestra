@@ -6,6 +6,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
+from orchestra.admin.actions import disable, enable
 from orchestra.admin.utils import admin_link
 from orchestra.contrib.accounts.admin import AccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
@@ -33,6 +34,7 @@ class MiscServiceAdmin(ExtendedModelAdmin):
     )
     prepopulated_fields = {'name': ('verbose_name',)}
     change_readonly_fields = ('name',)
+    actions = (disable, enable)
     
     def num_instances(self, misc):
         """ return num slivers as a link to slivers changelist view """
@@ -61,6 +63,7 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
     list_filter = ('service__name', 'is_active')
     list_select_related = ('service', 'account')
     search_fields = ('identifier', 'description', 'account__username')
+    actions = (disable, enable)
     plugin_field = 'service'
     plugin = MiscServicePlugin
     

@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeViewActionsMixin
+from orchestra.admin.actions import disable, enable
 from orchestra.core import services
 
 from .actions import update_orders, view_help, clone
@@ -37,7 +38,7 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
                        'on_cancel', 'payment_style', 'tax', 'nominal_price')
         }),
     )
-    actions = (update_orders, clone)
+    actions = (update_orders, clone, disable, enable)
     change_view_actions = actions + (view_help,)
     change_form_template = 'admin/services/service/change_form.html'
     

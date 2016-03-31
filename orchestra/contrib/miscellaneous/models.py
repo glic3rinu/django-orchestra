@@ -31,6 +31,14 @@ class MiscService(models.Model):
     
     def get_verbose_name(self):
         return self.verbose_name or self.name
+    
+    def disable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
+    def enable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
 
 
 class Miscellaneous(models.Model):
@@ -58,6 +66,14 @@ class Miscellaneous(models.Model):
     
     def get_description(self):
         return ' '.join((str(self.amount), self.service.description or self.service.verbose_name))
+    
+    def disable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
+    def enable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
     
     @cached_property
     def service_class(self):

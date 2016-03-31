@@ -87,6 +87,10 @@ class SystemUser(models.Model):
         self.is_active = False
         self.save(update_fields=('is_active',))
     
+    def enable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
     def get_description(self):
         return self.get_shell_display()
     

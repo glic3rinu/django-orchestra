@@ -49,6 +49,10 @@ class Mailbox(models.Model):
         self.is_active = False
         self.save(update_fields=('is_active',))
     
+    def enable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
     

@@ -69,6 +69,10 @@ class SaaS(models.Model):
         self.is_active = False
         self.save(update_fields=('is_active',))
     
+    def enable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
     def clean(self):
         if not self.pk:
             self.name = self.name.lower()

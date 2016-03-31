@@ -30,3 +30,11 @@ class VPS(models.Model):
     
     def get_username(self):
         return self.hostname
+    
+    def disable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))
+    
+    def enable(self):
+        self.is_active = False
+        self.save(update_fields=('is_active',))

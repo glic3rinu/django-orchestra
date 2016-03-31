@@ -65,6 +65,11 @@ SAAS_WORDPRESS_DB_NAME = Setting('SAAS_WORDPRESS_DB_NAME',
     help_text=_("Needed for domain mapping when <tt>SAAS_WORDPRESS_ALLOW_CUSTOM_URL</tt> is enabled."),
 )
 
+SAAS_WORDPRESS_VERIFY_SSL = Setting('SAAS_WORDPRESS_VERIFY_SSL',
+    True,
+    help_text=_("Verify SSL certificate on the HTTP requests performed by the backend."),
+)
+
 
 # DokuWiki
 
@@ -117,6 +122,11 @@ SAAS_DRUPAL_ALLOW_CUSTOM_URL = Setting('SAAS_DRUPAL_ALLOW_CUSTOM_URL',
 
 SAAS_DRUPAL_SITES_PATH = Setting('WEBSITES_DRUPAL_SITES_PATH',
     '/home/httpd/htdocs/drupal-mu/sites/%(site_name)s',
+)
+
+SAAS_DRUPAL_DOMAIN = Setting('SAAS_DRUPAL_DOMAIN',
+    '%(site_name)s.drupal.{}'.format(ORCHESTRA_BASE_DOMAIN),
+    help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
 

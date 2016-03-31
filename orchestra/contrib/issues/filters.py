@@ -12,18 +12,11 @@ class MyTicketsListFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         return (
             ('True', _("My Tickets")),
-            ('False', _("All")),
         )
     
     def queryset(self, request, queryset):
         if self.value() == 'True':
             return queryset.involved_by(request.user)
-    
-    def choices(self, cl):
-        """ Remove default All """
-        choices = iter(super(MyTicketsListFilter, self).choices(cl))
-        next(choices)
-        return choices
 
 
 class TicketStateListFilter(SimpleListFilter):

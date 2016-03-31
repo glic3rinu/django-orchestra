@@ -20,7 +20,8 @@ from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
 
-from .actions import list_contacts, service_report, delete_related_services, disable_selected
+from .actions import (list_contacts, service_report, delete_related_services, disable_selected,
+    enable_selected)
 from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm
 from .models import Account
@@ -64,9 +65,10 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
     change_readonly_fields = ('username', 'main_systemuser_link', 'is_active')
     change_form_template = 'admin/accounts/account/change_form.html'
     actions = (
-        disable_selected, delete_related_services, list_contacts, service_report, SendEmail()
+        disable_selected, enable_selected, delete_related_services, list_contacts, service_report,
+        SendEmail()
     )
-    change_view_actions = (disable_selected, service_report)
+    change_view_actions = (disable_selected, service_report, enable_selected)
     ordering = ()
     
     main_systemuser_link = admin_link('main_systemuser')
@@ -110,6 +112,14 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
             form.save_related(obj)
         else:
             super(AccountAdmin, self).save_model(request, obj, form, change)
+    
+    def get_change_view_actions(self, obj=None):
+        views = super().get_change_view_actions(obj=obj)
+        if obj is not None:
+            if obj.is_active:
+                return [view for view in views if view.url_name != 'enable']
+            return [view for view in views if view.url_name != 'disable']
+        return views
     
     def get_actions(self, request):
         actions = super(AccountAdmin, self).get_actions(request)

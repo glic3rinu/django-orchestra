@@ -78,7 +78,10 @@ class Domain(models.Model):
     @property
     def is_top(self):
         # don't cache, don't replace by top_id
-        return not bool(self.top)
+        try:
+            return not bool(self.top)
+        except Domain.DoesNotExist:
+            return False
     
     @property
     def subdomains(self):

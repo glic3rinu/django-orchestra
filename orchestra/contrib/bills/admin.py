@@ -292,7 +292,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         state = bill.get_payment_state_display().upper()
         title = ''
         if bill.closed_amends:
-            state += '*'
+            state = '<strike>%s*</strike>' % state
             title = _("This bill has been amended, this value may not be valid.")
         color = PAYMENT_STATE_COLORS.get(bill.payment_state, 'grey')
         return '<a href="{url}" style="color:{color}" title="{title}">{name}</a>'.format(

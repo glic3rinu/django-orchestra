@@ -437,3 +437,11 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # Warning websites with ssl options without https protocol
 
 # Schedule cancellation
+
+# Multiple domains wordpress
+
+# TODO: separate ports for fpm version
+
+# Reversion
+# implement re-enable account
+# Disable/enable saas and VPS

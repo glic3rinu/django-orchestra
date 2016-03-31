@@ -64,7 +64,6 @@ class MessageReadOnlyInline(admin.TabularInline):
         return header + content
     content_html.short_description = _("Content")
     content_html.allow_tags = True
-
     
     def has_add_permission(self, request):
         return False
@@ -125,11 +124,10 @@ class TicketAdmin(ExtendedModelAdmin):
     )
     list_display_links = ('unbold_id', 'bold_subject')
     list_filter = (
-        MyTicketsListFilter, 'queue__name', 'priority', TicketStateListFilter,
+        MyTicketsListFilter, 'queue', 'priority', TicketStateListFilter,
     )
     default_changelist_filters = (
-        ('my_tickets', lambda r: 'True' if not r.user.is_superuser else 'False'),
-        ('state', 'OPEN')
+        ('state', 'OPEN'),
     )
     date_hierarchy = 'created_at'
     search_fields = (
@@ -298,7 +296,7 @@ class QueueAdmin(admin.ModelAdmin):
     def num_tickets(self, queue):
         num = queue.tickets__count
         url = reverse('admin:issues_ticket_changelist')
-        url += '?my_tickets=False&queue=%i' % queue.pk
+        url += '?queue=%i' % queue.pk
         return '<a href="%s">%d</a>' % (url, num)
     num_tickets.short_description = _("Tickets")
     num_tickets.admin_order_field = 'tickets__count'

@@ -6,7 +6,7 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.actions import disable
+from orchestra.admin.actions import disable, enable
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
@@ -76,7 +76,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_by_account_fields = ['domains']
     list_prefetch_related = ('domains', 'content_set__webapp')
     search_fields = ('name', 'account__username', 'domains__name', 'content__webapp__name')
-    actions = (disable, list_accounts)
+    actions = (disable, enable, list_accounts)
     
     def display_domains(self, website):
         domains = []

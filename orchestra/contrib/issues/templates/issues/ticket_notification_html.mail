@@ -41,7 +41,7 @@ Issue #{{ ticket.id }} has been updated by {{ ticket_message.author }}.
 <h1><a href="http://{{ site.domain }}{% url 'admin:issues_ticket_change' ticket.id %}">Issue #{{ ticket.pk }}: {{ ticket.subject }}</a></h1>
 
 <ul>
-<li>Author: {{ ticket.created_by }}</li>
+<li>Author: {{ ticket.creator_name }}</li>
 <li>Status: {{ ticket.get_state_display }}</li>
 <li>Priority: {{ ticket.get_priority_display }}</li>
 <li>Visibility: {{ ticket.get_visibility_display }}</li>

@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
-from orchestra.admin.actions import disable
+from orchestra.admin.actions import disable, enable
 from orchestra.admin.utils import change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
@@ -24,7 +24,7 @@ class SaaSAdmin(SelectPluginAdminMixin, ChangePasswordAdminMixin, AccountAdminMi
     plugin = SoftwareService
     plugin_field = 'service'
     plugin_title = 'Software as a Service'
-    actions = (disable, list_accounts)
+    actions = (disable, enable, list_accounts)
     
     def display_url(self, saas):
         site_domain = saas.get_site_domain()

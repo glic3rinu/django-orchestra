@@ -1,5 +1,6 @@
 from django.conf import settings as djsettings
 from django.db import models
+from django.db.models import query, Q
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.contacts import settings as contacts_settings
@@ -30,6 +31,12 @@ class Queue(models.Model):
         elif not existing_default:
             self.default = True
         super(Queue, self).save(*args, **kwargs)
+
+
+class TicketQuerySet(query.QuerySet):
+    def involved_by(self, user, *args, **kwargs):
+        qset = Q(creator=user) | Q(owner=user) | Q(messages__author=user)
+        return self.filter(qset, *args, **kwargs).distinct()
 
 
 class Ticket(models.Model):
@@ -65,13 +72,13 @@ class Ticket(models.Model):
     queue = models.ForeignKey(Queue, related_name='tickets', null=True, blank=True)
     subject = models.CharField(_("subject"), max_length=256)
     description = models.TextField(_("description"))
-    priority = models.CharField(_("priority"), max_length=32, choices=PRIORITIES,
-        default=MEDIUM)
+    priority = models.CharField(_("priority"), max_length=32, choices=PRIORITIES, default=MEDIUM)
     state = models.CharField(_("state"), max_length=32, choices=STATES, default=NEW)
     created_at = models.DateTimeField(_("created"), auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(_("modified"), auto_now=True)
-    cc = models.TextField("CC", help_text=_("emails to send a carbon copy to"),
-            blank=True)
+    cc = models.TextField("CC", help_text=_("emails to send a carbon copy to"), blank=True)
+    
+    objects = TicketQuerySet.as_manager()
     
     class Meta:
         ordering = ['-updated_at']
@@ -158,7 +165,7 @@ class Message(models.Model):
         related_name='ticket_messages')
     author_name = models.CharField(_("author name"), max_length=256, blank=True)
     content = models.TextField(_("content"))
-    created_on = models.DateTimeField(_("created on"), auto_now_add=True)
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     
     class Meta:
         get_latest_by = 'id'

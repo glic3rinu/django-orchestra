@@ -11,7 +11,7 @@ from .helpers import markdown_formated_changes
 from .models import Queue, Ticket
 
 
-def change_ticket_state_factory(action, final_state):
+def change_ticket_state_factory(action, verbose_name, final_state):
     context = {
         'action': action,
         'form': ChangeReasonForm()
@@ -40,30 +40,31 @@ def change_ticket_state_factory(action, final_state):
                 'count': queryset.count(),
                 'state': final_state.lower()
             }
-            msg = _("%s selected tickets are now %s.") % context
+            msg = _("%(count)s selected tickets are now %(state)s.") % context
             modeladmin.message_user(request, msg)
         else:
             context['form'] = form
             # action_with_confirmation must display form validation errors
             return True
     change_ticket_state.url_name = action
-    change_ticket_state.verbose_name = action
-    change_ticket_state.short_description = _('%s selected tickets') % action.capitalize()
+    change_ticket_state.tool_description = verbose_name
+    change_ticket_state.short_description = _('%s selected tickets') % verbose_name
     change_ticket_state.help_text = _('Mark ticket as %s.') % final_state.lower()
     change_ticket_state.__name__ = action
     return change_ticket_state
 
 
 action_map = {
-    Ticket.RESOLVED: 'resolve',
-    Ticket.REJECTED: 'reject',
-    Ticket.CLOSED: 'close'
+    Ticket.RESOLVED: ('resolve', _("Resolve")),
+    Ticket.REJECTED: ('reject', _("Reject")),
+    Ticket.CLOSED: ('close', _("Close")),
 }
 
 
 thismodule = sys.modules[__name__]
-for state, name in action_map.items():
-    action = change_ticket_state_factory(name, state)
+for state, names in action_map.items():
+    name, verbose_name = names
+    action = change_ticket_state_factory(name, verbose_name, state)
     setattr(thismodule, '%s_tickets' % name, action)
 
 
@@ -89,6 +90,7 @@ def take_tickets(modeladmin, request, queryset):
     msg = _("%(count)s selected tickets are now owned by %(user)s.") % context
     modeladmin.message_user(request, msg)
 take_tickets.url_name = 'take'
+take_tickets.tool_description = _("Take")
 take_tickets.short_description = _("Take selected tickets")
 take_tickets.help_text = _("Make yourself owner of the ticket.")
 

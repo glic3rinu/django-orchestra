@@ -149,7 +149,7 @@ class ChangeViewActionsMixin(object):
         kwargs['extra_context']['object_tools_items'] = [
             action.__dict__ for action in self.get_change_view_actions(obj)
         ]
-        return super(ChangeViewActionsMixin, self).change_view(request, object_id, **kwargs)
+        return super().change_view(request, object_id, **kwargs)
 
 
 class ChangeAddFieldsMixin(object):

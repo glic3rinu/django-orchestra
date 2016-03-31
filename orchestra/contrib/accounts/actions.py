@@ -1,3 +1,5 @@
+from functools import partial, wraps
+
 from django.contrib import messages
 from django.contrib.admin import helpers
 from django.contrib.admin.utils import NestedObjects, quote
@@ -186,21 +188,21 @@ def delete_related_services(modeladmin, request, queryset):
 delete_related_services.short_description = _("Delete related services")
 
 
-def disable_selected(modeladmin, request, queryset):
+def disable_selected(modeladmin, request, queryset, disable=True):
     opts = modeladmin.model._meta
     app_label = opts.app_label
-    
+    verbose_action_name = _("disabled") if disable else _("enabled")
     # The user has already confirmed the deletion.
     # Do the disable and return a None to display the change list view again.
     if request.POST.get('post'):
         n = 0
         for account in queryset:
-            account.disable()
-            modeladmin.log_change(request, account, _("Disabled"))
+            account.disable() if disable else account.enable()
+            modeladmin.log_change(request, account, verbose_action_name.capitalize())
             n += 1
         modeladmin.message_user(request, ungettext(
-            _("One account has been successfully disabled."),
-            _("%i accounts have been successfully disabled.") % n,
+            _("One account has been successfully %s.") % verbose_action_name,
+            _("%i accounts have been successfully %s.") % (n, verbose_action_name),
             n)
         )
         return None
@@ -248,6 +250,8 @@ def disable_selected(modeladmin, request, queryset):
     
     context = dict(
         admin_site.each_context(request),
+        action_name='disable_selected' if disable else 'enable_selected',
+        disable=disable,
         title=_("Are you sure?"),
         objects_name=objects_name,
         deletable_objects=display,
@@ -259,5 +263,11 @@ def disable_selected(modeladmin, request, queryset):
     template = 'admin/%s/%s/disable_selected_confirmation.html' % (app_label, opts.model_name)
     return TemplateResponse(request, template, context)
 disable_selected.short_description = _("Disable selected accounts")
-disable_selected.url = 'disable'
+disable_selected.url_name = 'disable'
 disable_selected.tool_description = _("Disable")
+
+
+enable_selected = partial(disable_selected, disable=False)
+enable_selected.__name__ = 'enable_selected'
+enable_selected.url_name = 'enable'
+enable_selected.tool_description = _("Enable")

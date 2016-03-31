@@ -1,3 +1,5 @@
+from functools import partial
+
 from django.contrib import admin
 from django.core.mail import send_mass_mail
 from django.shortcuts import render
@@ -108,23 +110,36 @@ class SendEmail(object):
         return render(request, self.template, self.context)
 
 
-@action_with_confirmation()
-def disable(modeladmin, request, queryset):
+def base_disable(modeladmin, request, queryset, disable=True):
     num = 0
+    action_name = _("disabled") if disable else _("enabled")
     for obj in queryset:
-        obj.disable()
-        modeladmin.log_change(request, obj, _("Disabled"))
+        obj.disable() if disable else obj.enable()
+        modeladmin.log_change(request, obj, action_name.capitalize())
         num += 1
     opts = modeladmin.model._meta
     context = {
+        'action_name': action_name,
         'verbose_name': opts.verbose_name,
         'verbose_name_plural': opts.verbose_name_plural,
         'num': num
     }
     msg = ungettext(
-        _("Selected %(verbose_name)s and related services has been disabled.") % context,
-        _("%(num)s selected %(verbose_name_plural)s and related services have been disabled.") % context,
+        _("Selected %(verbose_name)s and related services has been %(action_name)s.") % context,
+        _("%(num)s selected %(verbose_name_plural)s and related services have been %(action_name)s.") % context,
         num)
     modeladmin.message_user(request, msg)
+
+
+@action_with_confirmation()
+def disable(modeladmin, request, queryset):
+    return base_disable(modeladmin, request, queryset)
 disable.url_name = 'disable'
 disable.short_description = _("Disable")
+
+
+@action_with_confirmation()
+def enable(modeladmin, request, queryset):
+    return base_disable(modeladmin, request, queryset, disable=False)
+enable.url_name = 'enable'
+enable.short_description = _("Enable")

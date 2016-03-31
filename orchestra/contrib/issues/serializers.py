@@ -13,8 +13,8 @@ class QueueSerializer(serializers.HyperlinkedModelSerializer):
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Message
-        fields = ('id', 'author', 'author_name', 'content', 'created_on')
-        read_only_fields = ('author', 'author_name', 'created_on')
+        fields = ('id', 'author', 'author_name', 'content', 'created_at')
+        read_only_fields = ('author', 'author_name', 'created_at')
     
     def get_identity(self, data):
         return data.get('id')

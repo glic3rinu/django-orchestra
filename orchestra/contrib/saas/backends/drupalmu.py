@@ -21,6 +21,7 @@ class DrupalMuController(ServiceController):
     
     def save(self, webapp):
         context = self.get_context(webapp)
+        # TODO set password
         self.append(textwrap.dedent("""\
             mkdir %(drupal_path)s
             chown -R www-data %(drupal_path)s
@@ -35,6 +36,7 @@ class DrupalMuController(ServiceController):
     
     def delete(self, webapp):
         context = self.get_context(webapp)
+        # TODO delete tables
         self.append("rm -fr %(app_path)s" % context)
     
     def get_context(self, webapp):

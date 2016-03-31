@@ -83,6 +83,11 @@ class Account(auth.AbstractBaseUser):
         self.save(update_fields=('is_active',))
         self.notify_related()
     
+    def enable(self):
+        self.is_active = True
+        self.save(update_fields=('is_active',))
+        self.notify_related()
+    
     def get_services_to_disable(self):
         for rel in self._meta.get_all_related_objects():
             source = getattr(rel, 'related_model', rel.model)

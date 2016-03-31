@@ -18,7 +18,7 @@ Issue #{{ ticket.id }} has been updated by {{ ticket_message.author }}.
 -----------------------------------------------------------------
 Issue #{{ ticket.pk }}: {{ ticket.subject }}
 
- * Author: {{ ticket.created_by }}
+ * Author: {{ ticket.creator_name }}
  * Status: {{ ticket.get_state_display }}
  * Priority: {{ ticket.get_priority_display }}
  * Visibility: {{ ticket.get_visibility_display }}

@@ -22,8 +22,9 @@ class WordpressMuController(ServiceController):
     model = 'saas.SaaS'
     default_route_match = "saas.service == 'wordpress'"
     doc_settings = (settings,
-        ('SAAS_WORDPRESS_ADMIN_PASSWORD', 'SAAS_WORDPRESS_MAIN_URL')
+        ('SAAS_WORDPRESS_ADMIN_PASSWORD', 'SAAS_WORDPRESS_MAIN_URL', 'SAAS_WORDPRESS_VERIFY_SSL')
     )
+    VERIFY = settings.SAAS_WORDPRESS_VERIFY_SSL
     
     def login(self, session):
         main_url = self.get_main_url()
@@ -33,9 +34,10 @@ class WordpressMuController(ServiceController):
             'pwd': settings.SAAS_WORDPRESS_ADMIN_PASSWORD,
             'redirect_to': '/wp-admin/'
         }
-        response = session.post(login_url, data=login_data)
+        sys.stdout.write("Login URL: %s\n" % login_url)
+        response = session.post(login_url, data=login_data, verify=self.VERIFY)
         if response.url != main_url + '/wp-admin/':
-            raise IOError("Failure login to remote application")
+            raise IOError("Failure login to remote application (%s)" % login_url)
     
     def get_main_url(self):
         main_url = settings.SAAS_WORDPRESS_MAIN_URL
@@ -54,7 +56,8 @@ class WordpressMuController(ServiceController):
             '<a href="http://[\.\-\w]+/wp-admin/network/site-info\.php\?id=([0-9]+)"\s+'
             'class="edit">%s</a>' % saas.name
         )
-        content = session.get(search).content.decode('utf8')
+        sys.stdout.write("Search URL: %s\n" % search)
+        content = session.get(search, verify=self.VERIFY).content.decode('utf8')
         # Get id
         ids = regex.search(content)
         if not ids and not blog_id:
@@ -85,7 +88,8 @@ class WordpressMuController(ServiceController):
         except RuntimeError:
             url = self.get_main_url()
             url += '/wp-admin/network/site-new.php'
-            content = session.get(url).content.decode('utf8')
+            sys.stdout.write("Create URL: %s\n" % url)
+            content = session.get(url, verify=self.VERIFY).content.decode('utf8')
             
             wpnonce = re.compile('name="_wpnonce_add-blog"\s+value="([^"]*)"')
             wpnonce = wpnonce.search(content).groups()[0]
@@ -99,7 +103,7 @@ class WordpressMuController(ServiceController):
             }
             
             # Validate response
-            response = session.post(url, data=data)
+            response = session.post(url, data=data, verify=self.VERIFY)
             self.validate_response(response)
             blog_id = re.compile(r'<link id="wp-admin-canonical" rel="canonical" href="http(?:[^ ]+)/wp-admin/network/site-new.php\?id=([0-9]+)" />')
             content = response.content.decode('utf8')
@@ -124,8 +128,9 @@ class WordpressMuController(ServiceController):
             delete = self.get_main_url()
             delete += '/wp-admin/network/sites.php?action=confirm&action2=deleteblog'
             delete += '&id=%d&_wpnonce=%s' % (id, wpnonce)
+            sys.stdout.write("Search URL: %s\n" % delete)
             
-            content = session.get(delete).content.decode('utf8')
+            content = session.get(delete, verify=self.VERIFY).content.decode('utf8')
             wpnonce = re.compile('name="_wpnonce"\s+value="([^"]*)"')
             wpnonce = wpnonce.search(content).groups()[0]
             data = {
@@ -136,7 +141,8 @@ class WordpressMuController(ServiceController):
             }
             delete = self.get_main_url()
             delete += '/wp-admin/network/sites.php?action=deleteblog'
-            response = session.post(delete, data=data)
+            sys.stdout.write("Delete URL: %s\n" % delete)
+            response = session.post(delete, data=data, verify=self.VERIFY)
             self.validate_response(response)
     
     def save(self, saas):

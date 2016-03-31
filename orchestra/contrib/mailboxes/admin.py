@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
-from orchestra.admin.actions import disable
+from orchestra.admin.actions import disable, enable
 from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
@@ -74,7 +74,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
     add_form = MailboxCreationForm
     form = MailboxChangeForm
     list_prefetch_related = ('addresses__domain',)
-    actions = (disable, list_accounts)
+    actions = (disable, enable, list_accounts)
     
     def __init__(self, *args, **kwargs):
         super(MailboxAdmin, self).__init__(*args, **kwargs)

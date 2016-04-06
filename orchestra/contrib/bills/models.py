@@ -11,6 +11,7 @@ from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin.utils import change_url
 from orchestra.contrib.accounts.models import Account
 from orchestra.contrib.contacts.models import Contact
 from orchestra.core import validators
@@ -398,7 +399,7 @@ class BillLine(models.Model):
     rate = models.DecimalField(_("rate"), blank=True, null=True, max_digits=12, decimal_places=2)
     quantity = models.DecimalField(_("quantity"), blank=True, null=True, max_digits=12,
         decimal_places=2)
-    verbose_quantity = models.CharField(_("Verbose quantity"), max_length=16)
+    verbose_quantity = models.CharField(_("Verbose quantity"), max_length=16, blank=True)
     subtotal = models.DecimalField(_("subtotal"), max_digits=12, decimal_places=2)
     tax = models.DecimalField(_("tax"), max_digits=4, decimal_places=2)
     start_on = models.DateField(_("start"))
@@ -421,6 +422,13 @@ class BillLine(models.Model):
     
     def get_verbose_quantity(self):
         return self.verbose_quantity or self.quantity
+    
+    def clean():
+        if not self.verbose_quantity:
+            quantity = str(self.quantity)
+            # Strip trailing zeros
+            if quantity.endswith('0'):
+                self.verbose_quantity = quantity.strip('0').strip('.')
     
     def get_verbose_period(self):
         from django.template.defaultfilters import date
@@ -448,6 +456,9 @@ class BillLine(models.Model):
         else:
             total += self.sublines.aggregate(sub_total=Sum('total'))['sub_total'] or 0
         return round(total, 2)
+    
+    def get_absolute_url(self):
+        return change_url(self)
 
 
 class BillSubline(models.Model):

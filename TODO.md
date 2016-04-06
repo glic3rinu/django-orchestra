@@ -440,8 +440,24 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 
 # Multiple domains wordpress
 
-# TODO: separate ports for fpm version
-
 # Reversion
-# implement re-enable account
-# Disable/enable saas and VPS
+# Disable/enable SaaS and VPS
+
+# AGO
+
+# Don't show lines with size 0?
+# pending orders with recharge do not show up
+# Traffic of disabled accounts doesn't get disabled
+
+# is_active list filter account dissabled filtering support
+
+# URL encode "Order description" on clone
+# Service CLONE METRIC doesn't work
+
+
+# Show warning when saving order and metricstorage date is inconistent with registered date!
+
+# Warn user if changes are not saved
+
+# exclude from change list action, support for multiple exclusion
+# support for better edditing bill lines and sublines

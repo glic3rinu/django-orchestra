@@ -19,13 +19,14 @@ class ServiceAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         'description', 'content_type', 'handler_type', 'num_orders', 'is_active'
     )
     list_filter = (
-        'is_active', 'handler_type', ('content_type', admin.RelatedOnlyFieldListFilter),
+        'is_active', 'handler_type', 'is_fee',
+        ('content_type', admin.RelatedOnlyFieldListFilter),
     )
     fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('description', 'content_type', 'match', 'handler_type',
-                       'ignore_superusers', 'is_active')
+            'fields': ('description', 'content_type', 'match', 'periodic_update',
+                       'handler_type', 'ignore_superusers', 'is_active')
         }),
         (_("Billing options"), {
             'classes': ('wide',),

@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.forms.models import modelformset_factory
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils import translation, timezone
 from django.utils.safestring import mark_safe
@@ -368,3 +368,8 @@ def service_report(modeladmin, request, queryset):
         'totals': totals,
     }
     return render(request, 'admin/bills/billline/report.html', context)
+
+
+def get_ids(modeladmin, request, queryset):
+    ids = ','.join(map(str, queryset.values_list('id', flat=True)))
+    return HttpResponseRedirect('?id__in=%s' % ids)

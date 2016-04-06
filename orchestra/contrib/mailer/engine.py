@@ -27,7 +27,7 @@ def send_message(message, connection=None, bulk=settings.MAILER_BULK_MESSAGES):
             connection.open()
         except Exception as err:
             message.defer()
-            message.log(error)
+            message.log(err)
             return
     error = None
     try:

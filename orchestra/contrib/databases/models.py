@@ -38,6 +38,10 @@ class Database(models.Model):
         if user is not None:
             return user.databaseuser
         return None
+    
+    @property
+    def active(self):
+        return self.account.is_active
 
 
 Database.users.through._meta.unique_together = (

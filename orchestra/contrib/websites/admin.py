@@ -64,7 +64,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         'protocol', IsActiveListFilter, HasWebAppsListFilter, HasDomainsFilter
     )
     change_readonly_fields = ('name',)
-    inlines = [ContentInline, WebsiteDirectiveInline]
+    inlines = (ContentInline, WebsiteDirectiveInline)
     filter_horizontal = ['domains']
     fieldsets = (
         (None, {

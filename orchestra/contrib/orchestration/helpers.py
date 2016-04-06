@@ -109,9 +109,11 @@ def message_user(request, logs):
     async_ids = []
     for log in logs:
         total += 1
-        if log.state != log.EXCEPTION:
-            # EXCEPTION logs are not stored on the database
+        try:
+            # Some EXCEPTION logs are not stored on the database
             ids.append(log.pk)
+        except AttributeError:
+            pass
         if log.is_success:
             successes += 1
         elif not log.has_finished:
@@ -160,5 +162,5 @@ def message_user(request, logs):
         )
         messages.success(request, mark_safe(msg + '.'))
     else:
-        msg = async_msg.format(url=url, async_url=async_url, async=async)
+        msg = async_msg.format(url=url, async_url=async_url, async=async, name=log.backend)
         messages.success(request, mark_safe(msg + '.'))

@@ -155,3 +155,21 @@ class MailboxBillingTest(BaseTestCase):
         with freeze_time(now+relativedelta(months=6)):
             bills = service.orders.bill(new_open=True, **options)
             self.assertEqual([], bills)
+    
+    def test_mailbox_second_billing(self):
+        service = self.create_mailbox_disk_service()
+        self.create_disk_resource()
+        account = self.create_account()
+        mailbox = self.create_mailbox(account=account)
+        now = timezone.now()
+        bp = now.date() + relativedelta(years=1)
+        options = dict(billing_point=bp, fixed_point=True)
+        bills = service.orders.bill(**options)
+        
+        with freeze_time(now+relativedelta(years=1, months=1)):
+            mailbox = self.create_mailbox(account=account)
+            alt_now = timezone.now()
+            bp = alt_now.date() + relativedelta(years=1)
+            options = dict(billing_point=bp, fixed_point=True)
+            bills = service.orders.bill(**options)
+            print(bills)

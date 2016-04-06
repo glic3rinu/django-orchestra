@@ -54,7 +54,8 @@ class Service(models.Model):
     PREPAY = 'PREPAY'
     POSTPAY = 'POSTPAY'
     
-    _ignore_types = ' and '.join(', '.join(settings.SERVICES_IGNORE_ACCOUNT_TYPE).rsplit(', ', 1)).lower()
+    _ignore_types = ' and '.join(
+        ', '.join(settings.SERVICES_IGNORE_ACCOUNT_TYPE).rsplit(', ', 1)).lower()
     
     description = models.CharField(_("description"), max_length=256, unique=True)
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"),
@@ -70,6 +71,10 @@ class Service(models.Model):
             "<tt>&nbsp;miscellaneous.active and str(miscellaneous.identifier).endswith(('.org', '.net', '.com'))</tt><br>"
             "<tt>&nbsp;contractedplan.plan.name == 'association_fee''</tt><br>"
             "<tt>&nbsp;instance.active</tt>"))
+    periodic_update = models.BooleanField(_("periodic update"), default=False,
+        help_text=_("Whether a periodic update of this service orders should be performed or not. "
+                    "Needed for <tt>match</tt> definitions that depend on complex model interactions, "
+                    "where <tt>content type</tt> model save and delete operations are not enought."))
     handler_type = models.CharField(_("handler"), max_length=256, blank=True,
         help_text=_("Handler used for processing this Service. A handler enables customized "
                     "behaviour far beyond what options here allow to."),
@@ -248,11 +253,12 @@ class Service(models.Model):
     
     def update_orders(self, commit=True):
         order_model = apps.get_model(settings.SERVICES_ORDER_MODEL)
+        manager = order_model.objects
         related_model = self.content_type.model_class()
         updates = []
         queryset = related_model.objects.all()
         if related_model._meta.model_name != 'account':
             queryset = queryset.select_related('account').all()
         for instance in queryset:
-            updates += order_model.objects.update_by_instance(instance, service=self, commit=commit)
+            updates += manager.update_by_instance(instance, service=self, commit=commit)
         return updates

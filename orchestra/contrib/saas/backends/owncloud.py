@@ -123,6 +123,7 @@ class OwnCloudController(OwnClouwAPIMixin, ServiceController):
         self.api_delete('users/%s' % saas.name)
     
     def save(self, saas):
+        # TODO disable user https://github.com/owncloud/core/issues/12601
         self.append(self.update_or_create, saas)
     
     def delete(self, saas):

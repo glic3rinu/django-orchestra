@@ -320,12 +320,14 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         end = order.new_billed_until
         beyond = end
         cend = None
+        new_end = None
         for comp in getattr(order, '_compensations', []):
             intersect = comp.intersect(helpers.Interval(ini=ini, end=end))
             if intersect:
                 cini, cend = intersect.ini, intersect.end
                 if comp.end > beyond:
                     cend = comp.end
+                    new_end = cend
                     if only_beyond:
                         cini = beyond
                 elif only_beyond:
@@ -334,8 +336,9 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             # Extend billing point a little bit to benefit from a substantial discount
             elif comp.end > beyond and (comp.end-comp.ini).days > 3*(comp.ini-beyond).days:
                 cend = comp.end
+                new_end = cend
                 dsize += self.get_price_size(comp.ini, cend)
-        return dsize, cend
+        return dsize, new_end
     
     def get_register_or_renew_events(self, porders, ini, end):
         counter = 0
@@ -394,8 +397,10 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                         size = self.get_price_size(order.new_billed_until, new_end)
                         price += price*size
                         order.new_billed_until = new_end
+                ini = order.billed_until or order.registered_on
+                end = new_end or order.new_billed_until
                 line = self.generate_line(
-                    order, price, ini, new_end or end, discounts=discounts, computed=True)
+                    order, price, ini, end, discounts=discounts, computed=True)
                 lines.append(line)
         return lines
     
@@ -462,7 +467,6 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
             givers = sorted(givers, key=cmp_to_key(helpers.cmp_billed_until_or_registered_on))
             orders = sorted(orders, key=cmp_to_key(helpers.cmp_billed_until_or_registered_on))
             self.assign_compensations(givers, orders, **options)
-        
         rates = self.get_rates(account)
         has_billing_period = self.billing_period != self.NEVER
         has_pricing_period = self.get_pricing_period() != self.NEVER
@@ -507,6 +511,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
         for order in orders:
             prepay_discount = 0
             bp = self.get_billing_point(order, bp=bp, **options)
+            recharged_until = datetime.date.min
+            
             if (self.billing_period != self.NEVER and
                 self.get_pricing_period() == self.NEVER and
                 self.payment_style == self.PREPAY and order.billed_on):
@@ -543,11 +549,13 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                                 line = self.generate_line(order, price, cini, cend, metric=metric,
                                     computed=True, discounts=discounts)
                                 lines.append(line)
+                            recharged_until = cend
             if order.billed_until and order.cancelled_on and order.cancelled_on >= order.billed_until:
                 # Cancelled order
                 continue
             if self.billing_period != self.NEVER:
                 ini = order.billed_until or order.registered_on
+#                ini = max(order.billed_until or order.registered_on, recharged_until)
                 # Periodic billing
                 if bp <= ini:
                     # Already billed
@@ -556,6 +564,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                 if self.get_pricing_period() == self.NEVER:
                     # Changes (Mailbox disk-like)
                     for cini, cend, metric in order.get_metric(ini, bp, changes=True):
+                        cini = max(recharged_until, cini)
                         price = self.get_price(account, metric)
                         discounts = ()
                         # Since the current datamodel can't guarantee to retrieve the exact
@@ -566,7 +575,7 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
 #                            price -= discount
 #                            prepay_discount -= discount
 #                            discounts = (
-#                                (self._PREPAY', -discount),
+#                                (self._PREPAY, -discount),
 #                            )
                         if metric > 0:
                             line = self.generate_line(order, price, cini, cend, metric=metric,
@@ -575,7 +584,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                 elif self.get_pricing_period() == self.billing_period:
                     # pricing_slots (Traffic-like)
                     if self.payment_style == self.PREPAY:
-                        raise NotImplementedError
+                        raise NotImplementedError(
+                            "Metric with prepay and pricing_period == billing_period")
                     for cini, cend in self.get_pricing_slots(ini, bp):
                         metric = order.get_metric(cini, cend)
                         price = self.get_price(account, metric)
@@ -601,7 +611,8 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                                 line = self.generate_line(order, price, cini, cend, metric=metric)
                                 lines.append(line)
                     else:
-                        raise NotImplementedError
+                        raise NotImplementedError(
+                            "Metric with postpay and pricing_period in (monthly, anual)")
                 else:
                     raise NotImplementedError
             else:

@@ -77,20 +77,15 @@ class BillsBackend(object):
         return description
     
     def get_verbose_quantity(self, line):
-#        service = line.order.service
-#        if service.metric and service.billing_period != service.NEVER and service.pricing_period == service.NEVER:
         metric = format(line.metric, '.2f').rstrip('0').rstrip('.')
-        if metric.endswith('.00'):
-            metric = metric.split('.')[0]
+        metric = metric.strip('0').strip('.')
         size = format(line.size, '.2f').rstrip('0').rstrip('.')
-        if size.endswith('.00'):
-            size = metric.split('.')[0]
+        size = size.strip('0').strip('.')
         if metric == '1':
             return size
         if size == '1':
             return metric
         return "%s&times;%s" % (metric, size)
-#        return ''
     
     def create_sublines(self, line, discounts):
         for discount in discounts:

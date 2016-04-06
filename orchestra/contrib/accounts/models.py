@@ -2,12 +2,13 @@ from django.contrib.auth import models as auth
 from django.conf import settings as djsettings
 from django.core import validators
 from django.db import models
+from django.db.models import signals
 from django.apps import apps
 from django.utils import timezone, translation
 from django.utils.translation import ugettext_lazy as _
 
-from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
-from orchestra.contrib.orchestration import Operation
+#from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
+#from orchestra.contrib.orchestration import Operation
 from orchestra.core import services
 from orchestra.utils.mail import send_email_template
 
@@ -98,7 +99,9 @@ class Account(auth.AbstractBaseUser):
     def notify_related(self):
         """ Trigger save() on related objects that depend on this account """
         for obj in self.get_services_to_disable():
-            OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=())
+            signals.pre_save.send(sender=type(obj), instance=obj)
+            signals.post_save.send(sender=type(obj), instance=obj)
+#            OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=())
     
     def send_email(self, template, context, email_from=None, contacts=[], attachments=[], html=None):
         contacts = self.contacts.filter(email_usages=contacts)

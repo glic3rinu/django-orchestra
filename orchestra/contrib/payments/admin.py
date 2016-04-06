@@ -165,7 +165,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
                 lines.append(','.join(ids))
                 ids = []
         lines.append(','.join(ids))
-        transactions = '<br'.join(lines)
+        transactions = '<br>'.join(lines)
         url = reverse('admin:payments_transaction_changelist')
         url += '?process_id=%i' % process.id
         return '<a href="%s">%s</a>' % (url, transactions)

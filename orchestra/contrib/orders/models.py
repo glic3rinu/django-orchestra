@@ -239,7 +239,7 @@ class Order(models.Model):
                 created = metric.created_on
                 if created > ini:
                     if prev is None:
-                        raise ValueError("Metric storage information is inconsistent.")
+                        raise ValueError("Metric storage information for order %i is inconsistent." % self.id)
                     cini = prev.created_on
                     if not result:
                         cini = ini
@@ -297,6 +297,7 @@ class MetricStorage(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("order"), related_name='metrics')
     value = models.DecimalField(_("value"), max_digits=16, decimal_places=2)
     created_on = models.DateField(_("created"), auto_now_add=True)
+    created_on.editable = True
     # TODO time field?
     updated_on = models.DateTimeField(_("updated"))
     

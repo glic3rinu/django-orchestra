@@ -1,6 +1,7 @@
 import re
 import sys
 import textwrap
+from functools import partial
 from urllib.parse import urlparse
 
 import requests
@@ -45,7 +46,8 @@ class WordpressMuController(ServiceController):
     
     def validate_response(self, response):
         if response.status_code != 200:
-            errors = re.findall(r'<body id="error-page">\n\t<p>(.*)</p></body>', response.content.decode('utf8'))
+            content = response.content.decode('utf8')
+            errors = re.findall(r'<body id="error-page">\n\t<p>(.*)</p></body>', content)
             raise RuntimeError(errors[0] if errors else 'Unknown %i error' % response.status_code)
     
     def get_id(self, session, saas):
@@ -66,14 +68,7 @@ class WordpressMuController(ServiceController):
             ids = ids.groups()
             if len(ids) > 1 and not blog_id:
                 raise ValueError("Multiple matches")
-        # Get wpnonce
-        try:
-            wpnonce = re.search(r'<span class="delete">(.*)</span>', content).groups()[0]
-        except TypeError:
-            # No search results, try some luck
-            wpnonce = content
-        wpnonce = re.search(r'_wpnonce=([^"]*)"', wpnonce).groups()[0]
-        return blog_id or int(ids[0]), wpnonce
+        return blog_id or int(ids[0]), content
     
     def create_blog(self, saas, server):
         if saas.data.get('blog_id'):
@@ -84,7 +79,7 @@ class WordpressMuController(ServiceController):
         
         # Check if blog already exists
         try:
-            blog_id, wpnonce = self.get_id(session, saas)
+            blog_id, content = self.get_id(session, saas)
         except RuntimeError:
             url = self.get_main_url()
             url += '/wp-admin/network/site-new.php'
@@ -111,42 +106,69 @@ class WordpressMuController(ServiceController):
             sys.stdout.write("Created blog ID: %s\n" % blog_id)
             saas.data['blog_id'] = int(blog_id)
             saas.save(update_fields=('data',))
+            return True
         else:
             sys.stdout.write("Retrieved blog ID: %s\n" % blog_id)
             saas.data['blog_id'] = int(blog_id)
             saas.save(update_fields=('data',))
     
-    def delete_blog(self, saas, server):
+    def do_action(self, action, session, id, content, saas):
+        url_regex = r"""<span class=["']+%s["']+><a href=["']([^>]*)['"]>""" % action
+        action_url = re.search(url_regex, content).groups()[0].replace("&#038;", '&')
+        sys.stdout.write("%s confirm URL: %s\n" % (action, action_url))
+        
+        content = session.get(action_url, verify=self.VERIFY).content.decode('utf8')
+        wpnonce = re.compile('name="_wpnonce"\s+value="([^"]*)"')
+        try:
+            wpnonce = wpnonce.search(content).groups()[0]
+        except AttributeError:
+            raise RuntimeError(re.search(r'<body id="error-page">([^<]+)<', content).groups()[0])
+        data = {
+            'action': action,
+            'id': id,
+            '_wpnonce': wpnonce,
+            '_wp_http_referer': '/wp-admin/network/sites.php',
+        }
+        action_url = self.get_main_url()
+        action_url += '/wp-admin/network/sites.php?action=%sblog' % action
+        sys.stdout.write("%s URL: %s\n" % (action, action_url))
+        response = session.post(action_url, data=data, verify=self.VERIFY)
+        self.validate_response(response)
+    
+    def is_active(self, content):
+        return bool(
+            re.findall(r"""<span class=["']deactivate['"]""", content) and
+            not re.findall(r"""<span class=["']activate['"]""", content)
+        )
+    
+    def activate(self, saas, server):
         session = requests.Session()
         self.login(session)
-        
         try:
-            id, wpnonce = self.get_id(session, saas)
+            id, content = self.get_id(session, saas)
         except RuntimeError:
             pass
         else:
-            delete = self.get_main_url()
-            delete += '/wp-admin/network/sites.php?action=confirm&action2=deleteblog'
-            delete += '&id=%d&_wpnonce=%s' % (id, wpnonce)
-            sys.stdout.write("Search URL: %s\n" % delete)
-            
-            content = session.get(delete, verify=self.VERIFY).content.decode('utf8')
-            wpnonce = re.compile('name="_wpnonce"\s+value="([^"]*)"')
-            wpnonce = wpnonce.search(content).groups()[0]
-            data = {
-                'action': 'deleteblog',
-                'id': id,
-                '_wpnonce': wpnonce,
-                '_wp_http_referer': '/wp-admin/network/sites.php',
-            }
-            delete = self.get_main_url()
-            delete += '/wp-admin/network/sites.php?action=deleteblog'
-            sys.stdout.write("Delete URL: %s\n" % delete)
-            response = session.post(delete, data=data, verify=self.VERIFY)
-            self.validate_response(response)
+            if not self.is_active(content):
+                return self.do_action('activate', session, id, content, saas)
+    
+    def deactivate(self, saas, server):
+        session = requests.Session()
+        self.login(session)
+        try:
+            id, content = self.get_id(session, saas)
+        except RuntimeError:
+            pass
+        else:
+            if self.is_active(content):
+                return self.do_action('deactivate', session, id, content, saas)
     
     def save(self, saas):
-        self.append(self.create_blog, saas)
+        created = self.append(self.create_blog, saas)
+        if saas.active and not created:
+            self.append(self.activate, saas)
+        else:
+            self.append(self.deactivate, saas)
         context = self.get_context(saas)
         context['IDENT'] =  "b.domain = '%(domain)s'" % context
         if context['blog_id']:
@@ -199,6 +221,16 @@ class WordpressMuController(ServiceController):
                 fi
             fi""") % context
         )
+    
+    def delete_blog(self, saas, server):
+        session = requests.Session()
+        self.login(session)
+        try:
+            id, content = self.get_id(session, saas)
+        except RuntimeError:
+            pass
+        else:
+            return self.do_action('delete', session, id, content, saas)
     
     def delete(self, saas):
         self.append(self.delete_blog, saas)

@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.shortcuts import redirect
 
 from orchestra.admin import ExtendedModelAdmin
-from orchestra.admin.utils import admin_date, insertattr, admin_link
+from orchestra.admin.utils import admin_date, insertattr, admin_link, change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin, AccountAdmin
 from orchestra.forms.widgets import paddingCheckboxSelectMultiple
@@ -21,7 +21,7 @@ from . import settings, actions
 from .filters import (BillTypeListFilter, HasBillContactListFilter, TotalListFilter,
     PaymentStateListFilter, AmendedListFilter)
 from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine,
-    BillContact)
+    BillSubline, BillContact)
 
 
 PAYMENT_STATE_COLORS = {
@@ -34,6 +34,27 @@ PAYMENT_STATE_COLORS = {
     Bill.BAD_DEBT: 'red',
     Bill.INCOMPLETE: 'red',
 }
+
+
+class BillSublineInline(admin.TabularInline):
+    model = BillSubline
+    fields = ('description', 'total', 'type')
+    
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+        if obj and not obj.bill.is_open:
+            return self.get_fields(request)
+        return fields
+    
+    def get_max_num(self, request, obj=None):
+        if obj and not obj.bill.is_open:
+            return 0
+        return super().get_max_num(request, obj)
+    
+    def has_delete_permission(self, request, obj=None):
+        if obj and not obj.bill.is_open:
+            return False
+        return super().has_delete_permission(request, obj)
 
 
 class BillLineInline(admin.TabularInline):
@@ -50,11 +71,12 @@ class BillLineInline(admin.TabularInline):
         if line.pk:
             total = line.compute_total()
             sublines = line.sublines.all()
+            url = change_url(line)
             if sublines:
                 content = '\n'.join(['%s: %s' % (sub.description, sub.total) for sub in sublines])
                 img = static('admin/img/icon_alert.gif')
-                return '<span title="%s">%s <img src="%s"></img></span>' % (content, total, img)
-            return total
+                return '<a href="%s" title="%s">%s <img src="%s"></img></a>' % (url, content, total, img)
+            return '<a href="%s">%s</a>' % (url, total)
     display_total.short_description = _("Total")
     display_total.allow_tags = True
     
@@ -118,12 +140,30 @@ class BillLineAdmin(admin.ModelAdmin):
     actions = (
         actions.undo_billing, actions.move_lines, actions.copy_lines, actions.service_report
     )
+    fieldsets = (
+        (None, {
+            'fields': ('bill_link', 'description', 'tax', 'start_on', 'end_on', 'amended_line_link')
+        }),
+        (_("Totals"), {
+            'fields': ('rate', ('quantity', 'verbose_quantity'), 'subtotal', 'display_sublinetotal',
+                       'display_total'),
+        }),
+        (_("Order"), {
+            'fields': ('order_link', 'order_billed_on', 'order_billed_until',)
+        }),
+    )
+    readonly_fields = (
+        'bill_link', 'order_link', 'amended_line_link', 'display_sublinetotal', 'display_total'
+    )
     list_filter = ('tax', 'bill__is_open', 'order__service')
     list_select_related = ('bill', 'bill__account')
     search_fields = ('description', 'bill__number')
+    inlines = (BillSublineInline,)
     
     account_link = admin_link('bill__account')
     bill_link = admin_link('bill')
+    order_link = admin_link('order')
+    amended_line_link = admin_link('amended_line')
     
     def display_is_open(self, instance):
         return instance.bill.is_open
@@ -139,6 +179,15 @@ class BillLineAdmin(admin.ModelAdmin):
         return round(instance.computed_total or 0, 2)
     display_total.short_description = _("Total")
     display_total.admin_order_field = 'computed_total'
+    
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+        if obj and not obj.bill.is_open:
+            return list(fields) + [
+                'description', 'tax', 'start_on', 'end_on', 'rate', 'quantity', 'verbose_quantity',
+                'subtotal', 'order_billed_on', 'order_billed_until'
+            ]
+        return fields
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -221,7 +270,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     actions = [
         actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
         actions.amend_bills, actions.bill_report, actions.service_report,
-        actions.close_send_download_bills, list_accounts,
+        actions.close_send_download_bills, list_accounts, actions.get_ids,
     ]
     change_readonly_fields = (
         'account_link', 'type', 'is_open', 'amend_of_link', 'amend_links'
@@ -326,7 +375,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
             else:
                 fieldsets[0][1]['fields'][2] = 'amend_links'
             if obj.is_open:
-                fieldsets = (fieldsets[0],)
+                fieldsets = fieldsets[0:-1]
         return fieldsets
     
     def get_change_view_actions(self, obj=None):

@@ -136,7 +136,7 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
         make_link = admin_link()
         for line in order.lines.select_related('bill').distinct('bill'):
             bills.append(make_link(line.bill))
-        return '<br'.join(bills)
+        return '<br>'.join(bills)
     bills_links.short_description = _("Bills")
     bills_links.allow_tags = True
     
@@ -200,6 +200,7 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
 class MetricStorageAdmin(admin.ModelAdmin):
     list_display = ('order', 'value', 'created_on', 'updated_on')
     list_filter = ('order__service',)
+    raw_id_fields = ('order',)
 
 
 admin.site.register(Order, OrderAdmin)

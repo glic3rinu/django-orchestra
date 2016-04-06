@@ -74,7 +74,7 @@ class BilledOrderListFilter(SimpleListFilter):
         pending_qs = Q(
             Q(pk__in=self.get_pending_metric_pks(ignore_qs)) |
             Q(billed_until__isnull=True) | Q(~Q(service__billing_period=Service.NEVER) &
-            Q(billed_until__lt=now))
+            Q(billed_until__lte=now))
         )
         if reverse:
             return queryset.exclude(pending_qs)

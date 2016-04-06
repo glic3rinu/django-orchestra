@@ -4,13 +4,13 @@ from django.utils import timezone
 from django.utils.translation import ungettext, ugettext as _
 
 
-def verbose_time(n, units):
+def verbose_time(n, units, ago='ago'):
     if n >= 5:
-        return _("{n} {units} ago").format(n=int(n), units=units)
+        return _("{n} {units} {ago}").format(n=int(n), units=units, ago=ago)
     return ungettext(
-        _("{n:.1f} {s_units} ago"),
-        _("{n:.1f} {units} ago"), n
-    ).format(n=n, units=units, s_units=units[:-1])
+        _("{n:.1f} {s_units} {ago}"),
+        _("{n:.1f} {units} {ago}"), n
+    ).format(n=n, units=units, s_units=units[:-1], ago=ago)
 
 
 OLDER_CHUNKS = (
@@ -42,15 +42,18 @@ def naturaldatetime(date, show_seconds=False):
     seconds = delta.seconds
     
     days = abs(days)
+    ago = ''
+    if right_now > date:
+        ago = 'ago'
     
     if days == 0:
         if int(hours) == 0:
             if minutes >= 1 or not show_seconds:
-                return verbose_time(minutes, 'minutes')
+                return verbose_time(minutes, 'minutes', ago=ago)
             else:
-                return verbose_time(seconds, 'seconds')
+                return verbose_time(seconds, 'seconds', ago=ago)
         else:
-            return verbose_time(hours, 'hours')
+            return verbose_time(hours, 'hours', ago=ago)
     
     if delta_midnight.days == 0:
         date = timezone.localtime(date)
@@ -60,11 +63,11 @@ def naturaldatetime(date, show_seconds=False):
     for chunk, units in OLDER_CHUNKS:
         if days < 7.0:
             count = days + float(hours)/24
-            return verbose_time(count, 'days')
+            return verbose_time(count, 'days', ago=ago)
         if days >= chunk:
             count = (delta_midnight.days + 1) / chunk
             count = abs(count)
-            return verbose_time(count, units)
+            return verbose_time(count, units, ago=ago)
 
 
 def naturaldate(date):
@@ -80,7 +83,7 @@ def naturaldate(date):
     elif days == 1:
         return _('yesterday')
     ago = ' ago'
-    if days < 0:
+    if days < 0 or today < date:
         ago = ''
     days = abs(days)
     delta_midnight = today - date
@@ -89,12 +92,12 @@ def naturaldate(date):
     for chunk, units in OLDER_CHUNKS:
         if days < 7.0:
             count = days
-            fmt = verbose_time(count, 'days')
+            fmt = verbose_time(count, 'days', ago=ago)
             return fmt.format(num=count, ago=ago)
         if days >= chunk:
             count = (delta_midnight.days + 1) / chunk
             count = abs(count)
-            fmt = verbose_time(count, units)
+            fmt = verbose_time(count, units, ago=ago)
             return fmt.format(num=count, ago=ago)
 
 

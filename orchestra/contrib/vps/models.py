@@ -17,6 +17,7 @@ class VPS(models.Model):
         help_text=_("Initial template."))
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
         related_name='vpss')
+    is_active = models.BooleanField(_("active"), default=True)
     
     class Meta:
         verbose_name = "VPS"
@@ -38,3 +39,8 @@ class VPS(models.Model):
     def enable(self):
         self.is_active = False
         self.save(update_fields=('is_active',))
+    
+    @property
+    def active(self):
+        return self.is_active and self.account.is_active
+

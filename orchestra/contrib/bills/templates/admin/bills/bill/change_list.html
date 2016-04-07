@@ -4,6 +4,12 @@
 
 {% block object-tools-items %}
 <li>
+  {% url 'admin:bills_billline_changelist' as list_url %}
+  <a href="{% add_preserved_filters list_url is_popup to_field %}" class="historylink">
+    {% trans "Lines" %}
+  </a>
+</li>
+<li>
   {% url 'admin:bills_bill_add' as add_url %}
   <a href="{% add_preserved_filters add_url is_popup to_field %}" class="addlink">
     {% trans "Add bill" %}

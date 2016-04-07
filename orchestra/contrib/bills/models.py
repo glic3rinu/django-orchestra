@@ -423,7 +423,7 @@ class BillLine(models.Model):
     def get_verbose_quantity(self):
         return self.verbose_quantity or self.quantity
     
-    def clean():
+    def clean(self):
         if not self.verbose_quantity:
             quantity = str(self.quantity)
             # Strip trailing zeros

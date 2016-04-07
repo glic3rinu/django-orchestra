@@ -200,7 +200,7 @@ class SEPADirectDebit(PaymentMethod):
         for transaction in transactions:
             transaction.process = process
             transaction.state = transaction.WAITTING_EXECUTION
-            transaction.save(update_fields=['state', 'process'])
+            transaction.save(update_fields=('state', 'process', 'modified_at'))
             account = transaction.account
             data = transaction.source.data
             yield E.DrctDbtTxInf(                           # Direct Debit Transaction Info
@@ -245,7 +245,7 @@ class SEPADirectDebit(PaymentMethod):
         for transaction in transactions:
             transaction.process = process
             transaction.state = transaction.WAITTING_EXECUTION
-            transaction.save(update_fields=['state', 'process'])
+            transaction.save(update_fields=('state', 'process', 'modified_at'))
             account = transaction.account
             data = transaction.source.data
             yield E.CdtTrfTxInf(                            # Credit Transfer Transaction Info

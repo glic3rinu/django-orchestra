@@ -190,16 +190,16 @@ class TransactionProcess(models.Model):
         self.state = self.EXECUTED
         for transaction in self.transactions.all():
             transaction.mark_as_executed()
-        self.save(update_fields=('state',))
+        self.save(update_fields=('state', 'updated_at'))
     
     def abort(self):
         self.state = self.ABORTED
         for transaction in self.transaction.all():
             transaction.mark_as_aborted()
-        self.save(update_fields=('state',))
+        self.save(update_fields=('state', 'updated_at'))
     
     def commit(self):
         self.state = self.COMMITED
         for transaction in self.transactions.processing():
             transaction.mark_as_secured()
-        self.save(update_fields=('state',))
+        self.save(update_fields=('state', 'updated_at'))

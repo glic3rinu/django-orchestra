@@ -138,7 +138,8 @@ class BillLineAdmin(admin.ModelAdmin):
         'tax', 'subtotal', 'display_sublinetotal', 'display_total'
     )
     actions = (
-        actions.undo_billing, actions.move_lines, actions.copy_lines, actions.service_report
+        actions.undo_billing, actions.move_lines, actions.copy_lines, actions.service_report,
+        actions.list_bills,
     )
     fieldsets = (
         (None, {
@@ -171,8 +172,9 @@ class BillLineAdmin(admin.ModelAdmin):
     display_is_open.boolean = True
     
     def display_sublinetotal(self, instance):
-        return instance.subline_total or ''
-    display_sublinetotal.short_description = _("Subline")
+        total = instance.subline_total
+        return total if total is not None else '---'
+    display_sublinetotal.short_description = _("Sublines")
     display_sublinetotal.admin_order_field = 'subline_total'
     
     def display_total(self, instance):
@@ -196,6 +198,11 @@ class BillLineAdmin(admin.ModelAdmin):
             computed_total=(F('subtotal') + Sum(Coalesce('sublines__total', 0))) * (1+F('tax')/100),
         )
         return qs
+    
+    def has_delete_permission(self, request, obj=None):
+        if obj and not obj.bill.is_open:
+            return False
+        return super().has_delete_permission(request, obj)
 
 
 class BillLineManagerAdmin(BillLineAdmin):
@@ -216,19 +223,21 @@ class BillLineManagerAdmin(BillLineAdmin):
             messages.error(request, _("No bills selected."))
             return redirect('..')
         self.bill_ids = bill_ids
+        bill = None
         if len(bill_ids) == 1:
             bill_url = reverse('admin:bills_bill_change', args=(bill_ids[0],))
             bill = Bill.objects.get(pk=bill_ids[0])
             bill_link = '<a href="%s">%s</a>' % (bill_url, bill.number)
-            title = mark_safe(_("Manage %s bill lines.") % bill_link)
+            title = mark_safe(_("Manage %s bill lines") % bill_link)
             if not bill.is_open:
                 messages.warning(request, _("Bill not in open state."))
         else:
             if Bill.objects.filter(id__in=bill_ids, is_open=False).exists():
                 messages.warning(request, _("Not all bills are in open state."))
-            title = _("Manage bill lines of multiple bills.")
+            title = _("Manage bill lines of multiple bills")
         context = {
             'title': title,
+            'bill': bill,
         }
         context.update(extra_context or {})
         return super().changelist_view(request, context)
@@ -244,7 +253,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         AmendedListFilter
     )
     add_fields = ('account', 'type', 'amend_of', 'is_open', 'due_on', 'comments')
-    change_list_template = 'admin/bills/change_list.html'
+    change_list_template = 'admin/bills/bill/change_list.html'
     fieldsets = (
         (None, {
             'fields': ['number', 'type', 'amend_of_link', 'account_link',
@@ -270,7 +279,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     actions = [
         actions.manage_lines, actions.download_bills, actions.close_bills, actions.send_bills,
         actions.amend_bills, actions.bill_report, actions.service_report,
-        actions.close_send_download_bills, list_accounts, actions.get_ids,
+        actions.close_send_download_bills, list_accounts,
     ]
     change_readonly_fields = (
         'account_link', 'type', 'is_open', 'amend_of_link', 'amend_links'
@@ -280,7 +289,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'closed_on_display', 'updated_on_display', 'display_total_with_subtotals',
     )
     inlines = [BillLineInline, ClosedBillLineInline]
-    date_hierarchy = 'closed_on'
+    #date_hierarchy = 'closed_on'
     
     created_on_display = admin_date('created_on', short_description=_("Created"))
     closed_on_display = admin_date('closed_on', short_description=_("Closed"))

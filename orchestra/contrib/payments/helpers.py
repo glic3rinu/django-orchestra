@@ -27,7 +27,7 @@ def post_delete_processes(modeladmin, request, related_transactions):
     num = 0
     for transaction in related_transactions:
         transaction.state = Transaction.WAITTING_PROCESSING
-        transaction.save(update_fields=('state',))
+        transaction.save(update_fields=('state', 'modified_at'))
         num += 1
         modeladmin.log_change(request, transaction, _("Unprocessed"))
     messages.success(request, ungettext(

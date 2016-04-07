@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from orchestra.admin import ChangeViewActionsMixin, ExtendedModelAdmin
-from orchestra.admin.utils import admin_colored, admin_link
+from orchestra.admin.utils import admin_colored, admin_link, admin_date
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin, SelectAccountAdminMixin
 from orchestra.plugins.admin import SelectPluginAdminMixin
@@ -61,7 +61,7 @@ class TransactionInline(admin.TabularInline):
 
 class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'id', 'bill_link', 'account_link', 'source_link', 'display_state',
+        'id', 'bill_link', 'account_link', 'source_link', 'display_created_at', 'display_modified_at', 'display_state',
         'amount', 'process_link'
     )
     list_filter = ('source__method', 'state')
@@ -77,6 +77,10 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
                 'currency',
                 'process_link'
             )
+        }),
+        (_("Dates"), {
+            'classes': ('wide',),
+            'fields': ('display_created_at', 'display_modified_at'),
         }),
     )
     add_fieldsets = (
@@ -100,7 +104,8 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_by_account_fields = ('bill', 'source')
     change_readonly_fields = ('amount', 'currency')
     readonly_fields = (
-        'bill_link', 'display_state', 'process_link', 'account_link', 'source_link'
+        'bill_link', 'display_state', 'process_link', 'account_link', 'source_link',
+        'display_created_at', 'display_modified_at'
     )
     list_select_related = ('source', 'bill__account', 'process')
     date_hierarchy = 'created_at'
@@ -109,6 +114,8 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     source_link = admin_link('source')
     process_link = admin_link('process', short_description=_("proc"))
     account_link = admin_link('bill__account')
+    display_created_at = admin_date('created_at', short_description=_("Created"))
+    display_modified_at = admin_date('modified_at', short_description=_("Modified"))
     
     def get_change_view_actions(self, obj=None):
         actions = super(TransactionAdmin, self).get_change_view_actions()
@@ -135,7 +142,7 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
 
 
 class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
-    list_display = ('id', 'file_url', 'display_transactions', 'created_at')
+    list_display = ('id', 'file_url', 'display_transactions', 'display_created_at')
     fields = ('data', 'file_url', 'created_at')
     readonly_fields = ('data', 'file_url', 'display_transactions', 'created_at')
     list_prefetch_related = ('transactions',)
@@ -144,6 +151,8 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         actions.mark_process_as_executed, actions.abort, actions.commit, actions.report
     )
     actions = change_view_actions + (actions.delete_selected,)
+    
+    display_created_at = admin_date('created_at', short_description=_("Created"))
     
     def file_url(self, process):
         if process.file:
@@ -159,8 +168,8 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
             color = STATE_COLORS.get(trans.state, 'black')
             state = trans.get_state_display()
             ids.append('<span style="color:%s" title="%s">%i</span>' % (color, state, trans.id))
-            counter += 1
-            if counter > 10:
+            counter += 1 + len(str(trans.id))
+            if counter > 125:
                 counter = 0
                 lines.append(','.join(ids))
                 ids = []

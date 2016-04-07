@@ -370,6 +370,6 @@ def service_report(modeladmin, request, queryset):
     return render(request, 'admin/bills/billline/report.html', context)
 
 
-def get_ids(modeladmin, request, queryset):
-    ids = ','.join(map(str, queryset.values_list('id', flat=True)))
-    return HttpResponseRedirect('?id__in=%s' % ids)
+def list_bills(modeladmin, request, queryset):
+    ids = ','.join(map(str, queryset.values_list('bill_id', flat=True).distinct()))
+    return HttpResponseRedirect('../bill/?id__in=%s' % ids)

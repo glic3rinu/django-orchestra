@@ -17,7 +17,7 @@ class UNIXUserController(ServiceController):
     """
     verbose_name = _("UNIX user")
     model = 'systemusers.SystemUser'
-    actions = ('save', 'delete', 'set_permission', 'validate_path_exists', 'create_link')
+    actions = ('save', 'delete', 'set_permission', 'validate_paths_exist', 'create_link')
     doc_settings = (settings, (
         'SYSTEMUSERS_DEFAULT_GROUP_MEMBERS',
         'SYSTEMUSERS_MOVE_ON_DELETE_PATH',
@@ -215,15 +215,16 @@ class UNIXUserController(ServiceController):
             EOF""") % context
         )
     
-    def validate_path_exists(self, user):
-        context = {
-            'path': user.path_to_validate,
-        }
-        self.append(textwrap.dedent("""
-            if [[ ! -e '%(path)s' ]]; then
-                echo "%(path)s path does not exists." >&2
-            fi""") % context
-        )
+    def validate_paths_exist(self, user):
+        for path in user.paths_to_validate:
+            context = {
+                'path': path,
+            }
+            self.append(textwrap.dedent("""
+                if [[ ! -e '%(path)s' ]]; then
+                    echo "%(path)s path does not exists." >&2
+                fi""") % context
+            )
     
     def get_groups(self, user):
         if user.is_main:

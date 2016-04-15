@@ -13,7 +13,7 @@ from .. import settings
 class PaymentMethod(plugins.Plugin, metaclass=plugins.PluginMount):
     label_field = 'label'
     number_field = 'number'
-    process_credit = False
+    allow_recharge = False
     due_delta = relativedelta.relativedelta(months=1)
     plugin_field = 'method'
     state_help = {}

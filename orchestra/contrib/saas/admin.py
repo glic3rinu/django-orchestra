@@ -7,6 +7,7 @@ from orchestra.admin.actions import disable, enable
 from orchestra.admin.utils import change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import AccountAdminMixin
+from orchestra.contrib.accounts.filters import IsActiveListFilter
 from orchestra.plugins.admin import SelectPluginAdminMixin
 from orchestra.utils.apps import isinstalled
 from orchestra.utils.html import get_on_site_link
@@ -17,8 +18,8 @@ from .services import SoftwareService
 
 
 class SaaSAdmin(SelectPluginAdminMixin, ChangePasswordAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
-    list_display = ('name', 'service', 'display_url', 'account_link', 'is_active')
-    list_filter = ('service', 'is_active', CustomURLListFilter)
+    list_display = ('name', 'service', 'display_url', 'account_link', 'display_active')
+    list_filter = ('service', IsActiveListFilter, CustomURLListFilter)
     search_fields = ('name', 'account__username')
     change_readonly_fields = ('service',)
     plugin = SoftwareService

@@ -8,9 +8,8 @@ from orchestra.contrib.orchestration import Operation
 
 def validate_paths_exist(user, paths):
     operations = []
-    for path in paths:
-        user.path_to_validate = path
-        operations.extend(Operation.create_for_action(user, 'validate_path_exists'))
+    user.paths_to_validate = paths
+    operations.extend(Operation.create_for_action(user, 'validate_paths_exist'))
     logs = Operation.execute(operations)
     stderr = '\n'.join([log.stderr for log in logs])
     if 'path does not exists' in stderr:
@@ -42,7 +41,7 @@ def validate_home(user, data, account):
         if 'directory' in data and data['directory']:
             path = os.path.join(data['home'], data['directory'])
             try:
-                validate_path_exists(user, path)
+                validate_paths_exist(user, (path,))
             except ValidationError as err:
                 raise ValidationError({
                     'directory': err,

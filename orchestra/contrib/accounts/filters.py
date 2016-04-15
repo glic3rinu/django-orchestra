@@ -12,6 +12,8 @@ class HasMainUserListFilter(SimpleListFilter):
         return (
             ('True', _("Yes")),
             ('False', _("No")),
+            ('account', _("Account disabled")),
+            ('object', _("Object disabled")),
         )
     
     def queryset(self, request, queryset):
@@ -30,4 +32,8 @@ class IsActiveListFilter(HasMainUserListFilter):
             return queryset.filter(is_active=True, account__is_active=True)
         elif self.value() == 'False':
             return queryset.filter(Q(is_active=False) | Q(account__is_active=False))
+        elif self.value() == 'account':
+            return queryset.filter(account__is_active=False)
+        elif self.value() == 'object':
+            return queryset.filter(is_active=False)
         return queryset

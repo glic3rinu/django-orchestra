@@ -123,6 +123,8 @@ class Bill(models.Model):
     
     @classmethod
     def get_class_type(cls):
+        if cls._deferred:
+            cls = cls.__base__
         return cls.__name__.upper()
     
     @cached_property
@@ -212,6 +214,10 @@ class Bill(models.Model):
     def get_type(self):
         return self.type or self.get_class_type()
     
+    @property
+    def is_amend(self):
+        return self.type in self.AMEND_MAP.values()
+    
     def get_amend_type(self):
         amend_type = self.AMEND_MAP.get(self.type)
         if amend_type is None:
@@ -220,6 +226,8 @@ class Bill(models.Model):
     
     def get_number(self):
         cls = type(self)
+        if cls._deferred:
+            cls = cls.__base__
         bill_type = self.get_type()
         if bill_type == self.BILL:
             raise TypeError('This method can not be used on BILL instances')

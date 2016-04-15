@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -25,7 +26,7 @@ class List(models.Model):
         help_text=_("Default list address &lt;name&gt;@%s") % settings.LISTS_DEFAULT_DOMAIN)
     address_name = models.CharField(_("address name"), max_length=128,
         validators=[validate_name], blank=True)
-    address_domain = models.ForeignKey(settings.LISTS_DOMAIN_MODEL,
+    address_domain = models.ForeignKey(settings.LISTS_DOMAIN_MODEL, on_delete=models.SET_NULL,
         verbose_name=_("address domain"), blank=True, null=True)
     admin_email = models.EmailField(_("admin email"),
         help_text=_("Administration email address"))
@@ -54,6 +55,12 @@ class List(models.Model):
     @cached_property
     def active(self):
         return self.is_active and self.account.is_active
+    
+    def clean(self):
+        if self.address_name and not self.address_domain_id:
+            raise ValidationError({
+                'address_domain': _("Domain should be selected for provided address name."),
+            })
     
     def disable(self):
         self.is_active = False

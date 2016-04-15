@@ -22,6 +22,13 @@ STATE_COLORS = {
     Transaction.REJECTED: 'red',
 }
 
+PROCESS_STATE_COLORS = {
+    TransactionProcess.CREATED: 'blue',
+    TransactionProcess.EXECUTED: 'olive',
+    TransactionProcess.ABORTED: 'red',
+    TransactionProcess.COMMITED: 'green',
+}
+
 
 class PaymentSourceAdmin(SelectPluginAdminMixin, AccountAdminMixin, admin.ModelAdmin):
     list_display = ('label', 'method', 'number', 'account_link', 'is_active')
@@ -61,8 +68,8 @@ class TransactionInline(admin.TabularInline):
 
 class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'id', 'bill_link', 'account_link', 'source_link', 'display_created_at', 'display_modified_at', 'display_state',
-        'amount', 'process_link'
+        'id', 'bill_link', 'account_link', 'source_link', 'display_created_at',
+        'display_modified_at', 'display_state', 'amount', 'process_link'
     )
     list_filter = ('source__method', 'state')
     fieldsets = (
@@ -142,7 +149,10 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
 
 
 class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
-    list_display = ('id', 'file_url', 'display_transactions', 'display_created_at')
+    list_display = (
+        'id', 'file_url', 'display_transactions', 'display_state', 'display_created_at',
+    )
+    list_filter = ('state',)
     fields = ('data', 'file_url', 'created_at')
     readonly_fields = ('data', 'file_url', 'display_transactions', 'created_at')
     list_prefetch_related = ('transactions',)
@@ -152,6 +162,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     )
     actions = change_view_actions + (actions.delete_selected,)
     
+    display_state = admin_colored('state', colors=PROCESS_STATE_COLORS)
     display_created_at = admin_date('created_at', short_description=_("Created"))
     
     def file_url(self, process):
@@ -169,7 +180,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
             state = trans.get_state_display()
             ids.append('<span style="color:%s" title="%s">%i</span>' % (color, state, trans.id))
             counter += 1 + len(str(trans.id))
-            if counter > 125:
+            if counter > 100:
                 counter = 0
                 lines.append(','.join(ids))
                 ids = []

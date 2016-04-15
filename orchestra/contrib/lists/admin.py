@@ -9,10 +9,10 @@ from orchestra.admin.utils import admin_link
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
+from orchestra.forms import UserCreationForm, NonStoredUserChangeForm
 
 from . import settings
 from .filters import HasCustomAddressListFilter
-from .forms import ListCreationForm, ListChangeForm
 from .models import List
 
 
@@ -54,8 +54,8 @@ class ListAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedModel
     list_filter = (IsActiveListFilter, HasCustomAddressListFilter)
     readonly_fields = ('account_link',)
     change_readonly_fields = ('name',)
-    form = ListChangeForm
-    add_form = ListCreationForm
+    form = NonStoredUserChangeForm
+    add_form = UserCreationForm
     list_select_related = ('account', 'address_domain',)
     filter_by_account_fields = ['address_domain']
     actions = (disable, enable, list_accounts)

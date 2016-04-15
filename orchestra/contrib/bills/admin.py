@@ -289,7 +289,9 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'closed_on_display', 'updated_on_display', 'display_total_with_subtotals',
     )
     inlines = [BillLineInline, ClosedBillLineInline]
-    #date_hierarchy = 'closed_on'
+    date_hierarchy = 'closed_on'
+    # TODO when merged https://github.com/django/django/pull/5213
+    #approximate_date_hierarchy = admin.ApproximateWith.MONTHS
     
     created_on_display = admin_date('created_on', short_description=_("Created"))
     closed_on_display = admin_date('closed_on', short_description=_("Closed"))
@@ -426,7 +428,7 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         qs = qs.prefetch_related(
             Prefetch('amends', queryset=Bill.objects.filter(is_open=False), to_attr='closed_amends')
         )
-        return qs
+        return qs.defer('html')
     
     def change_view(self, request, object_id, **kwargs):
         # TODO raise404, here and everywhere

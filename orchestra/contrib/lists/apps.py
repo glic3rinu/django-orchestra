@@ -10,3 +10,4 @@ class ListsConfig(AppConfig):
     def ready(self):
         from .models import List
         services.register(List, icon='email-alter.png')
+        from . import signals

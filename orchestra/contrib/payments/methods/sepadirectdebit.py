@@ -45,7 +45,7 @@ class SEPADirectDebit(PaymentMethod):
     verbose_name = _("SEPA Direct Debit")
     label_field = 'name'
     number_field = 'iban'
-    process_credit = True
+    allow_recharge = True
     form = SEPADirectDebitForm
     serializer = SEPADirectDebitSerializer
     due_delta = datetime.timedelta(days=5)
@@ -96,7 +96,7 @@ class SEPADirectDebit(PaymentMethod):
         )
         sepa = sepa.Document(
             E.CstmrCdtTrfInitn(
-                cls.get_header(context),
+                cls.get_header(context, process),
                 E.PmtInf(                                   # Payment Info
                     E.PmtInfId(str(process.id)),            # Payment Id
                     E.PmtMtd("TRF"),                        # Payment Method
@@ -239,7 +239,7 @@ class SEPADirectDebit(PaymentMethod):
             )
     
     @classmethod
-    def get_credit_transactions(transactions, process):
+    def get_credit_transactions(cls, transactions, process):
         import lxml.builder
         from lxml.builder import E
         for transaction in transactions:

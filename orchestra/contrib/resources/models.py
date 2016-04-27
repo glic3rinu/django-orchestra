@@ -63,7 +63,7 @@ class Resource(models.Model):
     disable_trigger = models.BooleanField(_("disable trigger"), default=True,
         help_text=_("Disables monitors exeeded and recovery triggers"))
     crontab = models.ForeignKey('djcelery.CrontabSchedule', verbose_name=_("crontab"),
-        null=True, blank=True,
+        null=True, blank=True, on_delete=models.SET_NULL,
         help_text=_("Crontab for periodic execution. "
                     "Leave it empty to disable periodic monitoring"))
     monitors = fields.MultiSelectField(_("monitors"), max_length=256, blank=True,

@@ -160,7 +160,7 @@ class Apache2Controller(ServiceController):
                     counter=$(($counter+1))
                     sleep 0.1;
                 done
-                state="$(grep -v "$BACKEND" /dev/shm/reload.apache2.locked)" || is_last=1
+                state="$(grep -v -E "^$BACKEND($|\s)" /dev/shm/reload.apache2.locked)" || is_last=1
                 [[ $is_last -eq 0 ]] && {
                     echo "$state" | grep -v ' RELOAD$' || is_last=1
                 }
@@ -175,7 +175,7 @@ class Apache2Controller(ServiceController):
                     fi
                     rm /dev/shm/reload.apache2.locked
                 else
-                    echo -n "$state" > /dev/shm/reload.apache2.locked
+                    echo "$state" > /dev/shm/reload.apache2.locked
                     if [[ $UPDATED_APACHE -eq 1 ]]; then
                         echo -e "[DEBUG]: Apache will be reloaded by another backend:\\n${state}"
                         echo "$BACKEND RELOAD" >> /dev/shm/reload.apache2.locked

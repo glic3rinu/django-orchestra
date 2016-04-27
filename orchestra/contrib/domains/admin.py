@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.db import models
 from django.db.models.functions import Concat, Coalesce
 from django.templatetags.static import static
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -51,11 +52,13 @@ class DomainInline(admin.TabularInline):
 
 class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
-        'structured_name', 'display_is_top', 'display_websites', 'account_link'
+        'structured_name', 'display_is_top', 'display_websites', 'display_addresses', 'account_link'
     )
     add_fields = ('name', 'account')
-    fields = ('name', 'account_link', 'display_websites')
-    readonly_fields = ('account_link', 'top_link', 'display_websites', 'implicit_records')
+    fields = ('name', 'account_link', 'display_websites', 'display_addresses')
+    readonly_fields = (
+        'account_link', 'top_link', 'display_websites', 'display_addresses', 'implicit_records'
+    )
     inlines = (RecordInline, DomainInline)
     list_filter = (TopDomainListFilter, HasWebsiteFilter, HasAddressFilter)
     change_readonly_fields = ('name', 'serial')
@@ -93,16 +96,37 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                         admin_url, title, website.name, site_link)
                     links.append(link)
                 return '<br>'.join(links)
-        add_url = reverse('admin:websites_website_add')
-        add_url += '?account=%i&domains=%i' % (domain.account_id, domain.pk)
-        image = '<img src="%s"></img>' % static('orchestra/images/add.png')
-        add_link = '<a href="%s" title="%s">%s</a>' % (
-            add_url, _("Add website"), image
-        )
-        return _("No website %s") % (add_link)
+            add_url = reverse('admin:websites_website_add')
+            add_url += '?account=%i&domains=%i' % (domain.account_id, domain.pk)
+            image = '<img src="%s"></img>' % static('orchestra/images/add.png')
+            add_link = '<a href="%s" title="%s">%s</a>' % (
+                add_url, _("Add website"), image
+            )
+            return _("No website %s") % (add_link)
+        return '---'
     display_websites.admin_order_field = 'websites__name'
     display_websites.short_description = _("Websites")
     display_websites.allow_tags = True
+    
+    def display_addresses(self, domain):
+        if apps.isinstalled('orchestra.contrib.mailboxes'):
+            add_url = reverse('admin:mailboxes_address_add')
+            add_url += '?account=%i&domain=%i' % (domain.account_id, domain.pk)
+            image = '<img src="%s"></img>' % static('orchestra/images/add.png')
+            add_link = '<a href="%s" title="%s">%s</a>' % (
+                add_url, _("Add address"), image
+            )
+            addresses = domain.addresses.all()
+            if addresses:
+                url = reverse('admin:mailboxes_address_changelist')
+                url += '?domain=%i' % addresses[0].domain_id
+                title = '\n'.join([address.email for address in addresses])
+                return '<a href="%s" title="%s">%s</a> %s' % (url, title, len(addresses), add_link)
+            return _("No address %s") % (add_link)
+        return '---'
+    display_addresses.short_description = _("Addresses")
+    display_addresses.admin_order_field = 'addresses__count'
+    display_addresses.allow_tags = True
     
     def implicit_records(self, domain):
         defaults = []
@@ -169,6 +193,8 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
             ).order_by('-structured_id', 'structured_name')
         if apps.isinstalled('orchestra.contrib.websites'):
             qs = qs.prefetch_related('websites__domains')
+        if apps.isinstalled('orchestra.contrib.mailboxes'):
+            qs = qs.annotate(models.Count('addresses'))
         return qs
     
     def save_model(self, request, obj, form, change):

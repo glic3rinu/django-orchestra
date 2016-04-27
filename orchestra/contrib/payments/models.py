@@ -111,7 +111,7 @@ class Transaction(models.Model):
     
     bill = models.ForeignKey('bills.bill', verbose_name=_("bill"),
         related_name='transactions')
-    source = models.ForeignKey(PaymentSource, null=True, blank=True,
+    source = models.ForeignKey(PaymentSource, null=True, blank=True, on_delete=models.SET_NULL,
         verbose_name=_("source"), related_name='transactions')
     process = models.ForeignKey('payments.TransactionProcess', null=True, blank=True,
         on_delete=models.SET_NULL, verbose_name=_("process"), related_name='transactions')

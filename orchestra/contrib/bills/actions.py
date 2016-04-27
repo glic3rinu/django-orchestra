@@ -287,6 +287,7 @@ def amend_bills(modeladmin, request, queryset):
                     tax=tax
                 )
             amend_ids.append(amend.pk)
+        modeladmin.log_change(request, bill, 'Amended, amend id is %i' % amend.id)
     num = len(amend_ids)
     if num == 1:
         amend_url = reverse('admin:bills_bill_change', args=amend_ids)

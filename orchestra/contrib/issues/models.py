@@ -65,11 +65,13 @@ class Ticket(models.Model):
     )
     
     creator = models.ForeignKey(djsettings.AUTH_USER_MODEL, verbose_name=_("created by"),
-        related_name='tickets_created', null=True)
+        related_name='tickets_created', null=True, on_delete=models.SET_NULL)
     creator_name = models.CharField(_("creator name"), max_length=256, blank=True)
     owner = models.ForeignKey(djsettings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL,
         related_name='tickets_owned', verbose_name=_("assigned to"))
-    queue = models.ForeignKey(Queue, related_name='tickets', null=True, blank=True)
+    queue = models.ForeignKey(Queue, related_name='tickets', null=True, blank=True,
+        on_delete=models.SET_NULL)
     subject = models.CharField(_("subject"), max_length=256)
     description = models.TextField(_("description"))
     priority = models.CharField(_("priority"), max_length=32, choices=PRIORITIES, default=MEDIUM)

@@ -441,15 +441,15 @@ class BillLine(models.Model):
     def get_verbose_period(self):
         from django.template.defaultfilters import date
         date_format = "N 'y"
-        if self.start_on.day != 1 or self.end_on.day != 1:
+        if self.start_on.day != 1 or (self.end_on and self.end_on.day != 1):
             date_format = "N j, 'y"
             end = date(self.end_on, date_format)
-        else:
+        elif self.end_on:
             end = date((self.end_on - datetime.timedelta(days=1)), date_format)
         ini = date(self.start_on, date_format).capitalize()
-        end = end.capitalize()
         if not self.end_on:
             return ini
+        end = end.capitalize()
         if ini == end:
             return ini
         return "{ini} / {end}".format(ini=ini, end=end)

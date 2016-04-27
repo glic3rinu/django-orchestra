@@ -35,7 +35,7 @@ def create_account_creation_form():
                 initial=True, required=False, label=label, help_text=help_text)
             create_related.append((model, key, kwargs, help_text))
         
-    def clean(self):
+    def clean(self, create_related=create_related):
         """ unique usernames between accounts and system users """
         cleaned_data = UserCreationForm.clean(self)
         try:
@@ -51,7 +51,6 @@ def create_account_creation_form():
         if systemuser_model.objects.filter(username=account.username).exists():
             errors['username'] = _("A system user with this name already exists.")
         for model, key, related_kwargs, __ in create_related:
-            model = apps.get_model(model)
             kwargs = {
                 key: eval(related_kwargs[key], {'account': account})
             }

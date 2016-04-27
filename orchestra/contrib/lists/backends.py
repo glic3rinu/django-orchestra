@@ -134,7 +134,7 @@ class MailmanController(MailmanVirtualDomainController):
                     echo "${aliases}" >> %(virtual_alias)s
                     UPDATED_VIRTUAL_ALIAS=1
                 else
-                    existing=$(grep -E '^\s*(%(address_name)s|%(name)s)@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s|wc -l)
+                    existing=$({ grep -E '^\s*(%(address_name)s|%(name)s)@%(address_domain)s\s\s*%(name)s\s*$' %(virtual_alias)s || test $? -lt 2; }|wc -l)
                     if [[ $existing -ne %(num_entries)s ]]; then
                         sed -i -e '/^.*\s%(name)s\(%(suffixes_regex)s\)\s*$/d' \\
                                -e 'N; /^\s*\\n\s*$/d; P; D' %(virtual_alias)s

@@ -1,6 +1,5 @@
 import datetime
 
-from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
@@ -38,6 +37,7 @@ class ServiceMonitor(ServiceBackend):
     
     @cached_property
     def content_type(self):
+        from django.contrib.contenttypes.models import ContentType
         app_label, model = self.model.split('.')
         model = model.lower()
         return ContentType.objects.get_by_natural_key(app_label, model)
@@ -68,6 +68,7 @@ class ServiceMonitor(ServiceBackend):
     
     def store(self, log):
         """ stores monitored values from stdout """
+        from django.contrib.contenttypes.models import ContentType
         from .models import MonitorData
         name = self.get_name()
         app_label, model_name = self.model.split('.')

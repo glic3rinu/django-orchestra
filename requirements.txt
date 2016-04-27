@@ -13,7 +13,7 @@ Pygments==1.6
 django-filter==0.7
 jsonfield==0.9.22
 python-dateutil==2.2
-passlib==1.6.5
+https://github.com/glic3rinu/passlib/archive/master.zip
 django-iban==0.3.0
 requests
 phonenumbers

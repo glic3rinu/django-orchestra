@@ -19,7 +19,7 @@ def create_initial_superuser(**kwargs):
             )
             from ..models import Account
             try:
-                Account.systemusers.related.model.objects.filter(account_id=1).exists()
+                Account.systemusers.field.related.model.objects.filter(account_id=1).exists()
             except FieldError:
                 # avoid creating a systemuser when systemuser table is not ready
                 Account.save = models.Model.save

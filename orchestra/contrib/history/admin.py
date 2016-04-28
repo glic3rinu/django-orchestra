@@ -28,13 +28,10 @@ class LogEntryAdmin(admin.ModelAdmin):
     )
     actions = None
     list_select_related = ('user', 'content_type')
+    list_display_links = None
     
     user_link = admin_link('user')
     display_action_time = admin_date('action_time', short_description=_("Time"))
-    
-    def __init__(self, *args, **kwargs):
-        super(LogEntryAdmin, self).__init__(*args, **kwargs)
-        self.list_display_links = (None, )
     
     def display_message(self, log):
         edit = '<a href="%(url)s"><img src="%(img)s"></img></a>' % {

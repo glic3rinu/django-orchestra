@@ -46,7 +46,7 @@ class SelectPluginAdminMixin(object):
         opts = self.model._meta
         info = opts.app_label, opts.model_name
         select_urls = [
-            url("/select-plugin/$",
+            url("select-plugin/$",
                 wrap_admin_view(self, self.select_plugin_view),
                 name='%s_%s_select_plugin' % info),
         ]

@@ -98,7 +98,7 @@ class PaymentStateListFilter(SimpleListFilter):
     
     def queryset(self, request, queryset):
         # FIXME use queryset.computed_total instead of approx_total, bills.admin.BillAdmin.get_queryset
-        Transaction = queryset.model.transactions.related.related_model
+        Transaction = queryset.model.transactions.field.related.related_model
         if self.value() == 'OPEN':
             return queryset.filter(Q(is_open=True)|Q(type=queryset.model.PROFORMA))
         elif self.value() == 'PAID':

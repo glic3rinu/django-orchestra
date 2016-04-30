@@ -165,7 +165,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
                     (_("SOA"), {
                         'classes': ('collapse',),
                         'description': _(
-                            "SOA (Start of Authority) records are used to determine how your "
+                            "SOA (Start of Authority) records are used to determine how the "
                             "zone propagates to the secondary nameservers."),
                         'fields': ('serial', 'refresh', 'retry', 'expire', 'min_ttl'),
                     }),

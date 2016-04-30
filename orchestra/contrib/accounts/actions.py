@@ -131,7 +131,7 @@ def delete_related_services(modeladmin, request, queryset):
                 elif is_service and isinstance(service, list):
                     nested = []
                     format_nested(service, nested)
-                    current.append(nested)
+                    current.append(nested[0])
                     is_service = False
                 else:
                     is_service = False
@@ -171,12 +171,13 @@ def delete_related_services(modeladmin, request, queryset):
     else:
         objects_name = force_text(opts.verbose_name_plural)
     
+    model_count = {model._meta.verbose_name_plural: len(objs) for model, objs in collector.model_objs.items()}
     context = dict(
         admin_site.each_context(request),
         title=_("Are you sure?"),
         objects_name=objects_name,
         deletable_objects=[related_services],
-        model_count=dict(collector.model_count).items(),
+        model_count=dict(model_count).items(),
         queryset=queryset,
         opts=opts,
         action_checkbox_name=helpers.ACTION_CHECKBOX_NAME,

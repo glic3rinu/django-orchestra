@@ -70,7 +70,7 @@ def clone(modeladmin, request, queryset):
     fields = modeladmin.get_fields(request)
     query = []
     for field in fields:
-        model_field = type(service)._meta.get_field_by_name(field)[0]
+        model_field = type(service)._meta.get_field(field)
         if model_field.rel:
             value = getattr(service, field + '_id')
         elif 'Boolean' in model_field.__class__.__name__:

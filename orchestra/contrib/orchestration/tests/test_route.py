@@ -12,7 +12,7 @@ class RouterTests(BaseTestCase):
     
     def test_list_backends(self):
         # TODO count actual, register and compare
-        choices = list(Route._meta.get_field_by_name('backend')[0]._choices)
+        choices = list(Route._meta.get_field('backend')._choices)
         self.assertLess(1, len(choices))
     
     def test_get_instances(self):
@@ -25,7 +25,7 @@ class RouterTests(BaseTestCase):
                 pass
         
         choices = backends.ServiceBackend.get_choices()
-        Route._meta.get_field_by_name('backend')[0]._choices = choices
+        Route._meta.get_field('backend')._choices = choices
         backend = TestBackend.get_name()
         
         route = Route.objects.create(backend=backend, host=self.host, match='True')

@@ -118,7 +118,7 @@ class SOAForm(AdminFormMixin, forms.Form):
         super(SOAForm, self).__init__(*args, **kwargs)
         for name in self.fields:
             if not name.startswith('clear_'):
-                field = Domain._meta.get_field_by_name(name)[0]
+                field = Domain._meta.get_field(name)
                 self.fields[name] = forms.CharField(
                     label=capfirst(field.verbose_name),
                     help_text=field.help_text,

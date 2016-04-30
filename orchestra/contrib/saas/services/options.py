@@ -167,7 +167,7 @@ class DBSoftwareService(SoftwareService):
     
     @cached
     def get_account(self):
-        account_model = self.instance._meta.get_field_by_name('account')[0]
+        account_model = self.instance._meta.get_field('account')
         return account_model.rel.to.objects.get_main()
     
     def validate(self):

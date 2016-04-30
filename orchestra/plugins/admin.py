@@ -59,7 +59,7 @@ class SelectPluginAdminMixin(object):
             'opts': opts,
             'app_label': opts.app_label,
             'field': self.plugin_field,
-            'field_name': opts.get_field_by_name(self.plugin_field)[0].verbose_name,
+            'field_name': opts.get_field(self.plugin_field).verbose_name,
             'plugin': self.plugin,
             'plugins': self.plugin.get_plugins(),
         }

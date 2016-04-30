@@ -50,13 +50,13 @@
         {% if messages %}
         <ul class="messagelist" >{% for message in messages %}
         <div style="background: {% if message.tags == 'warning' %}#ffc{% elif message.tags == 'error' %}#ffefef{% else %}#dfd{% endif %} 5px .3em no-repeat;border-bottom: 1px solid #ddd;">
-          <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="max-width:1130px;margin:auto;margin-bottom:-1px;">{{ message }}</li></div>
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="max-width:1330px;margin:auto;">{{ message }}</li></div>
         {% endfor %}</ul>
         {% endif %}
     {% endblock messages %}
     
     <!-- Content -->
-    <div id="content" class="{% block coltype %}colM{% endblock %}" style="max-width:1150px; margin:20px auto;">
+    <div id="content" class="{% block coltype %}colM{% endblock %}" style="max-width:1350px; margin:17px auto;">
         {% block pretitle %}{% endblock %}
         {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
         {% block content %}
@@ -74,4 +74,3 @@
 
 </body>
 </html>
-

@@ -4,7 +4,7 @@
 
 {% block object-tools-items %}
 {% for item in object_tools_items %}
-    <li><a href="{{ item.url_name }}/" class="{{ item.css_class }}" title="{{ item.help_text }}">{{ item.tool_description }}</a></li>
+    <li><a href="{% url opts|admin_urlname:item.url_name original.pk|admin_urlquote %}" class="{{ item.css_class }}" title="{{ item.help_text }}">{{ item.tool_description }}</a></li>
 {% endfor %}
 {{ block.super }}
 {% endblock %}

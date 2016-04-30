@@ -27,7 +27,7 @@ def create_local_address(sender, *args, **kwargs):
     mbox = kwargs['instance']
     local_domain = settings.MAILBOXES_LOCAL_DOMAIN
     if not mbox.pk and local_domain:
-        Domain = Address._meta.get_field_by_name('domain')[0].rel.to
+        Domain = Address._meta.get_field('domain').rel.to
         try:
             domain = Domain.objects.get(name=local_domain)
         except Domain.DoesNotExist:

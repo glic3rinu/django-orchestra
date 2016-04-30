@@ -23,7 +23,7 @@ class PluginDataForm(forms.ModelForm):
                 # Admin Readonly fields are not availeble in self.fields, so we use Meta
                 plugin = getattr(self.instance, '%s_class' % self.plugin_field)
                 plugin_help_text = getattr(plugin, 'help_text', '')
-                model_help_text = self.instance._meta.get_field_by_name(self.plugin_field)[0].help_text
+                model_help_text = self.instance._meta.get_field(self.plugin_field).help_text
                 self._meta.help_texts = {
                     self.plugin_field: plugin_help_text or model_help_text
                 }

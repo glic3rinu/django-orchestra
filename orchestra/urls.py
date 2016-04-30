@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.conf.urls import include, url
+from rest_framework.authtoken.views import obtain_auth_token
+
+from orchestra.views import serve_private_media
 
 from . import api
 from .utils.apps import isinstalled
@@ -16,14 +19,8 @@ urlpatterns = [
     # REST API
     url(r'^api/', include(api.router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api-token-auth/',
-        'rest_framework.authtoken.views.obtain_auth_token',
-        name='api-token-auth'
-    ),
-    url(r'^media/(.+)/(.+)/(.+)/(.+)/(.+)$',
-        'orchestra.views.serve_private_media',
-        name='private-media'
-    ),
+    url(r'^api-token-auth/', obtain_auth_token, name='api-token-auth'),
+    url(r'^media/(.+)/(.+)/(.+)/(.+)/(.+)$', serve_private_media, name='private-media'),
 #    url(r'search', 'orchestra.views.search', name='search'),
 ]
 

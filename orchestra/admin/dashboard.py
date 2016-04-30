@@ -67,6 +67,7 @@ class OrchestraIndexDashboard(dashboard.FluentIndexDashboard):
                     models.append(label)
                     label = '.'.join((opts.app_label, opts.model_name))
                     icons[label] = options.get('icon')
+            print(models)
             module = AppDefaultIconList(title, models=models, icons=icons, collapsible=True)
             for view_name, options in views:
                 self.process_registered_view(module, view_name, options)

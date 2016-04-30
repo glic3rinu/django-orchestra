@@ -2,6 +2,17 @@ body {
     background: #FBFAF9 url(/static/orchestra/images/page-gradient.png) top left repeat-x;
 }
 
+#header {
+    min-height: 0px;
+    background: none;
+    line-height: 0px;
+    padding: 0px;
+    height: 0px;
+}
+
+#header #navigation-menu {
+    height: 43px;
+}
 
 #header #branding h1 {
     margin: 0;
@@ -20,7 +31,6 @@ body {
     color: #555;
 }
 
-
 .version:before {
     content: "v";
     opacity: 0.6;
@@ -36,19 +46,17 @@ body {
     color: #9B9B9B;
 }
 
-
 #header ul#navigation-menu li.first a {
     outline: none;
     background: none;
     margin: 0;
-    padding: 10px;
+    padding: 8px 30px 9px 5px;
 }
-
 
 #header-breadcrumb {
     width: 100%;
     z-index: -1;
-    margin-top: 35px;
+    margin-top: 37px;
     height: 69px;
     position: absolute;
     background-attachment: scroll; background-clip: border-box; 
@@ -79,6 +87,123 @@ body {
 }
 
 div.breadcrumbs {
-    max-width: 1150px;
+    max-width: 1350px;
     margin: auto;
+    border-bottom: none;
+    margin-top: 43px;
+
+}
+
+#header-breadcrumb {
+    background: #79aec8;
+    padding-bottom: 24px;
+}
+
+.inline-group, .module {
+    border: 1px solid #eee;
+    border-radius: 4px;
+}body {
+    background: #FBFAF9 url(/static/orchestra/images/page-gradient.png) top left repeat-x;
+}
+
+#header {
+    min-height: 0px;
+    background: none;
+    line-height: 0px;
+    padding: 0px;
+    height: 0px;
+}
+
+#header #navigation-menu {
+    height: 43px;
+}
+
+#header #branding h1 {
+    margin: 0;
+    padding: 2px 15px;
+    background: transparent url(/static/orchestra/images/orchestra-logo.png) 5px 2px no-repeat;
+    text-indent: 0;
+    height: 31px;
+    font-size: 16px;
+/*    font-weight: bold;*/
+    padding-left: 45px;
+    line-height: 30px;
+    border-right: 1px solid #ededed;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: #555;
+}
+
+.version:before {
+    content: "v";
+    opacity: 0.6;
+    padding-right: 0.25em;
+}
+
+.version {
+  font-size: 60%;
+}
+
+#header #branding:hover a {
+    text-decoration: none;
+    color: #9B9B9B;
+}
+
+#header ul#navigation-menu li.first a {
+    outline: none;
+    background: none;
+    margin: 0;
+    padding: 8px 30px 9px 5px;
+}
+
+#header-breadcrumb {
+    width: 100%;
+    z-index: -1;
+    margin-top: 37px;
+    height: 69px;
+    position: absolute;
+    background-attachment: scroll; background-clip: border-box; 
+    background-color: rgb(255, 255, 255); 
+    background-image: url(/static/admin/img/nav-bg-reverse.gif);
+    background-origin: padding-box;
+    background-position: 0px -8px;
+    background-size: auto;
+    border-bottom-color: rgb(237, 237, 237);
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-left-color: rgb(153, 153, 153);
+    border-left-style: none;
+    border-left-width: 0px;
+    border-right-color: rgb(153, 153, 153);
+    border-right-style: none;
+    border-right-width: 0px;
+    border-top-color: rgb(153, 153, 153);
+    border-top-style: none;
+    border-top-width: 0px; 
+    color: white;
+    height: 13px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    background-repeat: repeat-x;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+div.breadcrumbs {
+    max-width: 1350px;
+    margin: auto;
+    border-bottom: none;
+    margin-top: 43px;
+
+}
+
+#header-breadcrumb {
+    background: #79aec8;
+    padding-bottom: 24px;
+}
+
+.inline-group, .module {
+    border: 1px solid #eee;
+    border-radius: 4px;
 }

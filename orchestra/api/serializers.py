@@ -93,7 +93,7 @@ class SetPasswordHyperlinkedSerializer(HyperlinkedModelSerializer):
     def validate(self, attrs):
         """ remove password in case is not a real model field """
         try:
-            self.Meta.model._meta.get_field_by_name('password')
+            self.Meta.model._meta.get_field('password')
         except models.FieldDoesNotExist:
             pass
         else:

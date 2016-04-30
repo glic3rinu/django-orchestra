@@ -9,7 +9,7 @@ from django.utils.text import capfirst
 from ..forms.fields import MultiSelectFormField
 
 
-class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
+class MultiSelectField(models.CharField):
     def formfield(self, **kwargs):
         defaults = {
             'required': not self.blank,
@@ -29,6 +29,13 @@ class MultiSelectField(models.CharField, metaclass=models.SubfieldBase):
             return ','.join(value)
     
     def to_python(self, value):
+        if value:
+            if isinstance(value, str):
+                return value.split(',')
+            return value
+        return []
+    
+    def from_db_value(self, value, expression, connection, context):
         if value:
             if isinstance(value, str):
                 return value.split(',')

@@ -60,7 +60,7 @@ class SaaSPasswordForm(SaaSBaseForm):
         ],
         help_text=_("Passwords are not stored, so there is no way to see this "
                     "service's password, but you can change the password using "
-                    "<a href=\"password/\">this form</a>."))
+                    "<a href=\"../password/\">this form</a>."))
     password1 = forms.CharField(label=_("Password"),
         widget=forms.PasswordInput(attrs={'autocomplete': 'off'}),
         validators=[validators.validate_password])

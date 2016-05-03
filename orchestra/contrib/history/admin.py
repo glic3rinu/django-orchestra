@@ -36,7 +36,7 @@ class LogEntryAdmin(admin.ModelAdmin):
     def display_message(self, log):
         edit = '<a href="%(url)s"><img src="%(img)s"></img></a>' % {
             'url': reverse('admin:admin_logentry_change', args=(log.pk,)),
-            'img': static('orchestra/images/icon_changelink.gif'),
+            'img': static('admin/img/icon-changelink.svg'),
         }
         if log.is_addition():
             return _('Added "%(link)s". %(edit)s') % {

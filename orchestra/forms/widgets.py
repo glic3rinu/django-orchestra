@@ -24,7 +24,7 @@ class SpanWidget(forms.Widget):
         display = original if self.display is None else self.display
         # Display icon
         if isinstance(original, bool):
-            icon = static('admin/img/icon-%s.gif' % ('yes' if original else 'no',))
+            icon = static('admin/img/icon-%s.svg' % ('yes' if original else 'no',))
             return mark_safe('<img src="%s" alt="%s">' % (icon, display))
         tag = self.tag[:-1]
         endtag = '/'.join((self.tag[0], self.tag[1:]))

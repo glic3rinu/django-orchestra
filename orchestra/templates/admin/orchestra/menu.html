@@ -61,7 +61,6 @@
         </form>
         </div>
     </li>
-    <li class="menu-item"></li>
         <span style="float:right;color:grey;margin:15px;font-size:13px;position:relative;white-space:nowrap;">
             {% url 'admin:accounts_account_change' user.pk as user_change_url %}
             <a href="{{ user_change_url }}" style="color:#555;"><strong>{% filter force_escape %}{% firstof user.get_short_name user.username %}{% endfilter %}</strong></a>

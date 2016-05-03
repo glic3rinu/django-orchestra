@@ -29,7 +29,7 @@
         <tr>
             <th scope="row">{{ action.action_time|date:"DATETIME_FORMAT" }}</th>
             <td>{{ action.user.get_username }}{% if action.user.get_full_name %} ({{ action.user.get_full_name }}){% endif %}</td>
-            <td>{% if action.is_addition and not action.change_message %}{% trans 'Added' %}{% else %}{{ action.change_message }}{% endif %} <a href="{% url 'admin:admin_logentry_change' action.pk %}?edit=True" style="float:right"><img src="{% static 'orchestra/images/icon_changelink.gif' %}"></img></a></td>
+            <td>{% if action.is_addition and not action.change_message %}{% trans 'Added' %}{% else %}{{ action.change_message }}{% endif %} <a href="{% url 'admin:admin_logentry_change' action.pk %}?edit=True" style="float:right"><img src="{% static 'admin/img/icon-changelink.svg' %}"></img></a></td>
         </tr>
         {% endfor %}
         </tbody>

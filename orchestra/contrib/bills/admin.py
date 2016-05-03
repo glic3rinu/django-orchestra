@@ -74,7 +74,7 @@ class BillLineInline(admin.TabularInline):
             url = change_url(line)
             if sublines:
                 content = '\n'.join(['%s: %s' % (sub.description, sub.total) for sub in sublines])
-                img = static('admin/img/icon_alert.gif')
+                img = static('admin/img/icon-alert.svg')
                 return '<a href="%s" title="%s">%s <img src="%s"></img></a>' % (url, content, total, img)
             return '<a href="%s">%s</a>' % (url, total)
     display_total.short_description = _("Total")

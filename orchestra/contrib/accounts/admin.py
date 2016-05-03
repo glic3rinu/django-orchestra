@@ -188,11 +188,11 @@ class AccountAdminMixin(object):
     
     def display_active(self, instance):
         if not instance.is_active:
-            return '<img src="%s" alt="False">' % static('admin/img/icon-no.gif')
+            return '<img src="%s" alt="False">' % static('admin/img/icon-no.svg')
         elif not instance.account.is_active:
             msg = _("Account disabled")
-            return '<img src="%s" alt="False" title="%s">' % (static('admin/img/icon-unknown.gif'), msg)
-        return '<img src="%s" alt="False">' % static('admin/img/icon-yes.gif')
+            return '<img style="width:13px" src="%s" alt="False" title="%s">' % (static('admin/img/inline-delete.svg'), msg)
+        return '<img src="%s" alt="False">' % static('admin/img/icon-yes.svg')
     display_active.short_description = _("active")
     display_active.allow_tags = True
     display_active.admin_order_field = 'is_active'

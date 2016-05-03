@@ -28,7 +28,8 @@ class Mailbox(models.Model):
         choices=[(k, v[0]) for k,v in sorted(settings.MAILBOXES_MAILBOX_FILTERINGS.items())])
     custom_filtering = models.TextField(_("filtering"), blank=True,
         validators=[validators.validate_sieve],
-        help_text=_("Arbitrary email filtering in sieve language. "
+        help_text=_("Arbitrary email filtering in "
+                    "<a href='https://tty1.net/blog/2011/sieve-tutorial_en.html'>sieve language</a>. "
                     "This overrides any automatic junk email filtering"))
     is_active = models.BooleanField(_("active"), default=True)
     

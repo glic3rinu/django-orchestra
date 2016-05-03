@@ -12,8 +12,6 @@ class HasMainUserListFilter(SimpleListFilter):
         return (
             ('True', _("Yes")),
             ('False', _("No")),
-            ('account', _("Account disabled")),
-            ('object', _("Object disabled")),
         )
     
     def queryset(self, request, queryset):
@@ -23,9 +21,17 @@ class HasMainUserListFilter(SimpleListFilter):
             return queryset.filter(users__isnull=True).distinct()
 
 
-class IsActiveListFilter(HasMainUserListFilter):
+class IsActiveListFilter(SimpleListFilter):
     title = _("is active")
     parameter_name = 'active'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('True', _("Yes")),
+            ('False', _("No")),
+            ('account', _("Account disabled")),
+            ('object', _("Object disabled")),
+        )
     
     def queryset(self, request, queryset):
         if self.value() == 'True':

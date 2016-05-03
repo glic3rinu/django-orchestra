@@ -289,6 +289,7 @@ class Record(models.Model):
     SRV = 'SRV'
     TXT = 'TXT'
     SPF = 'SPF'
+    SOA = 'SOA'
     
     TYPE_CHOICES = (
         (MX, "MX"),
@@ -310,6 +311,7 @@ class Record(models.Model):
         TXT: (validate_ascii, validators.validate_quoted_record),
         SPF: (validate_ascii, validators.validate_quoted_record),
         SRV: (validators.validate_srv_record,),
+        SOA: (validators.validate_soa_record,),
     }
     
     domain = models.ForeignKey(Domain, verbose_name=_("domain"), related_name='records')

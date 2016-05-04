@@ -66,10 +66,10 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
             'fields': ('custom_filtering',),
         }),
         (_("Addresses"), {
-            'fields': ('addresses',)
+            'fields': ('addresses', 'display_forwards')
         }),
     )
-    readonly_fields = ('account_link', 'display_addresses')
+    readonly_fields = ('account_link', 'display_addresses', 'display_forwards')
     change_readonly_fields = ('name',)
     add_form = MailboxCreationForm
     form = MailboxChangeForm
@@ -89,6 +89,15 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         return '<br>'.join(addresses)
     display_addresses.short_description = _("Addresses")
     display_addresses.allow_tags = True
+    
+    def display_forwards(self, mailbox):
+        forwards = []
+        for addr in mailbox.get_forwards():
+            url = change_url(addr)
+            forwards.append('<a href="%s">%s</a>' % (url, addr.email))
+        return '<br>'.join(forwards)
+    display_forwards.short_description = _("Forwards")
+    display_forwards.allow_tags = True
     
     def display_filtering(self, mailbox):
         """ becacuse of allow_tags = True """
@@ -133,10 +142,10 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         return super(MailboxAdmin, self).render_change_form(
             request, context, add, change, form_url, obj)
     
-    def log_addition(self, request, object):
+    def log_addition(self, request, object, *args, **kwargs):
         self.check_unrelated_address(request, object)
         self.check_matching_address(request, object)
-        return super(MailboxAdmin, self).log_addition(request, object)
+        return super(MailboxAdmin, self).log_addition(request, object, *args, **kwargs)
     
     def check_matching_address(self, request, obj):
         local_domain = settings.MAILBOXES_LOCAL_DOMAIN
@@ -267,9 +276,9 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         return super(AddressAdmin, self).render_change_form(
             request, context, add, change, form_url, obj)
     
-    def log_addition(self, request, object):
+    def log_addition(self, request, object, *args, **kwargs):
         self.check_matching_mailbox(request, object)
-        return super(AddressAdmin, self).log_addition(request, object)
+        return super(AddressAdmin, self).log_addition(request, object, *args, **kwargs)
     
     def check_matching_mailbox(self, request, obj):
         # Check if new addresse matches with a mbox because of having a local domain

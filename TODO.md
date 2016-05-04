@@ -454,5 +454,3 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # exclude from change list action, support for multiple exclusion
 
 # breadcrumbs https://orchestra.pangea.org/admin/domains/domain/?account_id=930
-
-# SHow addresses on mailboxes (+add address)

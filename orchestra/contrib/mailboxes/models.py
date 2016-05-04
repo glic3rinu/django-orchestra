@@ -81,6 +81,14 @@ class Mailbox(models.Model):
         if not settings.MAILBOXES_LOCAL_DOMAIN:
             raise AttributeError("Mailboxes do not have a defined local address domain.")
         return '@'.join((self.name, settings.MAILBOXES_LOCAL_DOMAIN))
+    
+    def get_forwards(self):
+        return Address.objects.filter(forward__regex=r'(^|.*\s)%s(\s.*|$)' % self.name)
+    
+    def get_addresses(self):
+        mboxes = self.addresses.all()
+        forwards = self.get_forwards()
+        return set(mboxes).union(set(forwards))
 
 
 class Address(models.Model):

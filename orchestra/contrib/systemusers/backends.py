@@ -28,59 +28,60 @@ class UNIXUserController(ServiceController):
         context = self.get_context(user)
         if not context['user']:
             return
-        groups = ','.join(self.get_groups(user))
-        context['groups_arg'] = '--groups %s' % groups if groups else ''
         # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
             # Update/create user state for %(user)s
             if id %(user)s ; then
-                usermod %(user)s --home %(home)s \\
+                usermod %(user)s --home '%(home)s' \\
                     --password '%(password)s' \\
-                    --shell %(shell)s %(groups_arg)s
+                    --shell '%(shell)s' \\
+                    --groups '%(groups)s'
             else
                 useradd_code=0
-                useradd %(user)s --home %(home)s \\
+                useradd %(user)s --home '%(home)s' \\
                     --password '%(password)s' \\
-                    --shell %(shell)s %(groups_arg)s || useradd_code=$?
+                    --shell '%(shell)s' \\
+                    --groups '%(groups)s' || useradd_code=$?
                 if [[ $useradd_code -eq 8 ]]; then
                     # User is logged in, kill and retry
                     pkill -u %(user)s; sleep 2
                     pkill -9 -u %(user)s; sleep 1
-                    useradd %(user)s --home %(home)s \\
+                    useradd %(user)s --home '%(home)s' \\
                         --password '%(password)s' \\
-                        --shell %(shell)s %(groups_arg)s
+                        --shell '%(shell)s' \\
+                        --groups '%(groups)s'
                 elif [[ $useradd_code -ne 0 ]]; then
                     exit $useradd_code
                 fi
             fi
-            mkdir -p %(base_home)s
-            chmod 750 %(base_home)s
+            mkdir -p '%(base_home)s'
+            chmod 750 '%(base_home)s'
         """) % context
         )
         if context['home'] != context['base_home']:
-            self.append(textwrap.dedent("""
+            self.append(textwrap.dedent("""\
                 # Set extra permissions: %(user)s home is inside %(mainuser)s home
                 if mount | grep "^$(df %(home)s|grep '^/'|cut -d' ' -f1)\s" | grep acl > /dev/null; then
                     # Account group as the owner
-                    chown %(mainuser)s:%(mainuser)s %(home)s
-                    chmod g+s %(home)s
+                    chown %(mainuser)s:%(mainuser)s '%(home)s'
+                    chmod g+s '%(home)s'
                     # Home access
                     setfacl -m u:%(user)s:--x '%(mainuser_home)s'
                     # Grant perms to future files within the directory
-                    setfacl -m d:u:%(user)s:rwx %(home)s
+                    setfacl -m d:u:%(user)s:rwx '%(home)s'
                     # Grant access to main user
-                    setfacl -m d:u:%(mainuser)s:rwx %(home)s
+                    setfacl -m d:u:%(mainuser)s:rwx '%(home)s'
                 else
                     chmod g+rxw %(home)s
                 fi""") % context
             )
         else:
             self.append(textwrap.dedent("""\
-                chown %(user)s:%(group)s %(home)s
+                chown %(user)s:%(group)s '%(home)s'
                 ls -A /etc/skel/ | while read line; do
-                    if [[ ! -e %(home)s/${line} ]]; then
-                        cp -a /etc/skel/${line} %(home)s/${line} && \\
-                        chown -R %(user)s:%(group)s %(home)s/${line}
+                    if [[ ! -e "%(home)s/${line}" ]]; then
+                        cp -a "/etc/skel/${line}" "%(home)s/${line}" && \\
+                        chown -R %(user)s:%(group)s "%(home)s/${line}"
                     fi
                 done
                 """) % context
@@ -107,14 +108,14 @@ class UNIXUserController(ServiceController):
             self.append(textwrap.dedent("""\
                 # Move home into SYSTEMUSERS_MOVE_ON_DELETE_PATH, nesting if exists.
                 deleted_home="%(deleted_home)s"
-                while [[ -e $deleted_home ]]; do
+                while [[ -e "$deleted_home" ]]; do
                     deleted_home="${deleted_home}/$(basename ${deleted_home})"
                 done
-                mv %(base_home)s $deleted_home || exit_code=$?
+                mv '%(base_home)s' "$deleted_home" || exit_code=$?
                 """) % context
             )
         else:
-            self.append("rm -fr %(base_home)s" % context)
+            self.append("rm -fr '%(base_home)s'" % context)
     
     def grant_permissions(self, user, context):
         context['perms'] = user.set_perm_perms
@@ -206,8 +207,8 @@ class UNIXUserController(ServiceController):
         self.append(textwrap.dedent("""\
             # Create link
             su %(user)s --shell /bin/bash << 'EOF' || exit_code=1
-                if [[ ! -e %(link_name)s ]]; then
-                    ln -s %(link_target)s %(link_name)s
+                if [[ ! -e '%(link_name)s' ]]; then
+                    ln -s '%(link_target)s' '%(link_name)s'
                 else
                     echo "%(link_name)s already exists, doing nothing." >&2
                     exit 1
@@ -236,6 +237,7 @@ class UNIXUserController(ServiceController):
             'object_id': user.pk,
             'user': user.username,
             'group': user.username,
+            'groups': ','.join(self.get_groups(user)),
             'password': user.password if user.active else '*%s' % user.password,
             'shell': user.shell,
             'mainuser': user.username if user.is_main else user.account.username,

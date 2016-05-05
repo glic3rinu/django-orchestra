@@ -151,13 +151,12 @@ class Address(models.Model):
     
     def get_forward_mailboxes(self):
         rm_local_domain = re.compile(r'@%s$' % settings.MAILBOXES_LOCAL_DOMAIN)
+        mailboxes = []
         for forward in self.forward.split():
             forward = rm_local_domain.sub('', forward)
             if '@' not in forward:
-                try:
-                    yield Mailbox.objects.get(name=forward)
-                except Mailbox.DoesNotExist:
-                    pass
+                mailboxes.append(forward)
+        return Mailbox.objects.filter(name__in=mailboxes)
     
     def get_mailboxes(self):
         for mailbox in self.mailboxes.all():

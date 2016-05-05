@@ -4,7 +4,7 @@ from urllib.parse import parse_qs
 from django import forms
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
-from django.db.models import F, Value as V
+from django.db.models import F, Count, Value as V
 from django.db.models.functions import Concat
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -96,7 +96,7 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
             url = change_url(addr)
             forwards.append('<a href="%s">%s</a>' % (url, addr.email))
         return '<br>'.join(forwards)
-    display_forwards.short_description = _("Forwards")
+    display_forwards.short_description = _("Forward from")
     display_forwards.allow_tags = True
     
     def display_filtering(self, mailbox):
@@ -203,13 +203,13 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         'display_email', 'account_link', 'domain_link', 'display_mailboxes', 'display_forward',
     )
     list_filter = (HasMailboxListFilter, HasForwardListFilter)
-    fields = ('account_link', 'email_link', 'mailboxes', 'forward')
+    fields = ('account_link', 'email_link', 'mailboxes', 'forward', 'display_all_mailboxes')
     add_fields = ('account_link', ('name', 'domain'), 'mailboxes', 'forward')
 #    inlines = [AutoresponseInline]
     search_fields = (
         'forward', 'mailboxes__name', 'account__username', 'computed_email', 'domain__name'
     )
-    readonly_fields = ('account_link', 'domain_link', 'email_link')
+    readonly_fields = ('account_link', 'domain_link', 'email_link', 'display_all_mailboxes')
     actions = (SendAddressEmail(),)
     filter_by_account_fields = ('domain', 'mailboxes')
     filter_horizontal = ['mailboxes']
@@ -237,6 +237,16 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         return '<br>'.join(boxes)
     display_mailboxes.short_description = _("Mailboxes")
     display_mailboxes.allow_tags = True
+    display_mailboxes.admin_order_field = 'mailboxes__count'
+    
+    def display_all_mailboxes(self, address):
+        boxes = []
+        for mailbox in address.get_mailboxes():
+            url = change_url(mailbox)
+            boxes.append('<a href="%s">%s</a>' % (url, mailbox.name))
+        return '<br>'.join(boxes)
+    display_all_mailboxes.short_description = _("Mailboxes links")
+    display_all_mailboxes.allow_tags = True
     
     def display_forward(self, address):
         forward_mailboxes = {m.name: m for m in address.get_forward_mailboxes()}
@@ -268,7 +278,8 @@ class AddressAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     
     def get_queryset(self, request):
         qs = super(AddressAdmin, self).get_queryset(request)
-        return qs.annotate(computed_email=Concat(F('name'), V('@'), F('domain__name')))
+        qs = qs.annotate(computed_email=Concat(F('name'), V('@'), F('domain__name')))
+        return qs.annotate(Count('mailboxes'))
     
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         if not add:

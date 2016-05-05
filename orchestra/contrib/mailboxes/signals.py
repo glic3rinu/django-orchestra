@@ -12,7 +12,7 @@ from .models import Mailbox, Address
 def delete_forwards(sender, *args, **kwargs):
     # Cleanup related addresses
     instance = kwargs['instance']
-    for address in Address.objects.filter(forward__regex=r'.*(^|\s)+%s($|\s)+.*' % instance.name):
+    for address in instance.get_forwards():
         forward = address.forward.split()
         forward.remove(instance.name)
         address.forward = ' '.join(forward)

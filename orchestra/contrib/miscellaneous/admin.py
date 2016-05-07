@@ -86,9 +86,9 @@ class MiscellaneousAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedMode
         else:
             return obj.service
     
-    def get_fields(self, request, obj=None):
-        fields = super().get_fields(request, obj)
-        fields = list(fields)
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        fields = list(fieldsets[0][1]['fields'])
         service = self.get_service(obj)
         if obj:
             fields.insert(1, 'account_link')
@@ -96,7 +96,8 @@ class MiscellaneousAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedMode
             fields.insert(-1, 'amount')
         if service.has_identifier:
             fields.insert(2, 'identifier')
-        return fields
+        fieldsets[0][1]['fields'] = fields
+        return fieldsets
     
     def get_form(self, request, obj=None, **kwargs):
         if obj:

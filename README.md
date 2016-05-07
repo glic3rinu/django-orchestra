@@ -67,11 +67,12 @@ Quick Start
     2. [Docker container (development)](INSTALLDEV.md)
     3. [Install on current system (production)](INSTALL.md)
 
-1. Copy orchestra SSH pub key to the servers to be managed, you can use `ssh-copy-id`:
+1. Generate a password-less SSH key for user `orchestra` and transfer it to your servers:
     ```bash
+    orchestra@panel:~ ssh-keygen
     orchestra@panel:~ ssh-copy-id root@server.address
     ```
-    Then add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra is able to report servers uptimes.
+    Now add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra is able to report servers uptimes.
 
 2. Configure your services, one at a time, staring with domains, databases, webapps, websites, ...
     1. Add related [routes](orchestra/contrib/orchestration) via `/admin/orchestration/route/`

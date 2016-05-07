@@ -21,6 +21,7 @@ from .models import MiscService, Miscellaneous
 class MiscServicePlugin(PluginModelAdapter):
     model = MiscService
     name_field = 'name'
+    plugin_field = 'service'
 
 
 class MiscServiceAdmin(ExtendedModelAdmin):
@@ -56,12 +57,16 @@ class MiscServiceAdmin(ExtendedModelAdmin):
         return super(MiscServiceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 
-class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelAdmin):
+class MiscellaneousAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = (
         '__str__', 'service_link', 'amount', 'account_link', 'dispaly_active'
     )
     list_filter = ('service__name', 'is_active')
     list_select_related = ('service', 'account')
+    readonly_fields = ('account_link', 'service_link')
+    add_fields = ('service', 'account', 'description', 'is_active')
+    fields = ('service_link', 'account', 'description', 'is_active')
+    change_readonly_fields = ('identifier', 'service')
     search_fields = ('identifier', 'description', 'account__username')
     actions = (disable, enable)
     plugin_field = 'service'
@@ -82,19 +87,26 @@ class MiscellaneousAdmin(AccountAdminMixin, SelectPluginAdminMixin, admin.ModelA
             return obj.service
     
     def get_fields(self, request, obj=None):
-        fields = ['account', 'description', 'is_active']
-        if obj is not None:
-            fields = ['account_link', 'description', 'is_active']
+        fields = super().get_fields(request, obj)
+        fields = list(fields)
         service = self.get_service(obj)
+        if obj:
+            fields.insert(1, 'account_link')
         if service.has_amount:
             fields.insert(-1, 'amount')
         if service.has_identifier:
-            fields.insert(1, 'identifier')
+            fields.insert(2, 'identifier')
         return fields
     
     def get_form(self, request, obj=None, **kwargs):
-        form = super(SelectPluginAdminMixin, self).get_form(request, obj, **kwargs)
+        if obj:
+            plugin = self.plugin.get(obj.service.name)()
+        else:
+            plugin = self.plugin.get(self.plugin_value)()
+        self.form = plugin.get_form()
+        self.plugin_instance = plugin
         service = self.get_service(obj)
+        form = super(SelectPluginAdminMixin, self).get_form(request, obj, **kwargs)
         def clean_identifier(self, service=service):
             identifier = self.cleaned_data['identifier']
             validator_path = settings.MISCELLANEOUS_IDENTIFIER_VALIDATORS.get(service.name, None)

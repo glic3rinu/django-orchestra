@@ -71,16 +71,16 @@ Quick Start
     ```bash
     orchestra@panel:~ ssh-copy-id root@server.address
     ```
-    Then add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra can report the uptime of the servers.
+    Then add the servers using the web interface `/admin/orchestration/servers`, check that the SSH connection is working and Orchestra is able to report servers uptimes.
 
-2. Configure the services, one at a time, staring with domains, databases, webapps, websites, ...
+2. Configure your services, one at a time, staring with domains, databases, webapps, websites, ...
     1. Add related [routes](orchestra/contrib/orchestration) via `/admin/orchestration/route/`
     2. Configure related settings on `/admin/settings/setting/`
-    3. If required, configure related [resources](orchestra/contrib/resources) like Account disc limit, VPS traffic, etc `/resources/resource/`
-    3. Test creating and deleting service instances works as expected
+    3. If required, configure related [resources](orchestra/contrib/resources) like *account disk limit*, *VPS traffic*, etc `/resources/resource/`
+    3. Test if create and delete service instances works as expected
     4. Do the same for the remaining services. You can disable services that you don't want by editing `INSTALLED_APPS` setting
 
-3. Configure billing by adding [services](orchestra/contrib/services) `/admin/services/service/add/` and [plans](orchestra/contrib/plans) `/admin/plans/plan/`. Once a service is created hit the *Update orders* button to create orders for existing service instances.
+3. Configure billing by adding [services](orchestra/contrib/services) `/admin/services/service/add/` and [plans](orchestra/contrib/plans) `/admin/plans/plan/`. Once a service is created hit the *Update orders* button to create orders for existing service instances, orders for new instances will be automatically created.
 
 
 

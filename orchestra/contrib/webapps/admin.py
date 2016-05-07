@@ -55,7 +55,7 @@ class WebAppAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin)
     )
     list_filter = ('type', HasWebsiteListFilter, PHPVersionListFilter)
     inlines = [WebAppOptionInline]
-    readonly_fields = ('account_link', )
+    readonly_fields = ('account_link',)
     change_readonly_fields = ('name', 'type', 'display_websites')
     search_fields = ('name', 'account__username', 'data', 'website__domains__name')
     list_prefetch_related = ('content_set__website', 'content_set__website__domains')

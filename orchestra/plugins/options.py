@@ -15,6 +15,8 @@ class Plugin(object):
     def __init__(self, instance=None):
         # Related model instance of this plugin
         self.instance = instance
+        from .forms import PluginForm
+        self.form = PluginForm
     
     @classmethod
     def get_name(cls):
@@ -91,6 +93,11 @@ class PluginModelAdapter(Plugin):
     """ Adapter class for using model classes as plugins """
     model = None
     name_field = None
+    
+    def __init__(self, instance=None):
+        super().__init__(instance)
+        from .forms import PluginModelAdapterForm
+        self.form = PluginModelAdapterForm
     
     @classmethod
     def get_plugins(cls):

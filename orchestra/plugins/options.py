@@ -14,8 +14,8 @@ class Plugin(object):
     
     def __init__(self, instance=None):
         # Related model instance of this plugin
+        self.instance = instance
         if self.form is None:
-            self.instance = instance
             from .forms import PluginForm
             self.form = PluginForm
         super().__init__()

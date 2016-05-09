@@ -135,7 +135,12 @@ class Transaction(models.Model):
         if not self.pk:
             amount = self.bill.transactions.exclude(state=self.REJECTED).amount()
             if amount >= self.bill.total:
-                raise ValidationError(_("New transactions can not be allocated for this bill."))
+                raise ValidationError(
+                    _("Bill %(number)s already has valid transactions that cover bill total amount (%(amount)s).") % {
+                        'number': self.bill.number,
+                        'amount': amount,
+                    }
+                )
     
     def get_state_help(self):
         if self.source:

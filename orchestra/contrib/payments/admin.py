@@ -105,9 +105,10 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     )
     change_view_actions = (
         actions.process_transactions, actions.mark_as_executed, actions.mark_as_secured,
-        actions.mark_as_rejected,
+        actions.mark_as_rejected, actions.reissue
     )
-    actions = change_view_actions + (actions.report, list_accounts)
+    search_fields = ('bill__number', 'bill__account__username', 'id')
+    actions = change_view_actions + (actions.report, list_accounts,)
     filter_by_account_fields = ('bill', 'source')
     change_readonly_fields = ('amount', 'currency')
     readonly_fields = (
@@ -124,17 +125,28 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     display_created_at = admin_date('created_at', short_description=_("Created"))
     display_modified_at = admin_date('modified_at', short_description=_("Modified"))
     
+    def has_delete_permission(self, *args, **kwargs):
+        return False
+    
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+    
     def get_change_view_actions(self, obj=None):
         actions = super(TransactionAdmin, self).get_change_view_actions()
         exclude = []
         if obj:
             if obj.state == Transaction.WAITTING_PROCESSING:
-                exclude = ['mark_as_executed', 'mark_as_secured']
+                exclude = ['mark_as_executed', 'mark_as_secured', 'reissue']
             elif obj.state == Transaction.WAITTING_EXECUTION:
-                exclude = ['process_transactions', 'mark_as_secured']
+                exclude = ['process_transactions', 'mark_as_secured', 'reissue']
             if obj.state == Transaction.EXECUTED:
-                exclude = ['process_transactions', 'mark_as_executed']
-            elif obj.state in [Transaction.REJECTED, Transaction.SECURED]:
+                exclude = ['process_transactions', 'mark_as_executed', 'reissue']
+            elif obj.state == Transaction.REJECTED:
+                exclude = ['process_transactions', 'mark_as_executed', 'mark_as_secured', 'mark_as_rejected']
+            elif obj.state == Transaction.SECURED:
                 return []
         return [action for action in actions if action.__name__ not in exclude]
     
@@ -154,6 +166,7 @@ class TransactionProcessAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
     )
     list_filter = ('state',)
     fields = ('data', 'file_url', 'created_at')
+    search_fields = ('transactions__bill__number', 'transactions__bill__account__username', 'id')
     readonly_fields = ('data', 'file_url', 'display_transactions', 'created_at')
     list_prefetch_related = ('transactions',)
     inlines = [TransactionInline]

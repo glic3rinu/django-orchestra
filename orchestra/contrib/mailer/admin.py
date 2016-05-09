@@ -8,9 +8,11 @@ from django.db.models import Count
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 
+from orchestra.admin import ExtendedModelAdmin
 from orchestra.admin.utils import admin_link, admin_colored, admin_date, wrap_admin_view
 from orchestra.contrib.tasks import task
 
+from .actions import last
 from .engine import send_pending
 from .models import Message, SMTPLog
 
@@ -25,13 +27,13 @@ COLORS = {
 }
 
 
-class MessageAdmin(admin.ModelAdmin):
+class MessageAdmin(ExtendedModelAdmin):
     list_display = (
         'display_subject', 'colored_state', 'priority', 'to_address', 'from_address',
         'created_at_delta', 'display_retries', 'last_try_delta',
     )
     list_filter = ('state', 'priority', 'retries')
-    list_prefetch_related = ('logs__id')
+    list_prefetch_related = ('logs',)
     search_fields = ('to_address', 'from_address', 'subject',)
     fieldsets = (
         (None, {
@@ -49,6 +51,7 @@ class MessageAdmin(admin.ModelAdmin):
         'display_to', 'display_from', 'display_content',
     )
     date_hierarchy = 'created_at'
+    change_view_actions = (last,)
     
     colored_state = admin_colored('state', colors=COLORS)
     created_at_delta = admin_date('created_at')
@@ -114,7 +117,7 @@ class MessageAdmin(admin.ModelAdmin):
     
     def get_urls(self):
         from django.conf.urls import url
-        urls = super(MessageAdmin, self).get_urls()
+        urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         urls.insert(0,
             url(r'^send-pending/$',
@@ -124,8 +127,8 @@ class MessageAdmin(admin.ModelAdmin):
         return urls
     
     def get_queryset(self, request):
-        qs = super(MessageAdmin, self).get_queryset(request)
-        return qs.annotate(Count('logs')).prefetch_related('logs').defer('content')
+        qs = super().get_queryset(request)
+        return qs.annotate(Count('logs')).defer('content')
     
     def send_pending_view(self, request):
         task(send_pending).apply_async()
@@ -135,7 +138,7 @@ class MessageAdmin(admin.ModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'subject':
             kwargs['widget'] = forms.TextInput(attrs={'size':'100'})
-        return super(MessageAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
 
 class SMTPLogAdmin(admin.ModelAdmin):

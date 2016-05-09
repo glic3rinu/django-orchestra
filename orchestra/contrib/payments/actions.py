@@ -2,8 +2,9 @@ from functools import partial
 
 from django.contrib import messages
 from django.contrib.admin import actions
+from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import ungettext, ugettext_lazy as _
@@ -205,3 +206,19 @@ def report(modeladmin, request, queryset):
         'transactions': transactions,
     }
     return render(request, 'admin/payments/transaction/report.html', context)
+
+
+def reissue(modeladmin, request, queryset):
+    if len(queryset) != 1:
+        messages.error(request, _("One transaction should be selected."))
+        return
+    trans = queryset[0]
+    url = reverse('admin:payments_transaction_add')
+    url += '?account=%i&bill=%i&source=%s&amount=%s&currency=%s' % (
+        trans.bill.account_id,
+        trans.bill_id,
+        trans.source_id or '',
+        trans.amount,
+        trans.currency,
+    )
+    return redirect(url)

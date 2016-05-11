@@ -246,3 +246,8 @@ PASSLIB_CONFIG = (
     "superuser__django_pbkdf2_sha256__default_rounds = 15000\n"
     "superuser__sha512_crypt__default_rounds = 120000\n"
 )
+
+
+SHELL_PLUS_PRE_IMPORTS = (
+    ('orchestra.contrib.orchestration.managers', ('orchestrate',)),
+)

@@ -213,6 +213,11 @@ def reissue(modeladmin, request, queryset):
         messages.error(request, _("One transaction should be selected."))
         return
     trans = queryset[0]
+    if trans.state != trans.REJECTED:
+        messages.error(request,
+            _("Only rejected transactions can be reissued, "
+              "please reject current transaction if necessary."))
+        return
     url = reverse('admin:payments_transaction_add')
     url += '?account=%i&bill=%i&source=%s&amount=%s&currency=%s' % (
         trans.bill.account_id,

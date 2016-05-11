@@ -7,7 +7,7 @@ from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.auth import update_session_auth_hash
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.forms.models import BaseInlineFormSet
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -17,9 +17,12 @@ from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
 
+from orchestra.models.utils import has_db_field
+
 from ..utils.python import random_ascii, pairwise
 
 from .forms import AdminPasswordChangeForm
+#, AdminRawPasswordChangeForm
 #from django.contrib.auth.forms import AdminPasswordChangeForm
 from .utils import action_to_view
 
@@ -240,8 +243,11 @@ class ChangePasswordAdminMixin(object):
         return [
             url(r'^(\d+)/password/$',
                 self.admin_site.admin_view(self.change_password),
-                name='%s_%s_change_password' % info)
-        ] + super(ChangePasswordAdminMixin, self).get_urls()
+                name='%s_%s_change_password' % info),
+            url(r'^(\d+)/hash/$',
+                self.admin_site.admin_view(self.show_hash),
+                name='%s_%s_show_hash' % info)
+        ] + super().get_urls()
     
     def get_change_password_username(self, obj):
         return str(obj)
@@ -252,7 +258,10 @@ class ChangePasswordAdminMixin(object):
             raise PermissionDenied
         # TODO use this insetad of self.get_object(), in other places
         obj = get_object_or_404(self.get_queryset(request), pk=id)
-        
+        raw = request.GET.get('raw', '0') == '1'
+        can_raw = has_db_field(obj, 'password')
+        if raw and not can_raw:
+            raise TypeError("%s has no password db field for raw password edditing." % obj)
         related = []
         for obj_name_attr in ('username', 'name', 'hostname'):
             try:
@@ -268,12 +277,12 @@ class ChangePasswordAdminMixin(object):
         else:
             account = obj
         if account.username == obj_name:
-            for rel in account.get_related_passwords():
+            for rel in account.get_related_passwords(db_field=raw):
                 if not isinstance(obj, type(rel)):
                     related.append(rel)
         
         if request.method == 'POST':
-            form = self.change_password_form(obj, request.POST, related=related)
+            form = self.change_password_form(obj, request.POST, related=related, raw=raw)
             if form.is_valid():
                 form.save()
                 change_message = self.construct_change_message(request, form, None)
@@ -283,18 +292,18 @@ class ChangePasswordAdminMixin(object):
                 update_session_auth_hash(request, form.user) # This is safe
                 return HttpResponseRedirect('..')
         else:
-            form = self.change_password_form(obj, related=related)
+            form = self.change_password_form(obj, related=related, raw=raw)
         
         fieldsets = [
             (obj._meta.verbose_name.capitalize(), {
                 'classes': ('wide',),
-                'fields': ('password1', 'password2')
+                'fields': ('password',) if raw else ('password1', 'password2'),
             }),
         ]
         for ix, rel in enumerate(related):
             fieldsets.append((rel._meta.verbose_name.capitalize(), {
                 'classes': ('wide',),
-                'fields': ('password1_%i' % ix, 'password2_%i' % ix)
+                'fields': ('password_%i' % ix,) if raw else ('password1_%i' % ix, 'password2_%i' % ix)
             }))
         
         obj_username = self.get_change_password_username(obj)
@@ -302,6 +311,8 @@ class ChangePasswordAdminMixin(object):
         context = {
             'title': _('Change password: %s') % obj_username,
             'adminform': adminForm,
+            'raw': raw,
+            'can_raw': can_raw,
             'errors': admin.helpers.AdminErrorList(form, []),
             'form_url': form_url,
             'is_popup': (IS_POPUP_VAR in request.POST or
@@ -322,3 +333,9 @@ class ChangePasswordAdminMixin(object):
         return TemplateResponse(request,
             self.change_user_password_template,
             context, current_app=self.admin_site.name)
+    
+    def show_hash(self, request, id):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        obj = get_object_or_404(self.get_queryset(request), pk=id)
+        return HttpResponse(obj.password)

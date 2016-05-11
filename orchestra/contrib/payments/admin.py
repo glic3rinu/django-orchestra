@@ -99,7 +99,6 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
                 'display_state',
                 'amount',
                 'currency',
-                'process'
             )
         }),
     )

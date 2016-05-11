@@ -3,6 +3,7 @@ from functools import partial
 
 from django import forms
 from django.contrib.admin import helpers
+from django.contrib.auth.hashers import identify_hasher
 from django.core import validators
 from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.template import Template, Context
@@ -84,8 +85,11 @@ class AdminPasswordChangeForm(forms.Form):
     error_messages = {
         'password_mismatch': _("The two password fields didn't match."),
         'password_missing': _("No password has been provided."),
+        'bad_hash': _("Invalid password format or unknown hashing algorithm."),
     }
     required_css_class = 'required'
+    password = forms.CharField(label=_("Password"), required=False,
+        widget=forms.TextInput(attrs={'size':'120'}))
     password1 = forms.CharField(label=_("Password"), widget=forms.PasswordInput,
             required=False, validators=[validate_password])
     password2 = forms.CharField(label=_("Password (again)"), widget=forms.PasswordInput,
@@ -93,9 +97,14 @@ class AdminPasswordChangeForm(forms.Form):
     
     def __init__(self, user, *args, **kwargs):
         self.related = kwargs.pop('related', [])
+        self.raw = kwargs.pop('raw', False)
         self.user = user
-        super(AdminPasswordChangeForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.password_provided = False
         for ix, rel in enumerate(self.related):
+            self.fields['password_%i' % ix] = forms.CharField(label=_("Password"), required=False,
+                widget=forms.TextInput(attrs={'size':'120'}))
+            setattr(self, 'clean_password_%i' % ix, partial(self.clean_password, ix=ix))
             self.fields['password1_%i' % ix] = forms.CharField(label=_("Password"),
                 widget=forms.PasswordInput, required=False)
             self.fields['password2_%i' % ix] = forms.CharField(label=_("Password (again)"),
@@ -108,35 +117,53 @@ class AdminPasswordChangeForm(forms.Form):
         password1 = self.cleaned_data.get('password1%s' % ix)
         password2 = self.cleaned_data.get('password2%s' % ix)
         if password1 and password2:
+            self.password_provided = True
             if password1 != password2:
                 raise forms.ValidationError(
                     self.error_messages['password_mismatch'],
                     code='password_mismatch',
                 )
         elif password1 or password2:
+            self.password_provided = True
             raise forms.ValidationError(
                 self.error_messages['password_mismatch'],
                 code='password_mismatch',
             )
         return password2
     
+    def clean_password(self, ix=''):
+        if ix != '':
+            ix = '_%i' % ix
+        password = self.cleaned_data.get('password%s' % ix)
+        if password:
+            self.password_provided = True
+            try:
+                hasher = identify_hasher(password)
+            except ValueError:
+                raise forms.ValidationError(
+                    self.error_messages['bad_hash'],
+                    code='bad_hash',
+                )
+        return password
+    
     def clean(self):
-        cleaned_data = super(AdminPasswordChangeForm, self).clean()
-        for data in cleaned_data.values():
-            if data:
-                return
-        raise forms.ValidationError(
-            self.error_messages['password_missing'],
-            code='password_missing',
-        )
+        if not self.password_provided:
+            raise forms.ValidationError(
+                self.error_messages['password_missing'],
+                code='password_missing',
+            )
     
     def save(self, commit=True):
         """
         Saves the new password.
         """
-        password = self.cleaned_data["password1"]
+        field_name = 'password' if self.raw else 'password1'
+        password = self.cleaned_data[field_name]
         if password:
-            self.user.set_password(password)
+            if self.raw:
+                self.password = password
+            else:
+                self.user.set_password(password)
             if commit:
                 try:
                     self.user.save(update_fields=['password'])
@@ -144,16 +171,19 @@ class AdminPasswordChangeForm(forms.Form):
                     # password is not a field but an attribute
                     self.user.save() # Trigger the backend
         for ix, rel in enumerate(self.related):
-            password = self.cleaned_data['password1_%s' % ix]
+            password = self.cleaned_data['%s_%s' % (field_name, ix)]
             if password:
-                set_password = getattr(rel, 'set_password')
-                set_password(password)
+                if raw:
+                    rel.password = password
+                else:
+                    set_password = getattr(rel, 'set_password')
+                    set_password(password)
                 if commit:
                     rel.save(update_fields=['password'])
         return self.user
     
     def _get_changed_data(self):
-        data = super(AdminPasswordChangeForm, self).changed_data
+        data = super().changed_data
         for name in self.fields.keys():
             if name not in data:
                 return []
@@ -173,7 +203,7 @@ class SendEmailForm(forms.Form):
         widget=forms.Textarea(attrs={'cols': 118, 'rows': 15}))
     
     def __init__(self, *args, **kwargs):
-        super(SendEmailForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         initial = kwargs.get('initial')
         if 'to' in initial:
             self.fields['to'].widget = SpanWidget(original=initial['to'])

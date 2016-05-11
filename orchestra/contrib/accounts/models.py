@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 #from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
 #from orchestra.contrib.orchestration import Operation
 from orchestra.core import services
+from orchestra.models.utils import has_db_field
 from orchestra.utils.mail import send_email_template
 
 from . import settings
@@ -158,7 +159,7 @@ class Account(auth.AbstractBaseUser):
             return True
         return auth._user_has_module_perms(self, app_label)
     
-    def get_related_passwords(self):
+    def get_related_passwords(self, db_field=False):
         related = [
             self.main_systemuser,
         ]
@@ -173,5 +174,8 @@ class Account(auth.AbstractBaseUser):
                 rel = model.objects.get(account=self, **kwargs)
             except model.DoesNotExist:
                 continue
+            if db_field:
+                if not has_db_field(rel, 'password'):
+                    continue
             related.append(rel)
         return related

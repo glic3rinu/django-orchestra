@@ -11,19 +11,19 @@ from orchestra.utils.python import OrderedSet
 
 from . import manager, Operation
 from .helpers import message_user
-from .models import BackendLog
+from .models import BackendLog, BackendOperation
 
 
 @receiver(post_save, dispatch_uid='orchestration.post_save_collector')
 def post_save_collector(sender, *args, **kwargs):
-    if sender not in (BackendLog, Operation, LogEntry):
+    if sender not in (BackendLog, BackendOperation, LogEntry):
         instance = kwargs.get('instance')
         OperationsMiddleware.collect(Operation.SAVE, **kwargs)
 
 
 @receiver(pre_delete, dispatch_uid='orchestration.pre_delete_collector')
 def pre_delete_collector(sender, *args, **kwargs):
-    if sender not in (BackendLog, Operation, LogEntry):
+    if sender not in (BackendLog, BackendOperation, LogEntry):
         OperationsMiddleware.collect(Operation.DELETE, **kwargs)
 
 

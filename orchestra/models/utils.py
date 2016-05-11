@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import FieldDoesNotExist
 from django.apps import apps
 import importlib
 
@@ -14,6 +15,14 @@ def get_model(label, import_module=True):
         importlib.import_module('%s.%s' % (app_label, 'admin'))
         return apps.get_model(*label.split('.'))
     return model
+
+
+def has_db_field(obj, field_name):
+    try:
+        obj._meta.get_field(field_name)
+    except FieldDoesNotExist:
+        return False
+    return True
 
 
 def get_field_value(obj, field_name):

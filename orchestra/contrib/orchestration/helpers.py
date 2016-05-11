@@ -103,7 +103,8 @@ def get_backend_url(ids):
     return ''
 
 
-def message_user(request, logs):
+def get_messages(logs):
+    messages = []
     total, successes, async = 0, 0, 0
     ids = []
     async_ids = []
@@ -140,7 +141,7 @@ def message_user(request, logs):
             msg += ', ' + str(async_msg)
         msg = msg.format(errors=errors, async=async, async_url=async_url, total=total, url=url,
             name=log.backend)
-        messages.error(request, mark_safe(msg + '.'))
+        messages.append(('error', msg + '.'))
     elif successes:
         if async_msg:
             if total == 1:
@@ -160,7 +161,13 @@ def message_user(request, logs):
             total=total, url=url, async_url=async_url, async=async, successes=successes,
             name=log.backend
         )
-        messages.success(request, mark_safe(msg + '.'))
+        messages.append(('success', msg + '.'))
     else:
         msg = async_msg.format(url=url, async_url=async_url, async=async, name=log.backend)
-        messages.success(request, mark_safe(msg + '.'))
+        messages.append(('success', msg + '.'))
+    return messages
+
+
+def message_user(request, logs):
+    for func, msg in get_messages(logs):
+        getattr(messages, func)(request, mark_safe(msg))

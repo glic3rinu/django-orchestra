@@ -62,7 +62,8 @@ class UserChangeForm(forms.ModelForm):
     password = auth_forms.ReadOnlyPasswordHashField(label=_("Password"),
         help_text=_("Raw passwords are not stored, so there is no way to see "
                     "this user's password, but you can change it by "
-                    "using <a href=\"../password/\">this form</a>."))
+                    "using <a href='../password/'>this form</a>. "
+                    "<a onclick='return showAddAnotherPopup(this);' href='../hash/'>Show hash</a>."))
     
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.

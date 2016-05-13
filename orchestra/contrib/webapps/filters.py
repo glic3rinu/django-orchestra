@@ -1,7 +1,7 @@
 from django.contrib.admin import SimpleListFilter
 from django.utils.translation import ugettext_lazy as _
 
-from . import settings
+from .types import AppType
 
 
 class HasWebsiteListFilter(SimpleListFilter):
@@ -22,15 +22,28 @@ class HasWebsiteListFilter(SimpleListFilter):
         return queryset
 
 
-class PHPVersionListFilter(SimpleListFilter):
-    title = _("PHP version")
-    parameter_name = 'php_version'
+class DetailListFilter(SimpleListFilter):
+    title = _("detail")
+    parameter_name = 'detail'
     
     def lookups(self, request, model_admin):
-        return settings.WEBAPPS_PHP_VERSIONS
+        ret = set()
+        lookup_map = {}
+        for apptype in AppType.get_plugins():
+            for field, values in apptype.get_detail_lookups().items():
+                for value in values:
+                    lookup_map[value[0]] = field
+                    ret.add(value)
+        self.lookup_map = lookup_map
+        return sorted(list(ret))
     
     def queryset(self, request, queryset):
         value = self.value()
         if value:
-            return queryset.filter(data__contains='"php_version":"%s"' % value)
+            try:
+                field = self.lookup_map[value]
+            except KeyError:
+                return queryset
+            else:
+                return queryset.filter(data__contains='"%s":"%s"' % (field, value))
         return queryset

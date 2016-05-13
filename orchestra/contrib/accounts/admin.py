@@ -17,8 +17,10 @@ from django.utils.translation import ugettext_lazy as _
 from orchestra.admin import ExtendedModelAdmin, ChangePasswordAdminMixin
 from orchestra.admin.actions import SendEmail
 from orchestra.admin.utils import wrap_admin_view, admin_link, set_url_query
+from orchestra.contrib.services.settings import SERVICES_IGNORE_ACCOUNT_TYPE
 from orchestra.core import services, accounts
 from orchestra.forms import UserChangeForm
+from orchestra.utils.apps import isinstalled
 
 from .actions import (list_contacts, service_report, delete_related_services, disable_selected,
     enable_selected)
@@ -111,6 +113,26 @@ class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin)
             form.save_model(obj)
             form.save_related(obj)
         else:
+            if isinstalled('orchestra.contrib.orders') and isinstalled('orchestra.contrib.services'):
+                if 'type' in form.changed_data:
+                    old_type = Account.objects.get(pk=obj.pk).type
+                    new_type = form.cleaned_data['type']
+                    context = {
+                        'from': old_type.lower(),
+                        'to': new_type.lower(),
+                        'url': reverse('admin:orders_order_changelist'),
+                    }
+                    msg = ''
+                    if old_type in SERVICES_IGNORE_ACCOUNT_TYPE and new_type not in SERVICES_IGNORE_ACCOUNT_TYPE:
+                        context['url'] += '?account=%i&ignore=1' % obj.pk
+                        msg = _("Account type has been changed from <i>%(from)s</i> to <i>%(to)s</i>. "
+                                "You may want to mark <a href='%(url)s'>existing ignored orders</a> as not ignored.")
+                    elif old_type not in SERVICES_IGNORE_ACCOUNT_TYPE and new_type in SERVICES_IGNORE_ACCOUNT_TYPE:
+                        context['url'] += '?account=%i&ignore=0' % obj.pk
+                        msg = _("Account type has been changed from <i>%(from)s</i> to <i>%(to)s</i>. "
+                                "You may want to ignore <a href='%(url)s'>existing not ignored orders</a>.")
+                    if msg:
+                        messages.warning(request, mark_safe(msg % context))
             super(AccountAdmin, self).save_model(request, obj, form, change)
     
     def get_change_view_actions(self, obj=None):

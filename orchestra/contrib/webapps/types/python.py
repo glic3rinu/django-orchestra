@@ -40,6 +40,12 @@ class PythonApp(AppType):
     option_groups = (AppOption.FILESYSTEM, AppOption.PROCESS)
     icon = 'orchestra/icons/apps/Python.png'
     
+    @classmethod
+    def get_detail_lookups(cls):
+        return {
+            'python_version': settings.WEBAPPS_PYTHON_VERSIONS,
+        }
+    
     def get_directive(self):
         context = self.get_directive_context()
         return ('uwsgi', settings.WEBAPPS_UWSGI_SOCKET % context)

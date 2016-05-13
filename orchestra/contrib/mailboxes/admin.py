@@ -89,7 +89,6 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
         if cached_forwards is None:
             cached_forwards = {}
             qs = Address.objects.filter(forward__regex=r'(^|.*\s)[^@]+(\s.*|$)')
-            qs = qs.select_related('domain')
             qs = qs.annotate(email=Concat('name', V('@'), 'domain__name'))
             qs = qs.values_list('id', 'email', 'forward')
             for addr_id, email, mbox in qs:

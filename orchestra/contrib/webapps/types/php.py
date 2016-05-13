@@ -59,6 +59,12 @@ class PHPApp(AppType):
     def get_detail(self):
         return self.instance.data.get('php_version', '')
     
+    @classmethod
+    def get_detail_lookups(cls):
+        return {
+            'php_version': settings.WEBAPPS_PHP_VERSIONS,
+        }
+    
     @cached
     def get_options(self, merge=settings.WEBAPPS_MERGE_PHP_WEBAPPS):
         """ adapter to webapp.get_options that performs merging of PHP options """

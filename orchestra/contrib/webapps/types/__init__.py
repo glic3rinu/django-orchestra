@@ -72,6 +72,11 @@ class AppType(plugins.Plugin, metaclass=plugins.PluginMount):
             else:
                 yield (group, [(op.name, op.verbose_name) for op in options])
     
+    @classmethod
+    def get_detail_lookups(cls):
+        """ {'field_name': (('opt1', _("Option 1"),)} """
+        return {}
+    
     def get_detail(self):
         return ''
     

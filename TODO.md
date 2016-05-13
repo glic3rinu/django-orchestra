@@ -464,5 +464,3 @@ with open(file) as handler:
 # Mark transaction process as executed should not override higher transaction states
 
 # mailbox.addresses get_Queryset SQL contact @ with mailboxes and forwards
-
-# Remove membership fee when changing account.type

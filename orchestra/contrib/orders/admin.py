@@ -56,7 +56,8 @@ class OrderAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'display_metric'
     )
     list_filter = (
-        ActiveOrderListFilter, IgnoreOrderListFilter, BilledOrderListFilter, 'service'
+        ActiveOrderListFilter, IgnoreOrderListFilter, BilledOrderListFilter, 'account__type',
+        'service',
     )
     default_changelist_filters = (
         ('ignore', '0'),

@@ -47,7 +47,7 @@ def set_permission(modeladmin, request, queryset):
                     user.set_perm_perms)
                 context = {
                     'action': verbose_action,
-                    'perms': verbose_permissions,
+                    'perms': verbose_permissions.lower(),
                     'to': os.path.join(user.set_perm_base_home, user.set_perm_home_extension),
                 }
                 msg = _("%(action)s %(perms)s permission to %(to)s") % context

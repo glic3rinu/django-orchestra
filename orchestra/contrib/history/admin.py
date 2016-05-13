@@ -15,6 +15,7 @@ class LogEntryAdmin(admin.ModelAdmin):
     )
     list_filter = (
         'action_flag',
+        ('user', admin.RelatedOnlyFieldListFilter),
         ('content_type', admin.RelatedOnlyFieldListFilter),
     )
     date_hierarchy = 'action_time'

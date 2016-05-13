@@ -35,6 +35,14 @@ def m2m_collector(sender, *args, **kwargs):
 
 
 class orchestrate(ContextDecorator):
+    """
+    Context manager for triggering backend operations out of request-response cycle, e.g. shell
+    
+    with orchestrate():
+        user = SystemUser.objects.get(username='rata')
+        user.shell = '/dev/null'
+        user.save(update_fields=('shell',))
+    """
     thread_locals = local()
     thread_locals.pending_operations = None
     thread_locals.route_cache = None

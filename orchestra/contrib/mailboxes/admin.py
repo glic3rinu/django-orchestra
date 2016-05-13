@@ -15,6 +15,7 @@ from orchestra.admin.utils import admin_link, change_url
 from orchestra.contrib.accounts.actions import list_accounts
 from orchestra.contrib.accounts.admin import SelectAccountAdminMixin
 from orchestra.contrib.accounts.filters import IsActiveListFilter
+from orchestra.core import caches
 
 from . import settings
 from .actions import SendMailboxEmail, SendAddressEmail
@@ -82,11 +83,33 @@ class MailboxAdmin(ChangePasswordAdminMixin, SelectAccountAdminMixin, ExtendedMo
             type(self).actions = self.actions + (SendMailboxEmail(),)
     
     def display_addresses(self, mailbox):
+        # Get from forwards
+        cache = caches.get_request_cache()
+        cached_forwards = cache.get('forwards')
+        if cached_forwards is None:
+            cached_forwards = {}
+            qs = Address.objects.filter(forward__regex=r'(^|.*\s)[^@]+(\s.*|$)')
+            qs = qs.select_related('domain')
+            qs = qs.annotate(email=Concat('name', V('@'), 'domain__name'))
+            qs = qs.values_list('id', 'email', 'forward')
+            for addr_id, email, mbox in qs:
+                url = reverse('admin:mailboxes_address_change', args=(addr_id,))
+                link = '<a href="%s">%s</a>' % (url, email)
+                try:
+                    cached_forwards[mbox].append(link)
+                except KeyError:
+                    cached_forwards[mbox] = [link]
+            cache.set('forwards', cached_forwards)
+        try:
+            forwards = cached_forwards[mailbox.name]
+        except KeyError:
+            forwards = []
+        # Get from mailboxes
         addresses = []
         for addr in mailbox.addresses.all():
             url = change_url(addr)
             addresses.append('<a href="%s">%s</a>' % (url, addr.email))
-        return '<br>'.join(addresses)
+        return '<br>'.join(addresses+forwards)
     display_addresses.short_description = _("Addresses")
     display_addresses.allow_tags = True
     

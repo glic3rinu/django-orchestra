@@ -70,7 +70,7 @@ class UNIXUserMaildirController(SieveFilteringMixin, ServiceController):
             # Update/create %(user)s user state
             if id %(user)s ; then
                 old_password=$(getent shadow %(user)s | cut -d':' -f2)
-                usermod  %(user)s \\
+                usermod %(user)s \\
                     --shell %(initial_shell)s \\
                     --password '%(password)s'
                 if [[ "$old_password" != '%(password)s' ]]; then

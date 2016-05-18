@@ -10,21 +10,21 @@
     <table id="result_list">
     <thead>
         <tr>
-        <th scope="col"><div class="text"><span>Action</span</div></th>
-        <th scope="col"><div class="text"><span>ID</span</div></th>
-        <th scope="col"><div class="text"><span>Service</span</div></th>
-        <th scope="col"><div class="text"><span>Account</span</div></th>
-        <th scope="col"><div class="text"><span>Content object</span</div></th>
-        <th scope="col"><div class="text"><span>Registered on</span</div></th>
-        <th scope="col"><div class="text"><span>Billed until</span</div></th>
-        <th scope="col"><div class="text"><span>Cancelled on</span</div>
-        </th>
+            <th scope="col"><div class="text">Action</div></th>
+            <th scope="col"><div class="text">ID</div></th>
+            <th scope="col"><div class="text">Service</div></th>
+            <th scope="col"><div class="text">Account</div></th>
+            <th scope="col"><div class="text">Content object</div></th>
+            <th scope="col"><div class="text">Registered on</div></th>
+            <th scope="col"><div class="text">Billed until</div></th>
+            <th scope="col"><div class="text">Cancelled on</div></th>
+            <th scope="col"><div class="text">Ignored</div></th>
         </tr>
     </thead>
     <tbody>
     {% for order, action in updates %}
         <tr class="{% if forloop.counter|divisibleby:2 %}row2{% else %}row1{% endif %}">
-            <th>{{ action }}</th>
+            <th>{{ action.capitalize }}</th>
             <td>{% if order.pk %}<a href="{{ order | admin_url }}">{{ order.id }}</a>{% endif %}</td>
             <td><a href="{{ order.service | admin_url }}">{{ order.service }}</a></td>
             <td><a href="{{ order.account | admin_url }}">{{ order.account }}</a></td>
@@ -32,6 +32,7 @@
             <td><span title="{{ order.registered_on }}">{{ order.registered_on }}</span></td>
             <td><span title="{{ order.billed_unitl }}">{{ order.billed_unitl }}</span></td>
             <td>{{ order.canncelled_on }}</td>
+            <td><img src="/static/admin/img/icon-{% if order.ignore %}yes{% else %}no{% endif %}.svg"></td>
         </tr>
     {% endfor %}
     </tbody>

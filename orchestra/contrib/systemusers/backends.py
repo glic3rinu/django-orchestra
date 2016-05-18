@@ -262,7 +262,7 @@ class UNIXUserDisk(ServiceMonitor):
         super(UNIXUserDisk, self).prepare()
         self.append(textwrap.dedent("""\
             function monitor () {
-                { du -bs "$1" || echo 0; } | awk {'print $1'}
+                { SIZE=$(du -bs "$1") && echo $SIZE || echo 0; } | awk {'print $1'}
             }"""
         ))
     

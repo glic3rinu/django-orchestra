@@ -142,6 +142,7 @@ class ChangeViewActionsMixin(object):
             view.tool_description = tool_description
             view.css_class = getattr(action, 'css_class', 'historylink')
             view.help_text = getattr(action, 'help_text', '')
+            view.hidden = getattr(action, 'hidden', False)
             views.append(view)
         return views
     
@@ -150,7 +151,7 @@ class ChangeViewActionsMixin(object):
             kwargs['extra_context'] = {}
         obj = self.get_object(request, unquote(object_id))
         kwargs['extra_context']['object_tools_items'] = [
-            action.__dict__ for action in self.get_change_view_actions(obj)
+            action.__dict__ for action in self.get_change_view_actions(obj) if not action.hidden
         ]
         return super().change_view(request, object_id, **kwargs)
 

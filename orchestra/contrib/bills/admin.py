@@ -102,6 +102,7 @@ class ClosedBillLineInline(BillLineInline):
         'display_subtotal', 'display_total'
     )
     readonly_fields = fields
+    can_delete = False
     
     def display_description(self, line):
         descriptions = [line.description]
@@ -126,9 +127,6 @@ class ClosedBillLineInline(BillLineInline):
     display_total.allow_tags = True
     
     def has_add_permission(self, request):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
         return False
 
 
@@ -243,7 +241,77 @@ class BillLineManagerAdmin(BillLineAdmin):
         return super().changelist_view(request, context)
 
 
-class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
+class BillAdminMixin(AccountAdminMixin):
+    def display_total_with_subtotals(self, bill):
+        if bill.pk:
+            currency = settings.BILLS_CURRENCY.lower()
+            subtotals = []
+            for tax, subtotal in bill.compute_subtotals().items():
+                subtotals.append(_("Subtotal %s%% VAT   %s &%s;") % (tax, subtotal[0], currency))
+                subtotals.append(_("Taxes %s%% VAT   %s &%s;") % (tax, subtotal[1], currency))
+            subtotals = '\n'.join(subtotals)
+            return '<span title="%s">%s &%s;</span>' % (subtotals, bill.compute_total(), currency)
+    display_total_with_subtotals.allow_tags = True
+    display_total_with_subtotals.short_description = _("total")
+    display_total_with_subtotals.admin_order_field = 'approx_total'
+
+    def display_payment_state(self, bill):
+        if bill.pk:
+            t_opts = bill.transactions.model._meta
+            if bill.get_type() == bill.PROFORMA:
+                return '<span title="Pro forma">---</span>'
+            transactions = bill.transactions.all()
+            if len(transactions) == 1:
+                args = (transactions[0].pk,)
+                view = 'admin:%s_%s_change' % (t_opts.app_label, t_opts.model_name)
+                url = reverse(view, args=args)
+            else:
+                url = reverse('admin:%s_%s_changelist' % (t_opts.app_label, t_opts.model_name))
+                url += '?bill=%i' % bill.pk
+            state = bill.get_payment_state_display().upper()
+            title = ''
+            if bill.closed_amends:
+                state = '<strike>%s*</strike>' % state
+                title = _("This bill has been amended, this value may not be valid.")
+            color = PAYMENT_STATE_COLORS.get(bill.payment_state, 'grey')
+            return '<a href="{url}" style="color:{color}" title="{title}">{name}</a>'.format(
+                url=url, color=color, name=state, title=title)
+    display_payment_state.allow_tags = True
+    display_payment_state.short_description = _("Payment")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            models.Count('lines'),
+            # FIXME https://code.djangoproject.com/ticket/10060
+            approx_total=Coalesce(Sum(
+                (F('lines__subtotal') + Coalesce('lines__sublines__total', 0)) * (1+F('lines__tax')/100),
+            ), 0),
+        )
+        qs = qs.prefetch_related(
+            Prefetch('amends', queryset=Bill.objects.filter(is_open=False), to_attr='closed_amends')
+        )
+        return qs.defer('html')
+
+
+class AmendInline(BillAdminMixin, admin.TabularInline):
+    model = Bill
+    fields = (
+        'self_link', 'type', 'display_total_with_subtotals', 'display_payment_state', 'is_open',
+        'is_sent'
+    )
+    readonly_fields = fields
+    verbose_name_plural = _("Amends")
+    can_delete = False
+    extra = 0
+    
+    self_link = admin_link('__str__')
+    
+    def has_add_permission(self, *args, **kwargs):
+        return False
+
+
+class BillAdmin(BillAdminMixin, ExtendedModelAdmin):
     list_display = (
         'number', 'type_link', 'account_link', 'closed_on_display', 'updated_on_display',
         'num_lines', 'display_total', 'display_payment_state', 'is_sent'
@@ -256,9 +324,8 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     change_list_template = 'admin/bills/bill/change_list.html'
     fieldsets = (
         (None, {
-            'fields': ['number', 'type', 'amend_of_link', 'account_link',
-                       'display_total_with_subtotals', 'display_payment_state',
-                       'is_sent', 'comments'],
+            'fields': ['number', 'type', (), 'account_link', 'display_total_with_subtotals',
+                       'display_payment_state', 'is_sent', 'comments'],
         }),
         (_("Dates"), {
             'classes': ('collapse',),
@@ -281,31 +348,26 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         actions.amend_bills, actions.bill_report, actions.service_report,
         actions.close_send_download_bills, list_accounts,
     ]
-    change_readonly_fields = (
-        'account_link', 'type', 'is_open', 'amend_of_link', 'amend_links'
-    )
+    change_readonly_fields = ('account_link', 'type', 'is_open', 'amend_of_link')
     readonly_fields = (
         'number', 'display_total', 'is_sent', 'display_payment_state', 'created_on_display',
         'closed_on_display', 'updated_on_display', 'display_total_with_subtotals',
     )
-    inlines = [BillLineInline, ClosedBillLineInline]
     date_hierarchy = 'closed_on'
-    # TODO when merged https://github.com/django/django/pull/5213
-    #approximate_date_hierarchy = admin.ApproximateWith.MONTHS
     
     created_on_display = admin_date('created_on', short_description=_("Created"))
     closed_on_display = admin_date('closed_on', short_description=_("Closed"))
     updated_on_display = admin_date('updated_on', short_description=_("Updated"))
     amend_of_link = admin_link('amend_of')
     
-    def amend_links(self, bill):
-        links = []
-        for amend in bill.amends.all():
-            url = reverse('admin:bills_bill_change', args=(amend.id,))
-            links.append('<a href="{url}">{num}</a>'.format(url=url, num=amend.number))
-        return '<br>'.join(links)
-    amend_links.short_description = _("Amends")
-    amend_links.allow_tags = True
+#    def amend_links(self, bill):
+#        links = []
+#        for amend in bill.amends.all():
+#            url = reverse('admin:bills_bill_change', args=(amend.id,))
+#            links.append('<a href="{url}">{num}</a>'.format(url=url, num=amend.number))
+#        return '<br>'.join(links)
+#    amend_links.short_description = _("Amends")
+#    amend_links.allow_tags = True
     
     def num_lines(self, bill):
         return bill.lines__count
@@ -319,18 +381,6 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     display_total.short_description = _("total")
     display_total.admin_order_field = 'approx_total'
     
-    def display_total_with_subtotals(self, bill):
-        currency = settings.BILLS_CURRENCY.lower()
-        subtotals = []
-        for tax, subtotal in bill.compute_subtotals().items():
-            subtotals.append(_("Subtotal %s%% VAT   %s &%s;") % (tax, subtotal[0], currency))
-            subtotals.append(_("Taxes %s%% VAT   %s &%s;") % (tax, subtotal[1], currency))
-        subtotals = '\n'.join(subtotals)
-        return '<span title="%s">%s &%s;</span>' % (subtotals, bill.compute_total(), currency)
-    display_total_with_subtotals.allow_tags = True
-    display_total_with_subtotals.short_description = _("total")
-    display_total_with_subtotals.admin_order_field = 'approx_total'
-    
     def type_link(self, bill):
         bill_type = bill.type.lower()
         url = reverse('admin:bills_%s_changelist' % bill_type)
@@ -338,27 +388,6 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
     type_link.allow_tags = True
     type_link.short_description = _("type")
     type_link.admin_order_field = 'type'
-    
-    def display_payment_state(self, bill):
-        t_opts = bill.transactions.model._meta
-        transactions = bill.transactions.all()
-        if len(transactions) == 1:
-            args = (transactions[0].pk,)
-            view = 'admin:%s_%s_change' % (t_opts.app_label, t_opts.model_name)
-            url = reverse(view, args=args)
-        else:
-            url = reverse('admin:%s_%s_changelist' % (t_opts.app_label, t_opts.model_name))
-            url += '?bill=%i' % bill.pk
-        state = bill.get_payment_state_display().upper()
-        title = ''
-        if bill.closed_amends:
-            state = '<strike>%s*</strike>' % state
-            title = _("This bill has been amended, this value may not be valid.")
-        color = PAYMENT_STATE_COLORS.get(bill.payment_state, 'grey')
-        return '<a href="{url}" style="color:{color}" title="{title}">{name}</a>'.format(
-            url=url, color=color, name=state, title=title)
-    display_payment_state.allow_tags = True
-    display_payment_state.short_description = _("Payment")
     
     def get_urls(self):
         """ Hook bill lines management URLs on bill admin """
@@ -381,10 +410,11 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         fieldsets = super().get_fieldsets(request, obj)
         if obj:
             # Switches between amend_of_link and amend_links fields
+            fields = fieldsets[0][1]['fields']
             if obj.amend_of_id:
-                fieldsets[0][1]['fields'][2] = 'amend_of_link'
+                fields[2] = 'amend_of_link'
             else:
-                fieldsets[0][1]['fields'][2] = 'amend_links'
+                fields[2] = ()
             if obj.is_open:
                 fieldsets = fieldsets[0:-1]
         return fieldsets
@@ -400,10 +430,15 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         return [action for action in actions if action.__name__ not in exclude]
     
     def get_inline_instances(self, request, obj=None):
-        inlines = super().get_inline_instances(request, obj)
+        cls = type(self)
         if obj and not obj.is_open:
-            return [inline for inline in inlines if type(inline) != BillLineInline]
-        return [inline for inline in inlines if type(inline) != ClosedBillLineInline]
+            if obj.amends.all():
+                cls.inlines = [AmendInline, ClosedBillLineInline]
+            else:
+                cls.inlines = [ClosedBillLineInline]
+        else:
+            cls.inlines = [BillLineInline]
+        return super().get_inline_instances(request, obj)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         """ Make value input widget bigger """
@@ -415,20 +450,6 @@ class BillAdmin(AccountAdminMixin, ExtendedModelAdmin):
         if db_field.name == 'amend_of':
             formfield.queryset = formfield.queryset.filter(is_open=False)
         return formfield
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        qs = qs.annotate(
-            models.Count('lines'),
-            # FIXME https://code.djangoproject.com/ticket/10060
-            approx_total=Coalesce(Sum(
-                (F('lines__subtotal') + Coalesce('lines__sublines__total', 0)) * (1+F('lines__tax')/100),
-            ), 0),
-        )
-        qs = qs.prefetch_related(
-            Prefetch('amends', queryset=Bill.objects.filter(is_open=False), to_attr='closed_amends')
-        )
-        return qs.defer('html')
     
     def change_view(self, request, object_id, **kwargs):
         # TODO raise404, here and everywhere

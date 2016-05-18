@@ -1,6 +1,7 @@
 import datetime
 from dateutil.relativedelta import relativedelta
 
+from django.core.urlresolvers import reverse
 from django.core.validators import ValidationError, RegexValidator
 from django.db import models
 from django.db.models import F, Sum
@@ -253,6 +254,9 @@ class Bill(models.Model):
         if payment:
             return now + payment.get_due_delta()
         return now + relativedelta(months=1)
+    
+    def get_absolute_url(self):
+        return reverse('admin:bills_bill_view', args=(self.pk,))
     
     def close(self, payment=False):
         if not self.is_open:

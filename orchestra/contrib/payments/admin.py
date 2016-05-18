@@ -109,7 +109,6 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     search_fields = ('bill__number', 'bill__account__username', 'id')
     actions = change_view_actions + (actions.report, list_accounts,)
     filter_by_account_fields = ('bill', 'source')
-    change_readonly_fields = ('amount', 'currency')
     readonly_fields = (
         'bill_link', 'display_state', 'process_link', 'account_link', 'source_link',
         'display_created_at', 'display_modified_at'
@@ -132,6 +131,11 @@ class TransactionAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
         if 'delete_selected' in actions:
             del actions['delete_selected']
         return actions
+    
+    def get_change_readonly_fields(self, request, obj):
+        if obj.state in (Transaction.WAITTING_PROCESSING, Transaction.WAITTING_EXECUTION):
+            return ()
+        return ('amount', 'currency')
     
     def get_change_view_actions(self, obj=None):
         actions = super(TransactionAdmin, self).get_change_view_actions()

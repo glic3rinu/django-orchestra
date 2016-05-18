@@ -27,7 +27,7 @@ class DetailListFilter(SimpleListFilter):
     parameter_name = 'detail'
     
     def lookups(self, request, model_admin):
-        ret = set()
+        ret = set([('empty', _("Empty"))])
         lookup_map = {}
         for apptype in AppType.get_plugins():
             for field, values in apptype.get_detail_lookups().items():
@@ -35,11 +35,13 @@ class DetailListFilter(SimpleListFilter):
                     lookup_map[value[0]] = field
                     ret.add(value)
         self.lookup_map = lookup_map
-        return sorted(list(ret))
+        return sorted(list(ret), key=lambda e: e[1])
     
     def queryset(self, request, queryset):
         value = self.value()
         if value:
+            if value == 'empty':
+                return queryset.filter(data={})
             try:
                 field = self.lookup_map[value]
             except KeyError:

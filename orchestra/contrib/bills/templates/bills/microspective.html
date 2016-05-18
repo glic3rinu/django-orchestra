@@ -140,6 +140,7 @@
         </div>
     </div>
     <div id="footer-column-2">
+        {% block payment %}
         <div id="payment">
             <span class="title">{% trans "PAYMENT" %}</span>
                 {% if payment.message %}
@@ -153,6 +154,8 @@
                     <strong>{{ seller_info.bank_account }}</strong>
                 {% endif %}
         </div>
+        {% endblock %}
+        {% block questions %}
         <div id="questions">
             <span class="title">{% trans "QUESTIONS" %}</span>
             {% blocktrans with type=bill.get_type_display.lower email=seller_info.email %}
@@ -161,6 +164,7 @@
             your message.
             {% endblocktrans %}
         </div>
+        {% endblock %}
     </div>
 </div>
 </div>

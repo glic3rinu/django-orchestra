@@ -430,7 +430,6 @@ mkhomedir_helper or create ssh homes with bash.rc and such
 # Automatically re-run backends until success? only timedout executions?
 # TODO save serialized versions ob backendoperation.instance in order to allow backend reexecution of deleted objects
 
-# upgrade to django 1.9 and make margins wider
 # lets encrypt: DNS vs HTTP challange
 # lets enctypt: autorenew
 
@@ -459,8 +458,7 @@ with open(file) as handler:
     os.unlink(file)
 
 
-# change filter By PHP version: by detail
-
 # Mark transaction process as executed should not override higher transaction states
+# Bill amend and related transaction, what to do? allow edit transaction ammount of amends when their are pending execution
 
-# mailbox.addresses get_Queryset SQL contact @ with mailboxes and forwards
+# DASHBOARD: Show owned tickets, scheduled actions, maintenance operations (diff domains)

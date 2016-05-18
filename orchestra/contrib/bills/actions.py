@@ -32,6 +32,7 @@ def view_bill(modeladmin, request, queryset):
     return HttpResponse(html)
 view_bill.tool_description = _("View")
 view_bill.url_name = 'view'
+view_bill.hidden = True
 
 
 @transaction.atomic

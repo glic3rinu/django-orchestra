@@ -140,20 +140,21 @@ class AmendedListFilter(SimpleListFilter):
     
     def lookups(self, request, model_admin):
         return (
-            ('1', _("Closed amends")),
-            ('-1', _("Open or closed amends")),
-            ('0', _("No closed amends")),
-            ('-0', _("No amends")),
+            ('1', _("Amended")),
+            ('2', _("Open amends")),
+            ('3', _("Closed amends")),
+            ('0', _("No amends")),
         )
     
     def queryset(self, request, queryset):
         if self.value() is None:
             return queryset
-        amended = queryset.filter(type__in=Bill.AMEND_MAP.values(), amend_of__isnull=False)
-        if not self.value().startswith('-'):
-            amended = amended.filter(is_open=False)
-        amended_ids = amended.distinct().values_list('amend_of_id', flat=True)
-        if self.value().endswith('1'):
-            return queryset.filter(id__in=amended_ids)
-        else:
-            return queryset.exclude(id__in=amended_ids)
+        amended = queryset.filter(amends__isnull=False)
+        if self.value() == '1':
+            return amended.distinct()
+        elif self.value() == '2':
+            return amended.filter(amends__is_open=True).distinct()
+        elif self.value() == '3':
+            return amended.filter(amends__is_open=False).distinct()
+        elif self.value() == '0':
+            return queryset.filter(amends__isnull=True).distinct()

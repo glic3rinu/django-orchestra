@@ -140,9 +140,9 @@ class AmendedListFilter(SimpleListFilter):
     
     def lookups(self, request, model_admin):
         return (
-            ('1', _("Amended")),
-            ('2', _("Open amends")),
             ('3', _("Closed amends")),
+            ('2', _("Open amends")),
+            ('1', _("Any amends")),
             ('0', _("No amends")),
         )
     

@@ -20,7 +20,7 @@ from orchestra.admin.utils import get_object_from_url, change_url
 
 from . import settings
 from .forms import SelectSourceForm
-from .helpers import validate_contact
+from .helpers import validate_contact, set_context_emails
 from .models import Bill, BillLine
 
 
@@ -117,7 +117,7 @@ def send_bills_action(modeladmin, request, queryset):
         num))
 
 
-@action_with_confirmation()
+@action_with_confirmation(extra_context=set_context_emails)
 def send_bills(modeladmin, request, queryset):
     return send_bills_action(modeladmin, request, queryset)
 send_bills.verbose_name = lambda bill: _("Resend" if getattr(bill, 'is_sent', False) else "Send")

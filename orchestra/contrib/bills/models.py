@@ -277,6 +277,9 @@ class Bill(models.Model):
         self.save()
         return transaction
     
+    def get_billing_contact_emails(self):
+        return self.account.get_contacts_emails(usages=(Contact.BILLING,))
+    
     def send(self):
         pdf = self.as_pdf()
         self.account.send_email(
@@ -286,7 +289,7 @@ class Bill(models.Model):
                 'settings': settings,
             },
             email_from=settings.BILLS_SELLER_EMAIL,
-            contacts=(Contact.BILLING,),
+            usages=(Contact.BILLING,),
             attachments=[
                 ('%s.pdf' % self.number, pdf, 'application/pdf')
             ]

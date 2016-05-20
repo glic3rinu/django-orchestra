@@ -104,18 +104,23 @@ class Account(auth.AbstractBaseUser):
             signals.post_save.send(sender=type(obj), instance=obj)
 #            OperationsMiddleware.collect(Operation.SAVE, instance=obj, update_fields=())
     
-    def send_email(self, template, context, email_from=None, contacts=[], attachments=[], html=None):
-        contacts = self.contacts.filter(email_usages=contacts)
-        email_to = contacts.values_list('email', flat=True)
+    def get_contacts_emails(self, usages=None):
+        contacts = self.contacts.all()
+        if usages is not None:
+            contactes = contacts.filter(email_usages=usages)
+        return contacts.values_list('email', flat=True)
+    
+    def send_email(self, template, context, email_from=None, usages=None, attachments=[], html=None):
+        contacts = self.contacts.filter(email_usages=usages)
+        email_to = self.get_contacts_emails(usages)
         extra_context = {
             'account': self,
             'email_from': email_from or djsettings.SERVER_EMAIL,
         }
         extra_context.update(context)
         with translation.override(self.language):
-            send_email_template(
-                template, extra_context, email_to, email_from=email_from, html=html,
-                attachments=attachments)
+            send_email_template(template, extra_context, email_to, email_from=email_from,
+                html=html, attachments=attachments)
     
     def get_full_name(self):
         return self.full_name or self.short_name or self.username

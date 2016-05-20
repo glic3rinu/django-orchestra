@@ -173,7 +173,7 @@ class AdminPasswordChangeForm(forms.Form):
         for ix, rel in enumerate(self.related):
             password = self.cleaned_data['%s_%s' % (field_name, ix)]
             if password:
-                if raw:
+                if self.raw:
                     rel.password = password
                 else:
                     set_password = getattr(rel, 'set_password')

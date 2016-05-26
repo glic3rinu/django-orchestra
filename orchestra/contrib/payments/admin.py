@@ -30,9 +30,10 @@ PROCESS_STATE_COLORS = {
 }
 
 
-class PaymentSourceAdmin(SelectPluginAdminMixin, AccountAdminMixin, admin.ModelAdmin):
+class PaymentSourceAdmin(SelectPluginAdminMixin, AccountAdminMixin, ExtendedModelAdmin):
     list_display = ('label', 'method', 'number', 'account_link', 'is_active')
     list_filter = ('method', 'is_active')
+    change_readonly_fields = ('method',)
     search_fields = ('account__username', 'account__full_name', 'data')
     plugin = PaymentMethod
     plugin_field = 'method'

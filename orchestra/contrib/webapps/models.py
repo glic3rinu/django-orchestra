@@ -70,12 +70,15 @@ class WebApp(models.Model):
     def get_directive(self):
         return self.type_instance.get_directive()
     
-    def get_path(self):
+    def get_base_path(self):
         context = {
             'home': self.get_user().get_home(),
             'app_name': self.name,
         }
-        path = settings.WEBAPPS_BASE_DIR % context
+        return settings.WEBAPPS_BASE_DIR % context
+    
+    def get_path(self):
+        path = self.get_base_path()
         public_root = self.options.filter(name='public-root').first()
         if public_root:
             path = os.path.join(path, public_root.value)

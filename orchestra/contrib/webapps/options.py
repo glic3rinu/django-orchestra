@@ -1,3 +1,4 @@
+import os
 import re
 from functools import lru_cache
 
@@ -58,7 +59,7 @@ class PHPAppOption(AppOption):
     abstract = True
     
     def validate(self):
-        super(PHPAppOption, self).validate()
+        super().validate()
         if self.deprecated:
             php_version = self.instance.webapp.type_instance.get_php_version_number()
             if php_version and self.deprecated and float(php_version) > self.deprecated:
@@ -73,6 +74,15 @@ class PublicRoot(AppOption):
     help_text = _("Document root relative to webapps/&lt;webapp&gt;/")
     regex = r'[^ ]+'
     group = AppOption.FILESYSTEM
+    
+    def validate(self):
+        super().validate()
+        base_path = self.instance.webapp.get_base_path()
+        path = os.path.join(base_path, self.instance.value)
+        if not os.path.abspath(path).startswith(base_path):
+            raise ValidationError(
+                _("Public root path '%s' outside of webapp base path '%s'") % (path, base_path)
+            )
 
 
 class Timeout(AppOption):

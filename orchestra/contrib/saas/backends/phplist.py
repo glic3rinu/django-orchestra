@@ -77,7 +77,7 @@ class PhpListSaaSController(ServiceController):
                                UPDATE phplist_user_user SET password="%(digest)s" where ID=1;' \\
                     %(db_name)s""") % context
             sys.stdout.write('cmd: %s\n' % cmd)
-            sshrun(server.get_address(), cmd)
+            sshrun(server.get_address(), cmd, persist=True)
     
     def save(self, saas):
         if hasattr(saas, 'password'):

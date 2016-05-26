@@ -285,7 +285,10 @@ class MailmanTraffic(ServiceMonitor):
                     try:
                         with open(postlog, 'r') as postlog:
                             for line in postlog.readlines():
-                                month, day, time, year, __, __, __, list_name, __, addr, size = line.split()[:11]
+                                line = line.split()
+                                if len(line) < 11:
+                                    continue
+                                month, day, time, year, __, __, __, list_name, __, addr, size = line[:11]
                                 try:
                                     list = lists[list_name]
                                 except KeyError:

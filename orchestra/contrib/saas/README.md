@@ -76,7 +76,9 @@ Notice that two optional forms can be provided `form` and `change_form`. When no
 ## Backend
 A backend class is required to interface with the web application and perform `save()` and `delete()` operations on it.
 
-The more reliable way of interfacing with the application is by means of a CLI (e.g. [Moodle](backends/moodle.py), but not all CMS come with this tool. The second preferable way is using some sort of API, possibly HTTP-based (e.g. [gitLab](backends/gitlab.py). This is less reliable because additional moving parts are used underneath the interface; a busy web server can timeout our requests. The least preferred way is interfacing with an HTTP-HTML interface designed for human consumption, really painful to implement but sometimes is the only way (e.g. [WordPress](backends/wordpressmu.py)).
+- The more reliable way of interfacing with the application is by means of a CLI (e.g. [Moodle](backends/moodle.py)), but not all CMS come with this tool.
+- The second preferable way is using some sort of API, possibly HTTP-based (e.g. [gitLab](backends/gitlab.py)). This is less reliable because additional moving parts are used underneath the interface; a busy web server can timeout our requests.
+- The least preferred way is interfacing with an HTTP-HTML interface designed for human consumption, really painful to implement but sometimes is the only way (e.g. [WordPress](backends/wordpressmu.py)).
 
 Some applications do not support multi-tenancy by default, but we can hack the configuration file of such apps and generate *table prefix* or *database name* based on some property of the URL. Example of this services are [moodle](backends/moodle.py) and [phplist](backends/phplist.py) respectively.
 

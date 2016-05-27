@@ -36,14 +36,14 @@ class WordPressChangeForm(WordPressForm):
         help_text=_("ID of this blog used by WordPress, the only attribute that doesn't change."))
 ```
 
-WordPressForm provides the email field, and WordPressChangeForm adds the `blog_id` on top of it. `blog_id` will be represented as a *readonly* field on the form, so no modification will be allowed.
+`WordPressForm` provides the email field, and `WordPressChangeForm` adds the `blog_id` on top of it. `blog_id` will be represented as a *readonly* field on the form (`widget=widgets.SpanWidget`), so no modification will be allowed.
 
 `SaaSPasswordForm` provides a password field for the common case when a password needs to be provided in order to create a new account. You can subclass `SaaSPasswordForm` or use it directly on the `Service.form` field.
 
 
 ### Serializer for extra data
 
-Additionally, we should provide a serializer in order to save the form extra pieces of information into the database (into field *data*).
+In case we need to save extra information of the service (email and blog_id in our current example) we should provide a serializer that will save this bits of information in JSON format inot the database data field.
 
 ```python
 class WordPressDataSerializer(serializers.Serializer):

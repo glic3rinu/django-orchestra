@@ -38,7 +38,7 @@ class WordPressChangeForm(WordPressForm):
 
 `WordPressForm` provides the email field, and `WordPressChangeForm` adds the `blog_id` on top of it. `blog_id` will be represented as a *readonly* field on the form (`widget=widgets.SpanWidget`), so no modification will be allowed.
 
-`SaaSPasswordForm` provides a password field for the common case when a password needs to be provided in order to create a new account. You can subclass `SaaSPasswordForm` or use it directly on the `Service.form` field.
+Additionally, `SaaSPasswordForm` provides a password field for the common case when a password needs to be provided in order to create a new account. You can subclass `SaaSPasswordForm` or use it directly on the `Service.form` field.
 
 
 ### Serializer for extra data

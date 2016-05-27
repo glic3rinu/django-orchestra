@@ -83,4 +83,6 @@ Some applications do not support multi-tenancy by default, but we can hack the c
 
 ## Settings
 
-Enabled services should be added into the `SAAS_ENABLED_SERVICES` settings tuple, providing its full module path, e.g. `'orchestra.contrib.saas.services.moodle.MoodleService'`. Parameters that should allow easy configuration on each deployment should be defined as settings. e.g. `SAAS_WORDPRESS_DOMAIN`. Take a look at the [`settings` module](settings.py).
+Enabled services should be added into the `SAAS_ENABLED_SERVICES` settings tuple, providing its full module path, e.g. `'orchestra.contrib.saas.services.moodle.MoodleService'`.
+
+Parameters that should allow easy configuration on each deployment should be defined as settings. e.g. `SAAS_WORDPRESS_DOMAIN`. Take a look at the [`settings` module](settings.py).

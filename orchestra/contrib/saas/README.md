@@ -23,7 +23,7 @@ class DrupalService(SoftwareService):
 Additional attributes can be used to further customize the service class to your needs.
 
 ### Custom forms
-If a service needs to keep track of additional information (other than a user/site name, is_active, custom_url, or database) an extra form and serializer should be provided. For example, WordPress requires to provide an *email address* for account creation, and the assigned *blog ID* is required for effectively identify the account for update and delete operations. In this case we provide two forms:
+If a service needs to keep track of additional information (other than a user/site name, is_active, custom_url, or database) an extra form and serializer should be provided. For example, WordPress requires to provide an *email address* for account creation, and the assigned *blog ID* is required for effectively identify the account for update and delete operations. In this case we provide two forms, one for account creation and another for change:
 
 ```python
 class WordPressForm(SaaSBaseForm):

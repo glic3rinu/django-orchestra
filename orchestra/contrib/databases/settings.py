@@ -22,3 +22,8 @@ DATABASES_DEFAULT_HOST = Setting('DATABASES_DEFAULT_HOST',
     'localhost',
     validators=[validate_hostname],
 )
+
+
+DATABASES_MYSQL_DB_DIR = Setting('DATABASES_MYSQL_DB_DIR',
+    '/var/lib/mysql',
+)

@@ -121,6 +121,10 @@ class MysqlDisk(ServiceMonitor):
     model = 'databases.Database'
     verbose_name = _("MySQL disk")
     delete_old_equal_values = True
+    doc_settings = (settings,
+        ('DATABASES_MYSQL_DB_DIR',)
+    )
+    mysql_db_dir = settings.DATABASES_MYSQL_DB_DIR
     
     def exceeded(self, db):
         if db.type != db.MYSQL:
@@ -141,11 +145,14 @@ class MysqlDisk(ServiceMonitor):
         )
         
     def prepare(self):
-        super(MysqlDisk, self).prepare()
+        super().prepare()
+        context = {
+            'mysql_db_dir': self.mysql_db_dir,
+        }
         self.append(textwrap.dedent("""\
-            function monitor () {
-                { du -bs "/var/lib/mysql/$1" || echo 0; } | awk {'print $1'}
-            }"""))
+            function monitor_mysql () {
+                { SIZE=$(du -bs "%(mysql_db_dir)s/$1") && echo $SIZE || echo 0; } | awk {'print $1'}
+            }""") % context)
         # Slower way
         #self.append(textwrap.dedent("""\
         #    function monitor () {
@@ -160,12 +167,13 @@ class MysqlDisk(ServiceMonitor):
         if db.type != db.MYSQL:
             return
         context = self.get_context(db)
-        self.append('echo %(db_id)s $(monitor "%(db_dirname)s")' % context)
+        self.append('echo %(db_id)s $(monitor_%(db_type)s "%(db_dirname)s")' % context)
     
     def get_context(self, db):
         context = {
             'db_name': db.name,
             'db_dirname': db.name.replace('-', '@003f'),
             'db_id': db.pk,
+            'db_type': db.type,
         }
         return replace(replace(context, "'", '"'), ';', '')

@@ -43,7 +43,7 @@ class WordPressChangeForm(WordPressForm):
 
 ### Serializer for extra data
 
-In case we need to save extra information of the service (email and blog_id in our current example) we should provide a serializer that will save this bits of information in JSON format inot the database data field.
+In case we need to save extra information of the service (email and blog_id in our current example) we should provide a serializer that serializes this bits of information into JSON format and can be saved into the database data field.
 
 ```python
 class WordPressDataSerializer(serializers.Serializer):

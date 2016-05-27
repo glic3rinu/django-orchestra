@@ -66,9 +66,11 @@ class WordPressService(SoftwareService):
     allow_custom_url = settings.SAAS_WORDPRESS_ALLOW_CUSTOM_URL
 ```
 
-Notice that two optional forms can be provided `form` and `change_form`. When non of them is provided, SaaS will provide a default one for you. When only `form` is provided, it will be used for both, *add view* and *change view*. If both are provided, `form` will be used for the *add view* and `change_form` for the change view. This last option allows us to display the `blog_id` back to the user, only when we have it (after creation).
+Notice that two optional forms can be provided `form` and `change_form`. When non of them is provided, SaaS will provide a default one for you. When only `form` is provided, it will be used for both, *add view* and *change view*. If both are provided, `form` will be used for the *add view* and `change_form` for the *change view*. This last option allows us to display the `blog_id` back to the user, only when we know its value (after creation).
 
-`change_readonly_fields` is a tuple with the name of the fields that can not be edited once the service has been created.
+`change_readonly_fields` is a tuple with the name of the fields that can **not** be edited once the service has been created.
+
+`allow_custom_url` is a boolean flag that defines whether this service is allowed to have custom URL's (URL of any form) or not. In case it does, additional steps are required for interfacing with `orchestra.contrib.websites`, such as having an enabled website directive (`WEBSITES_ENABLED_DIRECTIVES`) that knows where the SaaS webapp is running, such as `'orchestra.contrib.websites.directives.WordPressSaaS'`.
 
 
 ## Backend

@@ -1,7 +1,9 @@
+
+
 # SaaS - Software as a Service
 
 
-This app provides support for services that follow the SaaS model. Traditionaly known as multi-site or multi-tenant web applications where a single installation of a CMS provides accounts for multiple isolated tenants.
+This app provides support for services that follow the SaaS model. Traditionally known as multi-site or multi-tenant web applications where a single installation of a CMS provides accounts for multiple isolated tenants.
 
 
 ## Service declaration
@@ -21,7 +23,7 @@ class DrupalService(SoftwareService):
 Additional attributes can be used to further customize the service class to your needs.
 
 ### Custom forms
-If the service needs to keep track of additional information you should provide an extra form and serializer. For example, wordpress requires you to provide an *email_address* during account creation, and the assigned blog ID is required for effectively update account state or delete it. In this case we provide two forms:
+If the service needs to keep track of additional information you should provide an extra form and serializer. For example, WordPress requires you to provide an *email_address* for account creation, and the assigned blog ID is required for effectively update account state or delete it. In this case we provide two forms:
 
 ```python
 class WordPressForm(SaaSBaseForm):
@@ -36,9 +38,12 @@ class WordPressChangeForm(WordPressForm):
 
 WordPressForm provides the email field, and WordPressChangeForm adds the `blog_id` on top of it. `blog_id` will be represented as a *readonly* field on the form, so no modification will be allowed.
 
+`SaaSPasswordForm` provides a password field for the common case when a password needs to be provided in order to create a new account. You can subclass `SaaSPasswordForm` or use it directly on the `Service.form` field.
+
+
 ### Serializer for extra data
 
-Additionally, we should provide a serializer in order to save the form extra pices of information into the database (into field *data*).
+Additionally, we should provide a serializer in order to save the form extra pieces of information into the database (into field *data*).
 
 ```python
 class WordPressDataSerializer(serializers.Serializer):
@@ -61,15 +66,15 @@ class WordPressService(SoftwareService):
     allow_custom_url = settings.SAAS_WORDPRESS_ALLOW_CUSTOM_URL
 ```
 
-Notice that two optional forms can be provices `form` and `change_form`. When non of them is provided, SaaS will provide a default one for you. When only `form` is provided, it will be used for both, *add view* and *change view*. If both are provided, `form` will be used for the *add view* and `change_form` for the change view. This last option allows us to display the `blog_id` back to the user, only when we have it (after creation).
+Notice that two optional forms can be provided `form` and `change_form`. When non of them is provided, SaaS will provide a default one for you. When only `form` is provided, it will be used for both, *add view* and *change view*. If both are provided, `form` will be used for the *add view* and `change_form` for the change view. This last option allows us to display the `blog_id` back to the user, only when we have it (after creation).
 
-`change_readonly_fields` is a tuple with the name of the fields that can not be edditied once the service has been created.
+`change_readonly_fields` is a tuple with the name of the fields that can not be edited once the service has been created.
 
 
 ## Backend
 
 
-A backend class is required to interface with the web application and perform `save()` and `delete()` operations on it. The more reliable way of interfacing with the application is by means of a CLI (e.g. [Moodle](backends/moodle.py), but not all CMS come with this tool. The second preferable way is using some sort of API, possibly HTTP-based (e.g. [gitLab](backends/gitlab.py). This is less realiable because additional moving parts are used underneeth the interface; a busy web server can timeout our requests. The least prefered way is interfacing with an HTTP-HTML interface designed for human consumption, really paintful to implement but sometimes is the only way (e.g. [WordPress](backends/wordpressmu.py)).
+A backend class is required to interface with the web application and perform `save()` and `delete()` operations on it. The more reliable way of interfacing with the application is by means of a CLI (e.g. [Moodle](backends/moodle.py), but not all CMS come with this tool. The second preferable way is using some sort of API, possibly HTTP-based (e.g. [gitLab](backends/gitlab.py). This is less reliable because additional moving parts are used underneath the interface; a busy web server can timeout our requests. The least preferred way is interfacing with an HTTP-HTML interface designed for human consumption, really painful to implement but sometimes is the only way (e.g. [WordPress](backends/wordpressmu.py)).
 
 Some applications do not support multi-tenancy by default, but we can hack the configuration file of such apps and generate *table prefix* or *database name* based on some property of the URL. Example of this services are [moodle](backends/moodle.py) and [phplist](backends/phplist.py) respectively.
 

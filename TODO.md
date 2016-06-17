@@ -462,3 +462,5 @@ with open(file) as handler:
 # Bill amend and related transaction, what to do? allow edit transaction ammount of amends when their are pending execution
 
 # DASHBOARD: Show owned tickets, scheduled actions, maintenance operations (diff domains)
+
+# Add confirmation step on transaction actions like process transaction

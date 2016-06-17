@@ -26,11 +26,11 @@ from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForm
 
 PAYMENT_STATE_COLORS = {
     Bill.OPEN: 'grey',
-    Bill.CREATED: 'darkorange',
+    Bill.CREATED: 'magenta',
     Bill.PROCESSED: 'darkorange',
     Bill.AMENDED: 'blue',
     Bill.PAID: 'green',
-    Bill.EXECUTED: 'darkorange',
+    Bill.EXECUTED: 'olive',
     Bill.BAD_DEBT: 'red',
     Bill.INCOMPLETE: 'red',
 }
@@ -318,7 +318,7 @@ class BillAdmin(BillAdminMixin, ExtendedModelAdmin):
     )
     list_filter = (
         BillTypeListFilter, 'is_open', 'is_sent', TotalListFilter, PaymentStateListFilter,
-        AmendedListFilter
+        AmendedListFilter, 'account__is_active',
     )
     add_fields = ('account', 'type', 'amend_of', 'is_open', 'due_on', 'comments')
     change_list_template = 'admin/bills/bill/change_list.html'

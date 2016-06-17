@@ -52,7 +52,7 @@ class MailmanVirtualDomainController(ServiceController):
     
     def delete(self, mail_list):
         context = self.get_context(mail_list)
-        self.include_virtual_alias_domain(context)
+        self.exclude_virtual_alias_domain(context)
     
     def commit(self):
         context = self.get_context_files()

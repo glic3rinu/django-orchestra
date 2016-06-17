@@ -70,7 +70,7 @@ class MoodleController(WebAppServiceMixin, ServiceController):
             # Run install moodle cli command on the background, because it takes so long...
             stdout=$(mktemp)
             stderr=$(mktemp)
-            nohup su %(user)s --shell /bin/bash << 'EOF' > $stdout 2> $stderr &
+            nohup su - %(user)s --shell /bin/bash << 'EOF' > $stdout 2> $stderr &
                 php %(app_path)s/admin/cli/install_database.php \\
                     --fullname="%(site_name)s" \\
                     --shortname="%(site_name)s" \\

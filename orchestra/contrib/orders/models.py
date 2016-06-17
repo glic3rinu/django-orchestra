@@ -285,7 +285,7 @@ class MetricStorageQuerySet(models.QuerySet):
                 last.save()
             else:
                 error = decimal.Decimal(str(settings.ORDERS_METRIC_ERROR))
-                if value > last.value+error or value < last.value-error:
+                if (value > last.value+error or value < last.value-error) or (value == 0 and last.value > 0):
                     self.create(order=order, value=value, updated_on=now)
                 else:
                     last.updated_on = now

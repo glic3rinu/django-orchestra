@@ -77,12 +77,12 @@ class Bind9MasterDomainController(ServiceController):
         )
         if 'zone_path' in context:
             context['zone_subdomains_path'] = re.sub(r'^(.*/)', r'\1*.', context['zone_path'])
-            self.append('rm -f %(zone_subdomains_path)s' % context)
+            self.append('rm -f -- %(zone_subdomains_path)s' % context)
     
     def delete(self, domain):
         context = self.get_context(domain)
         self.append('# Delete zone file for %(name)s' % context)
-        self.append('rm -f %(zone_path)s;' % context)
+        self.append('rm -f -- %(zone_path)s;' % context)
         self.delete_conf(context)
     
     def delete_conf(self, context):

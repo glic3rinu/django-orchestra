@@ -24,7 +24,7 @@ class SieveFilteringMixin:
             context['box'] = box
             self.append(textwrap.dedent("""
                 # Create %(box)s mailbox
-                su %(user)s --shell /bin/bash << 'EOF'
+                su - %(user)s --shell /bin/bash << 'EOF'
                     mkdir -p "%(maildir)s/.%(box)s"
                 EOF
                 if ! grep '%(box)s' %(maildir)s/subscriptions > /dev/null; then
@@ -39,7 +39,7 @@ class SieveFilteringMixin:
             context['filtering'] = ('# %(banner)s\n' + content) % context
             self.append(textwrap.dedent("""\
                 # Create and compile orchestra sieve filtering
-                su %(user)s --shell /bin/bash << 'EOF'
+                su - %(user)s --shell /bin/bash << 'EOF'
                     mkdir -p $(dirname "%(filtering_path)s")
                     cat << '    EOF' > %(filtering_path)s
                 %(filtering)s
@@ -97,7 +97,7 @@ class UNIXUserMaildirController(SieveFilteringMixin, ServiceController):
         #unit_to_bytes(mailbox.resources.disk.unit)
         self.append(textwrap.dedent("""
             # Set Maildir quota for %(user)s
-            su %(user)s --shell /bin/bash << 'EOF'
+            su - %(user)s --shell /bin/bash << 'EOF'
                 mkdir -p %(maildir)s
             EOF
             if [ ! -f %(maildir)s/maildirsize ]; then
@@ -121,7 +121,7 @@ class UNIXUserMaildirController(SieveFilteringMixin, ServiceController):
                 """) % context
             )
         else:
-            self.append("rm -fr %(base_home)s" % context)
+            self.append("rm -fr -- %(base_home)s" % context)
         self.append(textwrap.dedent("""
             nohup bash -c '{ sleep 2 && killall -u %(user)s -s KILL; }' &> /dev/null &
             killall -u %(user)s || true
@@ -195,7 +195,7 @@ class UNIXUserMaildirController(SieveFilteringMixin, ServiceController):
 #        if context['deleted_home']:
 #            self.append("mv %(home)s %(deleted_home)s || exit_code=$?" % context)
 #        else:
-#            self.append("rm -fr %(home)s" % context)
+#            self.append("rm -fr -- %(home)s" % context)
 #    
 #    def get_extra_fields(self, mailbox, context):
 #        context['quota'] = self.get_quota(mailbox)

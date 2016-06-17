@@ -85,7 +85,7 @@ def create_link(modeladmin, request, queryset):
             messages.error(request, "Users from the same account should be selected.")
             return
     user = queryset[0]
-    form = LinkForm(user)
+    form = LinkForm(user, queryset=queryset)
     action_value = 'create_link'
     if request.POST.get('post') == 'generic_confirmation':
         form = LinkForm(user, request.POST, queryset=queryset)

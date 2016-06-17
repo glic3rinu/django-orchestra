@@ -26,6 +26,8 @@ ORDERS_EXCLUDED_APPS = Setting('ORDERS_EXCLUDED_APPS',
         'orchestration',
         'bills',
         'services',
+        'mailer',
+        'issues',
     ),
     help_text="Prevent inspecting these apps for service accounting."
 )

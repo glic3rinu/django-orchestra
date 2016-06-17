@@ -27,7 +27,7 @@ class LetsEncryptController(ServiceController):
         self.append("    --webroot-path %(webroot)s \\" % context)
         self.append("        --email %(email)s \\" % context)
         self.append("        -d %(domains)s \\" % context)
-        self.cleanup.append("rm -rf %(webroot)s/.well-known" % context)
+        self.cleanup.append("rm -rf -- %(webroot)s/.well-known" % context)
     
     def commit(self):
         self.append("    || exit_code=$?")
@@ -49,6 +49,6 @@ class LetsEncryptController(ServiceController):
         return {
             'letsencrypt_auto': settings.LETSENCRYPT_AUTO_PATH,
             'webroot': content.webapp.get_path(),
-            'email': website.account.email,
+            'email': settings.LETSENCRYPT_EMAIL or website.account.email,
             'domains': ' \\\n        -d '.join(website.encrypt_domains),
         }

@@ -97,7 +97,7 @@ class OperationsMiddleware(object):
     
     def process_response(self, request, response):
         """ Processes pending backend operations """
-        if not isinstance(response, HttpResponseServerError):
+        if response.status_code != 500:
             operations = self.get_pending_operations()
             if operations:
                 try:

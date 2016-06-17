@@ -96,8 +96,7 @@ class LinkForm(forms.Form):
         widget=forms.TextInput(attrs={'size':'70'}),
         help_text=_("Relative path to chosen directory."))
     link_name = forms.CharField(label=_("Link name"), required=False, initial='',
-        widget=forms.TextInput(attrs={'size':'70'}),
-        help_text=_("If left blank or relative path: link will be created in each user home."))
+        widget=forms.TextInput(attrs={'size':'70'}))
     
     def __init__(self, *args, **kwargs):
         self.instance = args[0]
@@ -110,6 +109,12 @@ class LinkForm(forms.Form):
         self.fields['base_home'].choices = (
             (user.get_base_home(), user.get_base_home()) for user in related_users
         )
+        if len(self.queryset) == 1:
+            user = self.instance
+            help_text = _("If left blank or relative path: the link will be created in %s home.") % user
+        else:
+            help_text = _("If left blank or relative path: the link will be created in each user home.")
+        self.fields['link_name'].help_text = help_text
     
     def clean_home_extension(self):
         home_extension = self.cleaned_data['home_extension']

@@ -45,9 +45,9 @@ def keep_log(execute, log, operations):
             if not log.is_success:
                 send_report(execute, args, log)
             stdout = log.stdout.strip()
-            stdout and logger.debug('STDOUT %s', stdout)
+            stdout and logger.debug('STDOUT %s', stdout.encode('ascii', errors='replace').decode())
             stderr = log.stderr.strip()
-            stderr and logger.debug('STDERR %s', stderr)
+            stderr and logger.debug('STDERR %s', stderr.encode('ascii', errors='replace').decode())
     return wrapper
 
 
@@ -197,6 +197,7 @@ def collect(instance, action, **kwargs):
             # Only schedule operations if the router has execution routes
             routes = router.objects.get_for_operation(operation, cache=route_cache)
             if routes:
+                logger.debug("Operation %s collected for execution" % operation)
                 operation.routes = routes
                 if iaction != Operation.DELETE:
                     # usually we expect to be using last object state,

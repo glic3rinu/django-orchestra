@@ -88,7 +88,7 @@ class PhpListSaaSController(ServiceController):
             self.append(textwrap.dedent("""\
                 # Configuring phpList crontabs
                 if ! crontab -u %(user)s -l | grep 'phpList:"%(site_name)s"' > /dev/null; then
-                cat << EOF | su %(user)s --shell /bin/bash -c 'crontab'
+                cat << EOF | su - %(user)s --shell /bin/bash -c 'crontab'
                 $(crontab -u %(user)s -l)
                 
                 # %(banner)s - phpList:"%(site_name)s"
@@ -105,7 +105,7 @@ class PhpListSaaSController(ServiceController):
             self.append(textwrap.dedent("""\
                 crontab -u %(user)s -l \\
                     | grep -v 'phpList:"%(site_name)s"\\|%(crontab_regex)s' \\
-                    | su %(user)s --shell /bin/bash -c 'crontab'
+                    | su - %(user)s --shell /bin/bash -c 'crontab'
                 """) % context
             )
     

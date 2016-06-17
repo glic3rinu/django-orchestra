@@ -88,7 +88,7 @@ class MoodleMuController(ServiceController):
             self.append(textwrap.dedent("""\
                 # Configuring Moodle crontabs
                 if ! crontab -u %(user)s -l | grep 'Moodle:"%(site_name)s"' > /dev/null; then
-                cat << EOF | su %(user)s --shell /bin/bash -c 'crontab'
+                cat << EOF | su - %(user)s --shell /bin/bash -c 'crontab'
                 $(crontab -u %(user)s -l)
                 
                 # %(banner)s - Moodle:"%(site_name)s"
@@ -139,7 +139,7 @@ class MoodleMuController(ServiceController):
             self.append(textwrap.dedent("""\
                 crontab -u %(user)s -l \\
                     | grep -v 'Moodle:"%(site_name)s"\\|%(crontab_regex)s' \\
-                    | su %(user)s --shell /bin/bash -c 'crontab'
+                    | su - %(user)s --shell /bin/bash -c 'crontab'
                 """) % context
             )
         self.delete_site_map(context)

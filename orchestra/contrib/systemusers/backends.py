@@ -115,7 +115,7 @@ class UNIXUserController(ServiceController):
                 """) % context
             )
         else:
-            self.append("rm -fr '%(base_home)s'" % context)
+            self.append("rm -fr -- '%(base_home)s'" % context)
     
     def grant_permissions(self, user, context):
         context['perms'] = user.set_perm_perms
@@ -206,7 +206,7 @@ class UNIXUserController(ServiceController):
         })
         self.append(textwrap.dedent("""\
             # Create link
-            su %(user)s --shell /bin/bash << 'EOF' || exit_code=1
+            su - %(user)s --shell /bin/bash << 'EOF' || exit_code=1
                 if [[ ! -e '%(link_name)s' ]]; then
                     ln -s '%(link_target)s' '%(link_name)s'
                 else

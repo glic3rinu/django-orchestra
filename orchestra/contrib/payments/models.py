@@ -199,8 +199,8 @@ class TransactionProcess(models.Model):
     
     def abort(self):
         self.state = self.ABORTED
-        for transaction in self.transaction.all():
-            transaction.mark_as_aborted()
+        for transaction in self.transactions.all():
+            transaction.mark_as_rejected()
         self.save(update_fields=('state', 'updated_at'))
     
     def commit(self):

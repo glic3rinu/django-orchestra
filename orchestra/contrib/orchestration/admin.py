@@ -8,7 +8,7 @@ from orchestra.admin.utils import admin_link, admin_date, admin_colored, display
 from orchestra.plugins.admin import display_plugin_field
 
 from . import settings, helpers
-from .actions import retry_backend
+from .actions import retry_backend, orchestrate
 from .backends import ServiceBackend
 from .forms import RouteForm
 from .models import Server, Route, BackendLog, BackendOperation
@@ -39,6 +39,7 @@ class RouteAdmin(ExtendedModelAdmin):
     ordering = ('backend',)
     add_fields = ('backend', 'host', 'match', 'async', 'is_active')
     change_form = RouteForm
+    actions = (orchestrate,)
     
     BACKEND_HELP_TEXT = helpers.get_backends_help_text(ServiceBackend.get_backends())
     DEFAULT_MATCH = {
@@ -173,6 +174,7 @@ class BackendLogAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
 class ServerAdmin(admin.ModelAdmin):
     list_display = ('name', 'address', 'os', 'display_ping', 'display_uptime')
     list_filter = ('os',)
+    actions = (orchestrate,)
     
     def display_ping(self, instance):
         return self._remote_state[instance.pk][0]

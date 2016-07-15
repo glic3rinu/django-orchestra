@@ -29,7 +29,9 @@
   <div>
     <div style="margin:20px;">
     <p>{{ content_message | safe }}</p>
-    <ul>{{ display_objects | unordered_list }}</ul>
+    {% block display_objects %}
+        <ul>{{ display_objects | unordered_list }}</ul>
+    {% endblock %}
     <form action="" method="post">{% csrf_token %}
     {% block form %}
     {% if form %}

@@ -11,7 +11,7 @@ from django.template.defaultfilters import date
 from django.utils.safestring import mark_safe
 
 from orchestra import get_version
-from orchestra.admin.utils import change_url
+from orchestra.admin.utils import change_url, admin_link as utils_admin_link
 from orchestra.utils.apps import isinstalled
 
 

@@ -1,11 +1,11 @@
 import time
 from django.core.management.base import BaseCommand, CommandError
-from django.apps import apps
+from django.db.models import Q
 
 from orchestra.contrib.orchestration import manager, Operation
 from orchestra.contrib.orchestration.models import Server
 from orchestra.contrib.orchestration.backends import ServiceBackend
-from orchestra.utils.python import import_class, OrderedSet, AttrDict
+from orchestra.utils.python import OrderedSet
 from orchestra.utils.sys import confirm
 
 
@@ -13,22 +13,80 @@ class Command(BaseCommand):
     help = 'Runs orchestration backends.'
     
     def add_arguments(self, parser):
-        parser.add_argument('model',
+        parser.add_argument('model', nargs='?',
             help='Label of a model to execute the orchestration.')
         parser.add_argument('query', nargs='*',
             help='Query arguments for filter().')
         parser.add_argument('--noinput', action='store_false', dest='interactive', default=True,
             help='Tells Django to NOT prompt the user for input of any kind.')
-        parser.add_argument('--action', action='store', dest='action',
+        parser.add_argument('-a', '--action', action='store', dest='action',
             default='save', help='Executes action. Defaults to "save".')
-        parser.add_argument('--servers', action='store', dest='servers',
+        parser.add_argument('-s', '--servers', action='store', dest='servers',
             default='', help='Overrides route server resolution with the provided server.')
-        parser.add_argument('--backends', action='store', dest='backends',
+        parser.add_argument('-b', '--backends', action='store', dest='backends',
             default='', help='Overrides backend.')
-        parser.add_argument('--listbackends', action='store_true', dest='list_backends', default=False,
+        parser.add_argument('-l', '--listbackends', action='store_true', dest='list_backends', default=False,
             help='List available baclends.')
         parser.add_argument('--dry-run', action='store_true', dest='dry', default=False,
             help='Only prints scrtipt.')
+    
+    
+    def collect_operations(self, **options):
+        model = options.get('model')
+        backends = options.get('backends') or set()
+        if backends:
+            backends = set(backends.split(','))
+        servers = options.get('servers') or set()
+        if servers:
+            servers = set([Server.objects.get(Q(address=server)|Q(name=server)) for server in servers.split(',')])
+        action = options.get('action')
+        if not model:
+            models = set()
+            if servers:
+                for server in servers:
+                    if backends:
+                        routes = server.routes.filter(backend__in=backends)
+                    else:
+                        routes = server.routes.all()
+            elif backends:
+                routes = Route.objects.filter(backend__in=backends)
+            else:
+                raise CommandError("Model or --servers or --backends?")
+            for route in routes.filter(is_active=True):
+                model = route.backend_class.model_class()
+                models.add(model)
+            querysets = [model.objects.order_by('id') for model in models]
+        else:
+            kwargs = {}
+            for comp in options.get('query', []):
+                comps = iter(comp.split('='))
+                for arg in comps:
+                    kwargs[arg] = next(comps).strip().rstrip(',')
+            model = apps.get_model(*model.split('.'))
+            queryset = model.objects.filter(**kwargs).order_by('id')
+            querysets = [queryset]
+        
+        operations = OrderedSet()
+        route_cache = {}
+        for queryset in querysets:
+            for instance in queryset:
+                manager.collect(instance, action, operations=operations, route_cache=route_cache)
+        if backends:
+            result = []
+            for operation in operations:
+                if operation.backend in backends:
+                    result.append(operation)
+            operations = result
+        if servers:
+            routes = []
+            result = []
+            for operation in operations:
+                routes = [route for route in operation.routes if route.host in servers]
+                operation.routes = routes
+                if routes:
+                    result.append(operation)
+            operations = result
+        return operations
     
     def handle(self, *args, **options):
         list_backends = options.get('list_backends')
@@ -36,47 +94,9 @@ class Command(BaseCommand):
             for backend in ServiceBackend.get_backends():
                 self.stdout.write(str(backend).split("'")[1])
             return
-        model = apps.get_model(*options['model'].split('.'))
-        action = options.get('action')
         interactive = options.get('interactive')
-        servers = options.get('servers')
-        backends = options.get('backends')
-        if (servers and not backends) or (not servers and backends):
-            raise CommandError("--backends and --servers go in tandem.")
         dry = options.get('dry')
-        kwargs = {}
-        for comp in options.get('query', []):
-            comps = iter(comp.split('='))
-            for arg in comps:
-                kwargs[arg] = next(comps).strip().rstrip(',')
-        operations = OrderedSet()
-        route_cache = {}
-        queryset = model.objects.filter(**kwargs).order_by('id')
-        if servers:
-            servers = servers.split(',')
-            backends = backends.split(',')
-            routes = []
-            # Get and create missing Servers
-            for server in servers:
-                try:
-                    server = Server.objects.get(address=server)
-                except Server.DoesNotExist:
-                    server = Server(name=server, address=server)
-                    server.full_clean()
-                    server.save()
-                routes.append(AttrDict(
-                    host=server,
-                    async=False,
-                    action_is_async=lambda self: False,
-                ))
-            # Generate operations for the given backend
-            for instance in queryset:
-                for backend in backends:
-                    backend = import_class(backend)
-                    operations.add(Operation(backend, instance, action, routes=routes))
-        else:
-            for instance in queryset:
-                manager.collect(instance, action, operations=operations, route_cache=route_cache)
+        operations = self.collect_operations(**options)
         scripts, serialize = manager.generate(operations)
         servers = set()
         # Print scripts

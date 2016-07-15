@@ -1,0 +1,17 @@
+{% extends "admin/orchestra/generic_confirmation.html" %}
+{% load utils %}
+
+{% block display_objects %}
+    <ul>
+    {% for backend, operations in display_objects.items %}
+        <li>{{ backend }}
+        <ul>
+            {% for operation in operations %}
+              <li><a href="{{ operation.instance|admin_url }}">{{ operation.instance }}</a>:
+            into {% for route in operation.routes %}<a href="{{ route.host|admin_url }}">{{ route.host }}</a>{% if not forloop.last %},{% endif %} {% endfor %}</li>
+            {% endfor %}
+        </ul>
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

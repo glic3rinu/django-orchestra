@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.contrib import messages
 from django.contrib.admin import helpers
 from django.shortcuts import render
@@ -6,9 +8,10 @@ from django.utils.translation import ungettext, ugettext_lazy as _
 
 from orchestra.admin.utils import get_object_from_url, change_url
 from orchestra.contrib.orchestration.helpers import message_user
+from orchestra.utils.python import OrderedSet
 
-from . import Operation
-from .models import BackendOperation
+from . import manager, Operation
+from .models import BackendOperation, Route, Server
 
 
 def retry_backend(modeladmin, request, queryset):
@@ -26,7 +29,6 @@ def retry_backend(modeladmin, request, queryset):
         else:
             logs = Operation.execute(operations)
             message_user(request, logs)
-        Operation.execute(operations)
         return
     opts = modeladmin.model._meta
     display_objects = []
@@ -61,3 +63,66 @@ def retry_backend(modeladmin, request, queryset):
     return render(request, 'admin/orchestration/backends/retry.html', context)
 retry_backend.short_description = _("Retry")
 retry_backend.url_name = 'retry'
+
+
+def orchestrate(modeladmin, request, queryset):
+    operations = set()
+    action = Operation.SAVE
+    operations = OrderedSet()
+    if queryset.model is Route:
+        for route in queryset:
+            routes = [route]
+            backend = route.backend_class
+            if action not in backend.actions:
+                continue
+            for instance in backend.model_class().objects.all():
+                if route.matches(instance):
+                    operations.add(Operation(backend, instance, action, routes=routes))
+    elif queryset.model is Server:
+        models = set()
+        for server in queryset:
+            routes = server.routes.all()
+            for route in routes.filter(is_active=True):
+                model = route.backend_class.model_class()
+                models.add(model)
+        querysets = [model.objects.order_by('id') for model in models]
+        
+        route_cache = {}
+        for model in models:
+            for instance in model.objects.all():
+                manager.collect(instance, action, operations=operations, route_cache=route_cache)
+            routes = []
+        result = []
+        for operation in operations:
+            routes = [route for route in operation.routes if route.host in queryset]
+            operation.routes = routes
+            if routes:
+                result.append(operation)
+        operations = result
+    if not operations:
+        messages.warning(request, _("No operations."))
+    
+    if request.POST.get('post') == 'generic_confirmation':
+        logs = Operation.execute(operations)
+        message_user(request, logs)
+        return
+    
+    opts = modeladmin.model._meta
+    display_objects = {}
+    for operation in operations:
+        try:
+            display_objects[operation.backend].append(operation)
+        except KeyError:
+            display_objects[operation.backend] = [operation]
+    context = {
+        'title': _("Are you sure to execute the following operations?"),
+        'action_name': _('Orchestrate'),
+        'action_value': 'orchestrate',
+        'display_objects': display_objects,
+        'queryset': queryset,
+        'opts': opts,
+        'app_label': opts.app_label,
+        'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+        'obj': get_object_from_url(modeladmin, request),
+    }
+    return render(request, 'admin/orchestration/orchestrate.html', context)

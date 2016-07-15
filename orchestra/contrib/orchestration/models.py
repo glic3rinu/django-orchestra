@@ -199,7 +199,7 @@ class Route(models.Model):
     """
     backend = models.CharField(_("backend"), max_length=256,
         choices=ServiceBackend.get_choices())
-    host = models.ForeignKey(Server, verbose_name=_("host"))
+    host = models.ForeignKey(Server, verbose_name=_("host"), related_name='routes')
     match = models.CharField(_("match"), max_length=256, blank=True, default='True',
         help_text=_("Python expression used for selecting the targe host, "
                     "<em>instance</em> referes to the current object."))

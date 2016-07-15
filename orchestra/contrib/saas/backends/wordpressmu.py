@@ -87,7 +87,10 @@ class WordpressMuController(ServiceController):
             content = session.get(url, verify=self.VERIFY).content.decode('utf8')
             
             wpnonce = re.compile('name="_wpnonce_add-blog"\s+value="([^"]*)"')
-            wpnonce = wpnonce.search(content).groups()[0]
+            try:
+                wpnonce = wpnonce.search(content).groups()[0]
+            except AttributeError:
+                raise RuntimeError("wpnonce not foud in %s" % content)
             
             url += '?action=add-site'
             data = {

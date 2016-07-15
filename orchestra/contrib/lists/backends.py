@@ -272,7 +272,7 @@ class MailmanTraffic(ServiceMonitor):
                 'Nov': '11',
                 'Dec': '12',
             }}
-            mailman_addr = re.compile(r'.*-(admin|bounces|confirm|join|leave|owner|request|subscribe|unsubscribe)@.*')
+            mailman_addr = re.compile(r'.*-(admin|bounces|confirm|join|leave|owner|request|subscribe|unsubscribe)@.*|mailman@.*')
             
             def prepare(object_id, list_name, ini_date):
                 global lists
@@ -315,6 +315,7 @@ class MailmanTraffic(ServiceMonitor):
                         ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                         subscribers = ps.communicate()[0].strip()
                         size *= int(subscribers)
+                        sys.stderr.write("%s %s*%s traffic*subscribers\\n" % (object_id, size, subscribers))
                     print object_id, size
             """).format(**context)
         )

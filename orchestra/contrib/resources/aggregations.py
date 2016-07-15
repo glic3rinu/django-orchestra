@@ -45,17 +45,19 @@ class Last(Aggregation):
     
     def aggregate_history(self, dataset):
         prev_object_id = None
+        prev_object_repr = None
         for mdata in dataset.order_by('object_id', 'created_at'):
             object_id = mdata.object_id
             if object_id != prev_object_id:
                 if prev_object_id is not None:
-                    yield (mdata.content_object_repr, datas)
+                    yield (prev_object_repr, datas)
                 datas = [mdata]
             else:
                 datas.append(mdata)
             prev_object_id = object_id
+            prev_object_repr = mdata.content_object_repr
         if prev_object_id is not None:
-            yield (mdata.content_object_repr, datas)
+            yield (prev_object_repr, datas)
 
 
 class MonthlySum(Last):
@@ -98,7 +100,7 @@ class MonthlySum(Last):
                 current += mdata.value
             if object_id != prev_object_id:
                 if prev_object_id is not None:
-                    yield(prev.content_object_repr, datas)
+                    yield (prev.content_object_repr, datas)
                     datas = []
             prev = mdata
             prev.ymonth = ymonth

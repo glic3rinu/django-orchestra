@@ -135,7 +135,7 @@ class BackendLogAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         'display_created', 'execution_time',
     )
     list_display_links = ('id', 'backend')
-    list_filter = ('state', 'server', 'backend')
+    list_filter = ('state', 'server', 'backend', 'operations__action')
     search_fields = ('script',)
     date_hierarchy = 'created_at'
     inlines = (BackendOperationInline,)

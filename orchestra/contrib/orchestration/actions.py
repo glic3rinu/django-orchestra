@@ -29,6 +29,8 @@ def retry_backend(modeladmin, request, queryset):
         else:
             logs = Operation.execute(operations)
             message_user(request, logs)
+        for backendlog in queryset:
+            modeladmin.log_change(request, backendlog, 'Retried')
         return
     opts = modeladmin.model._meta
     display_objects = []
@@ -100,11 +102,14 @@ def orchestrate(modeladmin, request, queryset):
                 result.append(operation)
         operations = result
     if not operations:
-        messages.warning(request, _("No operations."))
+        messages.warning(request, _("No related operations."))
+        return
     
     if request.POST.get('post') == 'generic_confirmation':
         logs = Operation.execute(operations)
         message_user(request, logs)
+        for obj in queryset:
+            modeladmin.log_change(request, obj, 'Orchestrated')
         return
     
     opts = modeladmin.model._meta
@@ -126,3 +131,4 @@ def orchestrate(modeladmin, request, queryset):
         'obj': get_object_from_url(modeladmin, request),
     }
     return render(request, 'admin/orchestration/orchestrate.html', context)
+orchestrate.help_text = _("Execute all related operations on the server(s)")

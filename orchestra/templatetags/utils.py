@@ -97,6 +97,15 @@ def admin_url(obj):
 
 
 @register.filter
+def admin_link(obj):
+    try:
+        url = change_url(obj)
+    except NoReverseMatch:
+        return str(obj)
+    return mark_safe('<a href="%s">%s</a>' % (url, obj))
+
+
+@register.filter
 def isactive(obj):
     return getattr(obj, 'is_active', True)
 

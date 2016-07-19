@@ -40,6 +40,7 @@ class RouteAdmin(ExtendedModelAdmin):
     add_fields = ('backend', 'host', 'match', 'async', 'is_active')
     change_form = RouteForm
     actions = (orchestrate,)
+    change_view_actions = actions
     
     BACKEND_HELP_TEXT = helpers.get_backends_help_text(ServiceBackend.get_backends())
     DEFAULT_MATCH = {
@@ -171,10 +172,11 @@ class BackendLogAdmin(ChangeViewActionsMixin, admin.ModelAdmin):
         return False
 
 
-class ServerAdmin(admin.ModelAdmin):
+class ServerAdmin(ExtendedModelAdmin):
     list_display = ('name', 'address', 'os', 'display_ping', 'display_uptime')
     list_filter = ('os',)
     actions = (orchestrate,)
+    change_view_actions = actions
     
     def display_ping(self, instance):
         return self._remote_state[instance.pk][0]

@@ -464,3 +464,6 @@ with open(file) as handler:
 # DASHBOARD: Show owned tickets, scheduled actions, maintenance operations (diff domains)
 
 # Add confirmation step on transaction actions like process transaction
+
+
+# SAVE INISTIAL PASSWORD from all services, and just use it to create the service, never update it

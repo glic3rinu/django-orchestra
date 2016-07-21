@@ -34,7 +34,8 @@ class WebsiteDirectiveInlineFormSet(forms.models.BaseInlineFormSet):
         locations = set()
         for form in self.content_formset.forms:
             location = form.cleaned_data.get('path')
-            if location is not None:
+            delete = form.cleaned_data.get('DELETE')
+            if not delete and location is not None:
                 locations.add(normurlpath(location))
         
         values = defaultdict(list)

@@ -25,7 +25,7 @@ Overview
     * You can [develop new services](docs/create-services.md) without worring about those parts
     * You can replace any of these parts by your own implementation without carring about the others
     * You can reuse any of those modules on your Django projects
-* Be advised, because its flexibility Orchestra may be more difficult to deploy than traditional web hosting control panels.
+* Be advised, because its flexibility Orchestra may be more tedious to deploy than traditional web hosting control panels.
 
 
 ![](docs/images/index-screenshot.png)

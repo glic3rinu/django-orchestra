@@ -18,14 +18,15 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
     def clean_name(self):
         self.extra_names = []
         target = None
-        existing = set(Domain.objects.values_list('name', flat=True))
+        existing = set()
         errors = []
-        for name in self.cleaned_data['name'].strip().splitlines():
+        domain_names = self.cleaned_data['name'].strip().splitlines()
+        for name in domain_names:
             name = name.strip()
             if not name:
                 continue
             if name in existing:
-                 errors.append(ValidationError(_("%s domain name already exists.") % name))
+                errors.append(ValidationError(_("%s domain name provided multiple times.") % name))
             existing.add(name)
             if target is None:
                 target = name
@@ -34,7 +35,11 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
                 try:
                     domain.full_clean(exclude=['top'])
                 except ValidationError as e:
-                    raise ValidationError(e.error_dict['name'])
+                    for error in e.error_dict['name']:
+                        for msg in error.messages:
+                            errors.append(
+                                ValidationError("%s: %s" % (name, msg))
+                            )
                 self.extra_names.append(name)
         if errors:
             raise ValidationError(errors)
@@ -42,10 +47,15 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
     
     def clean(self):
         """ inherit related parent domain account, when exists """
-        cleaned_data = super(BatchDomainCreationAdminForm, self).clean()
+        cleaned_data = super().clean()
         if not cleaned_data['account']:
             account = None
-            for name in [cleaned_data['name']] + self.extra_names:
+            domain_names = []
+            if 'name' in cleaned_data:
+                first = cleaned_data['name']
+                domain_names.append(first)
+            domain_names.extend(self.extra_names)
+            for name in domain_names:
                 parent = Domain.objects.get_parent(name)
                 if not parent:
                     # Fake an account to make django validation happy
@@ -62,8 +72,13 @@ class BatchDomainCreationAdminForm(forms.ModelForm):
                         'account': _("Provided domain names belong to different accounts."),
                     })
                 account = parent.account
-                cleaned_data['account'] = account
+                cleaned_data['account'] = account            
         return cleaned_data
+        
+        def full_clean(self):
+            # set extra_names on instance to use it on inline formsets validation
+            super().full_clean()
+            self.instance.extra_names = extra_names
 
 
 class RecordForm(forms.ModelForm):
@@ -82,14 +97,31 @@ class ValidateZoneMixin(object):
         super(ValidateZoneMixin, self).clean()
         if any(self.errors):
             return
+        domain_names = []
         if self.instance.name:
+            domain_names.append(self.instance.name)
+        domain_names.extend(getattr(self.instance, 'extra_names', []))
+        errors = []
+        for name in domain_names:
             records = []
             for form in self.forms:
                 data = form.cleaned_data
                 if data and not data['DELETE']:
                     records.append(data)
+            if '_' in name:
+                errors.append(ValidationError(
+                    _("%s: Domains containing underscore character '_' must provide an SRV record.") % name
+                ))
             domain = domain_for_validation(self.instance, records)
-            validators.validate_zone(domain.render_zone())
+            try:
+                validators.validate_zone(domain.render_zone())
+            except ValidationError as error:
+                for msg in error:
+                    errors.append(
+                        ValidationError("%s: %s" % (name, msg))
+                    )
+        if errors:
+            raise ValidationError(errors)
 
 
 class RecordEditFormSet(ValidateZoneMixin, AdminFormSet):

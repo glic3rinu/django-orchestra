@@ -7,7 +7,7 @@ from orchestra.admin.forms import AdminFormSet, AdminFormMixin
 
 from . import validators
 from .helpers import domain_for_validation
-from .models import Domain
+from .models import Domain, Record
 
 
 class BatchDomainCreationAdminForm(forms.ModelForm):
@@ -97,6 +97,11 @@ class ValidateZoneMixin(object):
         super(ValidateZoneMixin, self).clean()
         if any(self.errors):
             return
+        has_srv = False
+        for form in self.forms:
+            has_srv = form.cleaned_data.get('type') == Record.SRV
+            if has_srv:
+                break
         domain_names = []
         if self.instance.name:
             domain_names.append(self.instance.name)
@@ -108,7 +113,7 @@ class ValidateZoneMixin(object):
                 data = form.cleaned_data
                 if data and not data['DELETE']:
                     records.append(data)
-            if '_' in name:
+            if '_' in name and not has_srv:
                 errors.append(ValidationError(
                     _("%s: Domains containing underscore character '_' must provide an SRV record.") % name
                 ))

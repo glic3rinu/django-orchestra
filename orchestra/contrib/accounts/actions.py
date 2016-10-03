@@ -171,7 +171,20 @@ def delete_related_services(modeladmin, request, queryset):
     else:
         objects_name = force_text(opts.verbose_name_plural)
     
-    model_count = {model._meta.verbose_name_plural: len(objs) for model, objs in collector.model_objs.items()}
+    model_count = {}
+    for model, objs in collector.model_objs.items():
+        count = 0
+        # discount main systemuser
+        if model is modeladmin.model.main_systemuser.field.rel.to:
+            count = len(objs) - 1
+        # Discount account
+        elif model is not modeladmin.model and model in registered_services:
+            count = len(objs)
+        if count:
+            model_count[model._meta.verbose_name_plural] = count
+    if not model_count:
+        modeladmin.message_user(request, _("Nothing to delete"), messages.WARNING)
+        return None
     context = dict(
         admin_site.each_context(request),
         title=_("Are you sure?"),

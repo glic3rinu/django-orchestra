@@ -20,11 +20,10 @@ class ListQuerySet(models.QuerySet):
 
 
 # TODO address and domain, perhaps allow only domain?
-
 class List(models.Model):
-    name = models.CharField(_("name"), max_length=128, unique=True, validators=[validate_name],
+    name = models.CharField(_("name"), max_length=64, unique=True, validators=[validate_name],
         help_text=_("Default list address &lt;name&gt;@%s") % settings.LISTS_DEFAULT_DOMAIN)
-    address_name = models.CharField(_("address name"), max_length=128,
+    address_name = models.CharField(_("address name"), max_length=64,
         validators=[validate_name], blank=True)
     address_domain = models.ForeignKey(settings.LISTS_DOMAIN_MODEL, on_delete=models.SET_NULL,
         verbose_name=_("address domain"), blank=True, null=True)

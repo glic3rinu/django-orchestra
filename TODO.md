@@ -467,3 +467,9 @@ with open(file) as handler:
 
 
 # SAVE INISTIAL PASSWORD from all services, and just use it to create the service, never update it
+
+
+# Eliminar tots els serveis de l'account no elimina les factures, pero crec que queda pendent arreglar el missatge summary, perque allà diu que s'eliminaran N factures, xo no surten llistades a la llista d'objectes oi?
+
+# Make owncloud quota backend more resilient to HTTP/connection errors
+

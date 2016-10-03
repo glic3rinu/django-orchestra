@@ -24,7 +24,6 @@ from orchestra.utils.apps import isinstalled
 
 from .actions import (list_contacts, service_report, delete_related_services, disable_selected,
     enable_selected)
-from .filters import HasMainUserListFilter
 from .forms import AccountCreationForm
 from .models import Account
 
@@ -32,7 +31,7 @@ from .models import Account
 class AccountAdmin(ChangePasswordAdminMixin, auth.UserAdmin, ExtendedModelAdmin):
     list_display = ('username', 'full_name', 'type', 'is_active')
     list_filter = (
-        'type', 'is_active', HasMainUserListFilter
+        'type', 'is_active',
     )
     add_fieldsets = (
         (_("User"), {

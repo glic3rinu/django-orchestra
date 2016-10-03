@@ -162,6 +162,11 @@ SAAS_PHPLIST_BOUNCES_MAILBOX_NAME = Setting('SAAS_PHPLIST_BOUNCES_MAILBOX_NAME',
     '%(site_name)s-list-bounces',
 )
 
+SAAS_PHPLIST_NAME_MAX_LENGTH = Setting('SAAS_PHPLIST_NAME_MAX_LENGTH',
+    32-13,
+    help_text=_("Because of max system group name of the bounces mailbox is 32."),
+)
+
 SAAS_PHPLIST_BOUNCES_MAILBOX_PASSWORD = Setting('SAAS_PHPLIST_BOUNCES_MAILBOX_PASSWORD',
     'secret',
 )

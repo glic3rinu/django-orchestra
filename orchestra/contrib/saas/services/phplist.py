@@ -1,4 +1,5 @@
 from django import forms
+from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -35,6 +36,8 @@ class PHPListForm(SaaSPasswordForm):
         domain = self.plugin.site_domain % context
         help_text = _("Admin URL http://{}/admin/").format(domain)
         self.fields['site_url'].help_text = help_text
+        validator = validators.MaxLengthValidator(settings.SAAS_PHPLIST_NAME_MAX_LENGTH)
+        self.fields['name'].validators.append(validator)
 
 
 class PHPListChangeForm(PHPListForm):

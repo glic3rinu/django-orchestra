@@ -1,6 +1,7 @@
 import re
 import sys
 import textwrap
+import time
 import xml.etree.ElementTree as ET
 from urllib.parse import urlparse
 
@@ -159,7 +160,11 @@ class OwnCloudDiskQuota(OwnClouwAPIMixin, ServiceMonitor):
         return replace(context, "'", '"')
     
     def get_quota(self, saas, server):
-        user = self.get_user(saas)
+        try:
+            user = self.get_user(saas)
+        except requests.exceptions.ConnectionError:
+            time.sleep(2)
+            user = self.get_user(saas)
         context = {
             'object_id': saas.pk,
             'used': int(user['quota'].get('used', 0)),

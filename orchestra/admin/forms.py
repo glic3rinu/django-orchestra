@@ -3,7 +3,6 @@ from functools import partial
 
 from django import forms
 from django.contrib.admin import helpers
-from django.contrib.auth.hashers import identify_hasher
 from django.core import validators
 from django.forms.models import modelformset_factory, BaseModelFormSet
 from django.template import Template, Context
@@ -136,9 +135,11 @@ class AdminPasswordChangeForm(forms.Form):
             ix = '_%i' % ix
         password = self.cleaned_data.get('password%s' % ix)
         if password:
+            # lazy loading because of passlib
+            from django.contrib.auth.hashers import identify_hasher
             self.password_provided = True
             try:
-                hasher = identify_hasher(password)
+                identify_hasher(password)
             except ValueError:
                 raise forms.ValidationError(
                     self.error_messages['bad_hash'],
@@ -161,7 +162,7 @@ class AdminPasswordChangeForm(forms.Form):
         password = self.cleaned_data[field_name]
         if password:
             if self.raw:
-                self.password = password
+                self.user.password = password
             else:
                 self.user.set_password(password)
             if commit:

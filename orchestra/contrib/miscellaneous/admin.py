@@ -26,7 +26,7 @@ class MiscServicePlugin(PluginModelAdapter):
 
 class MiscServiceAdmin(ExtendedModelAdmin):
     list_display = (
-        'name', 'verbose_name', 'num_instances', 'has_identifier', 'has_amount', 'is_active'
+        'display_name', 'display_verbose_name', 'num_instances', 'has_identifier', 'has_amount', 'is_active'
     )
     list_editable = ('is_active',)
     list_filter = ('has_identifier', 'has_amount', IsActiveListFilter)
@@ -36,6 +36,18 @@ class MiscServiceAdmin(ExtendedModelAdmin):
     prepopulated_fields = {'name': ('verbose_name',)}
     change_readonly_fields = ('name',)
     actions = (disable, enable)
+    
+    def display_name(self, misc):
+        return '<span title="%s">%s</span>' % (misc.description, misc.name)
+    display_name.short_description = _("name")
+    display_name.allow_tags = True
+    display_name.admin_order_field = 'name'
+    
+    def display_verbose_name(self, misc):
+        return '<span title="%s">%s</span>' % (misc.description, misc.verbose_name)
+    display_verbose_name.short_description = _("verbose name")
+    display_verbose_name.allow_tags = True
+    display_verbose_name.admin_order_field = 'verbose_name'
     
     def num_instances(self, misc):
         """ return num slivers as a link to slivers changelist view """

@@ -1,6 +1,7 @@
 import re
 import sys
 import textwrap
+import time
 from functools import partial
 from urllib.parse import urlparse
 
@@ -27,6 +28,15 @@ class WordpressMuController(ServiceController):
     )
     VERIFY = settings.SAAS_WORDPRESS_VERIFY_SSL
     
+    def with_retry(self, method, *args, retries=1, sleep=0.5, **kwargs):
+        for i in range(retries):
+            try:
+                return method(*args, **kwargs)
+            except requests.exceptions.ConnectionError:
+                if i >= retries:
+                    raise
+                time.sleep(sleep)
+    
     def login(self, session):
         main_url = self.get_main_url()
         login_url = main_url + '/wp-login.php'
@@ -36,7 +46,7 @@ class WordpressMuController(ServiceController):
             'redirect_to': '/wp-admin/'
         }
         sys.stdout.write("Login URL: %s\n" % login_url)
-        response = session.post(login_url, data=login_data, verify=self.VERIFY)
+        response = self.with_retry(session.post, login_url, data=login_data, verify=self.VERIFY)
         if response.url != main_url + '/wp-admin/':
             raise IOError("Failure login to remote application (%s)" % login_url)
     
@@ -59,7 +69,7 @@ class WordpressMuController(ServiceController):
             'class="edit">%s</a>' % saas.name
         )
         sys.stdout.write("Search URL: %s\n" % search)
-        content = session.get(search, verify=self.VERIFY).content.decode('utf8')
+        content = self.with_retry(session.get, search, verify=self.VERIFY).content.decode('utf8')
         # Get id
         ids = regex.search(content)
         if not ids and not blog_id:
@@ -84,7 +94,7 @@ class WordpressMuController(ServiceController):
             url = self.get_main_url()
             url += '/wp-admin/network/site-new.php'
             sys.stdout.write("Create URL: %s\n" % url)
-            content = session.get(url, verify=self.VERIFY).content.decode('utf8')
+            content = self.with_retry(session.get, url, verify=self.VERIFY).content.decode('utf8')
             
             wpnonce = re.compile('name="_wpnonce_add-blog"\s+value="([^"]*)"')
             try:
@@ -101,7 +111,7 @@ class WordpressMuController(ServiceController):
             }
             
             # Validate response
-            response = session.post(url, data=data, verify=self.VERIFY)
+            response = self.with_retry(session.post, url, data=data, verify=self.VERIFY)
             self.validate_response(response)
             blog_id = re.compile(r'<link id="wp-admin-canonical" rel="canonical" href="http(?:[^ ]+)/wp-admin/network/site-new.php\?id=([0-9]+)" />')
             content = response.content.decode('utf8')
@@ -120,7 +130,7 @@ class WordpressMuController(ServiceController):
         action_url = re.search(url_regex, content).groups()[0].replace("&#038;", '&')
         sys.stdout.write("%s confirm URL: %s\n" % (action, action_url))
         
-        content = session.get(action_url, verify=self.VERIFY).content.decode('utf8')
+        content = self.with_retry(session.get, action_url, verify=self.VERIFY).content.decode('utf8')
         wpnonce = re.compile('name="_wpnonce"\s+value="([^"]*)"')
         try:
             wpnonce = wpnonce.search(content).groups()[0]
@@ -135,7 +145,7 @@ class WordpressMuController(ServiceController):
         action_url = self.get_main_url()
         action_url += '/wp-admin/network/sites.php?action=%sblog' % action
         sys.stdout.write("%s URL: %s\n" % (action, action_url))
-        response = session.post(action_url, data=data, verify=self.VERIFY)
+        response = self.with_retry(session.post, action_url, data=data, verify=self.VERIFY)
         self.validate_response(response)
     
     def is_active(self, content):

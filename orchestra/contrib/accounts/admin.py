@@ -290,7 +290,7 @@ class AccountAdminMixin(object):
                 formfield.queryset = formfield.queryset.filter(account=self.account)
                 # Apply heuristic order by
                 if not formfield.queryset.query.order_by:
-                    related_fields = db_field.related_model._meta.get_all_field_names()
+                    related_fields = [f.name for f in db_field.related_model._meta.get_fields()]
                     if 'name' in related_fields:
                         formfield.queryset = formfield.queryset.order_by('name')
                     elif 'username' in related_fields:

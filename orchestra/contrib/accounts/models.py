@@ -91,7 +91,12 @@ class Account(auth.AbstractBaseUser):
         self.notify_related()
     
     def get_services_to_disable(self):
-        for rel in self._meta.get_all_related_objects():
+        related_fields = [
+            f for f in self._meta.get_fields()
+            if (f.one_to_many or f.one_to_one)
+            and f.auto_created and not f.concrete
+        ]
+        for rel in related_fields:
             source = getattr(rel, 'related_model', rel.model)
             if source in services and hasattr(source, 'active'):
                 for obj in getattr(self, rel.get_accessor_name()).all():

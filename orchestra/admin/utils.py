@@ -94,7 +94,7 @@ def change_url(obj):
     if obj is not None:
         cls = type(obj)
         opts = obj._meta
-        if cls._deferred:
+        if cls is models.DEFERRED:
             opts = cls.__base__._meta
         view_name = 'admin:%s_%s_change' % (opts.app_label, opts.model_name)
         return reverse(view_name, args=(obj.pk,))

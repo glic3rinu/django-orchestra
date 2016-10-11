@@ -19,7 +19,7 @@ class SystemUsersConfig(AppConfig):
     
     def create_initial_systemuser(self, **kwargs):
         from .models import SystemUser
-        Account = SystemUser.account.field.related.model
+        Account = SystemUser.account.field.remote_field.model
         for account in Account.objects.filter(is_superuser=True, main_systemuser_id__isnull=True):
             systemuser = SystemUser.objects.create(username=account.username,
                 password=account.password, account=account)

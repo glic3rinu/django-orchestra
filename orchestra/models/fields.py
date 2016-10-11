@@ -51,7 +51,7 @@ class MultiSelectField(models.CharField):
     
     def validate(self, value, model_instance):
         if self.choices:
-            arr_choices = self.get_choices_selected(self.get_choices_default())
+            arr_choices = self.get_choices_selected(self.get_choices())
             for opt_select in value:
                 if (opt_select not in arr_choices):
                     msg = self.error_messages['invalid_choice'] % {'value': opt_select}

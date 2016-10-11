@@ -124,7 +124,7 @@ class Bill(models.Model):
     
     @classmethod
     def get_class_type(cls):
-        if cls._deferred:
+        if cls is models.DEFERRED:
             cls = cls.__base__
         return cls.__name__.upper()
     
@@ -227,7 +227,7 @@ class Bill(models.Model):
     
     def get_number(self):
         cls = type(self)
-        if cls._deferred:
+        if cls is models.DEFERRED:
             cls = cls.__base__
         bill_type = self.get_type()
         if bill_type == self.BILL:

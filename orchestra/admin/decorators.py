@@ -96,7 +96,6 @@ def action_with_confirmation(action_name=None, extra_context=None, validator=Non
                 context['display_objects'] = format_display_objects(modeladmin, request, queryset)
             
             # Display the confirmation page
-            return TemplateResponse(request, template,
-                context, current_app=modeladmin.admin_site.name)
+            return TemplateResponse(request, template, context)
         return inner
     return decorator

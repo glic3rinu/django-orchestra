@@ -196,6 +196,10 @@ AUTHENTICATION_BACKENDS = [
 EMAIL_BACKEND = 'orchestra.contrib.mailer.backends.EmailBackend'
 
 
+# Needed for Bulk operations
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+
+
 #################################
 ## 3RD PARTY APPS CONIGURATION ##
 #################################

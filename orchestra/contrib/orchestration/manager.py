@@ -30,7 +30,7 @@ def keep_log(execute, log, operations):
         except Exception as e:
             trace = traceback.format_exc()
             log.state = log.EXCEPTION
-            log.stderr = trace
+            log.stderr += trace
             log.save()
             subject = 'EXCEPTION executing backend(s) %s %s' % (args, kwargs)
             logger.error(subject)

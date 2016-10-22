@@ -97,10 +97,10 @@ class ValidateZoneMixin(object):
         super(ValidateZoneMixin, self).clean()
         if any(self.errors):
             return
-        has_srv = False
+        is_host = True
         for form in self.forms:
-            has_srv = form.cleaned_data.get('type') == Record.SRV
-            if has_srv:
+            if form.cleaned_data.get('type') in (Record.TXT, Record.SRV, Record.CNAME):
+                is_host = False
                 break
         domain_names = []
         if self.instance.name:
@@ -113,9 +113,9 @@ class ValidateZoneMixin(object):
                 data = form.cleaned_data
                 if data and not data['DELETE']:
                     records.append(data)
-            if '_' in name and not has_srv:
+            if '_' in name and is_host:
                 errors.append(ValidationError(
-                    _("%s: Domains containing underscore character '_' must provide an SRV record.") % name
+                    _("%s: Hosts can not have underscore character '_', consider providing a SRV, CNAME or TXT record.") % name
                 ))
             domain = domain_for_validation(self.instance, records)
             try:

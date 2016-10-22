@@ -465,8 +465,6 @@ with open(file) as handler:
 
 # Add confirmation step on transaction actions like process transaction
 
-
 # SAVE INISTIAL PASSWORD from all services, and just use it to create the service, never update it
-
 
 # Don't use system groups for unixmailbackends

@@ -330,9 +330,7 @@ class ChangePasswordAdminMixin(object):
             'password': random_ascii(10),
         }
         context.update(admin.site.each_context(request))
-        return TemplateResponse(request,
-            self.change_user_password_template,
-            context, current_app=self.admin_site.name)
+        return TemplateResponse(request, self.change_user_password_template, context)
     
     def show_hash(self, request, id):
         if not request.user.is_superuser:

@@ -47,7 +47,7 @@ class LogEntryAdmin(admin.ModelAdmin):
         elif log.is_change():
             return _('Changed "%(link)s" - %(changes)s %(edit)s') % {
                 'link': self.content_object_link(log),
-                'changes': log.change_message,
+                'changes': log.get_change_message(),
                 'edit': edit,
             }
         elif log.is_deletion():

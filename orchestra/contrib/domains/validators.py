@@ -29,7 +29,7 @@ def validate_allowed_domain(value):
 
 
 def validate_domain_name(value):
-    # SRV records may use '_' in the domain name
+    # SRV, CNAME and TXT records may use '_' in the domain name
     value = value.lstrip('*.').replace('_', '')
     try:
         validate_hostname(value)

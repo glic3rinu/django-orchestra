@@ -71,8 +71,7 @@ def set_permission(modeladmin, request, queryset):
         'action_checkbox_name': admin.helpers.ACTION_CHECKBOX_NAME,
         'form': form,
     }
-    return TemplateResponse(request, 'admin/systemusers/systemuser/set_permission.html',
-        context, current_app=modeladmin.admin_site.name)
+    return TemplateResponse(request, 'admin/systemusers/systemuser/set_permission.html', context)
 set_permission.url_name = 'set-permission'
 set_permission.tool_description = _("Set permission")
 
@@ -126,8 +125,7 @@ def create_link(modeladmin, request, queryset):
         'action_checkbox_name': admin.helpers.ACTION_CHECKBOX_NAME,
         'form': form,
     }
-    return TemplateResponse(request, 'admin/systemusers/systemuser/create_link.html',
-        context, current_app=modeladmin.admin_site.name)
+    return TemplateResponse(request, 'admin/systemusers/systemuser/create_link.html', context)
 create_link.url_name = 'create-link'
 create_link.tool_description = _("Create link")
 

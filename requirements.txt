@@ -10,7 +10,7 @@ Markdown==2.4
 djangorestframework==3.4.7
 ecdsa==0.11
 Pygments==1.6
-django-filter==0.7
+django-filter==0.15.2
 jsonfield==0.9.22
 python-dateutil==2.2
 https://github.com/glic3rinu/passlib/archive/master.zip

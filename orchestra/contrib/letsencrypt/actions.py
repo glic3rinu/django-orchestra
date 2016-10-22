@@ -111,6 +111,5 @@ def letsencrypt(modeladmin, request, queryset):
         'action_checkbox_name': admin.helpers.ACTION_CHECKBOX_NAME,
         'form': form,
     }
-    return TemplateResponse(request, 'admin/orchestra/generic_confirmation.html',
-        context, current_app=modeladmin.admin_site.name)
+    return TemplateResponse(request, 'admin/orchestra/generic_confirmation.html', context)
 letsencrypt.short_description = "Let's encrypt!"

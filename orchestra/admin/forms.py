@@ -51,7 +51,7 @@ class AdminFormSet(BaseModelFormSet):
                 {% endfor %}
               </tr></thead>
               {% endif %}
-              <tr class="{% cycle row1,row2 %}">
+              <tr class="{% cycle 'row1' 'row2' %}">
               {% for field in form.visible_fields %}
                 <td>
                 {# Include the hidden fields in the form #}

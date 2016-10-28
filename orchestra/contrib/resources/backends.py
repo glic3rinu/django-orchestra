@@ -88,7 +88,7 @@ class ServiceMonitor(ServiceBackend):
     
     def execute(self, *args, **kwargs):
         log = super(ServiceMonitor, self).execute(*args, **kwargs)
-        if log.state == BackendLog.SUCCESS:
+        if log.state == log.SUCCESS:
             self.store(log)
         return log
     

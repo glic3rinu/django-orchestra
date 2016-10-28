@@ -81,5 +81,5 @@ class Miscellaneous(models.Model):
     
     def clean(self):
         if self.identifier:
-            self.identifier = self.identifier.strip()
+            self.identifier = self.identifier.strip().lower()
         self.description = self.description.strip()

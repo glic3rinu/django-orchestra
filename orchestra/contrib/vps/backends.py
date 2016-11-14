@@ -90,15 +90,15 @@ class ProxmoxOVZ(ServiceController):
         return context
 
 
-# TODO rename to proxmox
-class OpenVZTraffic(ServiceMonitor):
+class ProxmoxOpenVZTraffic(ServiceMonitor):
     model = 'vps.VPS'
     resource = ServiceMonitor.TRAFFIC
     monthly_sum_old_values = True
-    
+    GET_PROXMOX_INFO = ProxmoxOVZ.GET_PROXMOX_INFO
+
     def prepare(self):
-        super(OpenVZTraffic, self).prepare()
-        self.append(ProxmoxOVZ.GET_PROXMOX_INFO)
+        super(ProxmoxOpenVZTraffic, self).prepare()
+        self.append(self.GET_PROXMOX_INFO)
         self.append(textwrap.dedent("""
             function monitor () {
                 object_id=$1
@@ -116,7 +116,7 @@ class OpenVZTraffic(ServiceMonitor):
     
     def process(self, line):
         """ diff with last stored state """
-        object_id, value, state = super(OpenVZTraffic, self).process(line)
+        object_id, value, state = super(ProxmoxOpenVZTraffic, self).process(line)
         value = decimal.Decimal(value)
         last = self.get_last_data(object_id)
         if not last or last.state > value:

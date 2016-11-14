@@ -340,7 +340,7 @@ class Exim4Traffic(ServiceMonitor):
                                         if sender[0] < int(date) < end_date:
                                             sender[2] += int(size[2:])
                     except IOError as e:
-                        sys.stderr.write(e)
+                        sys.stderr.write(str(e))
                 
                 for username, opts in users.iteritems():
                     __, object_id, size = opts
@@ -429,7 +429,7 @@ class VsFTPdTraffic(ServiceMonitor):
                                             bytes = bytes_regex.search(line).groups()[0]
                                             user[2] += int(bytes)
                     except IOError as e:
-                        sys.stderr.write(e)
+                        sys.stderr.write(str(e))
                 
                 for username, opts in users.items():
                     __, object_id, size = opts

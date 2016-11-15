@@ -341,8 +341,8 @@ def create_resource_relation():
         except AttributeError:
             pass
         else:
-            related._meta.virtual_fields = [
-                field for field in related._meta.virtual_fields if field.rel.to != ResourceData
+            related._meta.private_fields = [
+                field for field in related._meta.private_fields if field.rel.to != ResourceData
             ]
     
     for ct, resources in Resource.objects.group_by('content_type').items():

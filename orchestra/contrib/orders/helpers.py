@@ -12,7 +12,7 @@ def get_related_object(origin, max_depth=2):
             a use-case calls for it.
     """
     def related_iterator(node):
-        for field in node._meta.virtual_fields:
+        for field in node._meta.private_fields:
             if hasattr(field, 'ct_field'):
                 yield getattr(node, field.name)
         for field in node._meta.fields:

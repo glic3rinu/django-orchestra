@@ -1,4 +1,4 @@
-from functools import wraps, partial
+from functools import wraps, partial, update_wrapper
 
 from django.contrib import messages
 from django.contrib.admin import helpers
@@ -22,6 +22,7 @@ def admin_field(method):
         kwargs['short_description'] = kwargs.get('short_description',
                 kwargs['field'].split('__')[-1].replace('_', ' ').capitalize())
         admin_method = partial(method, **kwargs)
+        admin_method = update_wrapper(admin_method, method)
         admin_method.short_description = kwargs['short_description']
         admin_method.allow_tags = True
         admin_method.admin_order_field = kwargs['order']

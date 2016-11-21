@@ -468,3 +468,5 @@ with open(file) as handler:
 # SAVE INISTIAL PASSWORD from all services, and just use it to create the service, never update it
 
 # Don't use system groups for unixmailbackends
+
+# trigger a reload_relations on updates on monitors on all processes, not just current one. Alt. restart service

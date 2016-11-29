@@ -524,10 +524,11 @@ class ServiceHandler(plugins.Plugin, metaclass=plugins.PluginMount):
                         bmetric = order.billed_metric
                         if bmetric is None:
                             bmetric = order.get_metric(order.billed_on)
-                        bsize = self.get_price_size(rini, order.billed_until)
+                        bsize = self.get_price_size(rini, rend)
                         prepay_discount = self.get_price(account, bmetric) * bsize
                         prepay_discount = round(prepay_discount, 2)
                         for cini, cend, metric in order.get_metric(rini, rend, changes=True):
+                            cini = max(cini, rini)
                             size = self.get_price_size(cini, cend)
                             price = self.get_price(account, metric) * size
                             discounts = ()

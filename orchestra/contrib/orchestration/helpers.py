@@ -53,7 +53,7 @@ def get_instance_url(operation):
     try:
         url = change_url(operation.instance)
     except NoReverseMatch:
-        alt_repr = '%s-%i' % (operation.content_type, operation.object_id)
+        alt_repr = '%s-%s' % (operation.content_type, operation.object_id)
         return _("Deleted {0}").format(operation.instance_repr or alt_repr)
     return orchestra_settings.ORCHESTRA_SITE_URL + url
 

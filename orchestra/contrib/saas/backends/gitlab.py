@@ -15,9 +15,10 @@ class GitLabSaaSController(ServiceController):
     serialize = True
     actions = ('save', 'delete', 'validate_creation')
     doc_settings = (settings,
-        ('SAAS_GITLAB_DOMAIN', 'SAAS_GITLAB_ROOT_PASSWORD'),
+        ('SAAS_GITLAB_DOMAIN', 'SAAS_GITLAB_ROOT_PASSWORD', 'SAAS_GITLAB_VERIFY_SSL'),
     )
-    
+    verify = settings.SAAS_GITLAB_VERIFY_SSL
+
     def get_base_url(self):
         return 'https://%s/api/v3' %  settings.SAAS_GITLAB_DOMAIN
     
@@ -28,7 +29,7 @@ class GitLabSaaSController(ServiceController):
     def validate_response(self, response, *status_codes):
         if response.status_code not in status_codes:
             raise RuntimeError("[%i] %s" % (response.status_code, response.content))
-        return json.loads(response.content.decode('utf8'))
+        return response.json()
     
     def authenticate(self):
         login_url = self.get_base_url() + '/session'
@@ -36,7 +37,7 @@ class GitLabSaaSController(ServiceController):
             'login': 'root',
             'password': settings.SAAS_GITLAB_ROOT_PASSWORD,
         }
-        response = requests.post(login_url, data=data)
+        response = requests.post(login_url, data=data, verify=self.verify)
         session = self.validate_response(response, 201)
         token = session['private_token']
         self.headers = {
@@ -52,7 +53,7 @@ class GitLabSaaSController(ServiceController):
             'username': saas.name,
             'name': saas.account.get_full_name(),
         }
-        response = requests.post(user_url, data=data, headers=self.headers)
+        response = requests.post(user_url, data=data, headers=self.headers, verify=self.verify)
         user = self.validate_response(response, 201)
         saas.data['user_id'] = user['id']
         # Using queryset update to avoid triggering backends with the post_save signal
@@ -62,11 +63,11 @@ class GitLabSaaSController(ServiceController):
     def change_password(self, saas, server):
         self.authenticate()
         user_url = self.get_user_url(saas)
-        response = requests.get(user_url, headers=self.headers)
+        response = requests.get(user_url, headers=self.headers, verify=self.verify)
         user = self.validate_response(response, 200)
-        user = json.loads(response.content.decode('utf8'))
+        user = response.json()
         user['password'] = saas.password
-        response = requests.put(user_url, data=user, headers=self.headers)
+        response = requests.put(user_url, data=user, headers=self.headers, verify=self.verify)
         user = self.validate_response(response, 200)
         print(json.dumps(user, indent=4))
     
@@ -75,17 +76,17 @@ class GitLabSaaSController(ServiceController):
         return
         self.authenticate()
         user_url = self.get_user_url(saas)
-        response = requests.get(user_url, headers=self.headers)
+        response = requests.get(user_url, headers=self.headers, verify=self.verify)
         user = self.validate_response(response, 200)
         user['state'] = 'active' if saas.active else 'blocked',
-        response = requests.patch(user_url, data=user, headers=self.headers)
+        response = requests.patch(user_url, data=user, headers=self.headers, verify=self.verify)
         user = self.validate_response(response, 200)
         print(json.dumps(user, indent=4))
     
     def delete_user(self, saas, server):
         self.authenticate()
         user_url = self.get_user_url(saas)
-        response = requests.delete(user_url, headers=self.headers)
+        response = requests.delete(user_url, headers=self.headers, verify=self.verify)
         user = self.validate_response(response, 200, 404)
         print(json.dumps(user, indent=4))
     
@@ -95,8 +96,8 @@ class GitLabSaaSController(ServiceController):
         username = saas.name
         email = saas.data['email']
         users_url = self.get_base_url() + '/users/'
-        response = requests.get(users_url, headers=self.headers)
-        users = json.loads(response.content.decode('utf8'))
+        response = requests.get(users_url, headers=self.headers, verify=self.verify)
+        users = response.json()
         for user in users:
             if user['username'] == username:
                 print('ValidationError: user-exists')

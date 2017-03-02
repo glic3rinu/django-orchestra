@@ -262,6 +262,9 @@ SAAS_GITLAB_DOMAIN = Setting('SAAS_GITLAB_DOMAIN',
     help_text="Uses <tt>ORCHESTRA_BASE_DOMAIN</tt> by default.",
 )
 
+SAAS_GITLAB_VERIFY_SSL = Setting('SAAS_GITLAB_VERIFY_SSL',
+    True,
+)
 
 # Moodle
 

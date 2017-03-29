@@ -97,7 +97,7 @@ def validate_name(value):
 def validate_ascii(value):
     try:
         value.encode('ascii')
-    except UnicodeDecodeError:
+    except UnicodeEncodeError:
         raise ValidationError('This is not an ASCII string.')
 
 

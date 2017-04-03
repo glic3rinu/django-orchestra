@@ -24,8 +24,10 @@ def render_email_template(template, context):
             'scheme': url.scheme,
             'domain': url.netloc,
         }
-    subject = render_to_string(template, {'subject': True}, context).strip()
-    message = render_to_string(template, {'message': True}, context).strip()
+    context['email_part'] = 'subject'
+    subject = render_to_string(template, context).strip()
+    context['email_part'] = 'message'
+    message = render_to_string(template, context).strip()
     return subject, message
 
 

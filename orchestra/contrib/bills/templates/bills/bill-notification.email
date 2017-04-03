@@ -1,5 +1,5 @@
-{% if subject %}Bill {{ bill.number }}{% endif %}
-{% if message %}Dear {{ bill.account.username }},
+{% if email_part == 'subject' %}Bill {{ bill.number }}{% endif %}
+{% if email_part == 'message' %}Dear {{ bill.account.username }},
 Find your {{ bill.get_type_display.lower }} attached.
 
 If you have any question, please write us at support@orchestra.lan

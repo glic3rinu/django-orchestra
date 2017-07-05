@@ -205,7 +205,7 @@ class PHPController(WebAppServiceMixin, ServiceController):
         context['fpm_listen'] = webapp.type_instance.FPM_LISTEN % context
         fpm_config = Template(textwrap.dedent("""\
             ;; {{ banner }}
-            [{{ user }}]
+            [{{ user }}-{{app_id}}]
             user = {{ user }}
             group = {{ group }}
             

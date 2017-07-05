@@ -227,15 +227,16 @@ class Apache2Controller(ServiceController):
             target = 'fcgi://%(socket)s%(app_path)s/$1'
         else:
             # UNIX socket
-            target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/'
-            if context['location']:
-                # FIXME unix sockets do not support $1
-                target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/$1'
+            target = 'unix:%(socket)s|fcgi://127.0.0.1/'
         context.update({
             'app_path': os.path.normpath(app_path),
             'socket': socket,
         })
-        directives = "ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}\n".format(target=target) % context
+        directives = textwrap.dedent("""
+            <FilesMatch "\.php$">
+                SetHandler "proxy:unix:{socket}|fcgi://127.0.0.1"
+            </FilesMatch>
+        """).format(socket=socket)
         directives += self.get_location_filesystem_map(context)
         return [
             (context['location'], directives),

@@ -58,7 +58,8 @@ class Apache2Controller(ServiceController):
         context.update({
             'port': self.HTTPS_PORT if ssl else self.HTTP_PORT,
             'vhost_set_fcgid': False,
-            'server_alias_lines': ' \\\n                '.join(context['server_alias'])
+            'server_alias_lines': ' \\\n                '.join(context['server_alias']),
+            'suexec_needed': site.target_server == 'web.pangea.lan'
         })
         context['extra_conf'] = self.get_extra_conf(site, context, ssl)
         return Template(textwrap.dedent("""\
@@ -71,7 +72,8 @@ class Apache2Controller(ServiceController):
                 CustomLog {{ access_log }} common{% endif %}\
             {% if error_log %}
                 ErrorLog {{ error_log }}{% endif %}
-                SuexecUserGroup {{ user }} {{ group }}\
+            {% if suexec_needed %}
+                SuexecUserGroup {{ user }} {{ group }}{% endif %}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
             </VirtualHost>

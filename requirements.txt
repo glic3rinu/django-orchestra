@@ -7,7 +7,7 @@ celery==3.1.23
 kombu==3.0.35
 billiard==3.3.0.23
 Markdown==2.4
-djangorestframework==3.4.7
+djangorestframework==3.9.1
 ecdsa==0.11
 Pygments==1.6
 django-filter==0.15.2

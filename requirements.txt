@@ -8,7 +8,7 @@ kombu==3.0.35
 billiard==3.3.0.23
 Markdown==2.4
 djangorestframework==3.4.7
-ecdsa==0.11
+ecdsa==0.13.3
 Pygments==1.6
 django-filter==0.15.2
 jsonfield==0.9.22

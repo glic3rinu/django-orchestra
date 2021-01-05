@@ -1,0 +1,10 @@
+selenium
+xvfbwrapper
+freezegun
+coverage
+flake8
+django-debug-toolbar==1.3.0
+django-nose==1.4.4
+sqlparse
+pyinotify
+PyMySQL

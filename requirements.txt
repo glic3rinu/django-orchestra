@@ -18,7 +18,7 @@ django-iban==0.3.0
 requests
 phonenumbers
 django-countries
-django-localflavor
+django-localflavor==2.2
 amqp
 anyjson
 pytz

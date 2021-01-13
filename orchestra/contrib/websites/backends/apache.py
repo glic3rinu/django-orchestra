@@ -58,7 +58,8 @@ class Apache2Controller(ServiceController):
         context.update({
             'port': self.HTTPS_PORT if ssl else self.HTTP_PORT,
             'vhost_set_fcgid': False,
-            'server_alias_lines': ' \\\n                '.join(context['server_alias'])
+            'server_alias_lines': ' \\\n                '.join(context['server_alias']),
+            'suexec_needed': site.target_server == 'web.pangea.lan'
         })
         context['extra_conf'] = self.get_extra_conf(site, context, ssl)
         return Template(textwrap.dedent("""\
@@ -71,7 +72,8 @@ class Apache2Controller(ServiceController):
                 CustomLog {{ access_log }} common{% endif %}\
             {% if error_log %}
                 ErrorLog {{ error_log }}{% endif %}
-                SuexecUserGroup {{ user }} {{ group }}\
+            {% if suexec_needed %}
+                SuexecUserGroup {{ user }} {{ group }}{% endif %}\
             {% for line in extra_conf.splitlines %}
                 {{ line | safe }}{% endfor %}
             </VirtualHost>
@@ -225,15 +227,18 @@ class Apache2Controller(ServiceController):
             target = 'fcgi://%(socket)s%(app_path)s/$1'
         else:
             # UNIX socket
-            target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/'
-            if context['location']:
-                # FIXME unix sockets do not support $1
-                target = 'unix:%(socket)s|fcgi://127.0.0.1%(app_path)s/$1'
+            target = 'unix:%(socket)s|fcgi://127.0.0.1/'
         context.update({
             'app_path': os.path.normpath(app_path),
             'socket': socket,
         })
-        directives = "ProxyPassMatch ^%(location)s/(.*\.php(/.*)?)$ {target}\n".format(target=target) % context
+        directives = textwrap.dedent("""
+            <Directory {app_path}>
+                <FilesMatch "\.php$">
+                    SetHandler "proxy:unix:{socket}|fcgi://127.0.0.1"
+                </FilesMatch>
+            </Directory>
+        """).format(socket=socket, app_path=app_path)
         directives += self.get_location_filesystem_map(context)
         return [
             (context['location'], directives),
@@ -286,7 +291,8 @@ class Apache2Controller(ServiceController):
         if not (cert and key):
             cert = [settings.WEBSITES_DEFAULT_SSL_CERT]
             key = [settings.WEBSITES_DEFAULT_SSL_KEY]
-            ca = [settings.WEBSITES_DEFAULT_SSL_CA]
+            # Disabled because since the migration to LE, CA is not required here
+            #ca = [settings.WEBSITES_DEFAULT_SSL_CA]
             if not (cert and key):
                 return []
         ssl_config = [

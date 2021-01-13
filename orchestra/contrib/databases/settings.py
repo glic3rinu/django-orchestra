@@ -20,7 +20,7 @@ DATABASES_DEFAULT_TYPE = Setting('DATABASES_DEFAULT_TYPE',
 
 DATABASES_DEFAULT_HOST = Setting('DATABASES_DEFAULT_HOST',
     'localhost',
-    validators=[validate_hostname],
+#    validators=[validate_hostname],
 )
 
 

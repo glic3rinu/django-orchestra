@@ -12,6 +12,12 @@
 {% block body %}
 <div class="wrapper">
 <div class="content">
+{% if bill.is_open %}
+    <!-- TODO DANIEL: falta arreglar el css d'aquesta cosa -->
+    <div id="watermark">
+        <p>ESBORRANY - DRAFT - BORRADOR</p>
+    </div>
+{% endif %}
 {% block header %}
 <div id="logo">
     {% block logo %}

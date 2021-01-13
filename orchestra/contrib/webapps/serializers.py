@@ -30,7 +30,7 @@ class WebAppSerializer(AccountSerializerMixin, HyperlinkedModelSerializer):
     
     class Meta:
         model = WebApp
-        fields = ('url', 'id', 'name', 'type', 'options', 'data')
+        fields = ('url', 'id', 'name', 'type', 'options', 'data',)
         postonly_fields = ('name', 'type')
     
     def __init__(self, *args, **kwargs):

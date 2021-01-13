@@ -1,3 +1,4 @@
+import logging
 import textwrap
 from functools import partial
 
@@ -9,6 +10,7 @@ from orchestra import plugins
 
 from . import methods
 
+logger = logging.getLogger(__name__)
 
 def replace(context, pattern, repl):
     """ applies replace to all context str values """
@@ -108,7 +110,10 @@ class ServiceBackend(plugins.Plugin, metaclass=ServiceMount):
     def get_related(cls, obj):
         opts = obj._meta
         model = '%s.%s' % (opts.app_label, opts.object_name)
+        logger.debug('Model: {}'.format(model))
         for rel_model, field in cls.related_models:
+            logger.debug('rel_model: {}'.format(rel_model))
+            logger.debug('field: {}'.format(field))
             if rel_model == model:
                 related = obj
                 for attribute in field.split('__'):

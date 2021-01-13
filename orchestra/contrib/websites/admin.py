@@ -69,7 +69,7 @@ class WebsiteAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     fieldsets = (
         (None, {
             'classes': ('extrapretty',),
-            'fields': ('account_link', 'name', 'protocol', 'domains', 'is_active'),
+            'fields': ('account_link', 'name', 'protocol', 'target_server', 'domains', 'is_active', 'comments'),
         }),
     )
     form = WebsiteAdminForm

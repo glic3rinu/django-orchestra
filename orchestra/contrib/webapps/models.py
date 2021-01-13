@@ -23,6 +23,9 @@ class WebApp(models.Model):
         related_name='webapps')
     data = JSONField(_("data"), blank=True, default={},
         help_text=_("Extra information dependent of each service."))
+    target_server = models.ForeignKey('orchestration.Server', verbose_name=_("Target Server"),
+        related_name='webapps')
+    comments = models.TextField(default="", blank=True)
     
     # CMS webapps usually need a database and dbuser, with these virtual fields we tell the ORM to delete them
     databases = VirtualDatabaseRelation('databases.Database')

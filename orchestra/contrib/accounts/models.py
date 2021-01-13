@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 #from orchestra.contrib.orchestration.middlewares import OperationsMiddleware
 #from orchestra.contrib.orchestration import Operation
-from orchestra.core import services
+from orchestra import core
 from orchestra.models.utils import has_db_field
 from orchestra.utils.mail import send_email_template
 
@@ -98,7 +98,7 @@ class Account(auth.AbstractBaseUser):
         ]
         for rel in related_fields:
             source = getattr(rel, 'related_model', rel.model)
-            if source in services and hasattr(source, 'active'):
+            if source in core.services and hasattr(source, 'active'):
                 for obj in getattr(self, rel.get_accessor_name()).all():
                     yield obj
     
@@ -141,12 +141,25 @@ class Account(auth.AbstractBaseUser):
         backend returns True. Thus, a user who has permission from a single
         auth backend is assumed to have permission in general. If an object is
         provided, permissions for this specific object are checked.
+        applabel.action_modelname
         """
+        if not self.is_active:
+            return False
         # Active superusers have all permissions.
-        if self.is_active and self.is_superuser:
+        if self.is_superuser:
             return True
-        # Otherwise we need to check the backends.
-        return auth._user_has_perm(self, perm, obj)
+        app, action_model = perm.split('.')
+        action, model = action_model.split('_', 1)
+        service_apps = set(model._meta.app_label for model in core.services.get().keys())
+        accounting_apps = set(model._meta.app_label for model in core.accounts.get().keys())
+        import inspect
+        if ((app in service_apps or (action == 'view' and app in accounting_apps))):
+            # class-level permissions
+            if inspect.isclass(obj):
+                return True
+            elif obj and getattr(obj, 'account', None) == self:
+                return True
+
     
     def has_perms(self, perm_list, obj=None):
         """
@@ -167,8 +180,7 @@ class Account(auth.AbstractBaseUser):
         # Active superusers have all permissions.
         if self.is_active and self.is_superuser:
             return True
-        return auth._user_has_module_perms(self, app_label)
-    
+
     def get_related_passwords(self, db_field=False):
         related = [
             self.main_systemuser,

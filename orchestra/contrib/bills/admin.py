@@ -20,7 +20,7 @@ from orchestra.forms.widgets import paddingCheckboxSelectMultiple
 from . import settings, actions
 from .filters import (BillTypeListFilter, HasBillContactListFilter, TotalListFilter,
     PaymentStateListFilter, AmendedListFilter)
-from .models import (Bill, Invoice, AmendmentInvoice, Fee, AmendmentFee, ProForma, BillLine,
+from .models import (Bill, Invoice, AmendmentInvoice, AbonoInvoice, Fee, AmendmentFee, ProForma, BillLine,
     BillSubline, BillContact)
 
 
@@ -461,6 +461,7 @@ class BillAdmin(BillAdminMixin, ExtendedModelAdmin):
 admin.site.register(Bill, BillAdmin)
 admin.site.register(Invoice, BillAdmin)
 admin.site.register(AmendmentInvoice, BillAdmin)
+admin.site.register(AbonoInvoice, BillAdmin)
 admin.site.register(Fee, BillAdmin)
 admin.site.register(AmendmentFee, BillAdmin)
 admin.site.register(ProForma, BillAdmin)

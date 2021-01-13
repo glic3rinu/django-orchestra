@@ -86,11 +86,13 @@ class Bill(models.Model):
     FEE = 'FEE'
     AMENDMENTFEE = 'AMENDMENTFEE'
     PROFORMA = 'PROFORMA'
+    ABONOINVOICE = 'ABONOINVOICE'
     TYPES = (
         (INVOICE, _("Invoice")),
         (AMENDMENTINVOICE, _("Amendment invoice")),
         (FEE, _("Fee")),
         (AMENDMENTFEE, _("Amendment Fee")),
+        (ABONOINVOICE, _("Abono Invoice")),
         (PROFORMA, _("Pro forma")),
     )
     AMEND_MAP = {
@@ -388,6 +390,11 @@ class Invoice(Bill):
 
 
 class AmendmentInvoice(Bill):
+    class Meta:
+        proxy = True
+
+
+class AbonoInvoice(Bill):
     class Meta:
         proxy = True
 

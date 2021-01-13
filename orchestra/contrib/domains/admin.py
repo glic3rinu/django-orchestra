@@ -55,7 +55,7 @@ class DomainAdmin(AccountAdminMixin, ExtendedModelAdmin):
         'structured_name', 'display_is_top', 'display_websites', 'display_addresses', 'account_link'
     )
     add_fields = ('name', 'account')
-    fields = ('name', 'account_link', 'display_websites', 'display_addresses')
+    fields = ('name', 'account_link', 'display_websites', 'display_addresses', 'dns2136_address_match_list')
     readonly_fields = (
         'account_link', 'top_link', 'display_websites', 'display_addresses', 'implicit_records'
     )

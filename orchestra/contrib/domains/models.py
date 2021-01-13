@@ -65,6 +65,10 @@ class Domain(models.Model):
                     "zone file. This value is supplied in query responses to inform other "
                     "servers how long they should keep the data in cache. "
                     "The default value is <tt>%s</tt>.") % settings.DOMAINS_DEFAULT_MIN_TTL)
+    dns2136_address_match_list = models.CharField(max_length=80, default=settings.DOMAINS_DEFAULT_DNS2136,
+        blank=True,
+        help_text="A bind-9 'address_match_list' that will be granted permission to perform "
+                  "dns2136 updates. Chiefly used to enable Let's Encrypt self-service validation.")
     
     objects = DomainQuerySet.as_manager()
     
@@ -319,7 +323,8 @@ class Record(models.Model):
         help_text=_("Record TTL, defaults to %s") % settings.DOMAINS_DEFAULT_TTL,
         validators=[validators.validate_zone_interval])
     type = models.CharField(_("type"), max_length=32, choices=TYPE_CHOICES)
-    value = models.CharField(_("value"), max_length=256,
+    # max_length bumped from 256 to 1024 (arbitrary) on August 2019.
+    value = models.CharField(_("value"), max_length=1024,
         help_text=_("MX, NS and CNAME records sould end with a dot."))
     
     def __str__(self):

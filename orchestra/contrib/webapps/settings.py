@@ -99,6 +99,7 @@ WEBAPPS_PHP_VERSIONS = Setting('WEBAPPS_PHP_VERSIONS', (
         ('5.3-cgi', 'PHP 5.3 FCGID'),
         ('5.2-cgi', 'PHP 5.2 FCGID'),
         ('4-cgi', 'PHP 4 FCGID'),
+        ('7-fpm', 'PHP 7 FPM')
     ),
     help_text="Execution modle choose by ending -fpm or -cgi.",
     validators=[Setting.validate_choices]

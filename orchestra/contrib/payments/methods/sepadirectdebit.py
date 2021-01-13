@@ -215,7 +215,9 @@ class SEPADirectDebit(PaymentMethod):
                 ),
                 E.DrctDbtTx(                                # Direct Debit Transaction
                     E.MndtRltdInf(                          # Mandate Related Info
-                        E.MndtId(str(account.id)),          # Mandate Id
+                        # + 10000 xk vam canviar de sistema per generar aquestes IDs i volem evitar colisions amb els
+                        #  numeros usats antigament
+                        E.MndtId(str(transaction.source_id+10000)),          # Mandate Id
                         E.DtOfSgntr(                        # Date of Signature
                             account.date_joined.strftime("%Y-%m-%d")
                         )

@@ -102,7 +102,7 @@ class Bind9MasterDomainController(ServiceController):
         self.append(textwrap.dedent("""
             # Apply changes
             if [[ $UPDATED == 1 ]]; then
-                service bind9 reload
+                rm /etc/bind/master/*jnl || true;  service bind9 restart
             fi""")
         )
     
@@ -158,6 +158,7 @@ class Bind9MasterDomainController(ServiceController):
             'slaves': '; '.join(slaves) or 'none',
             'also_notify': '; '.join(slaves) + ';' if slaves else '',
             'conf_path': self.CONF_PATH,
+            'dns2136_address_match_list': domain.dns2136_address_match_list
         }
         context['conf'] = textwrap.dedent("""\
             zone "%(name)s" {
@@ -166,6 +167,7 @@ class Bind9MasterDomainController(ServiceController):
                 file "%(zone_path)s";
                 allow-transfer { %(slaves)s; };
                 also-notify { %(also_notify)s };
+                allow-update { %(dns2136_address_match_list)s };
                 notify yes;
             };""") % context
         return context

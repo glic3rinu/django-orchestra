@@ -133,3 +133,22 @@ class ProxmoxOpenVZTraffic(ServiceMonitor):
             'object_id': vps.id,
             'hostname': vps.hostname,
         }
+
+
+class LxcController(ServiceController):
+    model = 'vps.VPS'
+
+    RESOURCES = (
+        ('memory', 'mem'),
+        ('disk', 'disk'),
+        ('vcpu', 'vcpu')
+    )
+
+    def prepare(self):
+        super(LxcController, self).prepare()
+
+    def save(self, vps):
+        # TODO create the container
+        pass
+
+

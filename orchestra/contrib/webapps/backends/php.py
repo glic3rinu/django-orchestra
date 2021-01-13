@@ -32,6 +32,7 @@ class PHPController(WebAppServiceMixin, ServiceController):
     ))
     
     def save(self, webapp):
+        self.delete_old_config(webapp)
         context = self.get_context(webapp)
         self.create_webapp_dir(context)
         if webapp.type_instance.is_fpm:
@@ -40,11 +41,32 @@ class PHPController(WebAppServiceMixin, ServiceController):
             self.save_fcgid(webapp, context)
         else:
             raise TypeError("Unknown PHP execution type")
-        self.append("# Clean non-used PHP FCGID wrappers and FPM pools")
-        self.delete_fcgid(webapp, context, preserve=True)
-        self.delete_fpm(webapp, context, preserve=True)
+#        LEGACY CLEANUP FUNCTIONS. TODO REMOVE WHEN SURE NOT NEEDED.
+#        self.delete_fcgid(webapp, context, preserve=True)
+#        self.delete_fpm(webapp, context, preserve=True)
         self.set_under_construction(context)
-    
+
+    def delete_config(self,webapp):
+        context = self.get_context(webapp)
+        to_delete = []
+        if webapp.type_instance.is_fpm:
+            to_delete.append(settings.WEBAPPS_PHPFPM_POOL_PATH % context)
+            to_delete.append(settings.WEBAPPS_FPM_LISTEN % context)
+        elif webapp.type_instance.is_fcgid:
+            to_delete.append(settings.WEBAPPS_FCGID_WRAPPER_PATH % context)
+            to_delete.append(settings.WEBAPPS_FCGID_CMD_OPTIONS_PATH % context)
+        for item in to_delete:
+            self.append('rm -f "{}"'.format(item))
+
+    def delete_old_config(self,webapp):
+        # Check if we loaded the old version of the webapp. If so, we're updating
+        # rather than creating, so we must make sure the old config files are removed.
+        if hasattr(webapp, '_old_self'):
+            self.append("# Clean old configuration files")
+            self.delete_config(webapp._old_self)
+        else:
+            self.append("# No old config files to delete")
+
     def save_fpm(self, webapp, context):
         self.append(textwrap.dedent("""
             # Generate FPM configuration
@@ -99,10 +121,11 @@ class PHPController(WebAppServiceMixin, ServiceController):
     
     def delete(self, webapp):
         context = self.get_context(webapp)
-        if webapp.type_instance.is_fpm:
-            self.delete_fpm(webapp, context)
-        elif webapp.type_instance.is_fcgid:
-            self.delete_fcgid(webapp, context)
+        self.delete_old_config(webapp)
+#        if webapp.type_instance.is_fpm:
+#            self.delete_fpm(webapp, context)
+#        elif webapp.type_instance.is_fcgid:
+#            self.delete_fcgid(webapp, context)
         self.delete_webapp_dir(context)
     
     def has_sibilings(self, webapp, context):
@@ -205,7 +228,7 @@ class PHPController(WebAppServiceMixin, ServiceController):
         context['fpm_listen'] = webapp.type_instance.FPM_LISTEN % context
         fpm_config = Template(textwrap.dedent("""\
             ;; {{ banner }}
-            [{{ user }}]
+            [{{ user }}-{{app_name}}]
             user = {{ user }}
             group = {{ group }}
             

@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from orchestra.contrib.websites.models import Website, WebsiteDirective, Content
 from orchestra.contrib.websites.validators import validate_domain_protocol
+from orchestra.contrib.orchestration.models import Server
 from orchestra.utils.python import AttrDict
 
 
@@ -54,7 +55,9 @@ def clean_custom_url(saas):
                     (url.netloc, account, domain.account),
             })
         # Create new website for custom_url
-        website = Website(name=url.netloc, protocol=protocol, account=account)
+        # Changed by daniel: hardcode target_server to web.pangea.lan, consider putting it into settings.py
+        tgt_server = Server.objects.get(name='web.pangea.lan')
+        website = Website(name=url.netloc, protocol=protocol, account=account, target_server=tgt_server)
         full_clean(website)
         try:
             validate_domain_protocol(website, domain, protocol)
@@ -110,7 +113,8 @@ def create_or_update_directive(saas):
         Domain = Website.domains.field.rel.to
         domain = Domain.objects.get(name=url.netloc)
         # Create new website for custom_url
-        website = Website(name=url.netloc, protocol=protocol, account=account)
+        tgt_server = Server.objects.get(name='web.pangea.lan')
+        website = Website(name=url.netloc, protocol=protocol, account=account, target_server=tgt_server)
         website.save()
         website.domains.add(domain)
     # get or create directive

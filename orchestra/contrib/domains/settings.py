@@ -122,3 +122,6 @@ DOMAINS_MASTERS = Setting('DOMAINS_MASTERS',
     validators=[lambda masters: list(map(validate_ip_address, masters))],
     help_text="Additional master server ip addresses other than autodiscovered by router.get_servers()."
 )
+
+#TODO remove pangea-specific default
+DOMAINS_DEFAULT_DNS2136 = "key pangea.key;"

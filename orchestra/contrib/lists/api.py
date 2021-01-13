@@ -10,7 +10,7 @@ from .serializers import ListSerializer
 class ListViewSet(LogApiMixin, AccountApiMixin, SetPasswordApiMixin, viewsets.ModelViewSet):
     queryset = List.objects.all()
     serializer_class = ListSerializer
-    filter_fields = ('name',)
+    filter_fields = ('name', 'address_domain')
 
 
 router.register(r'lists', ListViewSet)

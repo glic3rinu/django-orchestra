@@ -233,10 +233,12 @@ class Apache2Controller(ServiceController):
             'socket': socket,
         })
         directives = textwrap.dedent("""
-            <FilesMatch "\.php$">
-                SetHandler "proxy:unix:{socket}|fcgi://127.0.0.1"
-            </FilesMatch>
-        """).format(socket=socket)
+            <Directory {app_path}>
+                <FilesMatch "\.php$">
+                    SetHandler "proxy:unix:{socket}|fcgi://127.0.0.1"
+                </FilesMatch>
+            </Directory>
+        """).format(socket=socket, app_path=app_path)
         directives += self.get_location_filesystem_map(context)
         return [
             (context['location'], directives),
@@ -289,7 +291,8 @@ class Apache2Controller(ServiceController):
         if not (cert and key):
             cert = [settings.WEBSITES_DEFAULT_SSL_CERT]
             key = [settings.WEBSITES_DEFAULT_SSL_KEY]
-            ca = [settings.WEBSITES_DEFAULT_SSL_CA]
+            # Disabled because since the migration to LE, CA is not required here
+            #ca = [settings.WEBSITES_DEFAULT_SSL_CA]
             if not (cert and key):
                 return []
         ssl_config = [

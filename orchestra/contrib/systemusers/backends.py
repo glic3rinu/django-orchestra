@@ -28,6 +28,14 @@ class UNIXUserController(ServiceController):
         context = self.get_context(user)
         if not context['user']:
             return
+        if not user.active:
+            self.append(textwrap.dedent("""
+                #Just disable that user, if it exists
+                if id %(user)s ; then
+                    usermod %(user)s --password '%(password)s'
+                fi
+                """) % context)
+            return        
         # TODO userd add will fail if %(user)s group already exists
         self.append(textwrap.dedent("""
             # Update/create user state for %(user)s
@@ -61,7 +69,8 @@ class UNIXUserController(ServiceController):
         if context['home'] != context['base_home']:
             self.append(textwrap.dedent("""\
                 # Set extra permissions: %(user)s home is inside %(mainuser)s home
-                if mount | grep "^$(df %(home)s|grep '^/'|cut -d' ' -f1)\s" | grep acl > /dev/null; then
+                if true; then
+#                if mount | grep "^$(df %(home)s|grep '^/'|cut -d' ' -f1)\s" | grep acl > /dev/null; then
                     # Account group as the owner
                     chown %(mainuser)s:%(mainuser)s '%(home)s'
                     chmod g+s '%(home)s'

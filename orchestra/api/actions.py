@@ -9,7 +9,7 @@ class SetPasswordApiMixin(object):
     @detail_route(methods=['post'], serializer_class=SetPasswordSerializer)
     def set_password(self, request, pk):
         obj = self.get_object()
-        data = request.DATA
+        data = request.data
         if isinstance(data, str):
             data = {
                 'password': data

@@ -60,7 +60,7 @@ def validate_zone_label(value):
     if not value.endswith('.'):
         msg = _("Use a fully expanded domain name ending with a dot.")
         raise ValidationError(msg)
-    if len(value) > 63:
+    if len(value) > 254:
         raise ValidationError(_("Labels must be 63 characters or less."))
 
 

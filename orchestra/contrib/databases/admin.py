@@ -12,6 +12,10 @@ from .filters import HasUserListFilter, HasDatabaseListFilter
 from .forms import DatabaseCreationForm, DatabaseUserChangeForm, DatabaseUserCreationForm
 from .models import Database, DatabaseUser
 
+def save_selected(modeladmin, request, queryset):
+    for selected in queryset:
+         selected.save()
+save_selected.short_description = "Re-save selected objects"
 
 class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     list_display = ('name', 'type', 'display_users', 'account_link')
@@ -22,7 +26,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     fieldsets = (
         (None, {
             'classes': ('extrapretty',),
-            'fields': ('account_link', 'name', 'type', 'users', 'display_users'),
+            'fields': ('account_link', 'name', 'type', 'users', 'display_users', 'comments'),
         }),
     )
     add_fieldsets = (
@@ -44,7 +48,7 @@ class DatabaseAdmin(SelectAccountAdminMixin, ExtendedModelAdmin):
     filter_horizontal = ['users']
     filter_by_account_fields = ('users',)
     list_prefetch_related = ('users',)
-    actions = (list_accounts,)
+    actions = (list_accounts, save_selected)
     
     def display_users(self, db):
         links = []
@@ -93,7 +97,7 @@ class DatabaseUserAdmin(SelectAccountAdminMixin, ChangePasswordAdminMixin, Exten
     readonly_fields = ('account_link', 'display_databases',)
     filter_by_account_fields = ('databases',)
     list_prefetch_related = ('databases',)
-    actions = (list_accounts,)
+    actions = (list_accounts, save_selected)
     
     def display_databases(self, user):
         links = []

@@ -605,3 +605,11 @@ class PostfixMailscannerTraffic(ServiceMonitor):
             'last_date': self.get_last_date(mailbox.pk).strftime("%Y-%m-%d %H:%M:%S %Z"),
         }
         return context
+
+class RoundcubeIdentityController(ServiceController):
+    """
+    WARNING: not implemented
+    """
+    verbose_name = _("Roundcube Identity Controller")
+    model = 'mailboxes.Mailbox'
+

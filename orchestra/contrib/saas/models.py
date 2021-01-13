@@ -70,7 +70,7 @@ class SaaS(models.Model):
         self.save(update_fields=('is_active',))
     
     def enable(self):
-        self.is_active = False
+        self.is_active = True
         self.save(update_fields=('is_active',))
     
     def clean(self):

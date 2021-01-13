@@ -22,6 +22,7 @@ class Database(models.Model):
             default=settings.DATABASES_DEFAULT_TYPE)
     account = models.ForeignKey('accounts.Account', verbose_name=_("Account"),
             related_name='databases')
+    comments = models.TextField(default="", blank=True)
     
     class Meta:
         unique_together = ('name', 'type')

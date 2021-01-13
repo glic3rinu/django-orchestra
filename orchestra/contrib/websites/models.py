@@ -37,6 +37,7 @@ class Website(models.Model):
     target_server = models.ForeignKey('orchestration.Server', verbose_name=_("Target Server"),
         related_name='websites')
     is_active = models.BooleanField(_("active"), default=True)
+    comments = models.TextField(default="", blank=True)
     
     class Meta:
         unique_together = ('name', 'account')

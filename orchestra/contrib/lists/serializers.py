@@ -31,7 +31,7 @@ class ListSerializer(AccountSerializerMixin, SetPasswordHyperlinkedSerializer):
     
     class Meta:
         model = List
-        fields = ('url', 'id', 'name', 'password', 'address_name', 'address_domain', 'admin_email')
+        fields = ('url', 'id', 'name', 'password', 'address_name', 'address_domain', 'admin_email', 'is_active',)
         postonly_fields = ('name', 'password')
     
     def validate_address_domain(self, address_name):

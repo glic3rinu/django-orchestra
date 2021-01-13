@@ -193,6 +193,7 @@ def report(modeladmin, request, queryset):
         transactions = Transaction.objects.filter(id__in=transactions)
     states = {}
     total = 0
+    transactions = transactions.order_by('bill__number')
     for transaction in transactions:
         state = transaction.get_state_display()
         try:

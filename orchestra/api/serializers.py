@@ -98,7 +98,7 @@ class SetPasswordHyperlinkedSerializer(HyperlinkedModelSerializer):
             pass
         else:
             password = attrs.pop('password', None)
-        attrs = super(SetPasswordSerializer, self).validate()
+        attrs = super().validate(attrs)
         if password is not None:
             attrs['password'] = password
         return attrs

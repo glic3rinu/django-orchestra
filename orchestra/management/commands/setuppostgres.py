@@ -26,7 +26,7 @@ class Command(BaseCommand):
             parser.add_argument(
                 '--db_name', 
                 dest='db_name',
-                default=defaults.get('DB_NAME', 'orchestra2'),
+                default=defaults.get('DB_NAME', 'orchestra'),
                 help='Specifies the database to create.',
                 type=str
             )
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                 self.stdout.write(msg % context)
             else:
                 raise CommandError("Postgres user '%(db_user)s' already exists and "
-                                   "--db_pass has not been provided." % context)
+                                   "--db_password has not been provided." % context)
         else:
             context['db_password'] = context['default_db_password']
             msg = "Created new Postgres user '%(db_user)s' with password '%(db_password)s'"

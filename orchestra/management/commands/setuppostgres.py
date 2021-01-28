@@ -22,29 +22,53 @@ class Command(BaseCommand):
             if defaults['ENGINE'] != 'django.db.backends.postgresql_psycopg2':
                 defaults = {}
         
-        self.option_list = BaseCommand.option_list + (
-            make_option('--db_name', dest='db_name',
-                default=defaults.get('DB_NAME', 'orchestra'),
-                help='Specifies the database to create.'),
-            make_option('--db_user', dest='db_user',
+        def add_arguments(self, parser):
+            parser.add_argument(
+                '--db_name', 
+                dest='db_name',
+                default=defaults.get('DB_NAME', 'orchestra2'),
+                help='Specifies the database to create.',
+                type=str
+            )
+            parser.add_argument(
+                '--db_user', 
+                dest='db_user',
                 default=defaults.get('DB_USER', 'orchestra'),
-                help='Specifies the database to create.'),
-            make_option('--db_password', dest='db_password',
+                help='Specifies the database to create.',
+                type=str
+            )
+            parser.add_argument(
+                '--db_password', 
+                dest='db_password',
                 default=defaults.get('PASSWORD', ''),
-                help='Specifies the database password, random if not specified.'),
-            make_option('--db_host', dest='db_host',
+                help='Specifies the database password, random if not specified.',
+                type=str
+            )
+            parser.add_argument(
+                '--db_host', 
+                dest='db_host',
                 default=defaults.get('HOST', 'localhost'),
-                help='Specifies the database to create.'),
-            make_option('--db_port', dest='db_port',
+                help='Specifies the database to create.',
+                type=str
+            )
+            parser.add_argument(
+                '--db_port', 
+                dest='db_port',
                 default=defaults.get('PORT', '5432'),
-                help='Specifies the database to create.'),
-            make_option('--noinput', action='store_false', dest='interactive', default=True,
+                help='Specifies the database to create.',
+                type=str
+            )
+            parser.add_argument(
+                '--noinput', 
+                action='store_false',
+                dest='interactive',
+                default=True,
                 help='Tells Django to NOT prompt the user for input of any kind. '
                      'You must use --username with --noinput, and must contain the '
-                     'cleeryd process owner, which is the user how will perform tincd updates'),
+                     'cleeryd process owner, which is the user how will perform tincd updates',
+                type=str
             )
     
-    option_list = BaseCommand.option_list
     help = 'Setup PostgreSQL database.'
     
     def run_postgres(self, cmd, *args, **kwargs):

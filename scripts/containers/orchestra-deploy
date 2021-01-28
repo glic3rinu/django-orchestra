@@ -46,7 +46,7 @@ function install_orchestra () {
     
     if [[ $dev ]]; then
         # Install from source
-        python_path=$(python3 -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][0]);")
+        python_path=$(python3 -c "import sys; print([path for path in sys.path if path.startswith('/usr/local/lib/python')][1]);")
         if [[ -d $python_path/orchestra ]]; then
             run sudo rm -fr $python_path/orchestra
         fi
@@ -76,7 +76,7 @@ function install_orchestra () {
         # Install from pip
         run sudo orchestra-admin install_requirements
         #run sudo pip3 install http://git.io/django-orchestra-dev
-        run sudo pip3 install -e git+https://github.com/ribaguifi/django-orchestra.git
+        run sudo pip3 install -e git+https://github.com/ribaguifi/django-orchestra.git#egg=django-orchestra
     fi
 }
 
@@ -89,7 +89,7 @@ function setup_database () {
     if [[ $dev ]]; then
         # Speeding up tests, don't do this in production!
         . /usr/share/postgresql-common/init.d-functions
-        pg_version=$(psql --version | head -n1 | sed -r "s/^.*\s([0-9]+\.[0-9]+).*/\1/")
+	pg_version=$(psql --version | head -n1 | awk '{print $3}' | sed -e "s,\..*,,")
         sudo sed -i \
             -e "s/^#fsync =\s*.*/fsync = off/" \
             -e "s/^#full_page_writes =\s*.*/full_page_writes = off/" \

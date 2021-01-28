@@ -21,6 +21,9 @@ apt=(
 sudo apt-get install --no-install-recommends -y ${apt[@]}
 ```
 
+It is necessary install *wkhtmltopdf*
+You can install it from https://wkhtmltopdf.org/downloads.html
+
 Clone this repository
 ```bash
 git clone https://github.com/ribaguifi/django-orchestra

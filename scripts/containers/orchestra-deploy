@@ -69,8 +69,9 @@ function install_orchestra () {
         if [[ -L /usr/local/bin/orchestra-admin || -f /usr/local/bin/orchestra-admin ]]; then
             run sudo rm -f /usr/local/bin/{orchestra-admin,orchestra-beat}
         fi
-        run sudo ln -s $home/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/
-        run sudo ln -s $home/django-orchestra/orchestra/bin/orchestra-beat /usr/local/bin/
+	run sudo pip3 install -e $home/django-orchestra
+        #run sudo ln -s $home/django-orchestra/orchestra/bin/orchestra-admin /usr/local/bin/
+        #run sudo ln -s $home/django-orchestra/orchestra/bin/orchestra-beat /usr/local/bin/
         run sudo orchestra-admin install_requirements --testing
     else
         # Install from pip
@@ -84,7 +85,8 @@ function install_orchestra () {
 function setup_database () {
     dev=$1
     noinput=$2
-    run sudo apt-get install -y postgresql python3-psycopg2
+    run sudo apt-get install -y postgresql
+    run sudo pip install psycopg2
     # Setup Database
     if [[ $dev ]]; then
         # Speeding up tests, don't do this in production!

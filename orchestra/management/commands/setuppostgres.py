@@ -79,11 +79,11 @@ class Command(BaseCommand):
         interactive = options.get('interactive')
         db_password = options.get('db_password')
         context = {
-            'db_name': options.get('db_name'),
-            'db_user': options.get('db_user'),
+            'db_name': options.get('db_name', 'orchestra'),
+            'db_user': options.get('db_user', 'orchestra'),
             'db_password': db_password,
-            'db_host': options.get('db_host'),
-            'db_port': options.get('db_port'),
+            'db_host': options.get('db_host', '127.0.0.1'),
+            'db_port': options.get('db_port', '5432'),
             'default_db_password': db_password or random_ascii(10),
         }
         

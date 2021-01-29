@@ -62,8 +62,6 @@ function install_orchestra () {
                 # Finishing partial installation
                 surun "export GIT_DIR=$home/django-orchestra/.git; git pull"
             }
-    	    # TODO remove this line when it branch is merged to master
-	    surun "cd $home/django-orchestra/; git checkout docker"
             echo $home/django-orchestra/ | sudo tee "$python_path/orchestra.pth"
         else
             echo "You may want to execute 'git pull origin master'?"
